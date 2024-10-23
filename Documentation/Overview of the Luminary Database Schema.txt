@@ -1,0 +1,56 @@
+Here’s a breakdown of the components:
+
+1. Users Table
+    What it is: This table stores information about everyone involved in the project, including editors, clients, and administrators.
+    Key Points:
+        Each user has a unique ID.
+        Users log in using their Google ID.
+        Their roles (like Editor or Client) are recorded, which determines their level of access to the system.
+        By default, new users start as Clients.
+
+2. Roles Table
+
+    What it is: This defines the different roles available within the system.
+    Key Points:
+        Roles include Admin, Editor, and Client.
+        The default role for new users is Client, but an Admin can change this to Editor if needed.
+
+3. Projects Table
+
+    What it is: This table contains details about each video editing project.
+    Key Points:
+        Each project has a unique ID and a name.
+        It includes descriptions, shoot dates, due dates, and a progress indicator showing how much of the project is completed.
+
+4. Video Editors Table
+
+    What it is: This links editors and assistant editors to specific projects.
+    Key Points:
+        It records which users are working on which projects and their specific roles (Editor or Assistant Editor).
+
+5. Video Status Table
+
+    What it is: This tracks the status of videos within projects.
+    Key Points:
+        It shows who is responsible for the video's status and what that status is.
+
+6. Payments Table (In Progress)
+
+    What it is: This manages payments for the work done on the projects.
+    Key Points:
+        It records how much time editors have worked, including regular and overtime hours.
+        It tracks payments made to editors and whether clients can see specific payment details.
+
+7. Archive Table
+
+    What it is: This holds information about projects that are no longer active.
+    Key Points:
+        Only Admins can access this information.
+        It records when a project was archived and the reason for archiving.
+
+How It Works Together
+
+    Users and Roles: Each user is assigned a role that determines what they can see and do in the system. For example, Clients can view project progress but cannot change any details.
+    Projects and Video Editors: Projects are managed by linking them to the editors working on them, allowing for clear tracking of responsibilities.
+    Payment Management: The Payments Table connects back to the Users and Projects to ensure that editors are compensated for their work and that clients are aware of payment statuses.
+    Archiving: When projects are completed or no longer active, they are archived for future reference, ensuring that only Admins can access sensitive data.
