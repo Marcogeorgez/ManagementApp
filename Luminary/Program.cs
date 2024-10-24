@@ -5,6 +5,8 @@ using Luminary.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Google;
+using Luminary.Data.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,9 +27,32 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
+
+
+builder.Services.AddAuthentication()
+    .AddGoogle(googleOptions =>
+     {
+         var clientId = builder.Configuration["Authentication:Google:ClientId"]
+             ?? throw new InvalidOperationException("Google ClientId not found in configuration.");
+         var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
+             ?? throw new InvalidOperationException("Google ClientSecret not found in configuration.");
+
+         googleOptions.ClientId = clientId;
+         googleOptions.ClientSecret = clientSecret;
+
+         // Optional: Configure the callback path
+         googleOptions.CallbackPath = "/weather";
+
+         // Optional: Configure the scopes you want to request
+         googleOptions.Scope.Add("email");
+         googleOptions.Scope.Add("profile");
+
+     });
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)

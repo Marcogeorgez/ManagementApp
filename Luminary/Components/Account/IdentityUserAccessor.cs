@@ -1,4 +1,4 @@
-using Luminary.Data;
+using Luminary.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace Luminary.Components.Account

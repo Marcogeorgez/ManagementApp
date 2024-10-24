@@ -1,5 +1,5 @@
 using Luminary.Client;
-using Luminary.Data;
+using Luminary.Data.Entities;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;

@@ -1,6 +1,6 @@
 using Luminary.Components.Account.Pages;
 using Luminary.Components.Account.Pages.Manage;
-using Luminary.Data;
+using Luminary.Data.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
