@@ -15,7 +15,7 @@ public class VideoStatus
 
     [Required]
     [ForeignKey("User")]
-    public int UserId { get; set; }
+    public string UserId { get; set; }
 
     [Required]
     [StringLength(50)]

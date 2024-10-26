@@ -41,7 +41,7 @@ builder.Services.AddAuthentication()
          googleOptions.ClientSecret = clientSecret;
 
          // Optional: Configure the callback path
-         googleOptions.CallbackPath = "/weather";
+         googleOptions.CallbackPath = "/signin-google";
 
          // Optional: Configure the scopes you want to request
          googleOptions.Scope.Add("email");

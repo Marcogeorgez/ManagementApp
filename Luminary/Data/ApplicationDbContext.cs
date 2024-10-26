@@ -26,8 +26,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<ApplicationUser>(entity =>
         {
             entity.ToTable("Users"); // Match your schema table name
-            entity.Property(e => e.GoogleId).HasMaxLength(255);
-            entity.HasIndex(e => e.GoogleId).IsUnique();
+            entity.Property(e => e.Id).HasMaxLength(255);
+            entity.HasIndex(e => e.Id).IsUnique();
 
             // Relationship with Role
             entity.HasOne(u => u.Role)
@@ -44,9 +44,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         // Seed default roles
         builder.Entity<Role>().HasData(
-            new Role { RoleId = 1, RoleName = "Admin" },
-            new Role { RoleId = 2, RoleName = "Editor" },
-            new Role { RoleId = 3, RoleName = "Client" },
+            new Role { RoleId = 9999, RoleName = "Admin" },
+            new Role { RoleId = 1, RoleName = "Editor" },
+            new Role { RoleId = 2, RoleName = "Client" },
             new Role { RoleId = 3, RoleName = "Guest" } // Default role
         );
         // Configure Project
@@ -61,16 +61,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(e => e.WorkingMonth).IsRequired();
             entity.Property(e => e.Status).IsRequired();
 
-            // Relationships
             entity.HasMany(p => p.VideoEditors)
                   .WithOne(ve => ve.Project)
                   .HasForeignKey(ve => ve.ProjectId);
             entity.HasMany(p => p.VideoStatuses)
                   .WithOne(vs => vs.Project)
                   .HasForeignKey(vs => vs.ProjectId);
-            entity.HasMany(p => p.Payments)
-                  .WithOne(p => p.Project)
-                  .HasForeignKey(p => p.ProjectId);
+            entity.HasMany(p => p.EditorPayments)
+                  .WithOne(ep => ep.Project)
+                  .HasForeignKey(ep => ep.ProjectId);
+            entity.HasOne(p => p.ClientPayment)
+                  .WithOne(cp => cp.Project)
+                  .HasForeignKey<ClientPayment>(cp => cp.ProjectId);
             entity.HasMany(p => p.Chats)
                   .WithOne(c => c.Project)
                   .HasForeignKey(c => c.ProjectId);
@@ -140,6 +142,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(c => c.User)
                   .WithMany(u => u.Chats)
                   .HasForeignKey(c => c.UserId);
+            entity.Property(c => c.IsApproved)
+                  .HasDefaultValue(false);
+            entity.Property(c => c.IsEditorMessage)
+                  .IsRequired();
         });
     }
 }
