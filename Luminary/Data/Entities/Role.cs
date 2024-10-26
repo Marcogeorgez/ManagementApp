@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+/*using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,4 +16,4 @@ public class Role
 
     // Navigation property
     public virtual ICollection<ApplicationUser> Users { get; set; }
-}
+}*/

@@ -8,12 +8,8 @@ namespace Luminary.Data.Entities;
 
 public class ApplicationUser : IdentityUser 
 {
-    [Required]
-    [ForeignKey("Role")]
-    public int RoleId { get; set; }
 
     // Navigation properties
-    public virtual Role Role { get; set; }
     public virtual ICollection<VideoEditor> VideoEditors { get; set; }
     public virtual ICollection<VideoStatus> VideoStatuses { get; set; }
     public virtual ICollection<ClientPayment> Payments { get; set; }

@@ -7,7 +7,6 @@ namespace Luminary.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-    public DbSet<Role> Role { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<VideoEditor> VideoEditors { get; set; }
     public DbSet<VideoStatus> VideoStatuses { get; set; }
@@ -28,27 +27,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.ToTable("Users"); // Match your schema table name
             entity.Property(e => e.Id).HasMaxLength(255);
             entity.HasIndex(e => e.Id).IsUnique();
-
-            // Relationship with Role
-            entity.HasOne(u => u.Role)
-                  .WithMany()
-                  .HasForeignKey(u => u.RoleId);
         });
 
-        // Configure Role
-        builder.Entity<Role>(entity =>
-        {
-            entity.ToTable("Roles");
-            entity.Property(e => e.RoleName).HasMaxLength(50).IsRequired();
-        });
-
-        // Seed default roles
-        builder.Entity<Role>().HasData(
-            new Role { RoleId = 9999, RoleName = "Admin" },
-            new Role { RoleId = 1, RoleName = "Editor" },
-            new Role { RoleId = 2, RoleName = "Client" },
-            new Role { RoleId = 3, RoleName = "Guest" } // Default role
-        );
         // Configure Project
         builder.Entity<Project>(entity =>
         {

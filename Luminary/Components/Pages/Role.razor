@@ -1,0 +1,22 @@
+﻿@page "/role"
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize]
+
+<AuthorizeView Roles="Admin">
+    <Authorized Context="adminContext">
+        <h3>Admin Dashboard</h3>
+        <p>This content is only visible to users in the Admin role.</p>
+    </Authorized>
+    <NotAuthorized Context="adminNotAuthorizedContext">
+        <AuthorizeView Roles="Guest">
+            <Authorized Context="guestContext">
+                <h3>Guest Dashboard</h3>
+                <p>This content is only visible to users in the Guest role.</p>
+            </Authorized>
+            <NotAuthorized Context="guestNotAuthorizedContext">
+                <p>Sorry, you are not allowed to view this content.</p>
+            </NotAuthorized>
+        </AuthorizeView>
+    </NotAuthorized>
+</AuthorizeView>

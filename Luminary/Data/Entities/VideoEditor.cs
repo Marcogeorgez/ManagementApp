@@ -24,7 +24,6 @@ public class VideoEditor
     public string Label { get; set; }
 
     // Navigation properties
-    public virtual Role Role { get; set; }
     public virtual Project Project { get; set; }
     public virtual ApplicationUser User { get; set; }
 }

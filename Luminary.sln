@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luminary", "Luminary\Luminary.csproj", "{F8784FF7-3176-41F3-8323-4C8795AAE8DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luminary", "Luminary\Luminary.csproj", "{F8784FF7-3176-41F3-8323-4C8795AAE8DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luminary.Client", "Luminary.Client\Luminary.Client.csproj", "{3B6DEBAE-A020-4046-AD1B-3140B214C781}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luminary.Client", "Luminary.Client\Luminary.Client.csproj", "{3B6DEBAE-A020-4046-AD1B-3140B214C781}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

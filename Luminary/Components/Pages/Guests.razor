@@ -1,0 +1,6 @@
+﻿@page "/Guest"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Guest")]
+
+<h3>Guest Dashboard</h3>
+<p>This content is only visible to users in the Guest role.</p>
