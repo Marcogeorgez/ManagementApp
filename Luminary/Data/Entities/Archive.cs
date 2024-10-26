@@ -18,11 +18,9 @@ public class Archive
     [Required]
     [DataType(DataType.Date)]
     [Display(Name = "Archive Date")]
-    public DateTime ArchiveDate { get; set; }
+    public DateTime ArchiveDate { get; set; } = DateTime.UtcNow;
 
     [DataType(DataType.MultilineText)]
     public string Reason { get; set; }
-
-    // Navigation property
-    public virtual Project Project { get; set; }
+    public Project Project { get; set; }
 }

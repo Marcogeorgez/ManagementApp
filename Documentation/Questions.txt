@@ -1,0 +1,1 @@
+So, while I was working on the database, I started wondering how the editors are paid—per month or per project. We want to record how many hours each editor works on a project with how many hours overtime or undertime, right? so after we record that are we going to use it in their payments? 

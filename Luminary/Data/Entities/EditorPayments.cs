@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Luminary.Data.Entities;
 
-public class Payment
+public class EditorPayments
 {
     [Key]
     public int PaymentId { get; set; }
@@ -34,8 +34,8 @@ public class Payment
     [Required]
     [Range(0, 9999999.99)]
     [Column(TypeName = "decimal(10,2)")]
-    [Display(Name = "Editor Payment")]
-    public decimal EditorPayment { get; set; }
+    [Display(Name = "Editor Payment Amount")]
+    public decimal PaymentAmount { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
@@ -43,25 +43,20 @@ public class Payment
     public DateTime EditorDatePaid { get; set; }
 
     [Required]
+    [Range(1, 12)]
+    [Display(Name = "Payment Month")]
+    public int PaymentMonth { get; set; }
+
+    [Required]
+    [Range(2000, 2100)]
+    [Display(Name = "Payment Year")]
+    public int PaymentYear { get; set; }
+
+    [Required]
     [Range(0, 999.99)]
     [Column(TypeName = "decimal(5,2)")]
     [Display(Name = "Billable Hours")]
     public decimal BillableHours { get; set; }
-
-    [Required]
-    [Range(0, 9999999.99)]
-    [Column(TypeName = "decimal(10,2)")]
-    public decimal Price { get; set; }
-
-    [Display(Name = "Visible to Client")]
-    public bool ClientVisible { get; set; }
-
-    [Required]
-    [StringLength(50)]
-    [RegularExpression(@"^(Pending|Completed|Failed)$",
-        ErrorMessage = "Payment Status must be either 'Pending', 'Completed', or 'Failed'")]
-    [Display(Name = "Payment Status")]
-    public string ClientPaymentStatus { get; set; }
 
     // Navigation properties
     public virtual Project Project { get; set; }

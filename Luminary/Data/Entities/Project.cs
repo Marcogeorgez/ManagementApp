@@ -52,7 +52,8 @@ public class Project
     // Navigation properties
     public virtual ICollection<VideoEditor> VideoEditors { get; set; }
     public virtual ICollection<VideoStatus> VideoStatuses { get; set; }
-    public virtual ICollection<Payment> Payments { get; set; }
+    public virtual ClientPayment ClientPayment { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
+    public virtual ICollection<EditorPayments> EditorPayments { get; set; }
 }
