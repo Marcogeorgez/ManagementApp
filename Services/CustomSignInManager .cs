@@ -22,13 +22,46 @@ namespace LuminaryVisuals.Services
 
 
         // Override password sign-in to prevent local authentication
-        public override Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+        public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
         {
-            return Task.FromResult(SignInResult.Failed);
-        }
+            //return Task.FromResult(SignInResult.Failed);
+            var user = await UserManager.FindByNameAsync(userName);
+            if (user != null)
+            {
+                // Attempt to sign in with the provided password
+                var result = await base.PasswordSignInAsync(userName, password, isPersistent, lockoutOnFailure);
 
-        // Override to prevent any other external logins except Google
-        public override async Task<SignInResult> ExternalLoginSignInAsync(
+                if (result.Succeeded)
+                {
+                    return result; // Return success if login is successful
+                }
+            }
+
+            // If login failed, create a new user
+            var newUser = new ApplicationUser
+            {
+                UserName = userName,
+                Email = userName, // Or another way to assign email if you have it
+                EmailConfirmed = true // Assuming this is a guest
+            };
+
+            var createResult = await UserManager.CreateAsync(newUser, password);
+            if (createResult.Succeeded)
+            {
+                // Assign Guest role to the new user
+                await UserManager.AddToRoleAsync(newUser, "Guest");
+                // Sign in the new user
+                await SignInAsync(newUser, isPersistent);
+                return SignInResult.Success; // Return success after signing in
+            }
+
+            // Return failed if the user could not be created
+            return SignInResult.Failed;
+        }
+    
+
+    // Override to prevent any other external logins except Google
+    public override async Task<SignInResult> ExternalLoginSignInAsync(
             string loginProvider,
             string providerKey,
             bool isPersistent,
