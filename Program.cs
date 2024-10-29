@@ -1,3 +1,4 @@
+using Blazored.Toast.Services;
 using LuminaryVisuals.Components;
 using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
@@ -18,15 +19,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-/*
-// Configure Authentication
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-})
-.AddIdentityCookies(); // Keep this call here, but we need to separate the Google setup
-*/
+
 // Now add Google Authentication after configuring Identity Cookies
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 {
@@ -74,7 +67,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddScoped<SignInManager<ApplicationUser>>();
 builder.Services.AddScoped<UserManagementService>();
-
+builder.Services.AddScoped<IToastService, ToastService>();
 // Configure security headers and cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
