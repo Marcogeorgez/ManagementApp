@@ -65,8 +65,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<SignInManager<ApplicationUser>>();
+builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
 builder.Services.AddScoped<UserManagementService>();
+//builder.Services.AddScoped<CustomSignInManager>();
+
 builder.Services.AddScoped<IToastService, ToastService>();
 // Configure security headers and cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -75,7 +77,6 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.HttpOnly = HttpOnlyPolicy.Always;
     options.Secure = CookieSecurePolicy.Always;
 });
-
 // Configure email sender
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
