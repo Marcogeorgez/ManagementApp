@@ -1,0 +1,10 @@
+1-So, while I was working on the database, I started wondering how the editors are paid—per month or per project. We want to record how many hours each editor works on a project with how many hours overtime or undertime, right? so after we record that are we going to use it in their payments? 
+
+
+2-Concerning the chat features: Guests will be able to communicate with the company, correct? Are there specific permissions they will have beyond the ability to chat? I'm primarily interested in understanding how guests will interact with the website after registering and logging in.
+
+Additionally, would you like to enable chat between editors, or will it be limited to client-company interactions? Will the chat feature be a small pop-up on the side, or will it occupy a full web page?
+
+3-Regarding chat notifications, how long after a message is unread will email notifications be sent? For example, will an email be sent if the chat remains unread for an hour, or if the user is offline? I'm asking because I need an estimate of the expected volume of emails to be sent. Some email service providers offer free tiers with limits (for example, SendGrid allows 100 emails per day). If we anticipate sending more than 3,000 messages per month, we would need to subscribe to a plan costing $20 per month for 3,000 to 50,000 emails.
+
+

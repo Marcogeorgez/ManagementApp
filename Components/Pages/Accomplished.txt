@@ -1,0 +1,7 @@
+Adding secure setting for the access to the web app.
+Implemented the database as we've discussed (will re-iterate it later as we need)
+Created roles (Admin-Editor-Client-Guest) and made sure every new user is just a guest.
+
+Currently working on:
+Creating the admin dashboard where he can change a user role.
+
