@@ -1,0 +1,181 @@
+﻿@page "/admin-dashboard"
+@using LuminaryVisuals.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@* @attribute [Authorize(Roles = "Admin")] *@
+@inject UserManagementService UserManagementService
+@inject ILogger<AdminDashboard> Logger
+@inject RoleManager<IdentityRole> RoleManager
+@rendermode InteractiveServer
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Role Management</h1>
+
+    @if (_loading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (_error)
+    {
+        <div class="alert alert-danger" role="alert">
+            An error occurred while loading users.
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(_updateMessage))
+        {
+            <div class="alert @_updateMessageClass alert-dismissible fade show" role="alert">
+                @_updateMessage
+                <button type="button" class="btn btn-primary" @onclick="() => _updateMessage = null"></button>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Username</th>
+                        <th scope="col">Current Role</th>
+                        <th scope="col">New Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in _users)
+                    {
+                        <tr>
+                            <td>@user.UserName</td>
+                            <td>@string.Join(", ", user.Roles)</td>
+                            <td>
+                                <select @bind="user.SelectedRole" class="form-select">
+                                    <option value="">Select a role</option>
+                                    @foreach (var role in _availableRoles)
+                                    {
+                                        <option value="@role">@role</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <button type="button"
+                                        @onclick="@(() => ChangeUserRole(user))"
+                                        disabled="@(string.IsNullOrEmpty(user.SelectedRole) || _isUpdating)"
+                                        class="btn btn-primary">
+                                    @if (_isUpdating && _updatingUserId == user.UserId)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                        <span>Updating...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Update Role</span>
+                                    }
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<UserRoleViewModel> _users = new();
+    private bool _loading = true;
+    private bool _error = false;
+    private List<string> _availableRoles = new();
+    private string _updateMessage;
+    private string _updateMessageClass;
+    private bool _isUpdating;
+    private string _updatingUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Get all roles from RoleManager
+            _availableRoles = await GetAvailableRoles();
+
+            // Get all users with their roles
+            _users = await UserManagementService.GetAllUsersWithRolesAsync();
+            _loading = false;
+
+            // Ensure SelectedRole is initialized to null or empty for each user
+            foreach (var user in _users)
+            {
+                user.SelectedRole = null; // or string.Empty
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading users");
+            _error = true;
+            _loading = false;
+        }
+    }
+
+     async Task<List<string>> GetAvailableRoles()
+    {
+        // Use ToListAsync() if your roles are in a DbSet
+        var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
+        return roles;
+    }
+
+    public async Task ChangeUserRole(UserRoleViewModel user)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(user.SelectedRole))
+            {
+                return; // Prevent further processing if no role is selected
+            }
+
+            _isUpdating = true;
+            _updatingUserId = user.UserId;
+            StateHasChanged(); // Trigger re-render for UI updates
+
+            var result = await UserManagementService.ChangeUserRoleAsync(user.UserId, user.SelectedRole);
+
+            if (result)
+            {
+                // Update the local user roles list
+                var updatedUser = _users.First(u => u.UserId == user.UserId);
+                updatedUser.Roles = new List<string> { user.SelectedRole };
+
+                _updateMessage = $"Successfully updated role for {user.UserName} to {user.SelectedRole}";
+                _updateMessageClass = "alert-success";
+
+                Logger.LogInformation($"Successfully updated role for user {user.UserName} to {user.SelectedRole}");
+
+                // Clear the selection after successful update
+                user.SelectedRole = string.Empty; // Resetting selected role
+            }
+            else
+            {
+                _updateMessage = $"Failed to update role for {user.UserName}";
+                _updateMessageClass = "alert-danger";
+                Logger.LogError($"Failed to update role for user {user.UserName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _updateMessage = $"Error updating role: {ex.Message}";
+            _updateMessageClass = "alert-danger";
+            Logger.LogError(ex, "Error changing user role");
+        }
+        finally
+        {
+            _isUpdating = false; // Reset updating state
+            _updatingUserId = null;
+            StateHasChanged(); // Trigger re-render to update UI
+        }
+    }
+}

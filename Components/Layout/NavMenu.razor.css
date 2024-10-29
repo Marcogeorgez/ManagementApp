@@ -99,7 +99,7 @@
 .nav-item ::deep .nav-link:hover {
     background-color: rgba(255,255,255,0.1);
     color: white;
-}
+} 
 
 .nav-scrollable {
     display: none;
@@ -108,10 +108,20 @@
 .navbar-toggler:checked ~ .nav-scrollable {
     display: block;
 }
+#menu {
+    justify-content: normal !important;
+    width:40%;
+    margin-left: unset;
+}
 
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
+    }
+    #menu {
+        justify-content: space-between;
+        width: 100%;
+        margin-left: auto;
     }
 
     .nav-scrollable {
