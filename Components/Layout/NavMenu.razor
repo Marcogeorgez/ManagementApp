@@ -1,95 +1,68 @@
 ﻿@using LuminaryVisuals.Data.Entities
 @using Microsoft.AspNetCore.Identity
-@implements IDisposable
-
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
+@inherits LayoutComponentBase
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div id="menu" class="container-fluid align-items-center">
-        <img src="/Logo.png" alt="Logo" class="img-fluid" style="max-height: 40px;"> <!-- Adjust max-height as needed -->
-        <a class="navbar-brand" href="">Luminary Visuals</a>
-    </div>
-</div>
+<MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+            <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="mr-3" />
+        </MudHidden>
+        <MudText Typo="Typo.h5" Class="ml-3">Luminary Visuals</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        @*NavMenu*@
+    <MudNavMenu>
+
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+        <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security">Auth Required</MudNavLink>
+        <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Lock">Admin Dashboard</MudNavLink>
 
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+    <AuthorizeView>
+        <Authorized>
+                <MudListSubheader>
+                    Account Information
+                </MudListSubheader>
+            <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.Person">
+                @context.User.Identity?.Name
+            </MudNavLink>
+            <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
+                Logout
+            </MudNavLink>
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+        </Authorized>
+        <NotAuthorized>
+            <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+            <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+        </NotAuthorized>
+    </AuthorizeView>
+    </MudNavMenu>
 
-        
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="admin-dashboard">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Admin Dashboard
-            </NavLink>
-        </div>
+    </MudDrawer>
 
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button  type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-    
-</div>
 
 @code {
-    private string? currentUrl;
+    bool _drawerOpen = true;
 
-    protected override void OnInitialized()
+    void DrawerToggle()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
+        _drawerOpen = !_drawerOpen;
     }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private async Task LogoutClick()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
+        // Implement your logout logic here
+        NavigationManager.NavigateTo("Account/Logout", true);
     }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
-
 }
+
+
+
+
+
 
 
