@@ -24,7 +24,7 @@ namespace LuminaryVisuals.Services
         // Override password sign-in to prevent local authentication
         public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
         {
-            //return Task.FromResult(SignInResult.Failed);
+            // Return Task.FromResult(SignInResult.Failed);
             var user = await UserManager.FindByNameAsync(userName);
             if (user != null)
             {

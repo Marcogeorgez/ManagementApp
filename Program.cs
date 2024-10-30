@@ -67,11 +67,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Custom Implementation of SignInManager to let new users.role Guest by default
+
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
 builder.Services.AddScoped<UserManagementService>();
-//builder.Services.AddScoped<CustomSignInManager>();
 
-builder.Services.AddScoped<IToastService, ToastService>();
 // Configure security headers and cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -79,7 +79,8 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.HttpOnly = HttpOnlyPolicy.Always;
     options.Secure = CookieSecurePolicy.Always;
 });
-// Configure email sender
+
+// Configure email sender (not currently used for anything, just leaving it incase we need it)
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 // Configure authorization policies
@@ -113,7 +114,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
-app.UseAntiforgery();  // Ensure this is placed appropriately based on your application's needs
+app.UseAntiforgery(); 
 
 app.UseAuthorization();
 
