@@ -4,11 +4,10 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inherits LayoutComponentBase
 
-
 @* Main Top Bar *@
 <MudAppBar Elevation="1">
 
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="fit-image" />
         </MudHidden>
@@ -21,7 +20,7 @@
         <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool"/>
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
 
-    <MudDrawer Class="" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" OpenMiniOnHover="true">
+    <MudDrawer Class="" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" OpenMiniOnHover="true" >
         @*NavMenu*@
             <MudNavMenu Class="mud-width-full ">
             <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
