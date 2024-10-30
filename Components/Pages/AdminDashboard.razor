@@ -9,9 +9,6 @@
 @inject HttpClient httpClient
 @inject RoleManager<IdentityRole> RoleManager
 <PageTitle>Admin Dashboard</PageTitle>
-<div class="container mt-4">
-    <h1 class="mb-4">Role Management</h1>
-
     @if (_loading)
     {
         <div class="d-flex justify-content-center">
@@ -35,55 +32,29 @@
                 <button type="button" class="btn btn-primary" @onclick="() => _updateMessage = null"></button>
             </div>
         }
-
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col">Username</th>
-                        <th scope="col">Current Role</th>
-                        <th scope="col">New Role</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in _users)
-                    {
-                        <tr>
-                            <td>@user.UserName</td>
-                            <td>@string.Join(", ", user.Roles)</td>
-                            <td>
-                                <select @bind="user.SelectedRole" class="form-select">
-                                    <option value="">Select a role</option>
-                                    @foreach (var role in _availableRoles)
-                                    {
-                                        <option value="@role">@role</option>
-                                    }
-                                </select>
-                            </td>
-                            <td>
-                                <button type="button"
-                                        @onclick="@(() => ChangeUserRole(user))"
-                                        disabled="@(string.IsNullOrEmpty(user.SelectedRole) || _isUpdating)"
-                                        class="btn btn-primary">
-                                    @if (_isUpdating && _updatingUserId == user.UserId)
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Updating...</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Update Role</span>
-                                    }
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+    <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@Elements" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilter" ColumnResizeMode="ResizeMode.Column">
+        <ToolBarContent>
+                <MudText Typo="Typo.h6">Admin Dashboard</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchString" Placeholder="Search username" Adornment="Adornment.Start" Immediate="true"
+                 AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+                <Columns>
+            <SelectColumn T="UserRoleViewModel" />
+        <PropertyColumn Property="x => x.UserName" SortBy="@_sortBy" />
+        <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role"  />
+            <PropertyColumn Property="x => x.SelectedRole" Title="Selected Role" style="max-width: 100px; overflow-x: hidden;" />
+            <TemplateColumn CellClass="d-flex justify-end">
+                <CellTemplate>
+                        <MudButton Size="@Size.Small" Variant="@Variant.Outlined" Color="@Color.Primary">Change Role</MudButton>
+                </CellTemplate>
+            </TemplateColumn>
+    </Columns>
+        <PagerContent>
+            <MudDataGridPager T="UserRoleViewModel" />
+    </PagerContent>
+    </MudDataGrid>
     }
-</div>
 
 @code {
     private List<UserRoleViewModel> _users = new();
@@ -103,6 +74,8 @@
             _availableRoles = await GetAvailableRoles();
 
             // Get all users with their roles
+            Elements = await UserManagementService.GetAllUsersWithRolesAsync();
+            Console.WriteLine(Elements);
             _users = await UserManagementService.GetAllUsersWithRolesAsync();
             _loading = false;
 
@@ -125,6 +98,10 @@
     {
         var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
         return roles;
+    }
+    private string GetRolesAsString(UserRoleViewModel user)
+    {
+        return string.Join(", ", user.Roles);
     }
 
     // To Change users roles logic
@@ -177,4 +154,29 @@
             StateHasChanged(); // Trigger re-render to update UI
         }
     }
+
+        private IEnumerable<UserRoleViewModel> Elements = new List<UserRoleViewModel>();
+        private string _searchString;
+        private bool _sortNameByLength;
+        private List<string> _events = new();
+        // custom sort by name length
+        private Func<UserRoleViewModel, object> _sortBy => x =>
+        {
+            if (_sortNameByLength)
+                return x.UserName.Length;
+            else
+                return x.UserName;
+        };
+        // quick filter - filter globally across multiple columns with the same input
+        private Func<UserRoleViewModel, bool> _quickFilter => x =>
+        {
+            if (string.IsNullOrWhiteSpace(_searchString))
+                return true;
+
+            
+            if (x.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
+        };
 }
