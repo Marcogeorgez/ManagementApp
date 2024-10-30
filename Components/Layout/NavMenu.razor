@@ -4,46 +4,49 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inherits LayoutComponentBase
 
+
+@* Main Top Bar *@
 <MudAppBar Elevation="1">
+
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudHidden Breakpoint="Breakpoint.SmAndDown">
-            <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="mr-3" />
+        <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="fit-image" />
         </MudHidden>
-        <MudText Typo="Typo.h5" Class="ml-3">Luminary Visuals</MudText>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        <MudImage Src="/Logo.png" Alt="Logo" Height="25" Class="fit-image" />
+        </MudHidden>
+        <MudText Typo="Typo.h5">Luminary Visuals</MudText>
         <MudSpacer />
+        <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool"/>
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
-    </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+</MudAppBar>
+
+<MudDrawer  @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         @*NavMenu*@
-    <MudNavMenu>
-
-        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-        <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security">Auth Required</MudNavLink>
-        <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Lock">Admin Dashboard</MudNavLink>
-
-
-    <AuthorizeView>
-        <Authorized>
-                <MudListSubheader>
-                    Account Information
-                </MudListSubheader>
-            <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.Person">
-                @context.User.Identity?.Name
-            </MudNavLink>
-            <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
-                Logout
-            </MudNavLink>
-
-        </Authorized>
-        <NotAuthorized>
-            <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
-            <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
-        </NotAuthorized>
-    </AuthorizeView>
-    </MudNavMenu>
-
-
-    </MudDrawer>
+    <MudPaper Class="responsive-paper d-inline-flex py-3" Elevation="0">
+        <MudNavMenu Class="mud-width-full">
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+            <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security">Auth Required</MudNavLink>
+            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard">Admin Dashboard</MudNavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <MudNavGroup Title="Settings" Icon="fas fa-cogs" Expanded="true">
+                        <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Success">Users</MudNavLink>
+                        <MudNavLink Href="/security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Info">Security</MudNavLink>
+                    </MudNavGroup>
+                    <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
+                        Logout
+                    </MudNavLink>
+                </Authorized>
+                <NotAuthorized>
+                    <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+                    <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </MudNavMenu>
+    </MudPaper>
+</MudDrawer>
 
 
 @code {
@@ -58,6 +61,28 @@
         // Implement your logout logic here
         NavigationManager.NavigateTo("Account/Logout", true);
     }
+    MudTheme _theme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = Colors.Blue.Default,
+                Secondary = Colors.Green.Accent4,
+                AppbarBackground = Colors.Blue.Accent3,
+            },
+            Typography = new Typography()
+            {
+                Default = new Default()
+                {
+                    FontFamily = new[] { "Chokokutai", "Inter", "sans-serif" },
+                    FontWeight = 400  // Try different weights: 300, 400, 500, etc.
+                },
+            },
+            LayoutProperties = new LayoutProperties()
+            {
+                DrawerWidthLeft = "175px",
+            }
+        };
+    private bool _isDarkMode;
 }
 
 
