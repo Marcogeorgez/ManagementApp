@@ -6,9 +6,9 @@
 @* @attribute [Authorize(Roles = "Admin")] *@
 @inject UserManagementService UserManagementService
 @inject ILogger<AdminDashboard> Logger
+@inject HttpClient httpClient
 @inject RoleManager<IdentityRole> RoleManager
 <PageTitle>Admin Dashboard</PageTitle>
-
 <div class="container mt-4">
     <h1 class="mb-4">Role Management</h1>
 

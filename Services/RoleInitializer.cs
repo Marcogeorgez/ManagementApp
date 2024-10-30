@@ -21,7 +21,6 @@ public class RoleInitializer
         }
         catch (Exception ex)
         {
-            // Log the error 
             var logger = serviceProvider.GetService<ILogger<RoleInitializer>>();
             logger?.LogError($"Error initializing roles: {ex.Message}");
         }
