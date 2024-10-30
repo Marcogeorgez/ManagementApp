@@ -120,13 +120,14 @@
         }
     }
 
-     async Task<List<string>> GetAvailableRoles()
+    // Getting all roles from Asp Net Roles from db
+     async Task<List<string?>> GetAvailableRoles()
     {
-        // Use ToListAsync() if your roles are in a DbSet
         var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
         return roles;
     }
 
+    // To Change users roles logic
     public async Task ChangeUserRole(UserRoleViewModel user)
     {
         try
