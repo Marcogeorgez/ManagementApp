@@ -5,45 +5,47 @@
 @inherits LayoutComponentBase
 
 @* Main Top Bar *@
-<MudAppBar Elevation="1">
+<MudAppBar Elevation="0" Dense="true">
 
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
-        <MudHidden Breakpoint="Breakpoint.SmAndDown">
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="fit-image" />
-        </MudHidden>
-        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+     </MudHidden>
+     <MudHidden Breakpoint="Breakpoint.MdAndUp">
         <MudImage Src="/Logo.png" Alt="Logo" Height="25" Class="fit-image" />
-        </MudHidden>
-        <MudText Typo="Typo.h5">Luminary Visuals</MudText>
-        <MudSpacer />
-        <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
-        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool"/>
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+    </MudHidden>
+    <MudText Typo="Typo.h5">Luminary Visuals</MudText>
+    <MudSpacer />
+    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+    <MudButton Color="Color.Warning" OnClick="ToggleTheme">
+        <MudIcon Icon="@CurrentIcon" />
+    </MudButton>
 
-    <MudDrawer Class="" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" OpenMiniOnHover="true" >
-        @*NavMenu*@
-            <MudNavMenu Class="mud-width-full ">
-            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-            <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security">Auth Required</MudNavLink>
-            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard">Admin Dashboard</MudNavLink>
+</MudAppBar>
+
+<MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="1" OpenMiniOnHover="true" >
+    @*Side Bar*@
+        <MudNavMenu Class="mud-width-full ">
+        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
+        <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Auth Required</MudNavLink>
+        <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
             <AuthorizeView>
                 <Authorized>
                     <MudNavGroup Title="Settings" Icon="fas fa-cogs" Expanded="true">
-                        <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Success">Users</MudNavLink>
-                        <MudNavLink Href="/security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Info">Security</MudNavLink>
+                        <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
+                        <MudNavLink Href="/security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Security</MudNavLink>
                     </MudNavGroup>
                     <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
                         Logout
                     </MudNavLink>
                 </Authorized>
                 <NotAuthorized>
-                    <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
-                    <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+                    <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">Register</MudNavLink>
+                    <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudNavLink>
                 </NotAuthorized>
             </AuthorizeView>
         </MudNavMenu>
 </MudDrawer>
-</MudAppBar>
 
 
 @code {
@@ -64,18 +66,17 @@
             {
                 Primary = Colors.Blue.Darken1,
                 Secondary = Colors.Green.Accent4,
-                AppbarBackground = Colors.Blue.Darken1,
-                DrawerBackground = Colors.Gray.Lighten3, // Add this line to match AppbarBackground
-                DrawerText = Colors.Gray.Darken3
-                  
-                
+                AppbarBackground = Colors.Blue.Accent1,
+                DrawerBackground = Colors.Blue.Accent1, 
+                DrawerText = Colors.Red.Default
             },
+            
             Typography = new Typography()
             {
                 Default = new Default()
                 {
-                    FontFamily = new[] { "Chokokutai", "Inter", "sans-serif" },
-                    FontWeight = 400  // Try different weights: 300, 400, 500, etc.
+                    FontFamily = new[] {"Inter", "sans-serif" },
+                    FontWeight = 400  
                 },
             },
             LayoutProperties = new LayoutProperties()
@@ -84,6 +85,12 @@
             }
         };
     private bool _isDarkMode;
+    private string CurrentIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
+    private async Task ToggleTheme()
+    {
+        _isDarkMode = !_isDarkMode;
+        
+    }
 }
 
 

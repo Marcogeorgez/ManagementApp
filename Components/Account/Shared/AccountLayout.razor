@@ -2,7 +2,7 @@
 @layout LuminaryVisuals.Components.Layout.MainLayout
 @inject NavigationManager NavigationManager
 
-@if (HttpContext is null)
+@if (HttpContext is null && !IsInteractive)
 {
     <p>Loading...</p>
 }
@@ -15,13 +15,13 @@ else
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
+    private bool IsInteractive => HttpContext != null;
+
     protected override void OnParametersSet()
     {
-        if (HttpContext is null)
+        if (HttpContext is null && !IsInteractive)
         {
-            // If this code runs, we're currently rendering in interactive mode, so there is no HttpContext.
-            // The identity pages need to set cookies, so they require an HttpContext. To achieve this we
-            // must transition back from interactive mode to a server-rendered page.
+            // Only refresh if HttpContext is null in server rendering mode
             NavigationManager.Refresh(forceReload: true);
         }
     }
