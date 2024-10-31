@@ -15,6 +15,7 @@
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" rel="stylesheet">
     <HeadOutlet @rendermode="RenderModeForPage" />
+    <PageTitle>Luminary Visuals Management</PageTitle>
 </head>
 
 <body>
@@ -29,5 +30,8 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account") ? null : RenderMode.InteractiveServer;
+    private IComponentRenderMode? RenderModeForPage =>
+        HttpContext.Request.Path.StartsWithSegments("/Account")
+            ? null
+            : RenderMode.InteractiveServer;
 }

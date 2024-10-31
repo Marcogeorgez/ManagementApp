@@ -1,16 +1,18 @@
 ﻿@inherits LayoutComponentBase
 
 <MudThemeProvider />
-<MudPopoverProvider/>
-<MudDialogProvider/>
-<MudSnackbarProvider/>
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-<MudLayout>
-    <MudAppBar>
-        My Application
-    </MudAppBar>
-    <NavMenu />
-    <MudMainContent>
-        @Body
-    </MudMainContent>
-</MudLayout>
+<CascadingValue Value="_drawerOpen">
+    <MudLayout >
+        <NavMenu @rendermode="InteractiveServer" />
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </MudLayout>
+</CascadingValue>
+@code {
+    private bool _drawerOpen = true; // Default state
+}
