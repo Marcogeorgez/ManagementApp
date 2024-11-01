@@ -39,9 +39,10 @@ else
         </MudAlert>
     }
 
+
     <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
-                 ColumnResizeMode="ResizeMode.Column">
+                 ColumnResizeMode="ResizeMode.Column" DragIndicatorSize="Size.Small">
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
             <MudSpacer />
@@ -59,7 +60,7 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.UserName" Title="User Name">
+            <PropertyColumn Style="max-width: 150px" Property="x => x.UserName" Title="User Name">
                 <CellTemplate>
                     @context.Item.UserName
                 </CellTemplate>
@@ -70,7 +71,7 @@ else
                 <CellTemplate>
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
                              Variant="Variant.Outlined"
-                             Color="Color.Primary"
+                             Color="Color.Secondary"
                              Dense="true"
                              Disabled="@(_isUpdating && _updatingUserId == context.Item.UserId)">
                         <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Admin"))">Admin</MudMenuItem>
@@ -142,15 +143,22 @@ else
             {
                 return;
             }
-
-            _isUpdating = true;
-            _updatingUserId = user.UserId;
-            StateHasChanged();
-
             if (newRole == "Admin")
             {
-                DialogService.Show<ConfirmationDialog>("Confirmation");
+                var parameters = new DialogParameters
+                {
+                    { "Message" , $"Are you sure you want to change {user.UserName} role to Admin?"}
+                };
+                var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+                var toProceed = await dialog.Result;
+
+                if (!toProceed.Canceled && !(bool)toProceed.Data)
+                {
+                    return;
+                }
             }
+            _isUpdating = true;
+            _updatingUserId = user.UserId;
             var result = await UserManagementService.ChangeUserRoleAsync(user.UserId, newRole);
 
             if (result)
