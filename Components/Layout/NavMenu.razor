@@ -7,7 +7,7 @@
 @* Main Top Bar *@
 <MudAppBar Elevation="0" Dense="true">
 
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
+    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="fit-image" />
      </MudHidden>
@@ -17,7 +17,7 @@
     <MudText Typo="Typo.h5">Luminary Visuals</MudText>
     <MudSpacer />
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
-    <MudButton Color="Color.Warning" OnClick="ToggleTheme">
+    <MudButton Color="Color.Primary" OnClick="ToggleTheme">
         <MudIcon Icon="@ColorThemeIcon" />
     </MudButton>
 
@@ -68,7 +68,7 @@
         {
             PaletteLight = new PaletteLight()
             {
-                Primary = Colors.Shades.White,
+                Primary = Colors.BlueGray.Darken3,
                 Secondary = Colors.Green.Accent4,
                 AppbarBackground = Colors.Blue.Accent1,
                 DrawerBackground = Colors.Blue.Accent1, 
