@@ -39,7 +39,7 @@ else
         </MudAlert>
     }
 
-    <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@Elements" SortMode="SortMode.Multiple"
+    <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
                  ColumnResizeMode="ResizeMode.Column">
         <ToolBarContent>
@@ -54,7 +54,7 @@ else
             <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false">
                 <CellTemplate Context="cell">
                     @{
-                        var index = Elements.ToList().IndexOf(cell.Item) + 1;
+                        var index = AllUsers.ToList().IndexOf(cell.Item) + 1;
                         @index
                     }
                 </CellTemplate>
@@ -100,7 +100,7 @@ else
     private string _updateMessageClass;
     private bool _isUpdating;
     private string _updatingUserId;
-    private IEnumerable<UserRoleViewModel> Elements = new List<UserRoleViewModel>();
+    private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
     private string _searchString;
     private bool _sortNameByLength;
 
@@ -109,8 +109,8 @@ else
         try
         {
             _availableRoles = await GetAvailableRoles();
-            Elements = await UserManagementService.GetAllUsersWithRolesAsync();
-            _users = Elements.ToList();
+            AllUsers = await UserManagementService.GetAllUsersWithRolesAsync();
+            _users = AllUsers.ToList();
             _loading = false;
 
 
@@ -161,7 +161,7 @@ else
                 _updateMessageClass = "alert-success";
                 Logger.LogInformation($"Successfully updated role for user {user.UserName} to {newRole}");
 
-                var elementUser = Elements.First(u => u.UserId == user.UserId);
+                var elementUser = AllUsers.First(u => u.UserId == user.UserId);
                 elementUser.Roles = new List<string> { newRole };
             }
             else

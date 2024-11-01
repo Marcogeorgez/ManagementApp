@@ -36,7 +36,6 @@
                     <Authorized>
                         <MudNavGroup Title="Settings" Icon="fas fa-cogs" Expanded="true">
                             <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
-                            <MudNavLink Href="/security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Security</MudNavLink>
                         </MudNavGroup>
                 <MudDivider />
                         <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
@@ -63,7 +62,8 @@
     }
     private async Task LogoutClick()
     {
-        NavigationManager.NavigateTo("Account/Logout", true);
+        await SignInManager.SignOutAsync(); // This will use the CustomSignInManager
+        NavigationManager.NavigateTo("/account/logout", true); // Adjust as necessary
     }
     MudTheme _theme = new MudTheme()
         {
@@ -96,10 +96,3 @@
         _isDarkMode = !_isDarkMode;
     }
 }
-
-
-
-
-
-
-
