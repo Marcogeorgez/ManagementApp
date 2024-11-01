@@ -18,7 +18,7 @@
     <MudSpacer />
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
     <MudButton Color="Color.Warning" OnClick="ToggleTheme">
-        <MudIcon Icon="@CurrentIcon" />
+        <MudIcon Icon="@ColorThemeIcon" />
     </MudButton>
 
 </MudAppBar>
@@ -68,11 +68,12 @@
         {
             PaletteLight = new PaletteLight()
             {
-                Primary = Colors.Blue.Darken1,
+                Primary = Colors.Shades.White,
                 Secondary = Colors.Green.Accent4,
                 AppbarBackground = Colors.Blue.Accent1,
                 DrawerBackground = Colors.Blue.Accent1, 
-                DrawerText = Colors.Red.Default
+                DrawerText = Colors.Shades.Black,
+
             },
             
             Typography = new Typography()
@@ -88,14 +89,15 @@
                 DrawerWidthLeft = "175px",
             }
         };
+
     private bool _isDarkMode;
-    private string CurrentIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
+    private string ColorThemeIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
+    private string? currentUrl;
+
     private void ToggleTheme()
     {
         _isDarkMode = !_isDarkMode;
     }
-    private string? currentUrl;
-
     protected override void OnInitialized()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
