@@ -85,6 +85,13 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
+            <TemplateColumn Title="Private Notes">
+                <CellTemplate>
+                <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Text="@sampleText" Lines="2"
+                ValueChanged="@(text => OnTextChanged(text,context))"/>
+                </CellTemplate>
+            </TemplateColumn>
+
         </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
@@ -95,16 +102,19 @@ else
 @code {
     private bool _loading = true;
     private bool _error = false;
+    private bool _sortNameByLength;
+    private bool _isUpdating;
     private string _updateMessage;
     private string _updateMessageClass;
-    private bool _isUpdating;
     private string _updatingUserId;
     private string _searchString;
-    private bool _sortNameByLength;
+    private System.Timers.Timer _timer;
+    private const double Delay = 2000; // 2 Second Delay
     private List<string> _availableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
 
+    string sampleText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     protected override async Task OnInitializedAsync()
     {
         try
@@ -114,6 +124,9 @@ else
             _users = AllUsers.ToList();
             _loading = false;
 
+            _timer = new System.Timers.Timer(Delay);
+            _timer.Elapsed += OnTimedEvent;
+            _timer.AutoReset = false; // to prevent timer from restarting automatically
 
         }
         catch (Exception ex)
@@ -122,6 +135,11 @@ else
             _error = true;
             _loading = false;
         }
+    }
+
+    private void OnTimedEvent(object sender, ElapsedEventsArgs e)
+    {
+        SaveNotes();
     }
 
     private async Task<List<string>> GetAvailableRoles()
