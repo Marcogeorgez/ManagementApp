@@ -279,6 +279,40 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("Projects", (string)null);
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.ToTable("UserNote");
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.VideoEditor", b =>
                 {
                     b.Property<int>("VideoEditorId")
@@ -533,6 +567,29 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserNote", b =>
+                {
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", null)
+                        .WithMany("CreatedNotes")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "TargetUser")
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("TargetUser");
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.VideoEditor", b =>
                 {
                     b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
@@ -625,6 +682,8 @@ namespace LuminaryVisuals.Migrations
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("Chats");
+
+                    b.Navigation("CreatedNotes");
 
                     b.Navigation("EditorPayments");
 

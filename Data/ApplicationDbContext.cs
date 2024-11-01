@@ -1,6 +1,7 @@
 using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 using Project = LuminaryVisuals.Data.Entities.Project;
 
 namespace LuminaryVisuals.Data
@@ -15,6 +16,7 @@ namespace LuminaryVisuals.Data
         public DbSet<ClientPayment> Payments { get; set; }
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
+        public DbSet<UserNote> UserNote { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -129,6 +131,22 @@ namespace LuminaryVisuals.Data
                 entity.Property(c => c.IsEditorMessage)
                       .IsRequired();
             });
+
+            // Configure User Notes 
+            builder.Entity<UserNote>(entity =>
+            {
+                entity.HasOne(un => un.TargetUser)
+                      .WithMany()
+                      .HasForeignKey(un => un.TargetUserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(un => un.CreatedByUser)
+                      .WithMany()
+                      .HasForeignKey(un => un.CreatedByUserId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+            });
+
         }
     }
 

@@ -291,6 +291,39 @@ namespace LuminaryVisuals.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserNote",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TargetUserId = table.Column<string>(type: "character varying(255)", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "character varying(255)", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: false),
+                    ApplicationUserId = table.Column<string>(type: "character varying(255)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserNote", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserNote_Users_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserNote_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_UserNote_Users_TargetUserId",
+                        column: x => x.TargetUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "VideoEditors",
                 columns: table => new
                 {
@@ -409,6 +442,21 @@ namespace LuminaryVisuals.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserNote_ApplicationUserId",
+                table: "UserNote",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserNote_CreatedByUserId",
+                table: "UserNote",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserNote_TargetUserId",
+                table: "UserNote",
+                column: "TargetUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 table: "Users",
                 column: "NormalizedEmail");
@@ -475,6 +523,9 @@ namespace LuminaryVisuals.Migrations
 
             migrationBuilder.DropTable(
                 name: "EditorPayments");
+
+            migrationBuilder.DropTable(
+                name: "UserNote");
 
             migrationBuilder.DropTable(
                 name: "VideoEditors");
