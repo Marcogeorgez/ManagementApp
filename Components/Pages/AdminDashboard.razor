@@ -5,59 +5,94 @@
 @using Microsoft.EntityFrameworkCore
 @* @attribute [Authorize(Roles = "Admin")] *@
 @inject UserManagementService UserManagementService
-@inject ILogger<AdminDashboard> Logger
 @inject HttpClient httpClient
 @inject RoleManager<IdentityRole> RoleManager
+
+@inject ILogger<AdminDashboard> Logger
+@inject IDialogService DialogService
+
+
 <PageTitle>Admin Dashboard</PageTitle>
-    @if (_loading)
+
+@if (_loading)
+{
+    <MudText Typo="Typo.h5">Admin Dashboard</MudText>
+    <MudSpacer />
+    <LoadingComponent />
+}
+else if (_error)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Filled" >
+        An error occurred while loading users.
+    </MudAlert>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(_updateMessage))
     {
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    }
-    else if (_error)
-    {
-        <div class="alert alert-danger" role="alert">
-            An error occurred while loading users.
-        </div>
-    }
-    else
-    {
-        @if (!string.IsNullOrEmpty(_updateMessage))
-        {
-            <div class="alert @_updateMessageClass alert-dismissible fade show" role="alert">
-                @_updateMessage
-                <button type="button" class="btn btn-primary" @onclick="() => _updateMessage = null"></button>
-            </div>
-        }
-    <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@Elements" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@_quickFilter" ColumnResizeMode="ResizeMode.Column">
-        <ToolBarContent>
-                <MudText Typo="Typo.h6">Admin Dashboard</MudText>
-                <MudSpacer />
-                <MudTextField @bind-Value="_searchString" Placeholder="Search username" Adornment="Adornment.Start" Immediate="true"
-                 AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-            </ToolBarContent>
-                <Columns>
-            <SelectColumn T="UserRoleViewModel" />
-        <PropertyColumn Property="x => x.UserName" SortBy="@_sortBy" />
-        <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role"  />
-            <PropertyColumn Property="x => x.SelectedRole" Title="Selected Role" style="max-width: 100px; overflow-x: hidden;" />
-            <TemplateColumn CellClass="d-flex justify-end">
-                <CellTemplate>
-                        <MudButton Size="@Size.Small" Variant="@Variant.Outlined" Color="@Color.Primary">Change Role</MudButton>
-                </CellTemplate>
-            </TemplateColumn>
-    </Columns>
-        <PagerContent>
-            <MudDataGridPager T="UserRoleViewModel" />
-    </PagerContent>
-    </MudDataGrid>
+        <MudAlert Severity="@(_updateMessageClass == "alert-success" ? Severity.Success : Severity.Error)"
+                  Variant="Variant.Filled"
+                  ShowCloseIcon="true"
+                  CloseIconClicked="@(() => {_updateMessage = null;})"
+                  OnClick="@(() => { _updateMessage = null; })">
+            @_updateMessage
+        </MudAlert>
     }
 
+    <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@Elements" SortMode="SortMode.Multiple"
+                 FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
+                 ColumnResizeMode="ResizeMode.Column">
+        <ToolBarContent>
+            <MudText Typo="Typo.h5">Admin Dashboard</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
+                          Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                          Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <Columns>
+            <SelectColumn T="UserRoleViewModel" />
+            <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false">
+                <CellTemplate Context="cell">
+                    @{
+                        var index = Elements.ToList().IndexOf(cell.Item) + 1;
+                        @index
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.UserName" Title="User Name">
+                <CellTemplate>
+                    @context.Item.UserName
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" />
+
+            <TemplateColumn Title="Change Role" Style="max-width: 150px; overflow-x: hidden;">
+                <CellTemplate>
+                    <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
+                             Variant="Variant.Outlined"
+                             Color="Color.Primary"
+                             Dense="true"
+                             Disabled="@(_isUpdating && _updatingUserId == context.Item.UserId)">
+                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Admin"))">Admin</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Editor"))">Editor</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Client"))">Client</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Guest"))">Guest</MudMenuItem>
+                    </MudMenu>
+                    @if (_isUpdating && _updatingUserId == context.Item.UserId)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="ms-3" />
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="UserRoleViewModel" />
+        </PagerContent>
+    </MudDataGrid>
+}
+
 @code {
-    private List<UserRoleViewModel> _users = new();
+    private List<UserRoleViewModel> _users;
     private bool _loading = true;
     private bool _error = false;
     private List<string> _availableRoles = new();
@@ -65,25 +100,20 @@
     private string _updateMessageClass;
     private bool _isUpdating;
     private string _updatingUserId;
+    private IEnumerable<UserRoleViewModel> Elements = new List<UserRoleViewModel>();
+    private string _searchString;
+    private bool _sortNameByLength;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Get all roles from RoleManager
             _availableRoles = await GetAvailableRoles();
-
-            // Get all users with their roles
             Elements = await UserManagementService.GetAllUsersWithRolesAsync();
-            Console.WriteLine(Elements);
-            _users = await UserManagementService.GetAllUsersWithRolesAsync();
+            _users = Elements.ToList();
             _loading = false;
 
-            // Ensure SelectedRole is initialized to null or empty for each user
-            foreach (var user in _users)
-            {
-                user.SelectedRole = null; // or string.Empty
-            }
+
         }
         catch (Exception ex)
         {
@@ -93,46 +123,46 @@
         }
     }
 
-    // Getting all roles from Asp Net Roles from db
-     async Task<List<string?>> GetAvailableRoles()
+    private async Task<List<string>> GetAvailableRoles()
     {
         var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
-        return roles;
-    }
-    private string GetRolesAsString(UserRoleViewModel user)
-    {
-        return string.Join(", ", user.Roles);
+        return roles.Where(r => r != null).ToList();
     }
 
-    // To Change users roles logic
-    public async Task ChangeUserRole(UserRoleViewModel user)
+    private string GetRolesAsString(UserRoleViewModel user)
+    {
+        return string.Join(", ", user.Roles ?? new List<string>());
+    }
+
+    private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
         try
         {
-            if (string.IsNullOrEmpty(user.SelectedRole))
+            if (string.IsNullOrEmpty(newRole))
             {
-                return; // Prevent further processing if no role is selected
+                return;
             }
 
             _isUpdating = true;
             _updatingUserId = user.UserId;
-            StateHasChanged(); // Trigger re-render for UI updates
+            StateHasChanged();
 
-            var result = await UserManagementService.ChangeUserRoleAsync(user.UserId, user.SelectedRole);
+            if (newRole == "Admin")
+            {
+                DialogService.Show<ConfirmationDialog>("Confirmation");
+            }
+            var result = await UserManagementService.ChangeUserRoleAsync(user.UserId, newRole);
 
             if (result)
             {
-                // Update the local user roles list
                 var updatedUser = _users.First(u => u.UserId == user.UserId);
-                updatedUser.Roles = new List<string> { user.SelectedRole };
-
-                _updateMessage = $"Successfully updated role for {user.UserName} to {user.SelectedRole}";
+                updatedUser.Roles = new List<string> { newRole };
+                _updateMessage = $"Successfully updated role for {user.UserName} to {newRole}";
                 _updateMessageClass = "alert-success";
+                Logger.LogInformation($"Successfully updated role for user {user.UserName} to {newRole}");
 
-                Logger.LogInformation($"Successfully updated role for user {user.UserName} to {user.SelectedRole}");
-
-                // Clear the selection after successful update
-                user.SelectedRole = string.Empty; // Resetting selected role
+                var elementUser = Elements.First(u => u.UserId == user.UserId);
+                elementUser.Roles = new List<string> { newRole };
             }
             else
             {
@@ -149,34 +179,9 @@
         }
         finally
         {
-            _isUpdating = false; // Reset updating state
+            _isUpdating = false;
             _updatingUserId = null;
-            StateHasChanged(); // Trigger re-render to update UI
+            StateHasChanged();
         }
     }
-
-        private IEnumerable<UserRoleViewModel> Elements = new List<UserRoleViewModel>();
-        private string _searchString;
-        private bool _sortNameByLength;
-        private List<string> _events = new();
-        // custom sort by name length
-        private Func<UserRoleViewModel, object> _sortBy => x =>
-        {
-            if (_sortNameByLength)
-                return x.UserName.Length;
-            else
-                return x.UserName;
-        };
-        // quick filter - filter globally across multiple columns with the same input
-        private Func<UserRoleViewModel, bool> _quickFilter => x =>
-        {
-            if (string.IsNullOrWhiteSpace(_searchString))
-                return true;
-
-            
-            if (x.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            return false;
-        };
 }
