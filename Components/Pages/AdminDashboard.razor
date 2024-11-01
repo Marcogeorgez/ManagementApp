@@ -92,17 +92,17 @@ else
 }
 
 @code {
-    private List<UserRoleViewModel> _users;
     private bool _loading = true;
     private bool _error = false;
-    private List<string> _availableRoles = new();
     private string _updateMessage;
     private string _updateMessageClass;
     private bool _isUpdating;
     private string _updatingUserId;
-    private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
     private string _searchString;
     private bool _sortNameByLength;
+    private List<string> _availableRoles = new();
+    private List<UserRoleViewModel> _users;
+    private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
 
     protected override async Task OnInitializedAsync()
     {
