@@ -1,19 +1,22 @@
 ﻿<MudDialog>
     <DialogContent>
-        Are you sure you want to change this user to admin ?
+        <MudText Typo="Typo.h6">
+        @Message 
+        </MudText>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error" OnClick="Cancel">No</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Yes</MudButton>
+        <MudButton Color="Color.Success" OnClick="Submit">Yes</MudButton>
     </DialogActions>
 </MudDialog>
     
 @code {
     [CascadingParameter]
     private MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string Message { get; set; }
 
     private void Submit() => MudDialog.Close(DialogResult.Ok(true));
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => MudDialog.Close(DialogResult.Ok(false));
 }
 
