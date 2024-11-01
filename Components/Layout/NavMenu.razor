@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inherits LayoutComponentBase
-
+@inject IJSRuntime JSRuntime
 @* Main Top Bar *@
 <MudAppBar Elevation="0" Dense="true">
 
@@ -34,13 +34,17 @@
         <MudDivider />
                 <AuthorizeView>
                     <Authorized>
-                        <MudNavGroup Title="Settings" Icon="fas fa-cogs" Expanded="true">
+                        <MudNavGroup Title="Settings" Icon="fas fa-cogs" IconColor="Color.Primary" Expanded="true">
                             <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
                         </MudNavGroup>
                 <MudDivider />
-                        <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
-                            Logout
-                        </MudNavLink>
+                    <MudNavLink Class="" OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Primary">
+                        Logout
+                    </MudNavLink>
+                    <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                    </form>
                     </Authorized>
                     <NotAuthorized>
                         <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">Register</MudNavLink>
@@ -59,11 +63,6 @@
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
-    }
-    private async Task LogoutClick()
-    {
-        await SignInManager.SignOutAsync(); // This will use the CustomSignInManager
-        NavigationManager.NavigateTo("/account/logout", true); // Adjust as necessary
     }
     MudTheme _theme = new MudTheme()
         {
@@ -95,4 +94,22 @@
     {
         _isDarkMode = !_isDarkMode;
     }
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+    private async Task LogoutClick()
+    {
+        await JSRuntime.InvokeVoidAsync("submitForm", "logoutForm");
+    }
 }
+
