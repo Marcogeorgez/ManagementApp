@@ -26,24 +26,30 @@
 <MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="1" OpenMiniOnHover="true" >
     @*Side Bar*@
         <MudNavMenu Class="mud-width-full ">
-        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
-        <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Auth Required</MudNavLink>
-        <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
-            <AuthorizeView>
-                <Authorized>
-                    <MudNavGroup Title="Settings" Icon="fas fa-cogs" Expanded="true">
-                        <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
-                        <MudNavLink Href="/security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Security</MudNavLink>
-                    </MudNavGroup>
-                    <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
-                        Logout
-                    </MudNavLink>
-                </Authorized>
-                <NotAuthorized>
-                    <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">Register</MudNavLink>
-                    <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudNavLink>
-                </NotAuthorized>
-            </AuthorizeView>
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
+        <MudDivider />
+            <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Auth Required</MudNavLink>
+        <MudDivider />
+            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
+        <MudDivider />
+                <AuthorizeView>
+                    <Authorized>
+                        <MudNavGroup Title="Settings" Icon="fas fa-cogs" Expanded="true">
+                            <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
+                            <MudNavLink Href="/security" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Security</MudNavLink>
+                        </MudNavGroup>
+                <MudDivider />
+                        <MudNavLink OnClick="@(() => LogoutClick())" Icon="@Icons.Material.Filled.ExitToApp">
+                            Logout
+                        </MudNavLink>
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">Register</MudNavLink>
+                <MudDivider />
+                        <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudNavLink>
+                <MudDivider />
+                    </NotAuthorized>
+                </AuthorizeView>
         </MudNavMenu>
 </MudDrawer>
 
@@ -57,7 +63,6 @@
     }
     private async Task LogoutClick()
     {
-        // Implement your logout logic here
         NavigationManager.NavigateTo("Account/Logout", true);
     }
     MudTheme _theme = new MudTheme()
@@ -86,10 +91,9 @@
         };
     private bool _isDarkMode;
     private string CurrentIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
-    private async Task ToggleTheme()
+    private void ToggleTheme()
     {
         _isDarkMode = !_isDarkMode;
-        
     }
 }
 
