@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Components\Pages\Accomplished.md" />
     <None Remove="Components\Pages\Accomplished.txt" />
   </ItemGroup>
 
