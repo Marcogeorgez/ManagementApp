@@ -71,7 +71,7 @@ else
                 <CellTemplate>
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
                              Variant="Variant.Outlined"
-                             Color="Color.Secondary"
+                             Color="Color.Success"
                              Dense="true"
                              Disabled="@(_isUpdating && _updatingUserId == context.Item.UserId)">
                         <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Admin"))">Admin</MudMenuItem>

@@ -4,26 +4,32 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inherits LayoutComponentBase
 @inject IJSRuntime JSRuntime
-@* Main Top Bar *@
-<MudAppBar Elevation="0" Dense="true">
 
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
+
+
+@* Main Top Bar *@
+<MudAppBar Elevation="2" Dense="true">
+
+    <MudIconButton Class="pl-n10" Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
+
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudImage Src="/Logo.png" Alt="Logo" Height="30" Class="fit-image" />
+        <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image mb-2" />
+        <MudText Typo="Typo.h5" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
      </MudHidden>
+
      <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        <MudImage Src="/Logo.png" Alt="Logo" Height="25" Class="fit-image" />
+        <MudImage Src="@logoSrc" Alt="Logo" Height="25" Class="fit-image mb-1" />
+        <MudText Typo="Typo.h6" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
     </MudHidden>
-    <MudText Typo="Typo.h5">Luminary Visuals</MudText>
     <MudSpacer />
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
     <MudButton Color="Color.Primary" OnClick="ToggleTheme">
         <MudIcon Icon="@ColorThemeIcon" />
     </MudButton>
-
 </MudAppBar>
 
-<MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="1" OpenMiniOnHover="true" >
+
+<MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="2" OpenMiniOnHover="true" >
     @*Side Bar*@
         <MudNavMenu Class="mud-width-full ">
             <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
@@ -75,7 +81,11 @@
                 DrawerText = Colors.Shades.Black,
 
             },
-            
+            PaletteDark = new PaletteDark()
+            {
+                Primary = Colors.Blue.Darken3,
+            },
+
             Typography = new Typography()
             {
                 Default = new Default()
@@ -91,12 +101,14 @@
         };
 
     private bool _isDarkMode;
+    private string logoSrc => _isDarkMode ? "/Logo.png" : "/LogoDark.png";
     private string ColorThemeIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
     private string? currentUrl;
 
     private void ToggleTheme()
     {
         _isDarkMode = !_isDarkMode;
+
     }
     protected override void OnInitialized()
     {
