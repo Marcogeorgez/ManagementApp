@@ -1,4 +1,5 @@
-﻿using LuminaryVisuals.Data.Entities;
+﻿using LuminaryVisuals.Data;
+using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +9,13 @@ public class UserManagementService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<UserManagementService> _logger;
-
+    private readonly ApplicationDbContext _context;
     public UserManagementService(
         UserManager<ApplicationUser> userManager,
+        ApplicationDbContext context,
         ILogger<UserManagementService> logger)
     {
+        _context = context;
         _userManager = userManager;
         _logger = logger;
     }
@@ -28,11 +31,15 @@ public class UserManagementService
             var roles = await _userManager.GetRolesAsync(user);
             _logger.LogInformation($"User {user.UserName} has roles: {string.Join(", ", roles)}");
 
+            var notes = await _context.UserNote
+                .Where(n => n.CreatedByUserId == user.Id)
+                .ToListAsync();
             userRoles.Add(new UserRoleViewModel
             {
                 UserId = user.Id,
                 UserName = user.UserName,
-                Roles = roles.ToList()
+                Roles = roles.ToList(),
+                Notes = notes
             });
         }
 
@@ -78,4 +85,6 @@ public class UserRoleViewModel
     public string UserName { get; set; }
     public List<string> Roles { get; set; }
     public string SelectedRole { get; set; }
+    public List<UserNote> Notes { get; set; }
+
 }

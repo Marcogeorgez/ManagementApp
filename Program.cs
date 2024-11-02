@@ -22,6 +22,12 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
+// Custom Implementation of SignInManager to let new users.role Guest by default
+builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
+// Services
+builder.Services.AddScoped<UserManagementService>();
+builder.Services.AddScoped<UserNoteService>();
+
 builder.Services.AddHttpClient();
 // Now add Google Authentication after configuring Identity Cookies
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
@@ -68,11 +74,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Custom Implementation of SignInManager to let new users.role Guest by default
-
-builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
-builder.Services.AddScoped<UserManagementService>();
-
 // Configure security headers and cookie policy
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -99,6 +100,7 @@ builder.Services.AddAntiforgery(options =>
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

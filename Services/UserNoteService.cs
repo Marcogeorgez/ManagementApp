@@ -42,11 +42,16 @@ public class UserNoteService
 
     }
 
-    public async Task<IEnumerable<UserNote>> GetAllNotes(string creatorId)
+    public async Task<IEnumerable<UserNote>> GetSingleNotes(string createdByUserId)
     {
-        return await _context.UserNote.Where(n => n.CreatedByUserId == creatorId).ToListAsync();
+        return await _context.UserNote.Where(n => n.TargetUserId == createdByUserId).ToListAsync();
     }
-
+    public async Task<IEnumerable<UserNote>> GetAllNotes(string createdByUserId)
+    {
+        return await _context.UserNote.Where(n => n.CreatedByUserId == createdByUserId).ToListAsync();
+    }
+/*
+ * not being used since we can just modify it instead of deleting, which is currently useless.
     public async Task<MessageSuccess> DeleteNoteAsync(int noteId)
     {
         var note = await _context.UserNote.FindAsync(noteId);
@@ -61,7 +66,7 @@ public class UserNoteService
         {
             return new MessageSuccess { Success = false, Message = "Note couldn't be created!" };
         }
-    }
+    }*/
 
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
     {
