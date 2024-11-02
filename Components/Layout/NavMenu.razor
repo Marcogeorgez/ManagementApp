@@ -10,8 +10,9 @@
 @* Main Top Bar *@
 <MudAppBar Elevation="2" Dense="true">
 
-    <MudIconButton Class="pl-n10" Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
-
+    <MudTooltip Text="Expand Sidebar">
+    <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"  />
+    </MudTooltip>
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image mb-2" />
         <MudText Typo="Typo.h5" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
@@ -22,28 +23,29 @@
         <MudText Typo="Typo.h6" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
     </MudHidden>
     <MudSpacer />
+    <MudTooltip Text="Change Theme">
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
     <MudButton Color="Color.Primary" OnClick="ToggleTheme">
         <MudIcon Icon="@ColorThemeIcon" />
     </MudButton>
+    </MudTooltip>
+
 </MudAppBar>
 
 
-<MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="2" OpenMiniOnHover="true" >
+<MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="0" OpenMiniOnHover="true" >
     @*Side Bar*@
         <MudNavMenu Class="mud-width-full ">
             <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
-        <MudDivider />
-            <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Auth Required</MudNavLink>
-        <MudDivider />
+        <MudNavLink Href="auth" Icon="@Icons.Material.Filled.Security" IconColor="Color.Primary">Auth Required</MudNavLink>
             <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
-        <MudDivider />
                 <AuthorizeView>
                     <Authorized>
-                        <MudNavGroup Title="Settings" Icon="fas fa-cogs" IconColor="Color.Primary" Expanded="true">
+                <MudDivider />
+
+                        <MudNavGroup Title="Settings" Icon="fas fa-cogs" IconColor="Color.Primary" Expanded="false">
                             <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
                         </MudNavGroup>
-                <MudDivider />
                     <MudNavLink Class="" OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Primary">
                         Logout
                     </MudNavLink>
@@ -53,10 +55,10 @@
                     </form>
                     </Authorized>
                     <NotAuthorized>
+                <MudDivider />
+
                         <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">Register</MudNavLink>
-                <MudDivider />
                         <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudNavLink>
-                <MudDivider />
                     </NotAuthorized>
                 </AuthorizeView>
         </MudNavMenu>

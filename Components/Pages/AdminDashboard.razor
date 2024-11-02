@@ -1,17 +1,23 @@
 ﻿@page "/admin-dashboard"
+@using LuminaryVisuals.Data.Entities
 @using LuminaryVisuals.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@* @attribute [Authorize(Roles = "Admin")] *@
+@using System.Security.Claims
+@using System.Timers
 @inject UserManagementService UserManagementService
 @inject HttpClient httpClient
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject RoleManager<IdentityRole> RoleManager
-
+@inject UserNoteService UserNoteService
+@inject ISnackbar Snackbar
 @inject ILogger<AdminDashboard> Logger
 @inject IDialogService DialogService
 
 
+@* @attribute [Authorize(Policy = "RequireAdminRole")]
+ *@
 <PageTitle>Admin Dashboard</PageTitle>
 
 @if (_loading)
@@ -40,7 +46,7 @@ else
     }
 
 
-    <MudDataGrid T="UserRoleViewModel" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
+    <MudDataGrid T="UserRoleViewModel" Bordered="true" CanCancelEdit="true" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
                  ColumnResizeMode="ResizeMode.Column" DragIndicatorSize="Size.Small">
         <ToolBarContent>
@@ -52,7 +58,7 @@ else
         </ToolBarContent>
         <Columns>
             <SelectColumn T="UserRoleViewModel" />
-            <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false">
+            <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;">
                 <CellTemplate Context="cell">
                     @{
                         var index = AllUsers.ToList().IndexOf(cell.Item) + 1;
@@ -60,14 +66,11 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Style="max-width: 150px" Property="x => x.UserName" Title="User Name">
-                <CellTemplate>
-                    @context.Item.UserName
-                </CellTemplate>
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" Title="User Name">
             </PropertyColumn>
-            <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" />
+            <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" Style="min-width: 150px;" />
 
-            <TemplateColumn Title="Change Role" Style="max-width: 150px; overflow-x: hidden;">
+            <TemplateColumn Title="Change Role" Style="min-width: 150px; overflow-x: hidden;">
                 <CellTemplate>
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
                              Variant="Variant.Outlined"
@@ -85,13 +88,22 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <TemplateColumn Title="Private Notes">
-                <CellTemplate>
-                <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Text="@sampleText" Lines="2"
-                ValueChanged="@(text => OnTextChanged(text,context))"/>
+            <TemplateColumn Title="Private Notes" Style="flex-grow: 1; min-width: 200px;">
+                <CellTemplate >
+                    @* Pre-compute the note value *@
+                    @{
+                        string noteValue = userNotesDict.ContainsKey(context.Item.UserId)
+                        ? userNotesDict[context.Item.UserId]?.Note ?? string.Empty
+                        : string.Empty;  // Default to empty if no note exists
+
+                    }
+
+                    <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="2"
+                                  Value="@noteValue"
+                                  ValueChanged="@(text => OnValueChanged(text, context))"
+                                  Immediate="true" />
                 </CellTemplate>
             </TemplateColumn>
-
         </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
@@ -108,26 +120,40 @@ else
     private string _updateMessageClass;
     private string _updatingUserId;
     private string _searchString;
+    private string creatorId;
+    private string targetId;
+    private string _pendingNoteText;
+
     private System.Timers.Timer _timer;
-    private const double Delay = 2000; // 2 Second Delay
+    private const double Delay = 1000 ; // 1 Second Delay
+    private UserNote userNotes = new();
+    private Dictionary<string, UserNote> userNotesDict = new();
     private List<string> _availableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
 
-    string sampleText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+
+            creatorId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value; // to retrieve user ID
+
+
             _availableRoles = await GetAvailableRoles();
             AllUsers = await UserManagementService.GetAllUsersWithRolesAsync();
             _users = AllUsers.ToList();
-            _loading = false;
 
+            await LoadUserNotes();
+
+
+            _loading = false;
             _timer = new System.Timers.Timer(Delay);
             _timer.Elapsed += OnTimedEvent;
             _timer.AutoReset = false; // to prevent timer from restarting automatically
-
         }
         catch (Exception ex)
         {
@@ -137,10 +163,89 @@ else
         }
     }
 
-    private void OnTimedEvent(object sender, ElapsedEventsArgs e)
+    // Load all user notes
+    private async Task LoadUserNotes()
     {
-        SaveNotes();
+        var notes = await UserNoteService.GetAllNotes(creatorId);
+
+        foreach (var note in notes)
+        {
+            if (!userNotesDict.ContainsKey(note.TargetUserId))
+            {
+                userNotesDict[note.TargetUserId] = note;
+            }
+        }
     }
+
+    // Save notes when user stops writing
+    private void OnTimedEvent(object sender, ElapsedEventArgs e)
+    {
+        _timer.Stop();
+        InvokeAsync(async () => await SaveNotes());
+    }
+
+    private void OnValueChanged(string text, CellContext<UserRoleViewModel> context)
+    {
+        targetId = context.Item.UserId;
+
+        if (!userNotesDict.ContainsKey(targetId))
+        {
+            userNotesDict[targetId] = new UserNote { TargetUserId = targetId };
+        }
+
+        // Update the note text
+        userNotesDict[targetId].Note = text;
+        _pendingNoteText = text;  
+        targetId = context.Item.UserId; // To ensure targetId corresponds to the correct user
+
+        // Reset and start the timer each time the text changes
+        _timer.Stop();
+        _timer.Start(); 
+    }
+    private async Task SaveNotes()
+    {
+        if (userNotesDict.ContainsKey(targetId))
+        {
+            var noteToSave = userNotesDict[targetId];
+
+            // Check if it's a new note or not 
+            if (noteToSave.Id == 0)
+            {
+                // Add the new note
+                var result = await UserNoteService.AddNoteAsync(creatorId, targetId, noteToSave.Note);
+                if (result.Success)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = "Bottom-Right";
+                    Snackbar.Add($"Successfully saved note", Severity.Info);
+                    StateHasChanged();
+                }
+                else
+                {
+                    Console.WriteLine(result.Message);
+                }
+            }
+            else
+            {
+                // Update the existing note
+                var result = await UserNoteService.UpdateNoteAsync(noteToSave.Id, noteToSave.Note);
+                if (result.Success)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                    Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+                    Snackbar.Add($"Successfully saved note", Severity.Info);
+                    StateHasChanged();
+                }
+                else
+                {
+
+                    Console.WriteLine(result.Message);
+                }
+            }
+        }
+    }
+        
 
     private async Task<List<string>> GetAvailableRoles()
     {
@@ -170,7 +275,7 @@ else
                 var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
                 var toProceed = await dialog.Result;
 
-                if (!toProceed.Canceled && !(bool)toProceed.Data)
+                if (toProceed.Canceled || !(bool)toProceed.Data)
                 {
                     return;
                 }
@@ -185,7 +290,6 @@ else
                 updatedUser.Roles = new List<string> { newRole };
                 _updateMessage = $"Successfully updated role for {user.UserName} to {newRole}";
                 _updateMessageClass = "alert-success";
-                Logger.LogInformation($"Successfully updated role for user {user.UserName} to {newRole}");
 
                 var elementUser = AllUsers.First(u => u.UserId == user.UserId);
                 elementUser.Roles = new List<string> { newRole };
