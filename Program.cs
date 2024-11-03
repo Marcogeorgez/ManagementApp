@@ -1,4 +1,3 @@
-using Blazored.Toast.Services;
 using LuminaryVisuals.Components;
 using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
@@ -44,7 +43,13 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     googleOptions.Scope.Add("email");
     googleOptions.Scope.Add("profile");
 })
-.AddCookie(); // Ensure that Cookie is added again after Google
+.AddCookie(options =>
+{
+    options.LoginPath = "/counter";
+    options.LogoutPath = "/Account/Logout"; 
+    options.AccessDeniedPath = "/AccessDenied";
+    options.SlidingExpiration = true; 
+});
 
 // Configure the database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -117,7 +122,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
-app.UseAntiforgery(); 
+app.UseAntiforgery();
 
 app.UseAuthorization();
 
