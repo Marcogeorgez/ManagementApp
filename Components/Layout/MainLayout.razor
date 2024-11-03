@@ -6,9 +6,10 @@
 <MudSnackbarProvider />
 
 <CascadingValue Value="_drawerOpen">
-    <MudLayout Class="fixed" >
+    <MudLayout>
         <NavMenu @rendermode="InteractiveServer" />
-        <MudMainContent>
+        
+        <MudMainContent  Style="height:100vh; overflow: auto;"  >
             @Body
         </MudMainContent>
         <script>
