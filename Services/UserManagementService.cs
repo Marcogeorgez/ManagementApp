@@ -20,7 +20,7 @@ public class UserManagementService
         _logger = logger;
     }
 
-    public async Task<List<UserRoleViewModel>> GetAllUsersWithRolesAsync()
+    public async Task<List<UserRoleViewModel>> GetAllUsersWithRolesAsync(string creatorUserId)
     {
         _logger.LogInformation("Getting all users with roles");
         var users = await _userManager.Users.ToListAsync();
@@ -32,8 +32,9 @@ public class UserManagementService
             _logger.LogInformation($"User {user.UserName} has roles: {string.Join(", ", roles)}");
 
             var notes = await _context.UserNote
-                .Where(n => n.CreatedByUserId == user.Id)
-                .ToListAsync();
+            .Where(n => n.CreatedByUserId == creatorUserId && n.TargetUserId == user.Id)
+            .ToDictionaryAsync(n => n.TargetUserId, n => n);
+
             userRoles.Add(new UserRoleViewModel
             {
                 UserId = user.Id,
@@ -85,6 +86,16 @@ public class UserRoleViewModel
     public string UserName { get; set; }
     public List<string> Roles { get; set; }
     public string SelectedRole { get; set; }
-    public List<UserNote> Notes { get; set; }
+    public Dictionary<string, UserNote> Notes { get; set; }
+    public string GetNoteValue(string targetUserId)
+    {
+        // Check if the targetUserId is null or empty
+        if (string.IsNullOrEmpty(targetUserId))
+        {
+            return string.Empty;
+        }
 
+        // Try to get the note from the dictionary
+        return Notes.TryGetValue(targetUserId, out var note) ? note?.Note ?? string.Empty : string.Empty;
+    }
 }
