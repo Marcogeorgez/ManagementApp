@@ -48,7 +48,7 @@ else
 
     <MudDataGrid T="UserRoleViewModel" Bordered="true" CanCancelEdit="true" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
-                 ColumnResizeMode="ResizeMode.Column" DragIndicatorSize="Size.Small">
+                 ColumnResizeMode="ResizeMode.Container" DragIndicatorSize="Size.Small">
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
             <MudSpacer />
@@ -88,23 +88,22 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <TemplateColumn Title="Private Notes">
-                <CellTemplate >
-                    @* Pre-compute the note value *@
+
+            <PropertyColumn Style="min-width: 150px" Property="x => x.GetNoteValue(targetId)" Title="Private Notes">
+                <CellTemplate>
                     @{
+
                         string noteValue = userNotesDict.ContainsKey(context.Item.UserId)
                         ? userNotesDict[context.Item.UserId]?.Note ?? string.Empty
-                        : string.Empty;  // Default to empty if no note exists
-
+                        : string.Empty;
                     }
-
                     <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="2"
                                   Value="@noteValue"
                                   ValueChanged="@(text => OnValueChanged(text, context))"
                                   Immediate="true" />
                 </CellTemplate>
-            </TemplateColumn>
-        </Columns>
+                </PropertyColumn>
+</Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
@@ -144,7 +143,7 @@ else
 
 
             _availableRoles = await GetAvailableRoles();
-            AllUsers = await UserManagementService.GetAllUsersWithRolesAsync();
+            AllUsers = await UserManagementService.GetAllUsersWithRolesAsync(creatorId);
             _users = AllUsers.ToList();
 
             await LoadUserNotes();
@@ -186,6 +185,7 @@ else
 
     private void OnValueChanged(string text, CellContext<UserRoleViewModel> context)
     {
+
         targetId = context.Item.UserId;
 
         if (!userNotesDict.ContainsKey(targetId))
@@ -196,7 +196,6 @@ else
         // Update the note text
         userNotesDict[targetId].Note = text;
         _pendingNoteText = text;  
-        targetId = context.Item.UserId; // To ensure targetId corresponds to the correct user
 
         // Reset and start the timer each time the text changes
         _timer.Stop();
