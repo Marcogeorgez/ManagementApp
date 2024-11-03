@@ -46,7 +46,7 @@
                         <MudNavGroup Title="Settings" Icon="fas fa-cogs" IconColor="Color.Primary" Expanded="false">
                             <MudNavLink Href="Account/Manage" Icon="@Icons.Material.Filled.People" IconColor="Color.Primary">Users</MudNavLink>
                         </MudNavGroup>
-                    <MudNavLink Class="" OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Primary">
+                    <MudNavLink OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Primary">
                         Logout
                     </MudNavLink>
                     <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
@@ -56,9 +56,14 @@
                     </Authorized>
                     <NotAuthorized>
                 <MudDivider />
-
-                        <MudNavLink Href="Account/Register" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">Register</MudNavLink>
-                        <MudNavLink Href="Account/Login" Icon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudNavLink>
+                <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                    <input type="hidden" name="provider" value="Google" />
+                    <MudNavLink OnClick="@LoginClick" IconColor="Color.Primary" Icon="@googleLogo">
+                        @label
+                    </MudNavLink>
+                    </form>
                     </NotAuthorized>
                 </AuthorizeView>
         </MudNavMenu>
@@ -67,7 +72,15 @@
 
 @code {
     bool _drawerOpen = false;
-
+    private bool _isDarkMode;
+    private string logoSrc => _isDarkMode ? "/Logo.png" : "/LogoDark.png";
+    private string ColorThemeIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
+    private string? currentUrl;
+    private string GetLinkClass => _drawerOpen ? "max-w-[200px] flex items-center" : "justify-center";
+    string label => _drawerOpen ? "Login with Google" : "";
+    const string googleLogo = @"<svg xmlns=""http://www.w3.org/2000/svg"" x=""0px"" y=""0px"" width=""24"" height=""24"" viewBox=""0 0 24 24"">
+    <path d=""M12.545,12.151L12.545,12.151c0,1.054,0.855,1.909,1.909,1.909h3.536c-0.607,1.972-2.101,3.467-4.26,3.866 c-3.431,0.635-6.862-1.865-7.19-5.339c-0.34-3.595,2.479-6.62,6.005-6.62c1.002,0,1.946,0.246,2.777,0.679 c0.757,0.395,1.683,0.236,2.286-0.368l0,0c0.954-0.954,0.701-2.563-0.498-3.179c-1.678-0.862-3.631-1.264-5.692-1.038 c-4.583,0.502-8.31,4.226-8.812,8.809C1.945,16.9,6.649,22,12.545,22c6.368,0,8.972-4.515,9.499-8.398 c0.242-1.78-1.182-3.352-2.978-3.354l-4.61-0.006C13.401,10.24,12.545,11.095,12.545,12.151z""></path>
+</svg>";
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
@@ -98,14 +111,10 @@
             },
             LayoutProperties = new LayoutProperties()
             {
-                DrawerWidthLeft = "175px",
+                DrawerWidthLeft = "200px",
             }
         };
 
-    private bool _isDarkMode;
-    private string logoSrc => _isDarkMode ? "/Logo.png" : "/LogoDark.png";
-    private string ColorThemeIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
-    private string? currentUrl;
 
     private void ToggleTheme()
     {
@@ -127,5 +136,12 @@
     {
         await JSRuntime.InvokeVoidAsync("submitForm", "logoutForm");
     }
+    private async Task LoginClick()
+    {
+        await JSRuntime.InvokeVoidAsync("submitForm", "GoogleLoginForm");
+    }
+
+
+
 }
 
