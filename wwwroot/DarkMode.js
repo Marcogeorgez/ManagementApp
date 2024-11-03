@@ -1,6 +1,4 @@
-﻿// site.js
-
-window.loadDarkModePreference = function () {
+﻿window.loadDarkModePreference = function () {
     // Retrieve the dark mode preference from cookies
     const darkModeCookie = document.cookie.split('; ').find(row => row.startsWith('DarkMode='));
     return darkModeCookie ? darkModeCookie.split('=')[1] === 'true' : false;

@@ -130,6 +130,7 @@
         {
             // Load dark mode preference from cookies when the component is rendered
             _isDarkMode = await JSRuntime.InvokeAsync<bool>("loadDarkModePreference");
+            StateHasChanged();
         }
     }
 
