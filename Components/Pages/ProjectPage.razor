@@ -3,16 +3,16 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 <MudContainer Class="ml-2" MaxWidth="MaxWidth.ExtraExtraLarge">
-<div class="mb-4">
-    <MudButton Color="Color.Success"
-               Variant="Variant.Filled"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="@(() => AddProjectDialogAsync(_closeButton))">
-        Add Project
-    </MudButton>
-</div>
 
-<MudTable Items="@projects" Dense="true" Hover="true" Bordered="true" Style="width: inherit;">
+
+<MudTable Items="@projects" Dense="true" Hover="true" Bordered="true" Style="width: inherit;" Filter="new Func<Project,bool>(FilterFunc1)">
+    <ToolBarContent>
+            <MudText Typo="Typo.h6">Your Projects</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString1" Placeholder="Search"
+                Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                IconSize="Size.Medium" Class="mt-0" Clearable="true" DebounceInterval="100" />
+    </ToolBarContent>
     <HeaderContent>
         <MudTh>Project ID</MudTh>
         <MudTh>Project Name</MudTh>
@@ -37,7 +37,7 @@
         <MudTd DataLabel="Progress">
         <MudProgressLinear Value="@context.ProgressBar" Color="Color.Info" Class="my-0" />
         </MudTd>
-        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="Status" Class="@GetStatusClass(context.Status)">@context.Status</MudTd>
         <MudTd DataLabel="Working Month">@context.WorkingMonth?.ToString("MMMM")</MudTd>
         <MudTd>
             <MudButton Color="Color.Error"
@@ -83,15 +83,23 @@
 <MudStack Row="true">
     <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
 </MudStack>
+
+    <div class="mb-4">
+        <MudButton Color="Color.Success"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => AddProjectDialogAsync(_closeButton))">
+            Add New Project
+        </MudButton>
+    </div>
 </MudContainer>
 
 @code {
-    private List<Project> projects = new();
+    private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
     private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived = false;
-
-
+    private string searchString1 = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,7 +118,6 @@
 
     private async Task AddProjectDialogAsync(DialogOptions options)
     {
-
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", options);
         var result = await dialog.Result;
         if (!result.Canceled)
@@ -119,11 +126,7 @@
             await ProjectService.AddProjectAsync(newProject);
             LoadProjects();
         }
-
-
     }
-
-
     public async Task ArchiveProject(DialogOptions options,Project project)
     {
         var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
@@ -136,10 +139,7 @@
             {
                 await ProjectService.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 LoadProjects();
-
-
             }
-
         }
     }
     private async Task UnarchiveProject(Project project)
@@ -165,8 +165,6 @@
         LoadProjects();
         StateHasChanged();
     }
-
-
     private async Task DeleteProject(int projectId)
     {
         try
@@ -180,5 +178,16 @@
             Snackbar.Add($"Error deleting project: {ex.Message}", Severity.Error);
         }
         StateHasChanged();
+    }
+    private bool FilterFunc1(Project project) => FilterFunc(project, searchString1);
+    private bool FilterFunc(Project project, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (project.ProjectName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (project.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 }
