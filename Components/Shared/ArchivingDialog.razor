@@ -1,0 +1,61 @@
+﻿@using LuminaryVisuals.Data.Entities
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string"
+                          Label="Project Name"
+                          Value="@newProject.ProjectName"
+                          ReadOnly="true" />
+
+            <MudTextField T="string"
+                          Label="Description"
+                          Value="@newProject.Description"
+                          ReadOnly="true" />
+
+            <MudDatePicker Label="Shoot Date"
+                           Date="@newProject.ShootDate"
+                           ReadOnly="true" />
+            <MudDatePicker Label="Due Date"
+                           Date="@newProject.DueDate"
+                           ReadOnly="true" />
+
+            <MudDatePicker Label="Working Month"
+                           Date="@newProject.WorkingMonth"
+                           ReadOnly="true" />
+
+            <MudTextField T="string"
+                          Label="Reason For Archiving Project"
+                          @bind-Value="newProject.Archive.Reason"/>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Warning" OnClick="@Submit">Archive Project</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project newProject { get; set; } = new Project();
+    private bool success;
+    private MudForm form;
+    private DateTime _minDate = DateTime.Now.Date;
+    protected override void OnInitialized()
+    {
+        newProject.Archive = new Archive();
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(newProject.Archive.Reason)); // Return the new project to the main component
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+}
