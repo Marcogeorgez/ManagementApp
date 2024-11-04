@@ -12,7 +12,7 @@
 @inject RoleManager<IdentityRole> RoleManager
 @inject UserNoteService UserNoteService
 @inject ISnackbar Snackbar
-@inject ILogger<AdminDashboard> Logger
+@inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
 
 
@@ -49,6 +49,7 @@ else
     <MudDataGrid T="UserRoleViewModel" Bordered="true" CanCancelEdit="true" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
                  ColumnResizeMode="ResizeMode.Container" DragIndicatorSize="Size.Small">
+
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
             <MudSpacer />
@@ -56,6 +57,15 @@ else
                           Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
                           Class="mt-0"></MudTextField>
         </ToolBarContent>
+        
+        <ColGroup>
+            <col/>
+            <col style="width: 3vw;" />
+            <col style="width: 10vw;" />
+            <col style="width: 3vw;" />
+            <col style="width: 5vw;" />
+            <col style="width: 50vw;" />
+        </ColGroup>
         <Columns>
             <SelectColumn T="UserRoleViewModel" />
             <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;">
@@ -66,9 +76,9 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" Title="User Name">
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" Title="User Name" CellStyle="text-align: center">
             </PropertyColumn>
-            <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" Style="min-width: 150px;" />
+            <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" Style="min-width: 150px;" CellStyle="text-align: center" />
 
             <TemplateColumn Title="Change Role">
                 <CellTemplate>
@@ -89,15 +99,15 @@ else
                 </CellTemplate>
             </TemplateColumn>
 
-            <PropertyColumn Style="min-width: 150px" Property="x => x.GetNoteValue(targetId)" Title="Private Notes">
-                <CellTemplate>
+            <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes">
+                <CellTemplate >
                     @{
 
                         string noteValue = userNotesDict.ContainsKey(context.Item.UserId)
                         ? userNotesDict[context.Item.UserId]?.Note ?? string.Empty
                         : string.Empty;
                     }
-                    <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="2"
+                    <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="3"
                                   Value="@noteValue"
                                   ValueChanged="@(text => OnValueChanged(text, context))"
                                   Immediate="true" />
