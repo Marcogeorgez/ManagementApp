@@ -50,7 +50,34 @@ public class UserNoteService
     {
         return await _context.UserNote.Where(n => n.CreatedByUserId == createdByUserId).ToListAsync();
     }
-/*
+
+    public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
+    {
+        var note = await _context.UserNote.FindAsync(noteId);
+        if (note != null)
+        {
+            _context.Update(note);
+            await _context.SaveChangesAsync();
+            return new MessageSuccess { Success = true , Message = "Note has been updated successfully"};
+        }
+        else
+        {
+            return new MessageSuccess { Success = false, Message = "Note couldn't be updated." };
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
  * not being used since we can just modify it instead of deleting, which is currently useless.
     public async Task<MessageSuccess> DeleteNoteAsync(int noteId)
     {
@@ -68,18 +95,4 @@ public class UserNoteService
         }
     }*/
 
-    public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
-    {
-        var note = await _context.UserNote.FindAsync(noteId);
-        if (note != null)
-        {
-            _context.Update(note);
-            await _context.SaveChangesAsync();
-            return new MessageSuccess { Success = true , Message = "Note has been updated successfully"};
-        }
-        else
-        {
-            return new MessageSuccess { Success = false, Message = "Note couldn't be updated." };
-        }
-    }
 }
