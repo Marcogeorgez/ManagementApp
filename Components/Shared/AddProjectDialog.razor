@@ -1,0 +1,76 @@
+﻿@using LuminaryVisuals.Data.Entities
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string"
+                          Label="Project Name"
+                          @bind-Value="newProject.ProjectName"
+                          Required="true" />
+
+            <MudTextField T="string"
+                          Label="Description"
+                          @bind-Value="newProject.Description"
+                          Required="true" />
+
+            <MudDatePicker Label="Shoot Date"
+                           Date="newProject.ShootDate"
+                           DateChanged="@(date => newProject.ShootDate = date)"
+                           Required="true"
+                           MinDate="@_minDate"/>
+
+            <MudDatePicker Label="Due Date"
+                           Date="newProject.DueDate"
+                           DateChanged="@(date => newProject.DueDate = date )"
+                           Required="true" 
+                           MinDate="@_minDate" />
+
+            <MudDatePicker Label="Working Month"
+                           Date="newProject.WorkingMonth"
+                           DateChanged="@(date => newProject.WorkingMonth = date)"
+                           Required="true" 
+                           MinDate="@_minDate" />
+
+            <MudNumericField T="int"
+                             Label="Progress"
+                             @bind-Value="newProject.ProgressBar"
+                             Min="0" Max="100" />
+
+            <MudSelect T="ProjectStatus"
+                       Label="Status"
+                       @bind-Value="newProject.Status"
+                       Required="true">
+                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                {
+                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                }
+            </MudSelect>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="@Submit">Add Project</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private Project newProject = new Project();
+    private bool success;
+    private MudForm form;
+    private DateTime _minDate = DateTime.Now.Date;
+
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+}
