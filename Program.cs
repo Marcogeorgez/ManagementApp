@@ -48,7 +48,6 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 {
     options.LoginPath = "/counter";
     options.LogoutPath = "/Account/Logout"; 
-    options.AccessDeniedPath = "/AccessDenied";
     options.SlidingExpiration = true; 
 });
 
