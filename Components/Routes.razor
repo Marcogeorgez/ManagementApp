@@ -1,9 +1,10 @@
 ﻿@using LuminaryVisuals.Components.Account.Shared
+@using LuminaryVisuals.Components.Pages
 <Router AppAssembly="typeof(Program).Assembly" >
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
             <NotAuthorized>
-                <RedirectToLogin />
+                <AccessDeniedPage />
             </NotAuthorized>
         </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
