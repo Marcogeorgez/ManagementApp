@@ -1,0 +1,184 @@
+﻿@page "/project"
+@inject ProjectService ProjectService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+<MudContainer Class="ml-2" MaxWidth="MaxWidth.ExtraExtraLarge">
+<div class="mb-4">
+    <MudButton Color="Color.Success"
+               Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="@(() => AddProjectDialogAsync(_closeButton))">
+        Add Project
+    </MudButton>
+</div>
+
+<MudTable Items="@projects" Dense="true" Hover="true" Bordered="true" Style="width: inherit;">
+    <HeaderContent>
+        <MudTh>Project ID</MudTh>
+        <MudTh>Project Name</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Shoot Date</MudTh>
+        <MudTh>Due Date</MudTh>
+        <MudTh>Progress</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Working Month</MudTh>
+        <MudTh>Actions</MudTh>
+        @if (_isArchived)
+        {
+            <MudTh>Archived?</MudTh>
+        }
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Project ID">@context.ProjectId</MudTd>
+        <MudTd DataLabel="Project Name">@context.ProjectName</MudTd>
+        <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="Shoot Date">@context.ShootDate?.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Due Date">@context.DueDate?.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Progress">
+        <MudProgressLinear Value="@context.ProgressBar" Color="Color.Info" Class="my-0" />
+        </MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="Working Month">@context.WorkingMonth?.ToString("MMMM")</MudTd>
+        <MudTd>
+            <MudButton Color="Color.Error"
+                       Variant="Variant.Filled"
+                       Size="Size.Small"
+                       OnClick="@(() => DeleteDialog(context))"
+                       StartIcon="@Icons.Material.Filled.Delete">
+                Delete
+            </MudButton>
+
+            @if (_isArchived)
+            {
+                <MudButton Color="@(!context.IsArchived ? Color.Success : Color.Warning)"
+                           Variant="Variant.Filled"
+                           Size="Size.Small"
+                           OnClick="@(() => context.IsArchived ? UnarchiveProject(context) : ArchiveProject(_closeButton, context))"
+                 Class="ml-2">
+                    @(context.IsArchived ? "Unarchive" : "Archive")
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Color="Color.Warning"
+                           Variant="Variant.Filled"
+                           Size="Size.Small"
+                           OnClick="@(() => ArchiveProject(_closeButton, context))"
+                           StartIcon="@Icons.Material.Filled.Archive"
+                           Class="ml-2">
+                    Archive
+                </MudButton>
+            }
+        </MudTd>
+        @if (_isArchived)
+        {
+            <MudTd DataLabel="Archived">@context.IsArchived.ToString()
+            </MudTd>
+        }
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+<MudStack Row="true">
+    <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+</MudStack>
+</MudContainer>
+
+@code {
+    private List<Project> projects = new();
+    private Project projectToDelete;
+    private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
+    private bool _isArchived = false;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+    private async Task ArchivedToggle()
+    {
+        _isArchived = !_isArchived;
+        await LoadProjects();
+    }
+    private async Task LoadProjects()
+    {
+        projects = await ProjectService.GetProjectsAsync(_isArchived);
+        StateHasChanged();
+    }
+
+    private async Task AddProjectDialogAsync(DialogOptions options)
+    {
+
+        var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            var newProject = (Project) result.Data;
+            await ProjectService.AddProjectAsync(newProject);
+            LoadProjects();
+        }
+
+
+    }
+
+
+    public async Task ArchiveProject(DialogOptions options,Project project)
+    {
+        var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
+        var dialog = await DialogService.ShowAsync<ArchivingDialog>("Archive Project", dialogParameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            var archivedProject = (string)result.Data;
+            if(archivedProject != null)
+            {
+                await ProjectService.ArchiveProjectAsync(project.ProjectId, archivedProject);
+                LoadProjects();
+
+
+            }
+
+        }
+    }
+    private async Task UnarchiveProject(Project project)
+    {
+        await ProjectService.UnarchiveProjectAsync(project.ProjectId);
+        await LoadProjects();
+    }
+
+    private async Task DeleteDialog(Project project)
+    {
+        projectToDelete = project;
+        var parameters = new DialogParameters
+        {
+            {"Message", $"Are you sure you'd like to DELETE {project.ProjectName}? This will delete it permanently!"}
+        };
+        var dialog = DialogService.Show<ConfirmationDialog>("Confirmation",parameters);
+        var result = await dialog.Result;
+        if (result.Canceled)
+        {
+            return;
+        }
+        await ProjectService.DeleteProjectAsync(projectToDelete.ProjectId);
+        LoadProjects();
+        StateHasChanged();
+    }
+
+
+    private async Task DeleteProject(int projectId)
+    {
+        try
+        {
+            await ProjectService.DeleteProjectAsync(projectId);
+            await LoadProjects();
+            Snackbar.Add("Project deleted successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error deleting project: {ex.Message}", Severity.Error);
+        }
+        StateHasChanged();
+    }
+}
