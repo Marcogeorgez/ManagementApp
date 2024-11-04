@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241103145533_columnsToDateOnly")]
+    partial class columnsToDateOnly
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,9 +261,6 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired()
                         .HasColumnType("DATE");
 
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("ProgressBar")
                         .HasColumnType("integer");
 
@@ -346,6 +346,35 @@ namespace LuminaryVisuals.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("VideoEditors", (string)null);
+                });
+
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.VideoStatus", b =>
+                {
+                    b.Property<int>("StatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StatusId"));
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StatusType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("StatusId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("VideoStatuses", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -586,6 +615,25 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.VideoStatus", b =>
+                {
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
+                        .WithMany("VideoStatuses")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "User")
+                        .WithMany("VideoStatuses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -648,6 +696,8 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("Payments");
 
                     b.Navigation("VideoEditors");
+
+                    b.Navigation("VideoStatuses");
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
@@ -663,6 +713,8 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("EditorPayments");
 
                     b.Navigation("VideoEditors");
+
+                    b.Navigation("VideoStatuses");
                 });
 #pragma warning restore 612, 618
         }
