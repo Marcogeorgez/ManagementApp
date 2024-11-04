@@ -12,7 +12,6 @@ namespace LuminaryVisuals.Data
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<VideoEditor> VideoEditors { get; set; }
-        public DbSet<VideoStatus> VideoStatuses { get; set; }
         public DbSet<ClientPayment> Payments { get; set; }
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
@@ -44,25 +43,30 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.ProgressBar).IsRequired();
                 entity.Property(e => e.WorkingMonth).IsRequired();
                 entity.Property(e => e.Status).IsRequired();
+                entity.Property(e => e.ShootDate).HasColumnType("DATE");
+                entity.Property(e => e.DueDate).HasColumnType("DATE");
+                entity.Property(e => e.WorkingMonth).HasColumnType("DATE");
 
                 entity.HasMany(p => p.VideoEditors)
                       .WithOne(ve => ve.Project)
-                      .HasForeignKey(ve => ve.ProjectId);
-                entity.HasMany(p => p.VideoStatuses)
-                      .WithOne(vs => vs.Project)
-                      .HasForeignKey(vs => vs.ProjectId);
+                      .HasForeignKey(ve => ve.ProjectId)
+                      .OnDelete(DeleteBehavior.Cascade);
                 entity.HasMany(p => p.EditorPayments)
                       .WithOne(ep => ep.Project)
-                      .HasForeignKey(ep => ep.ProjectId);
+                      .HasForeignKey(ep => ep.ProjectId)
+                        .OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(p => p.ClientPayment)
                       .WithOne(cp => cp.Project)
-                      .HasForeignKey<ClientPayment>(cp => cp.ProjectId);
+                      .HasForeignKey<ClientPayment>(cp => cp.ProjectId)
+                        .OnDelete(DeleteBehavior.Cascade);
                 entity.HasMany(p => p.Chats)
                       .WithOne(c => c.Project)
-                      .HasForeignKey(c => c.ProjectId);
+                      .HasForeignKey(c => c.ProjectId)
+                        .OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(p => p.Archive)
                       .WithOne(a => a.Project)
-                      .HasForeignKey<Archive>(a => a.ProjectId);
+                      .HasForeignKey<Archive>(a => a.ProjectId)
+                        .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configure VideoEditor
@@ -72,15 +76,6 @@ namespace LuminaryVisuals.Data
                 entity.HasOne(ve => ve.User)
                       .WithMany(u => u.VideoEditors)
                       .HasForeignKey(ve => ve.UserId);
-            });
-
-            // Configure VideoStatus
-            builder.Entity<VideoStatus>(entity =>
-            {
-                entity.ToTable("VideoStatuses");
-                entity.HasOne(vs => vs.User)
-                      .WithMany(u => u.VideoStatuses)
-                      .HasForeignKey(vs => vs.UserId);
             });
 
             // Configure Payment
