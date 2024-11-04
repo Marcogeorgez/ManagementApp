@@ -2,84 +2,75 @@
 @inject ProjectService ProjectService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+
+
 <MudContainer Class="ml-2" MaxWidth="MaxWidth.ExtraExtraLarge">
 
-
-<MudTable Items="@projects" Dense="true" Hover="true" Bordered="true" Style="width: inherit;" Filter="new Func<Project,bool>(FilterFunc1)">
+<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" Dense="true" Hover="true" Bordered="true" Style="width: inherit;" QuickFilter="new Func<Project,bool>(FilterFunc1)">
     <ToolBarContent>
             <MudText Typo="Typo.h6">Your Projects</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="searchString1" Placeholder="Search"
+            <MudTextField @bind-Value="_searchString" Placeholder="Search"
                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                IconSize="Size.Medium" Class="mt-0" Clearable="true" DebounceInterval="100" />
+                IconSize="Size.Medium" Class="mt-0" Clearable="true" Immediate="true" />
     </ToolBarContent>
-    <HeaderContent>
-        <MudTh>Project ID</MudTh>
-        <MudTh>Project Name</MudTh>
-        <MudTh>Description</MudTh>
-        <MudTh>Shoot Date</MudTh>
-        <MudTh>Due Date</MudTh>
-        <MudTh>Progress</MudTh>
-        <MudTh>Status</MudTh>
-        <MudTh>Working Month</MudTh>
-        <MudTh>Actions</MudTh>
-        @if (_isArchived)
-        {
-            <MudTh>Archived?</MudTh>
-        }
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Project ID">@context.ProjectId</MudTd>
-        <MudTd DataLabel="Project Name">@context.ProjectName</MudTd>
-        <MudTd DataLabel="Description">@context.Description</MudTd>
-        <MudTd DataLabel="Shoot Date">@context.ShootDate?.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd DataLabel="Due Date">@context.DueDate?.ToString("dd/MM/yyyy")</MudTd>
-        <MudTd DataLabel="Progress">
-        <MudProgressLinear Value="@context.ProgressBar" Color="Color.Info" Class="my-0" />
-        </MudTd>
-        <MudTd DataLabel="Status" Class="@GetStatusClass(context.Status)">@context.Status</MudTd>
-        <MudTd DataLabel="Working Month">@context.WorkingMonth?.ToString("MMMM")</MudTd>
-        <MudTd>
-            <MudButton Color="Color.Error"
-                       Variant="Variant.Filled"
-                       Size="Size.Small"
-                       OnClick="@(() => DeleteDialog(context))"
-                       StartIcon="@Icons.Material.Filled.Delete">
-                Delete
-            </MudButton>
-
+    <Columns>
+            <PropertyColumn Property="x => x.ProjectId" Title="Project Id" Sortable="false" Filterable="false" />
+            <PropertyColumn Property="x => x.ProjectName" Title="Project Name" />
+            <PropertyColumn Property="x => x.Description" Title="Project Description" />
+            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" >
+                <CellTemplate>
+                    <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Class="my-0" />
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" />
+            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" />
+            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Working Month" />
+            <PropertyColumn Property="x => x.Status" Title="Status" />
+            <TemplateColumn CellClass="" Title="Actions">
+                <CellTemplate>
+                    <MudStack Row>
+                        <MudButton Color="Color.Error"
+                           Variant="Variant.Filled"
+                           Size="Size.Small"
+                                   OnClick="@(() => DeleteDialog(context.Item))"
+                           StartIcon="@Icons.Material.Filled.Delete">
+                            Delete
+                        </MudButton>
+                        @if (_isArchived)
+                        {
+                            <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
+                                        Variant="Variant.Filled"
+                                        Size="Size.Small"
+                                        OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(_closeButton, context.Item))"
+                                        StartIcon="@Icons.Material.Filled.Archive"
+                                        Class="ml-2">
+                                @(context.Item.IsArchived ? "Unarchive" : "Archive")
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Color="Color.Warning"
+                                        Variant="Variant.Filled"
+                                        Size="Size.Small"
+                                        OnClick="@(() => ArchiveProject(_closeButton, context.Item))"
+                                        StartIcon="@Icons.Material.Filled.Archive"
+                                        Class="ml-2">
+                                Archive
+                            </MudButton>
+                        }
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
             @if (_isArchived)
             {
-                <MudButton Color="@(!context.IsArchived ? Color.Success : Color.Warning)"
-                           Variant="Variant.Filled"
-                           Size="Size.Small"
-                           OnClick="@(() => context.IsArchived ? UnarchiveProject(context) : ArchiveProject(_closeButton, context))"
-                 Class="ml-2">
-                    @(context.IsArchived ? "Unarchive" : "Archive")
-                </MudButton>
+                <PropertyColumn Property="x => x.IsArchived" Title="Archive?"/>
             }
-            else
-            {
-                <MudButton Color="Color.Warning"
-                           Variant="Variant.Filled"
-                           Size="Size.Small"
-                           OnClick="@(() => ArchiveProject(_closeButton, context))"
-                           StartIcon="@Icons.Material.Filled.Archive"
-                           Class="ml-2">
-                    Archive
-                </MudButton>
-            }
-        </MudTd>
-        @if (_isArchived)
-        {
-            <MudTd DataLabel="Archived">@context.IsArchived.ToString()
-            </MudTd>
-        }
-    </RowTemplate>
+    </Columns>
     <PagerContent>
-        <MudTablePager />
+        <MudDataGridPager T="Project"/>
     </PagerContent>
-</MudTable>
+</MudDataGrid>
 <MudStack Row="true">
     <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
 </MudStack>
@@ -99,7 +90,7 @@
     private Project projectToDelete;
     private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived = false;
-    private string searchString1 = "";
+    private string _searchString = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,7 +170,7 @@
         }
         StateHasChanged();
     }
-    private bool FilterFunc1(Project project) => FilterFunc(project, searchString1);
+    private bool FilterFunc1(Project project) => FilterFunc(project, _searchString);
     private bool FilterFunc(Project project, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString))
