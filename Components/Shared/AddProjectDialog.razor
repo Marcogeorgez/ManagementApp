@@ -47,6 +47,9 @@
                 }
             </MudSelect>
         </MudForm>
+        <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
+            @errorMessage
+        </MudText>
     </DialogContent>
 
     <DialogActions>
@@ -62,12 +65,24 @@
     private bool success;
     private MudForm form;
     private DateTime _minDate = DateTime.Now.Date;
+    private string errorMessage;
 
 
-    private void Submit()
+    private async void Submit()
     {
-        MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
+
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
+        }
+        else
+        {
+            errorMessage = "Please fill in all required fields correctly before submitting.";
+        }
     }
+    private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
 
     private void Cancel()
     {
