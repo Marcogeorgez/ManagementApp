@@ -26,6 +26,7 @@ builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>(
 // Services
 builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<UserNoteService>();
+builder.Services.AddScoped<ProjectService>();
 
 builder.Services.AddHttpClient();
 // Now add Google Authentication after configuring Identity Cookies
