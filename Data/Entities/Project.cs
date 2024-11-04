@@ -31,12 +31,12 @@ public class Project
     [Required]
     [DataType(DataType.Date)]
     [Display(Name = "Shoot Date")]
-    public DateTime ShootDate { get; set; }
+    public DateTime? ShootDate { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
     [Display(Name = "Due Date")]
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     [Range(0, 100)]
     [Display(Name = "Progress")]
@@ -45,13 +45,15 @@ public class Project
     [Required]
     [DataType(DataType.Date)]
     [Display(Name = "Working Month")]
-    public DateTime WorkingMonth { get; set; }
+    public DateTime? WorkingMonth { get; set; }
+
+    [Required]
+    public bool IsArchived { get; set; } = false;
 
     public ProjectStatus Status { get; set; }
 
     // Navigation properties
     public virtual ICollection<VideoEditor> VideoEditors { get; set; }
-    public virtual ICollection<VideoStatus> VideoStatuses { get; set; }
     public virtual ClientPayment ClientPayment { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
