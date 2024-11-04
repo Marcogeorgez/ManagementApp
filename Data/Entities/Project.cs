@@ -58,4 +58,14 @@ public class Project
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
     public virtual ICollection<EditorPayments> EditorPayments { get; set; }
+
+
+    [NotMapped]
+    public string FormattedShootDate => ShootDate?.ToString("dd/MM/yyyy");
+
+    [NotMapped]
+    public string FormattedDueDate => DueDate?.ToString("dd/MM/yyyy");
+
+    [NotMapped]
+    public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM");
 }
