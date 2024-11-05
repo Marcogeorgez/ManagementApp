@@ -6,7 +6,7 @@
 
 <MudContainer Class="ml-2" MaxWidth="MaxWidth.ExtraExtraLarge">
 
-<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" Dense="true" Hover="true" Bordered="true" Style="width: inherit;" QuickFilter="new Func<Project,bool>(FilterFunc1)">
+<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" Dense=false Hover="true" Bordered=true Style="width: inherit;" QuickFilter="new Func<Project,bool>(FilterFunc1)">
     <ToolBarContent>
             <MudText Typo="Typo.h6">Your Projects</MudText>
             <MudSpacer />
