@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -7,16 +9,25 @@
 <CascadingValue Value="_drawerOpen">
     <MudLayout>
         <NavMenu @rendermode="InteractiveServer" />
-        <MudMainContent Style="height:auto;   overflow-x: hidden; overflow-y: auto;">
-            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
-            <MudContainer Class="" MaxWidth="MaxWidth.ExtraExtraLarge" >
-            @Body
-            </MudContainer>
-            </MudHidden>
-            <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
-                    <h1> This is mobile</h1>
+        <MudMainContent Style="height:auto; overflow-x: hidden; overflow-y: auto;">
+
+            @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
+            @if (IsStaticSSR)
+            {
+                @Body
+            }
+            else
+            {
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+                    <MudContainer Class="" MaxWidth="MaxWidth.ExtraExtraLarge">
+                        @Body
+                    </MudContainer>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+                    <h1>This is mobile</h1>
                     @Body
-            </MudHidden>
+                </MudHidden>
+            }
 
         </MudMainContent>
         <script>
@@ -29,5 +40,7 @@
 </CascadingValue>
 
 @code {
-    private bool _drawerOpen = false; // Default state
+    private bool _drawerOpen = false;
+
+    private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
 }
