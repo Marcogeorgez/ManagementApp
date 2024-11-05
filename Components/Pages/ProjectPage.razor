@@ -211,11 +211,6 @@
             case ProjectStatus.Scheduled:
                 style += "background-color: var(--mud-palette-gray-dark);";
                 break;
-            case ProjectStatus.Revision:
-                style += "background-color: rgb(255,102,153);";
-                break;
-
-
             case ProjectStatus.Working:
                 style += "background-color: var(--mud-palette-info-darken);";
                 break;
@@ -223,7 +218,10 @@
             case ProjectStatus.Delivered:
                 style += "background-color:  rgb(9,154,108);";
                 break;
-
+            case ProjectStatus.Review:
+            case ProjectStatus.Revision:
+                style += "background-color: var(--mud-palette-warning-lighten);";
+                break;
             case ProjectStatus.Paid:
                 style += "background-color: var(--mud-palette-success-darken);";
                 break;

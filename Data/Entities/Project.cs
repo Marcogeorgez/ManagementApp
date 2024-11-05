@@ -9,6 +9,7 @@ public enum ProjectStatus
     Upcoming,
     Scheduled,
     Working,
+    Review,
     Delivered,
     Revision,
     Paid
