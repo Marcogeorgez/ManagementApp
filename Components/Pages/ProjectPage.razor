@@ -4,9 +4,10 @@
 @inject IDialogService DialogService
 
 
-<MudContainer Class="ml-2" MaxWidth="MaxWidth.ExtraExtraLarge">
 
-<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" Dense=false Hover="true" Bordered=true Style="width: inherit;" QuickFilter="new Func<Project,bool>(FilterFunc1)">
+<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single"
+    Dense=false Hover="true" Bordered=true 
+    QuickFilter="new Func<Project,bool>(FilterFunc1)">
     <ToolBarContent>
             <MudText Typo="Typo.h6">Your Projects</MudText>
             <MudSpacer />
@@ -14,8 +15,25 @@
                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                 IconSize="Size.Medium" Class="mt-0" Clearable="true" Immediate="true" />
     </ToolBarContent>
+    <ColGroup>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
+            <col style="width: 1%;" />
+            <col style="width: 10%;" />
+            <col style="width: 15%;" />
+            <col style="width: 5%;" />
+            <col style="width: 5%;" />
+            <col style="width: 5%;" />
+            <col style="width: 1%;" />
+            <col style="width: stretch;" />
+            <col style="width: 5%;" /> 
+            @if (_isArchived)
+            {
+                <col style="width: 10px;" />
+            }        
+        </MudHidden>
+    </ColGroup>
     <Columns>
-            <PropertyColumn Property="x => x.ProjectId" Title="Project Id" Sortable="false" Filterable="false" />
+            <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false"  />
             <PropertyColumn Property="x => x.ProjectName" Title="Project Name" />
             <PropertyColumn Property="x => x.Description" Title="Project Description" />
             <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" >
@@ -25,8 +43,8 @@
             </PropertyColumn>
             <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" />
             <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" />
-            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Working Month" />
-            <PropertyColumn Property="x => x.Status" Title="Status" />
+            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" />
+            <PropertyColumn Property="x => x.Status" Title="Status" CellStyleFunc="@_cellStyleFunc" />
             <TemplateColumn CellClass="" Title="Actions">
                 <CellTemplate>
                     <MudStack Row>
@@ -64,7 +82,7 @@
             </TemplateColumn>
             @if (_isArchived)
             {
-                <PropertyColumn Property="x => x.IsArchived" Title="Archive?"/>
+            <PropertyColumn Property="x => x.IsArchived" Title="Archive" />
             }
     </Columns>
     <PagerContent>
@@ -83,7 +101,6 @@
             Add New Project
         </MudButton>
     </div>
-</MudContainer>
 
 @code {
     private IEnumerable<Project> projects = new List<Project>();
@@ -181,4 +198,42 @@
             return true;
         return false;
     }
+    private Func<Project, string> _cellStyleFunc => x =>
+    {
+        string style = string.Empty;
+
+        switch (x.Status)
+        {
+            case ProjectStatus.Upcoming:
+                style += "background-color: var(--mud-palette-info-lighten);"; // Using CSS variables for theming
+                break;
+
+            case ProjectStatus.Scheduled:
+                style += "background-color: var(--mud-palette-gray-dark);";
+                break;
+            case ProjectStatus.Revision:
+                style += "background-color: rgb(255,102,153);";
+                break;
+
+
+            case ProjectStatus.Working:
+                style += "background-color: var(--mud-palette-info-darken);";
+                break;
+
+            case ProjectStatus.Delivered:
+                style += "background-color:  rgb(9,154,108);";
+                break;
+
+            case ProjectStatus.Paid:
+                style += "background-color: var(--mud-palette-success-darken);";
+                break;
+
+            default:
+                style += "background-color: transparent;";
+                break;
+        }
+        style += "color: rgba(255,255,255,1); text-align: center";
+
+        return style;
+    };
 }
