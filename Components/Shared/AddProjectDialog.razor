@@ -8,34 +8,48 @@
                           Label="Project Name"
                           @bind-Value="newProject.ProjectName"
                           Required="true" />
-
+                          <MudSpacer />
             <MudTextField T="string"
                           Label="Description"
                           @bind-Value="newProject.Description"
                           Required="true" />
+            <MudSpacer />
 
             <MudDatePicker Label="Shoot Date"
                            Date="newProject.ShootDate"
-                           DateChanged="@(date => newProject.ShootDate = date)"
+                           DateChanged="@(date =>
+                                {
+                                    newProject.ShootDate = date;
+                                    if (date.HasValue)
+                                    {
+                                        newProject.DueDate = date.Value.AddDays(28); // Set Due Date to 4 weeks later
+                                    }
+                                 })" 
                            Required="true"
                            MinDate="@_minDate"/>
+            <MudSpacer />
 
-            <MudDatePicker Label="Due Date"
+            <MudDatePicker Label="Due Date (4 weeks after shoot date by default)"
                            Date="newProject.DueDate"
                            DateChanged="@(date => newProject.DueDate = date )"
                            Required="true" 
-                           MinDate="@_minDate" />
+                           MinDate="@_minDate" 
+                           />
+            <MudSpacer />
 
             <MudDatePicker Label="Working Month"
                            Date="newProject.WorkingMonth"
                            DateChanged="@(date => newProject.WorkingMonth = date)"
                            Required="true" 
-                           MinDate="@_minDate" />
+                           MinDate="@_minDate" 
+                           Class="mb-3" />
+            <MudSpacer />
 
             <MudNumericField T="int"
                              Label="Progress"
                              @bind-Value="newProject.ProgressBar"
-                             Min="0" Max="100" />
+                             Min="0" Max="100" 
+                             Class="mb-3" />
 
             <MudSelect T="ProjectStatus"
                        Label="Status"
