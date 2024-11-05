@@ -1,5 +1,4 @@
 ﻿@inherits LayoutComponentBase
-
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -8,9 +7,17 @@
 <CascadingValue Value="_drawerOpen">
     <MudLayout>
         <NavMenu @rendermode="InteractiveServer" />
-        
-        <MudMainContent  Style="height:100vh; overflow: auto;"  >
+        <MudMainContent Style="height:auto;   overflow-x: hidden; overflow-y: auto;">
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+            <MudContainer Class="" MaxWidth="MaxWidth.ExtraExtraLarge" >
             @Body
+            </MudContainer>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+                    <h1> This is mobile</h1>
+                    @Body
+            </MudHidden>
+
         </MudMainContent>
         <script>
             function submitForm(formId) {
