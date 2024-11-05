@@ -84,6 +84,7 @@ else
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
                              Variant="Variant.Filled"
                              Color="Color.Success"
+                             Style="background-color:var(--mud-palette-success-darken);"
                              Dense="true"
                              Disabled="@(_isUpdating && _updatingUserId == context.Item.UserId)">
                         <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Admin"))">Admin</MudMenuItem>
