@@ -205,22 +205,27 @@
         switch (x.Status)
         {
             case ProjectStatus.Upcoming:
-                style += "background-color: var(--mud-palette-info-lighten);"; // Using CSS variables for theming
+                style += "background-color: var(--mud-palette-gray-dark);";
                 break;
 
             case ProjectStatus.Scheduled:
-                style += "background-color: var(--mud-palette-gray-dark);";
+                style += "background-color: var(--mud-palette-info-lighten);";
+
                 break;
             case ProjectStatus.Working:
                 style += "background-color: var(--mud-palette-info-darken);";
                 break;
 
             case ProjectStatus.Delivered:
-                style += "background-color:  rgb(9,154,108);";
+            style += "background-color:  #53a653;";
+            //style += "background-color:  rgb(9,154,108);";
                 break;
             case ProjectStatus.Review:
-            case ProjectStatus.Revision:
                 style += "background-color: var(--mud-palette-warning-lighten);";
+                break;
+
+            case ProjectStatus.Revision:
+                style += "background-color: var(--mud-palette-error);";
                 break;
             case ProjectStatus.Paid:
                 style += "background-color: var(--mud-palette-success-darken);";
