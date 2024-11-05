@@ -1,0 +1,28 @@
+﻿<MudDialog FullScreen="true">
+    <DialogContent>
+        <MudTextField T="string" Label="Expanded Note" Variant="Variant.Outlined" Lines="10"
+                      Value="@NoteText" ValueChanged="OnNoteTextChanged" Immediate="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string NoteText { get; set; } = "";
+    [Parameter] public EventCallback<string> NoteTextChanged { get; set; }
+    private bool success;
+    private MudForm form;
+    private DateTime _minDate = DateTime.Now.Date;
+    private void OnNoteTextChanged(string text)
+    {
+        NoteText = text;
+        NoteTextChanged.InvokeAsync(text);
+
+    }
+    private void Cancel()
+    {
+        MudDialog.Close(DialogResult.Ok(NoteText));
+    }
+}

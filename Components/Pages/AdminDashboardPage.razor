@@ -46,9 +46,9 @@ else
     }
 
 
-    <MudDataGrid T="UserRoleViewModel" Bordered="true" CanCancelEdit="true" MultiSelection="true" Items="@AllUsers" SortMode="SortMode.Multiple"
-                 FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable="true"
-                 ColumnResizeMode="ResizeMode.Container" DragIndicatorSize="Size.Small">
+    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true Items="@AllUsers" SortMode="SortMode.Multiple"
+                 FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
+                 ColumnResizeMode="ResizeMode.Container" DragIndicatorSize="Size.Small" Loading=@_loading>
 
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
@@ -110,7 +110,9 @@ else
                     <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="3"
                                   Value="@noteValue"
                                   ValueChanged="@(text => OnValueChanged(text, context))"
-                                  Immediate="true" />
+                                  Immediate="true"
+                                  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                  OnAdornmentClick="@(() => OpenNoteDialog(noteValue,context) )" />
                 </CellTemplate>
                 </PropertyColumn>
 </Columns>
@@ -132,9 +134,8 @@ else
     private string creatorId;
     private string targetId;
     private string _pendingNoteText;
-
     private System.Timers.Timer _timer;
-    private const double Delay = 1000 ; // 1 Second Delay
+    private const double Delay = 100 ; // 0.1 Second Delay
     private UserNote userNotes = new();
     private Dictionary<string, UserNote> userNotesDict = new();
     private List<string> _availableRoles = new();
@@ -172,6 +173,24 @@ else
         }
     }
 
+    private void OpenNoteDialog(string noteValue,CellContext<UserRoleViewModel> context)
+    {
+        var parameters = new DialogParameters
+        {
+            {
+                "NoteText", noteValue
+            }    
+        };
+        var options = new DialogOptions{ FullScreen = true};
+        var dialog = DialogService.Show<FullNoteDialog>("Edit Note",parameters,options);
+        dialog.Result.ContinueWith(async task =>
+        {
+            if (!task.IsCanceled && task.Result.Data is string updatedText)
+            {
+                OnValueChanged(updatedText, context);
+            }
+        });
+    }
     // Load all user notes
     private async Task LoadUserNotes()
     {
@@ -185,6 +204,7 @@ else
             }
         }
     }
+
 
     // Save notes when user stops writing
     private void OnTimedEvent(object sender, ElapsedEventArgs e)
