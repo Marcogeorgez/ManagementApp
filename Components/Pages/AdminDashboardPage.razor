@@ -48,7 +48,7 @@ else
 
     <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-                 ColumnResizeMode="ResizeMode.Container" DragIndicatorSize="Size.Small" Loading=@_loading>
+                 DragIndicatorSize="Size.Small" Loading=@_loading>
 
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
@@ -57,17 +57,16 @@ else
                           Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
                           Class="mt-0"></MudTextField>
         </ToolBarContent>
-        
         <ColGroup>
-            <col/>
-            <col style="width: 3vw;" />
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
+            <col style="width:3vw;" />
             <col style="width: 10vw;" />
             <col style="width: 3vw;" />
             <col style="width: 5vw;" />
             <col style="width: 50vw;" />
+            </MudHidden>
         </ColGroup>
         <Columns>
-            <SelectColumn T="UserRoleViewModel" />
             <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;">
                 <CellTemplate Context="cell">
                     @{
@@ -83,7 +82,7 @@ else
             <TemplateColumn Title="Change Role">
                 <CellTemplate>
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
-                             Variant="Variant.Outlined"
+                             Variant="Variant.Filled"
                              Color="Color.Success"
                              Dense="true"
                              Disabled="@(_isUpdating && _updatingUserId == context.Item.UserId)">
