@@ -28,17 +28,17 @@ public class ProjectService
                 .ToListAsync();
     }
 
-    public async Task<Project?> GetProjectByCLientIdAsync(bool isArchived,string UserId)
+    public async Task<List<Project?>> GetProjectByClientIdAsync(bool isArchived,string UserId)
     {
 
         var project = await _context.Projects
-            .Where(p => p.IsArchived == isArchived)
+            .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.VideoEditors)
             .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
             .Include(p => p.EditorPayments)
-            .FirstOrDefaultAsync(p => p.ClientId == UserId);
+            .ToListAsync();
             if (project == null)
                 return null;
             return project;      
