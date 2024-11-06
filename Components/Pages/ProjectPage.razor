@@ -15,19 +15,40 @@
     </ToolBarContent>
     <ColGroup>
         <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
-            <col style="width: 1%;" />
-            <col style="max-width: 4%;" />
-            <col style="width: 23%;" />
-            <col style="width: 5%;" />
-            <col style="width: 5%;" />
-            <col style="width: 5%;" />
-            <col style="width: 1%;" />
-            <col style="width: stretch;" />
-            <col style="width: 5%;" /> 
-            @if (_isArchived)
-            {
-                <col style="width: 10px;" />
-            }        
+        @if (_currentRole == "Admin")
+        {
+            <col style="width: 1%;" /> <!-- ID -->
+            <col style="width: 4%;" /> <!-- ProjectName -->
+            <col style="width: 35%;" /> <!-- ProjectDescription -->
+            <col style="width: 5%;" /> <!-- ProgressBar -->
+            <col style="width: 5%;" /> <!-- ShootDate -->
+            <col style="width: 5%;" /> <!-- DueDate -->
+            <col style="width: 5%;" /> <!-- WorkingMonth -->
+            <col style="width: 5%;" /> <!-- Status -->
+            <col style="width: 10%;" /> <!-- Actions -->
+            <col style="width: 10%;" /> <!-- Archive (if _isArchived) -->
+        }
+        else if (_currentRole == "Editor")
+        {
+            <col style="width: 1%;" /> <!-- ID -->
+            <col style="width: 4%;" /> <!-- ProjectName -->
+            <col style="width: 35%;" /> <!-- ProjectDescription -->
+            <col style="width: 10%;" /> <!-- ProgressBar -->
+            <col style="width: 5%;" /> <!-- ShootDate -->
+            <col style="width: 5%;" /> <!-- DueDate -->
+            <col style="width: 5%;" /> <!-- WorkingMonth -->
+            <col style="width: 5%;" /> <!-- Status -->
+        }
+        else if (_currentRole == "Client")
+        {
+
+            <col style="width: 1%;" /> <!-- ID -->
+            <col style="width: 4%;" /> <!-- ProjectName -->
+            <col style="width: 35%;" /> <!-- ProjectDescription -->
+            <col style="width: 10%;" /> <!-- ProgressBar -->
+            <col style="width: 5%;" /> <!-- ShootDate -->
+            <col style="width: 5%;" /> <!-- Status -->
+        }
         </MudHidden>
     </ColGroup>
     <Columns>
@@ -50,6 +71,8 @@
                         HelperText="Click to expand" Value="@descriptionValue" 
                         Immediate="true" Adornment="Adornment.End" 
                         AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                        AutoGrow=true
+                        MaxLines="4"
                         OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context))">
                             <MudTooltip Text="Expand">
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"/>
@@ -194,6 +217,8 @@
         _isEditorView = false;
         _currentRole = "Admin";
         await LoadProjects();
+        StateHasChanged();
+
     }
     private async Task EditorToggle()
     {
@@ -201,8 +226,8 @@
         _isClientView = false;
         _isAdminView = false;
         _currentRole = "Editor";
-
         await LoadProjects();
+        StateHasChanged();
         // await LoadProjectsForEditor(context.UserId)
     }
     private async Task ClientToggle()
@@ -211,8 +236,9 @@
         _isAdminView = false;
         _isEditorView = false;
         _currentRole = "Client";
-
         await LoadProjectsForClient();
+        StateHasChanged();
+
 
     }
     private async Task LoadProjects()
