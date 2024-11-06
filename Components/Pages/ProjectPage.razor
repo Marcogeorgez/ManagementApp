@@ -7,7 +7,7 @@
     Dense=false Hover="true" Bordered=true 
     QuickFilter="new Func<Project,bool>(FilterFunc1)">
     <ToolBarContent>
-            <MudText Typo="Typo.h6">Your Projects</MudText>
+            <MudText Typo="Typo.h6">Your @_userName Projects</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search"
                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
@@ -204,8 +204,9 @@
     private string _searchString = "";
     private string _currentUserId = "";
     private string _currentRole = "";
+    private string _userName = "";
     private string CurrentRole => _isAdminView ? "Admin" :
-                              _isEditorView ? "Editor" : "Client";
+                          _isEditorView ? "Editor" : "Client";
     protected override async Task OnInitializedAsync()
     {
         AdminToggle();
@@ -213,6 +214,7 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
@@ -261,7 +263,7 @@
     {
         if (_isClientView)
             projects = await ProjectService.GetProjectByClientIdAsync(_isArchived, _currentUserId);
-        if(_isAdminView)
+        if(_isAdminView || _isEditorView)
             projects = await ProjectService.GetProjectsAsync(_isArchived);
         StateHasChanged();
     }
