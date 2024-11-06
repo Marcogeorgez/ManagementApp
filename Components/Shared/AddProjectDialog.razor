@@ -7,12 +7,14 @@
             <MudTextField T="string"
                           Label="Project Name"
                           @bind-Value="newProject.ProjectName"
-                          Required="true" />
+                          Required="true"
+                          AutoGrow=true/>
                           <MudSpacer />
             <MudTextField T="string"
                           Label="Description"
                           @bind-Value="newProject.Description"
-                          Required="true" />
+                          Required="true" 
+                          Lines="3" AutoGrow=true/>
             <MudSpacer />
 
             <MudDatePicker Label="Shoot Date"
