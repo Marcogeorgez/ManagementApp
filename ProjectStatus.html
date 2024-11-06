@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Done Last Week</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h3 id="done-last-week">Done Last Week</h3>
+<p>*Adding secure setting for the access to the web app.
+*Implemented the database as we've discussed (will re-iterate it later as we need)
+*Created roles (Admin-Editor-Client-Guest) and made sure every new user is just a guest.
+*Created the admin dashboard where we can change a user role.</p>
+<hr>
+<h3 id="done-this-week">Done This Week:</h3>
+<h4 id="-responsive-website">-Responsive Website</h4>
+<h4 id="-made-sure-to-update-font-to-use-inter-font">-made sure to update font to use inter font</h4>
+<h4 id="-implemented-notes-in-database-so-every-admin-user-have-his-own-private-notes">-Implemented Notes in Database, so every admin user have his own private notes.</h4>
+<h4 id="-improved-admin-dashboard-layout">-Improved Admin dashboard layout:</h4>
+<pre><code>Done:
+	Added a full-screen button for notes to enlarge it if you want to use it.
+	Filtering Mode
+	Notification when changing a user Role.
+	Confirmation Dialogue when CHANGING ANY USER TO ADMIN FOR SAFETY.
+	Toaster right bottom when the notes are saved.
+	Saving the notes after .1 sec of stopping writing which removed the need for save button (I think it is better for user experience this way, what do you think?)
+	Better looking grid with easily readable data.
+	Notes are specific for user so if there are 2 admins for example, they can't see each other notes about others.
+
+	Q1: Case Insensitive in filtering is currently ignored, would you like to enable it?
+	Q2: Currently guest user can be changed to client/editor one by one, would you like a button for changing multiple at same time?
+		if so, where would you like the button be?
+	Q3: Would you like a button to delete users from the database? (like removing his entire account?)
+	Q4: Would you like the selected role (the new role that will be set to) as a drop menu as it is currently implemented or something else?
+</code></pre>
+<h4 id="-implemented-dark-mode-storage-in-cookies-so-the-user-doesnt-have-to-change-it-when-he-refreshes-the-page-improving-ux">-Implemented Dark Mode storage in cookies so the user doesn't have to change it when he refreshes the page Improving UX.</h4>
+<h4 id="-implemented-login-with-google-on-the-sidebar-with-google-logo-icon-since-there-was-no-needed-for-a-separate-page">-Implemented Login With Google on the sidebar with google logo icon since there was no needed for a separate page.</h4>
+<h4 id="-implemented-projects-page">-Implemented Projects page:</h4>
+<pre><code>	Done:
+		Where every user can see his own related projects only and editors will be able to see projects assigned to them.
+		Implemented add projects button, where it opens a window to add project information ( will modify as needed later)
+		Due date is 4 weeks after shoot date (as you said in our first meeting or is that wrong? )
+		Added an Expand button for description to show in a full-screen mode
+		Added basic view for admin/editor/client
+				(Where everyone has his own things to see according to the access sheet you gave to me)
+		Added dynamic name greeting (will take the name from google account when user signs-in for first time but for now I'm displaying his email)
+	
+	Q1:The client be the one who create the project? or only the admin can create and give access to the client? or how would you like it.
+	Q2:Shoot Date and Due date will start from today right?  so it can't accept any date of older than today or should I let it free to add dates
+		(for example if you'd like to migrate old projects from google sheets to the website.)
+	Q3: Should projects delete-able? or it can only be archieved?
+	Q4: just to make sure, Only the admin can assign editors to the project right?
+</code></pre>
+<h4 id="-semi-finished-implemented-a-denied-access-page">-(semi-finished) Implemented a denied access page.</h4>
+<h4 id="minor-changes">Minor Changes:</h4>
+<h6 id="-implemented-the-scroll-bar">-Implemented the scroll bar</h6>
+<h6 id="-icon-depending-on-theme-mode-qdo-you-like-it-as-it-is-currently-implemented">-Icon depending on theme mode (Q:Do you like it as it is currently implemented?)</h6>
+<h6 id="-iconsarrows-for-the-open-close-side-bar">-Icons(arrows) for the open-close side bar</h6>
+<h6 id="-added-project-button-on-the-sidebar-with-this-current-icon-does-it-fit-or-would-you-like-to-change-it">-Added Project button on the sidebar with this current icon, does it fit or would you like to change it?</h6>
+<h6 id="-added-a-loading-indicator-for-tables-when-there-are-too-many-users-or-internet-is-slow-to-load-data-from-server-when-deployed">-Added a loading indicator for tables when there are too many users or internet is slow to load data from server when deployed.</h6>
+<hr>
+<h3 id="currently-working-on">Currently working on:</h3>
+<p>Client/Editor pages.</p>
+<h3 id="important-notes">Important Notes:</h3>
+<pre><code>-Due Date will be visible for editors/admin only.
+-Shoot Date given by the client with project name + description so he creates the project?
+-
+</code></pre>
+<hr>
+<h3 id="todo-later">TODO later:</h3>
+<h5 id="-stop-n1-db-fetches-to-improve-performance-when-there-are-too-many-users">-Stop n+1 db fetches to improve performance when there are too many users.</h5>
+<h5 id="-make-sure-authorization-works-as-intended-client-can-see-only-his-own-allowed-to-see-in-projects-etc">-make sure authorization works as intended (client can see only his own allowed-to see in projects etc)</h5>
+<pre><code>	-Not Implemented for now for easy debugging
+</code></pre>
+<h5 id="-bugs">-Bugs:</h5>
+<pre><code>	-Filter or sort month in ProjectPage.
+	-Filter Status according to a specific status (will need to do that for the enum)
+	-Filter not working for notes in admin dashboard
+	-Admin will see his own account in admin-dashboard
+</code></pre>
+
+            
+            
+        </body>
+        </html>

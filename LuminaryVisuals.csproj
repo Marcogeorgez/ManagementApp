@@ -31,6 +31,7 @@
     </PackageReference>
     <PackageReference Include="MudBlazor" Version="7.14.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+    <PackageReference Include="Tizzani.MudBlazor.HtmlEditor" Version="2.2.1" />
   </ItemGroup>
 
   <ItemGroup>

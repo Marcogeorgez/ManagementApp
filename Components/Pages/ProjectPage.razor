@@ -113,17 +113,6 @@
             <TemplateColumn CellClass="" Title="Actions">
                 <CellTemplate>
                     <MudStack Row>
-                        @if (_isAdminView)
-                        {
-                            <MudButton Color
-                            ="Color.Error"
-                            Variant="Variant.Filled"
-                           Size="Size.Small"
-                                   OnClick="@(() => DeleteDialog(context.Item))"
-                           StartIcon="@Icons.Material.Filled.Delete">
-                            Delete
-                        </MudButton>
-                        }
                         @if (_isArchived && _isAdminView)
                         {
                             <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
@@ -307,44 +296,6 @@
         await ProjectService.UnarchiveProjectAsync(project.ProjectId);
         await LoadProjects();
     }
-
-    private async Task DeleteDialog(Project project)
-    {
-        projectToDelete = project;
-        var parameters = new DialogParameters
-        {
-            {"Message", $"Are you sure you'd like to DELETE {project.ProjectName}? This will delete it permanently!"}
-        };
-        var dialog = DialogService.Show<ConfirmationDialog>("Confirmation",parameters);
-        var result = await dialog.Result;
-        if (result.Canceled)
-        {
-            return;
-        }
-        await ProjectService.DeleteProjectAsync(projectToDelete.ProjectId);
-        LoadProjects();
-        StateHasChanged();
-    }
-    private async Task DeleteProject(int projectId)
-    {
-        try
-        {
-            await ProjectService.DeleteProjectAsync(projectId);
-            await LoadProjects();
-            Snackbar.Add("Project deleted successfully!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error deleting project: {ex.Message}", Severity.Error);
-        }
-        StateHasChanged();
-    }
-
-
-
-
-
-
     private void OpenDescriptionDialog(string description, object context)
     {
         var parameters = new DialogParameters

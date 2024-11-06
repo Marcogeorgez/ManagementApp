@@ -94,7 +94,7 @@ public class ProjectService
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteProjectAsync(int projectId)
+/*    public async Task DeleteProjectAsync(int projectId)
     {
         var project = await _context.Projects.FindAsync(projectId);
         if (project.ProjectId == projectId)
@@ -102,7 +102,7 @@ public class ProjectService
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
         }
-    }
+    }*/
 
     public async Task ArchiveProjectAsync(int projectId, string reason)
     {
