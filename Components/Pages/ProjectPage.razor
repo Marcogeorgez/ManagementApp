@@ -3,8 +3,6 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-
-
 <MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single"
     Dense=false Hover="true" Bordered=true 
     QuickFilter="new Func<Project,bool>(FilterFunc1)">
@@ -33,11 +31,18 @@
         </MudHidden>
     </ColGroup>
     <Columns>
-        @if(_isAdminView){
+        @if (RoleBasedColumns[_currentRole].Contains("Id"))
+        {
             <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false"  />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
+        {
             <PropertyColumn Property="x => x.ProjectName" Title="Project Name" />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
+        {
             <PropertyColumn Property="x => x.Description" Title="Project Description">
-                    <CellTemplate >
+                <CellTemplate >
                     @{
                         string descriptionValue = context.Item.Description ?? string.Empty;
                     }
@@ -53,15 +58,34 @@
                     
                     </CellTemplate>
             </PropertyColumn>
+            }
+        @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
+        {
             <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" >
                 <CellTemplate>
                     <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Class="my-0" />
                 </CellTemplate>
             </PropertyColumn>
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
+        {
             <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
+        {
             <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" />
-            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" />
-            <PropertyColumn Property="x => x.Status" Title="Status" CellStyleFunc="@_cellStyleFunc" />
+        }
+
+        @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
+        {
+                <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("Status"))
+        {
+        <PropertyColumn Property="x => x.Status" Title="Status" CellStyleFunc="@_cellStyleFunc" />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("Actions"))
+        {
             <TemplateColumn CellClass="" Title="Actions">
                 <CellTemplate>
                     <MudStack Row>
@@ -97,11 +121,15 @@
                     </MudStack>
                 </CellTemplate>
             </TemplateColumn>
+            }
+        @if (RoleBasedColumns[_currentRole].Contains("Archive"))
+        {
             @if (_isArchived)
-            {
-            <PropertyColumn Property="x => x.IsArchived" Title="Archive" />
-            }
-            }
+                {
+                    <PropertyColumn Property="x => x.IsArchived" Title="Archive" />
+                }
+
+        }
     </Columns>
     <PagerContent>
         <MudDataGridPager T="Project"/>
@@ -115,8 +143,7 @@
     <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
     </MudStack>
 </MudStack>
-
-    <div class="mb-4">
+<div class="mb-4">
         <MudButton Color="Color.Success"
                    Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.AddCircle"
@@ -132,20 +159,29 @@
     private Project projectToDelete;
     private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived = false;
-    private bool _isAdminView = true;
+    private bool _isAdminView = false;
     private bool _isEditorView = false;
     private bool _isClientView = false;
     private string _searchString = "";
     private string _currentUserId = "";
+    private string _currentRole = "";
+    private string CurrentRole => _isAdminView ? "Admin" :
+                              _isEditorView ? "Editor" : "Client";
     protected override async Task OnInitializedAsync()
     {
+        AdminToggle();
         // Get the current user ID
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-        await LoadProjects();
     }
+    private Dictionary<string, List<string>> RoleBasedColumns => new()
+    {
+        { "Admin", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
+        { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status" } },
+        { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status" } }
+    };
+
     private async Task ArchivedToggle()
     {
         _isArchived = !_isArchived;
@@ -156,6 +192,7 @@
         _isAdminView = !_isAdminView;
         _isClientView = false;
         _isEditorView = false;
+        _currentRole = "Admin";
         await LoadProjects();
     }
     private async Task EditorToggle()
@@ -163,6 +200,8 @@
         _isEditorView = !_isEditorView;
         _isClientView = false;
         _isAdminView = false;
+        _currentRole = "Editor";
+
         await LoadProjects();
         // await LoadProjectsForEditor(context.UserId)
     }
@@ -171,6 +210,8 @@
         _isClientView = !_isClientView;
         _isAdminView = false;
         _isEditorView = false;
+        _currentRole = "Client";
+
         await LoadProjectsForClient();
 
     }
