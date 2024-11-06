@@ -34,6 +34,7 @@
                            DateChanged="@(date => newProject.DueDate = date )"
                            Required="true" 
                            MinDate="@_minDate" 
+                           HelperText="Will remove it later, just here for visibility and debugging"
                            />
             <MudSpacer />
 
@@ -42,19 +43,22 @@
                            DateChanged="@(date => newProject.WorkingMonth = date)"
                            Required="true" 
                            MinDate="@_minDate" 
-                           Class="mb-3" />
+                           Class="mb-3" 
+                           HelperText="Will remove it later, just here for visibility and debugging" />
             <MudSpacer />
 
             <MudNumericField T="int"
                              Label="Progress"
                              @bind-Value="newProject.ProgressBar"
                              Min="0" Max="100" 
-                             Class="mb-3" />
+                             Class="mb-3"
+                             HelperText="Will remove it later, just here for visibility and debugging" />
 
             <MudSelect T="ProjectStatus"
                        Label="Status"
                        @bind-Value="newProject.Status"
-                       Required="true">
+                       Required="true"
+                       HelperText="Will remove it later, just here for visibility and debugging, once created it will be upcoming by default (or scheduled ?)">
                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                 {
                     <MudSelectItem Value="@status">@status</MudSelectItem>

@@ -27,7 +27,9 @@
 
             <MudTextField T="string"
                           Label="Reason For Archiving Project"
-                          @bind-Value="newProject.Archive.Reason"/>
+                          @bind-Value="newProject.Archive.Reason"
+                          Required=true
+                          RequiredError="you must enter the reason for archiving this project"/>
         </MudForm>
     </DialogContent>
 
@@ -44,14 +46,25 @@
     private bool success;
     private MudForm form;
     private DateTime _minDate = DateTime.Now.Date;
+    private string errorMessage = "";
+    private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
+
     protected override void OnInitialized()
     {
         newProject.Archive = new Archive();
     }
 
-    private void Submit()
+    private async Task Submit()
     {
-        MudDialog.Close(DialogResult.Ok(newProject.Archive.Reason)); // Return the new project to the main component
+        await form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(newProject.Archive.Reason)); // Return the new project to the main component
+        }
+        else
+        {
+            errorMessage = "Please fill in all required fields correctly before submitting.";
+        }
     }
 
     private void Cancel()

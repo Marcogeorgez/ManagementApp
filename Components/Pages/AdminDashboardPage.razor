@@ -147,10 +147,10 @@ else
         try
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var currentUser = authState.User;
 
 
-            creatorId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value; // to retrieve user ID
+            creatorId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value; // to retrieve user ID
 
 
             _availableRoles = await GetAvailableRoles();
