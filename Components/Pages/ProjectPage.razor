@@ -18,8 +18,8 @@
     <ColGroup>
         <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
             <col style="width: 1%;" />
-            <col style="width: 10%;" />
-            <col style="width: 15%;" />
+            <col style="max-width: 4%;" />
+            <col style="width: 23%;" />
             <col style="width: 5%;" />
             <col style="width: 5%;" />
             <col style="width: 5%;" />
@@ -33,9 +33,26 @@
         </MudHidden>
     </ColGroup>
     <Columns>
+        @if(_isAdminView){
             <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false"  />
             <PropertyColumn Property="x => x.ProjectName" Title="Project Name" />
-            <PropertyColumn Property="x => x.Description" Title="Project Description" />
+            <PropertyColumn Property="x => x.Description" Title="Project Description">
+                    <CellTemplate >
+                    @{
+                        string descriptionValue = context.Item.Description ?? string.Empty;
+                    }
+                    <MudTextField T="string"
+                        HelperText="Click to expand" Value="@descriptionValue" 
+                        Immediate="true" Adornment="Adornment.End" 
+                        AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                        OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context))">
+                            <MudTooltip Text="Expand">
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"/>
+                            </MudTooltip>
+                    </MudTextField>
+                    
+                    </CellTemplate>
+            </PropertyColumn>
             <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" >
                 <CellTemplate>
                     <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Class="my-0" />
@@ -84,13 +101,19 @@
             {
             <PropertyColumn Property="x => x.IsArchived" Title="Archive" />
             }
+            }
     </Columns>
     <PagerContent>
         <MudDataGridPager T="Project"/>
     </PagerContent>
 </MudDataGrid>
-<MudStack Row="true">
+<MudStack Spacing="0">
     <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+    <MudStack Row=true>
+    <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
+    <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
+    <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
+    </MudStack>
 </MudStack>
 
     <div class="mb-4">
@@ -107,6 +130,12 @@
     private Project projectToDelete;
     private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived = false;
+    private bool _isAdminView = false;
+    private bool _isEditorView = false;
+    private bool _isClientView = false;
+
+
+
     private string _searchString = "";
 
     protected override async Task OnInitializedAsync()
@@ -116,6 +145,27 @@
     private async Task ArchivedToggle()
     {
         _isArchived = !_isArchived;
+        await LoadProjects();
+    }
+    private async Task AdminToggle()
+    {
+        _isAdminView = !_isAdminView;
+        _isClientView = false;
+        _isEditorView = false;
+        await LoadProjects();
+    }
+        private async Task EditorToggle()
+    {
+        _isEditorView = !_isEditorView;
+        _isClientView = false;
+        _isAdminView = false;
+        await LoadProjects();
+    }
+    private async Task ClientToggle()
+    {
+        _isClientView = !_isClientView;
+        _isAdminView = false;
+        _isEditorView = false;
         await LoadProjects();
     }
     private async Task LoadProjects()
@@ -187,6 +237,31 @@
         }
         StateHasChanged();
     }
+
+
+
+
+
+
+    private void OpenDescriptionDialog(string description, object context)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Description", description }
+        };
+        var options = new DialogOptions { FullScreen = true };
+        DialogService.Show<DescriptionDialog>("Project Description", parameters, options);
+    }
+
+
+
+
+
+
+
+
+
+    // Filter and Styling Functions
     private bool FilterFunc1(Project project) => FilterFunc(project, _searchString);
     private bool FilterFunc(Project project, string searchString)
     {

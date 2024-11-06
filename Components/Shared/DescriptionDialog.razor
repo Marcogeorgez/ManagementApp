@@ -1,0 +1,30 @@
+﻿@using MudBlazor
+
+<MudDialog FullScreen="true">
+    <DialogContent>
+        <MudTextField T="string" Label="Description" Variant="Variant.Outlined" Lines="30"
+                      Value="@Description" ValueChanged="OnNoteTextChanged" Immediate="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+
+    [Parameter] public string Description { get; set; }
+    [Parameter] public EventCallback<string> NewDescription { get; set; }
+
+
+    private void Close() => Dialog.Close();
+    private void OnNoteTextChanged(string text)
+    {
+        Description = text;
+        NewDescription.InvokeAsync(text);
+    }
+    private void Cancel()
+    {
+        Dialog.Close(DialogResult.Ok(Description));
+    }
+}
