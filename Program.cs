@@ -11,11 +11,10 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Added services to the container.
 builder.Services.AddMudServices();
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
@@ -23,13 +22,11 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 // Custom Implementation of SignInManager to let new users.role Guest by default
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
-// Services
 builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<UserNoteService>();
 builder.Services.AddScoped<ProjectService>();
-
 builder.Services.AddHttpClient();
-// Now add Google Authentication after configuring Identity Cookies
+// Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 {
     var clientId = builder.Configuration["Authentication:Google:ClientId"]
@@ -51,10 +48,9 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     options.SlidingExpiration = true; 
 });
 
-// Configure the database context
+// database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
