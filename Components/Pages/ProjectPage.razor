@@ -43,12 +43,13 @@
         {
 
             <col style="width: 1%;" /> <!-- ID -->
-            <col style="width: 4%;" /> <!-- ProjectName -->
-            <col style="width: 35%;" /> <!-- ProjectDescription -->
+            <col style="width: 15%;" /> <!-- ProjectName -->
+            <col style="width: 34%;" /> <!-- ProjectDescription -->
             <col style="width: 10%;" /> <!-- ProgressBar -->
             <col style="width: 5%;" /> <!-- ShootDate -->
-            <col style="width: 5%;" /> <!-- Status -->
-        }
+            <col style="width: 10%;" /> <!-- Status -->
+            <col style="width: 5%;" /> <!-- Actions  -->
+            }
         </MudHidden>
     </ColGroup>
     <Columns>
@@ -112,14 +113,18 @@
             <TemplateColumn CellClass="" Title="Actions">
                 <CellTemplate>
                     <MudStack Row>
-                        <MudButton Color="Color.Error"
-                           Variant="Variant.Filled"
+                        @if (_isAdminView)
+                        {
+                            <MudButton Color
+                            ="Color.Error"
+                            Variant="Variant.Filled"
                            Size="Size.Small"
                                    OnClick="@(() => DeleteDialog(context.Item))"
                            StartIcon="@Icons.Material.Filled.Delete">
                             Delete
                         </MudButton>
-                        @if (_isArchived)
+                        }
+                        @if (_isArchived && _isAdminView)
                         {
                             <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
                                         Variant="Variant.Filled"
@@ -130,7 +135,7 @@
                                 @(context.Item.IsArchived ? "Unarchive" : "Archive")
                             </MudButton>
                         }
-                        else
+                        else if(!_isArchived && _isAdminView)
                         {
                             <MudButton Color="Color.Warning"
                                         Variant="Variant.Filled"
@@ -139,6 +144,17 @@
                                         StartIcon="@Icons.Material.Filled.Archive"
                                         Class="ml-2">
                                 Archive
+                            </MudButton>
+                        }
+                        else if (_isClientView)
+                        {
+                            <MudButton Color="Color.Info"
+                                       Variant="Variant.Filled"
+                                       Size="Size.Small"
+                                       OnClick="@(() => AddProjectDialogAsync(_closeButton))"
+                                       StartIcon="@Icons.Material.Filled.Archive"
+                                       Class="ml-2">
+                                Modify
                             </MudButton>
                         }
                     </MudStack>
@@ -202,7 +218,7 @@
     {
         { "Admin", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
         { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status" } },
-        { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status" } }
+        { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
     };
 
     private async Task ArchivedToggle()
@@ -243,12 +259,15 @@
     }
     private async Task LoadProjects()
     {
-        projects = await ProjectService.GetProjectsAsync(_isArchived);
+        if (_isClientView)
+            projects = await ProjectService.GetProjectByClientIdAsync(_isArchived, _currentUserId);
+        if(_isAdminView)
+            projects = await ProjectService.GetProjectsAsync(_isArchived);
         StateHasChanged();
     }
     private async Task LoadProjectsForClient()
     {
-        projects = await ProjectService.GetProjectsAsync(_isArchived);
+        projects = await ProjectService.GetProjectByClientIdAsync(_isArchived, _currentUserId);
         StateHasChanged();
     }
 
@@ -263,7 +282,7 @@
             var newProject = (Project) result.Data;
             newProject.ClientId = _currentUserId;
             await ProjectService.AddProjectAsync(newProject);
-            LoadProjects();
+            StateHasChanged();
         }
     }
     public async Task ArchiveProject(DialogOptions options,Project project)
