@@ -126,20 +126,24 @@
     </div>
 
 @code {
+    [Inject]
+    private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
     private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived = false;
-    private bool _isAdminView = false;
+    private bool _isAdminView = true;
     private bool _isEditorView = false;
     private bool _isClientView = false;
-
-
-
     private string _searchString = "";
-
+    private string _currentUserId = "";
     protected override async Task OnInitializedAsync()
     {
+        // Get the current user ID
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var currentUser = authState.User;
+        _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
         await LoadProjects();
     }
     private async Task ArchivedToggle()
@@ -154,33 +158,43 @@
         _isEditorView = false;
         await LoadProjects();
     }
-        private async Task EditorToggle()
+    private async Task EditorToggle()
     {
         _isEditorView = !_isEditorView;
         _isClientView = false;
         _isAdminView = false;
         await LoadProjects();
+        // await LoadProjectsForEditor(context.UserId)
     }
     private async Task ClientToggle()
     {
         _isClientView = !_isClientView;
         _isAdminView = false;
         _isEditorView = false;
-        await LoadProjects();
+        await LoadProjectsForClient();
+
     }
     private async Task LoadProjects()
     {
         projects = await ProjectService.GetProjectsAsync(_isArchived);
         StateHasChanged();
     }
+    private async Task LoadProjectsForClient()
+    {
+        projects = await ProjectService.GetProjectsAsync(_isArchived);
+        StateHasChanged();
+    }
+
 
     private async Task AddProjectDialogAsync(DialogOptions options)
     {
+
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", options);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
             var newProject = (Project) result.Data;
+            newProject.ClientId = _currentUserId;
             await ProjectService.AddProjectAsync(newProject);
             LoadProjects();
         }

@@ -21,6 +21,10 @@ public class Project
     public int ProjectId { get; set; }
 
     [Required]
+    public string ClientId {  get; set; }
+    public virtual ApplicationUser Client { get; set; } 
+
+    [Required]
     [StringLength(255)]
     [Display(Name = "Project Name")]
     public string ProjectName { get; set; }

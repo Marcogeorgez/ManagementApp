@@ -18,61 +18,73 @@ public class ProjectService
 
     public async Task<List<Project>> GetProjectsAsync(bool isArchived)
     {
-        if (isArchived == false)
-        {
             return await _context.Projects
-                .Where(p => !p.IsArchived)
+                .Where(p => p.IsArchived == isArchived)
                 .Include(p => p.VideoEditors)
                 .Include(p => p.ClientPayment)
                 .Include(p => p.Chats)
                 .Include(p => p.Archive)
                 .Include(p => p.EditorPayments)
                 .ToListAsync();
-        }
-        else
-        {
-            return await _context.Projects
-                .Include(p => p.VideoEditors)
-                .Include(p => p.ClientPayment)
-                .Include(p => p.Chats)
-                .Include(p => p.Archive)
-                .Include(p => p.EditorPayments)
-                .ToListAsync();
-        }
     }
 
-    public async Task<Project> GetProjectByIdAsync(int projectId)
+    public async Task<Project?> GetProjectByCLientIdAsync(bool isArchived,string UserId)
     {
 
         var project = await _context.Projects
+            .Where(p => p.IsArchived == isArchived)
             .Include(p => p.VideoEditors)
             .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
             .Include(p => p.EditorPayments)
-            .FirstOrDefaultAsync(p => p.ProjectId == projectId);
-        if(project == null)
-        {
-            return null;
-        }
-        return project;
+            .FirstOrDefaultAsync(p => p.ClientId == UserId);
+            if (project == null)
+                return null;
+            return project;      
     }
+/*    public async Task<Project?> GetProjectByEditorIdAsync(bool isArchived, string EditorId)
+    {
+
+        var project = await _context.Projects
+            .Where(p => p.IsArchived == isArchived)
+            .Include(p => p.VideoEditors)
+            .Include(p => p.ClientPayment)
+            .Include(p => p.Chats)
+            .Include(p => p.Archive)
+            .Include(p => p.EditorPayments)
+            .FirstOrDefaultAsync(p => p. == EditorId);
+        if (project == null)
+            return null;
+        return project;
+    }*/
 
     public async Task AddProjectAsync(Project project)
     {
-        var x = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
+        var client = await _context.Users.FirstOrDefaultAsync(u => u.Id == project.ClientId);
 
-        if (x == null)
+        if (client == null)
         {
+            // Handle the case where the client does not exist.
+            throw new Exception("Client not found.");
+        }
+
+        // If the project doesn't already exist, add it
+        var existingProject = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
+
+        if (existingProject == null)
+        {
+            // Set the ClientId for the project, though it's already set in the project, it's good to confirm
+            project.ClientId = client.Id;  // Ensure ClientId is assigned to the project
+
+            // Add the project to the context and save changes
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
-            return;
         }
         else
         {
-            // TODO: add found project with same ID
-
-            return;
+            // Handle the case where the project already exists (optional)
+            throw new Exception("Project already exists.");
         }
     }
 
