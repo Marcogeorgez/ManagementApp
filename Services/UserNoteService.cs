@@ -14,11 +14,11 @@ public class UserNoteService
          _context = context;
     }
 
-    public async Task<MessageSuccess> AddNoteAsync(string creatorId, string targetId, string note)
+    public async Task<MessageSuccess> AddNoteAsync(string targetId, string note)
     {
-        if (string.IsNullOrEmpty(creatorId) || string.IsNullOrEmpty(targetId))
+        if (string.IsNullOrEmpty(targetId))
         {
-            return new MessageSuccess { Success = false, Message = "Creator or Target ID cannot be null or empty." };
+            return new MessageSuccess { Success = false, Message = "Target ID cannot be null or empty." };
         }
 
         try
@@ -26,7 +26,6 @@ public class UserNoteService
 
             var userNote = new UserNote
             {
-                CreatedByUserId = creatorId,
                 TargetUserId = targetId,
                 Note = note
             };
@@ -42,13 +41,9 @@ public class UserNoteService
 
     }
 
-    public async Task<IEnumerable<UserNote>> GetSingleNotes(string createdByUserId)
+    public async Task<IEnumerable<UserNote>> GetAllNotes()
     {
-        return await _context.UserNote.Where(n => n.TargetUserId == createdByUserId).ToListAsync();
-    }
-    public async Task<IEnumerable<UserNote>> GetAllNotes(string createdByUserId)
-    {
-        return await _context.UserNote.Where(n => n.CreatedByUserId == createdByUserId).ToListAsync();
+        return await _context.UserNote.ToListAsync();
     }
 
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)

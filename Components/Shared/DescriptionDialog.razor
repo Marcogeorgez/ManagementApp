@@ -4,6 +4,9 @@
     <DialogContent>
         <MudTextField T="string" Label="Description" Variant="Variant.Outlined" Lines="10" AutoGrow=true
                       Value="@Description" ValueChanged="OnNoteTextChanged" Immediate="true" />
+        <MudHtmlEditor >
+            <MudHtmlToolbarOptions InsertImage="false" /> 
+        </MudHtmlEditor>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="@Cancel">Close</MudButton>

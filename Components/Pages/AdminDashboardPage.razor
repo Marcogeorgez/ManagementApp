@@ -79,8 +79,8 @@ else
             </PropertyColumn>
             <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" Style="min-width: 150px;" CellStyle="text-align: center" />
 
-            <TemplateColumn Title="Change Role">
-                <CellTemplate>
+            <TemplateColumn Title="Change Role" >
+                <CellTemplate >
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
                              Variant="Variant.Filled"
                              Color="Color.Success"
@@ -194,7 +194,7 @@ else
     // Load all user notes
     private async Task LoadUserNotes()
     {
-        var notes = await UserNoteService.GetAllNotes(creatorId);
+        var notes = await UserNoteService.GetAllNotes();
 
         foreach (var note in notes)
         {
@@ -241,7 +241,7 @@ else
             if (noteToSave.Id == 0)
             {
                 // Add the new note
-                var result = await UserNoteService.AddNoteAsync(creatorId, targetId, noteToSave.Note);
+                var result = await UserNoteService.AddNoteAsync(targetId, noteToSave.Note);
                 if (result.Success)
                 {
                     Snackbar.Clear();
