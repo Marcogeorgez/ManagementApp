@@ -94,9 +94,12 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.HourlyRate" Title="Rate" Style="" CellStyle="text-align: center" ShowFilterIcon="false" Format="C">
+            <PropertyColumn Property="x => x.HourlyRate" Title="Rate" 
+                Style="" CellStyle="text-align: center" ShowFilterIcon="false" Format="C">
                 </PropertyColumn>
-            <PropertyColumn Property="x => x.HourlyRate * storedValue" Title="Rate" Style="" CellStyle="text-align: center" ShowFilterIcon="false" ShowColumnOptions="false" Format="Lek #,##0.00">
+            <PropertyColumn Property="x => x.HourlyRate * storedValue" Title="Rate"
+                Style="" CellStyle="text-align: center" ShowFilterIcon="false"
+                            ShowColumnOptions="false" Format="L #,##0">
                 </PropertyColumn>
             <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes">
                 <CellTemplate >
@@ -121,7 +124,8 @@ else
     </MudDataGrid>
         <MudTextField T="decimal"
                   @bind-value="storedValue" Label="Usd To Lek"
-                  Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;" />
+                  Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;"
+                  Immediate="true" />
  
 
 
