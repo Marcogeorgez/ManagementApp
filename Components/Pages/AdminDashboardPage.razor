@@ -1,11 +1,4 @@
 ﻿@page "/admin-dashboard"
-@using LuminaryVisuals.Data.Entities
-@using LuminaryVisuals.Services
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
-@using System.Security.Claims
-@using System.Timers
 @inject UserManagementService UserManagementService
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -14,7 +7,7 @@
 @inject ISnackbar Snackbar
 @inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
-
+@inject ILocalStorageService localStorage
 
 @attribute [Authorize(Policy = "RequireAdminRole")]
 
@@ -48,7 +41,7 @@ else
 
     <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-                 DragIndicatorSize="Size.Small" Loading=@_loading>
+                 DragIndicatorSize="Size.Small" Loading=@_loading Dense=true>
 
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
@@ -57,14 +50,16 @@ else
                           Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
                           Class="mt-0"></MudTextField>
         </ToolBarContent>
+
         <ColGroup>
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
             <col style="width:3vw;" />
             <col style="width: 10vw;" />
             <col style="width: 3vw;" />
             <col style="width: 5vw;" />
+                <col style="width: 1vw;" />
+                <col style="width: 1vw;" />
             <col style="width: 50vw;" />
-                <col style="width: 5vw;" />
             </MudHidden>
         </ColGroup>
         <Columns>
@@ -99,7 +94,10 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-
+            <PropertyColumn Property="x => x.HourlyRate" Title="Rate" Style="" CellStyle="text-align: center" ShowFilterIcon="false" Format="C">
+                </PropertyColumn>
+            <PropertyColumn Property="x => x.HourlyRate * storedValue" Title="Rate" Style="" CellStyle="text-align: center" ShowFilterIcon="false" ShowColumnOptions="false" Format="Lek #,##0.00">
+                </PropertyColumn>
             <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes">
                 <CellTemplate >
                     @{
@@ -116,19 +114,25 @@ else
                                   OnAdornmentClick="@(() => OpenNoteDialog(noteValue,context) )" />
                 </CellTemplate>
                 </PropertyColumn>
-            @*<PropertyColumn Property="x => x.HourlyRate" Title="Current Role" Style="min-width: 150px;" CellStyle="text-align: center" />
-        *@</Columns>
+        </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
     </MudDataGrid>
+        <MudTextField T="decimal"
+                  @bind-value="storedValue" Label="Usd To Lek"
+                  Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;" />
+ 
+
+
 }
 
 @code {
     private bool _loading = true;
     private bool _error = false;
-    private bool _sortNameByLength;
     private bool _isUpdating;
+    private bool isNoteChanged = false; // Flag to track if the note has changed
+    private bool isCurrencyChanged = false; // Flag to track if the currency value has changed
     private string _updateMessage;
     private string _updateMessageClass;
     private string _updatingUserId;
@@ -143,7 +147,20 @@ else
     private List<string> _availableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
-
+    private decimal _storedValue;
+    public decimal storedValue
+    {
+        get => _storedValue;
+        set
+        {
+            if (_storedValue != value)
+            {
+                _storedValue = value;
+                SaveCurrencyValue();
+            }
+        }
+    }
+    private decimal lastSavedValue;
     protected override async Task OnInitializedAsync()
     {
         try
@@ -166,6 +183,13 @@ else
             _timer = new System.Timers.Timer(Delay);
             _timer.Elapsed += OnTimedEvent;
             _timer.AutoReset = false; // to prevent timer from restarting automatically
+            storedValue = await localStorage.GetItemAsync<decimal>("usdLek");
+            if(storedValue == 0)
+            {
+                storedValue = 100;
+            }
+            lastSavedValue = storedValue;
+
         }
         catch (Exception ex)
         {
@@ -206,15 +230,28 @@ else
             }
         }
     }
-
-
     // Save notes when user stops writing
     private void OnTimedEvent(object sender, ElapsedEventArgs e)
     {
         _timer.Stop();
-        InvokeAsync(async () => await SaveNotes());
-    }
+        InvokeAsync(async () =>
+        {
+            // Save the note if it has changed
+            if (isNoteChanged)
+            {
+                await SaveNotes();
+                isNoteChanged = false;
+            }
 
+            // Save the currency value if it has changed
+            if (isCurrencyChanged)
+            {
+                await SaveCurrencyValue();
+                isCurrencyChanged = false; 
+            }
+        });
+
+    }
     private void OnValueChanged(string text, CellContext<UserRoleViewModel> context)
     {
 
@@ -228,11 +265,29 @@ else
         // Update the note text
         userNotesDict[targetId].Note = text;
         _pendingNoteText = text;  
-
+        isNoteChanged = true;
         // Reset and start the timer each time the text changes
         _timer.Stop();
         _timer.Start(); 
     }
+    private async Task SaveCurrencyValue()
+    {
+        // Save the currency value only if it has changed
+        if (storedValue != lastSavedValue)
+        {
+            await SaveToStorage();
+            lastSavedValue = storedValue; // Update the last saved value
+        }
+
+        // Set the flag to true as the currency has changed
+        isCurrencyChanged = true;
+
+        // Restart the timer after saving
+        _timer.Stop();
+        _timer.Start(); 
+    }
+
+
     private async Task SaveNotes()
     {
         if (userNotesDict.ContainsKey(targetId))
@@ -275,20 +330,16 @@ else
                 }
             }
         }
-    }
-        
-
+    }        
     private async Task<List<string>> GetAvailableRoles()
     {
         var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
         return roles.Where(r => r != null).ToList();
     }
-
     private string GetRolesAsString(UserRoleViewModel user)
     {
         return string.Join(", ", user.Roles ?? new List<string>());
     }
-
     private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
         try
@@ -344,5 +395,11 @@ else
             _updatingUserId = null;
             StateHasChanged();
         }
+    }
+
+    private async Task SaveToStorage()
+    {
+        await localStorage.SetItemAsync("usdLek", storedValue);
+        StateHasChanged();
     }
 }
