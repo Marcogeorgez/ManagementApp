@@ -3,6 +3,7 @@ using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Identity;
@@ -43,9 +44,9 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 })
 .AddCookie(options =>
 {
-    options.LoginPath = "/counter";
+    options.LoginPath = "/";
     options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "AccessDenied";
+    options.AccessDeniedPath = "/AccessDenied";
     options.SlidingExpiration = true; 
 });
 
@@ -102,7 +103,19 @@ builder.Services.AddAntiforgery(options =>
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
-
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/account/login";
+    options.AccessDeniedPath = "/AccessDenied";
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            context.Response.Redirect("/accessdenied");
+            return Task.CompletedTask;
+        }
+    };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
