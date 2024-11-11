@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,7 +106,6 @@ builder.Services.AddAntiforgery(options =>
     });
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/account/login";
     options.AccessDeniedPath = "/AccessDenied";
     options.Events = new CookieAuthenticationEvents
     {
@@ -116,6 +116,10 @@ builder.Services.ConfigureApplicationCookie(options =>
         }
     };
 });
+
+// BLazored Local Storge service
+builder.Services.AddBlazoredLocalStorage();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
