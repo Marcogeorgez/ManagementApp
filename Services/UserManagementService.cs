@@ -1,5 +1,6 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Migrations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,7 @@ public class UserManagementService
         _logger = logger;
     }
 
-    public async Task<List<UserRoleViewModel>> GetAllUsersWithRolesAsync(string creatorUserId)
+    public async Task<List<UserRoleViewModel>> GetAllUsersWithRolesAsync()
     {
         _logger.LogInformation("Getting all users with roles");
         var users = await _userManager.Users.ToListAsync();
@@ -32,13 +33,14 @@ public class UserManagementService
             _logger.LogInformation($"User {user.UserName} has roles: {string.Join(", ", roles)}");
 
             var notes = await _context.UserNote
-            .Where(n => n.CreatedByUserId == creatorUserId && n.TargetUserId == user.Id)
+            .Where(n => n.TargetUserId == user.Id)
             .ToDictionaryAsync(n => n.TargetUserId, n => n);
 
             userRoles.Add(new UserRoleViewModel
             {
                 UserId = user.Id,
                 UserName = user.UserName,
+                HourlyRate = user.HourlyRate,
                 Roles = roles.ToList(),
                 Notes = notes
             });
@@ -87,6 +89,7 @@ public class UserRoleViewModel
     public List<string> Roles { get; set; }
     public string SelectedRole { get; set; }
     public Dictionary<string, UserNote> Notes { get; set; }
+    public decimal? HourlyRate { get; set; }
     public string GetNoteValue(string targetUserId)
     {
         // Check if the targetUserId is null or empty
