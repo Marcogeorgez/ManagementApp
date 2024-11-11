@@ -64,6 +64,7 @@ else
             <col style="width: 3vw;" />
             <col style="width: 5vw;" />
             <col style="width: 50vw;" />
+                <col style="width: 5vw;" />
             </MudHidden>
         </ColGroup>
         <Columns>
@@ -115,7 +116,8 @@ else
                                   OnAdornmentClick="@(() => OpenNoteDialog(noteValue,context) )" />
                 </CellTemplate>
                 </PropertyColumn>
-</Columns>
+            @*<PropertyColumn Property="x => x.HourlyRate" Title="Current Role" Style="min-width: 150px;" CellStyle="text-align: center" />
+        *@</Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
@@ -154,7 +156,7 @@ else
 
 
             _availableRoles = await GetAvailableRoles();
-            AllUsers = await UserManagementService.GetAllUsersWithRolesAsync(creatorId);
+            AllUsers = await UserManagementService.GetAllUsersWithRolesAsync();
             _users = AllUsers.ToList();
 
             await LoadUserNotes();
