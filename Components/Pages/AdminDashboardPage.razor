@@ -1,5 +1,5 @@
 ﻿@page "/admin-dashboard"
-@inject UserManagementService UserManagementService
+@inject UserServices UserManagementService
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject RoleManager<IdentityRole> RoleManager
@@ -39,16 +39,22 @@ else
     }
 
 
-    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true Items="@AllUsers" SortMode="SortMode.Multiple"
+    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true 
+                 Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-                 DragIndicatorSize="Size.Small" Loading=@_loading Dense=true>
+                 DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
+                 EditTrigger="DataGridEditTrigger.OnRowClick" 
+                 EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
+                 CommittedItemChanges="@CommittedItemChanges" ReadOnly="@_readOnly"
+                 >
 
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
                           Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
-                          Class="mt-0"></MudTextField>
+                          Class="mt-0" />
         </ToolBarContent>
 
         <ColGroup>
@@ -63,7 +69,7 @@ else
             </MudHidden>
         </ColGroup>
         <Columns>
-            <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;">
+            <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;" Editable=false>
                 <CellTemplate Context="cell">
                     @{
                         var index = AllUsers.ToList().IndexOf(cell.Item) + 1;
@@ -71,11 +77,24 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" Title="User Name" CellStyle="text-align: center">
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" Title="User Name" CellStyle="text-align: center" Editable=false>
             </PropertyColumn>
-            <PropertyColumn Property="x => GetRolesAsString(x)" Title="Current Role" Style="min-width: 150px;" CellStyle="text-align: center" />
+            <PropertyColumn Property="x => x.SelectedRole" Title="Current Role" 
+                Style="min-width: 150px;" CellStyle="text-align: center" >
+                <EditTemplate >
+                    <MudSelect @bind-Value="context.Item.SelectedRole"
+                               Required
+                               RequiredError="You must select a Position!!!"
+                               Margin="@Margin.Dense">
+                        @foreach (var role in _allAvailableRoles)
+                        {
+                            <MudSelectItem Value="@role">@role</MudSelectItem>
+                        }
+                    </MudSelect>
+                </EditTemplate>
+            </PropertyColumn>
 
-            <TemplateColumn Title="Change Role" >
+            <TemplateColumn Title="Change Role">
                 <CellTemplate >
                     <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
                              Variant="Variant.Filled"
@@ -94,14 +113,16 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.HourlyRate" Title="Rate" 
-                Style="" CellStyle="text-align: center" ShowFilterIcon="false" Format="C">
+            <PropertyColumn Property="x => x.HourlyRate" Title="Rate $" 
+                Style="" CellStyle="text-align: center" 
+                ShowFilterIcon="false" Format="C">
                 </PropertyColumn>
-            <PropertyColumn Property="x => x.HourlyRate * storedValue" Title="Rate"
+            <PropertyColumn Property="x => x.HourlyRate * storedValue" Title="Rate Lek"
                 Style="" CellStyle="text-align: center" ShowFilterIcon="false"
                             ShowColumnOptions="false" Format="L #,##0">
                 </PropertyColumn>
-            <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes">
+
+            <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes" Editable=false Required=false>
                 <CellTemplate >
                     @{
 
@@ -122,33 +143,44 @@ else
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
     </MudDataGrid>
+    if(_usdToLek){
         <MudTextField T="decimal"
                   @bind-value="storedValue" Label="Usd To Lek"
                   Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;"
                   Immediate="true" />
- 
+    }
+ <div class="d-flex flex-wrap mt-4">
+    <MudSwitch @bind-Value="_readOnly" Color="Color.Primary">Read Only</MudSwitch>
+        <div class="d-flex justify-start align-center">
+            <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">Form</p>
+            <MudSwitch @bind-Value="_isCellEditMode" Color="Color.Primary">Cell</MudSwitch>
+        </div>
+        <MudDivider/>
+        <MudSwitch @bind-Value="_usdToLek" Color="Color.Primary">Change Conversion Rate</MudSwitch>
 
-
+    </div>
 }
 
 @code {
+    private bool _readOnly;
     private bool _loading = true;
     private bool _error = false;
     private bool _isUpdating;
+    private bool _usdToLek;
     private bool isNoteChanged = false; // Flag to track if the note has changed
     private bool isCurrencyChanged = false; // Flag to track if the currency value has changed
     private string _updateMessage;
     private string _updateMessageClass;
     private string _updatingUserId;
     private string _searchString;
-    private string creatorId;
+    private string creatorId; // DELETE  LATER
     private string targetId;
     private string _pendingNoteText;
     private System.Timers.Timer _timer;
     private const double Delay = 100 ; // 0.1 Second Delay
     private UserNote userNotes = new();
     private Dictionary<string, UserNote> userNotesDict = new();
-    private List<string> _availableRoles = new();
+    private List<string> _allAvailableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
     private decimal _storedValue;
@@ -171,17 +203,12 @@ else
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var currentUser = authState.User;
-
-
-            creatorId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value; // to retrieve user ID
-
-
-            _availableRoles = await GetAvailableRoles();
-            AllUsers = await UserManagementService.GetAllUsersWithRolesAsync();
+            // NOT USED ANYMORE LATER WILL DELETE creatorId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value; // to retrieve current logged-in user ID
+            _allAvailableRoles = await GetAvailableRoles();
+            AllUsers = await UserManagementService.GetAllUsersAsync();
             _users = AllUsers.ToList();
 
             await LoadUserNotes();
-
 
             _loading = false;
             _timer = new System.Timers.Timer(Delay);
@@ -290,8 +317,6 @@ else
         _timer.Stop();
         _timer.Start(); 
     }
-
-
     private async Task SaveNotes()
     {
         if (userNotesDict.ContainsKey(targetId))
@@ -306,7 +331,7 @@ else
                 if (result.Success)
                 {
                     Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = "Bottom-Right";
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Add($"Successfully saved note", Severity.Info);
                     StateHasChanged();
                 }
@@ -400,10 +425,47 @@ else
             StateHasChanged();
         }
     }
-
     private async Task SaveToStorage()
     {
         await localStorage.SetItemAsync("usdLek", storedValue);
         StateHasChanged();
+    }
+
+    // events
+    private List<string> _events = new();
+    private bool _isCellEditMode;
+    private string _originalRole;
+    private decimal? _originalHourlyRate;
+    void StartedEditingItem(UserRoleViewModel user)
+    {
+        // Store the original values before editing
+        _originalRole = user.SelectedRole;
+        _originalHourlyRate = user.HourlyRate;
+    }
+
+    void CanceledEditingItem(UserRoleViewModel item)
+    {
+    }
+
+    private async Task CommittedItemChanges(UserRoleViewModel user)
+    {
+        bool roleChanged = user.SelectedRole != _originalRole;
+        bool hourlyRateChanged = user.HourlyRate != _originalHourlyRate;
+        if (roleChanged && hourlyRateChanged)
+        {
+            UpdateSelectedRole(user, user.SelectedRole);
+            await UserManagementService.UpdateHourlyRateAsync(user.UserId, user.HourlyRate);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+            Snackbar.Add($"Successfully changed hourly rate {user.UserName} and his role", Severity.Info);
+        }
+        else if (roleChanged)
+            UpdateSelectedRole(user, user.SelectedRole);
+        else if (hourlyRateChanged)
+        {
+            await UserManagementService.UpdateHourlyRateAsync(user.UserId, user.HourlyRate);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+            Snackbar.Add($"Successfully changed hourly rate {user.UserName} to {user.HourlyRate}$", Severity.Info);
+            StateHasChanged();
+        }
     }
 }
