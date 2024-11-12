@@ -1,15 +1,15 @@
 ﻿@using MudBlazor
 
-<MudDialog FullScreen="true">
-    <DialogContent>
+<MudDialog>
+    <DialogContent> 
         <MudHtmlEditor Html="@Description" HtmlChanged="OnNoteTextChanged">
             <MudHtmlToolbarOptions InsertImage="false" /> 
         </MudHtmlEditor>
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@Cancel">Close</MudButton>
-        <MudButton OnClick="@Save">Save</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error">Close</MudButton>
+        <MudButton OnClick="@Save" Color="Color.Info">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
