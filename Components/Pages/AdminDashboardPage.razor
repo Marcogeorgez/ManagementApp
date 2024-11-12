@@ -59,10 +59,9 @@ else
 
         <ColGroup>
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
-            <col style="width:3vw;" />
+            <col style="width: 3vw;" />
             <col style="width: 10vw;" />
             <col style="width: 3vw;" />
-            <col style="width: 5vw;" />
             <col style="width: 1vw;" />
             <col style="width: 1vw;" />
             <col style="width: 50vw;" />
@@ -82,9 +81,9 @@ else
             <PropertyColumn Property="x => x.SelectedRole" Title="Current Role" 
                 Style="min-width: 150px;" CellStyle="text-align: center" >
                 <EditTemplate >
-                    <MudSelect @bind-Value="context.Item.SelectedRole"
-                               Required
-                               RequiredError="You must select a Position!!!"
+                    <MudSelect @bind-Value="context.Item.SelectedRole" 
+                               Required Variant="Variant.Outlined"
+                               RequiredError="You must select a Role!!!"
                                Margin="@Margin.Dense">
                         @foreach (var role in _allAvailableRoles)
                         {
@@ -93,26 +92,6 @@ else
                     </MudSelect>
                 </EditTemplate>
             </PropertyColumn>
-
-            <TemplateColumn Title="Change Role">
-                <CellTemplate >
-                    <MudMenu Label="@(context.Item.Roles?.FirstOrDefault() ?? "Select New Role")"
-                             Variant="Variant.Filled"
-                             Color="Color.Success"
-                             Style="background-color:var(--mud-palette-success-darken);"
-                             Dense="true"
-                             Disabled="@(_isUpdating && _updatingUserId == context.Item.UserId)">
-                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Admin"))">Admin</MudMenuItem>
-                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Editor"))">Editor</MudMenuItem>
-                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Client"))">Client</MudMenuItem>
-                        <MudMenuItem OnClick="@(() => UpdateSelectedRole(context.Item, "Guest"))">Guest</MudMenuItem>
-                    </MudMenu>
-                    @if (_isUpdating && _updatingUserId == context.Item.UserId)
-                    {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="ms-3" />
-                    }
-                </CellTemplate>
-            </TemplateColumn>
             <PropertyColumn Property="x => x.HourlyRate" Title="Rate $"
                             CellStyle="text-align: center"
                             ShowFilterIcon="false" Format="C">
@@ -138,9 +117,27 @@ else
                                   AdornmentText="L" IconSize="Size.Small" />
                 </EditTemplate>
             </PropertyColumn>
-
-            <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes" Editable=false Required=false>
-                <CellTemplate >
+            @if (_isCellEditMode)
+            {
+                <PropertyColumn Property
+                ="x => x.Note" Title
+                ="Private Notes" Editable
+                ="true" Filterable
+                ="true">
+                    <EditTemplate>
+                    <MudTextField T="string" Variant="Variant.Filled" Lines="2"
+                                  Immediate="true"
+                                  Value="@context.Item.Note"
+                                  ValueChanged="@(text => OnNoteTextChanged(text, context))" AutoGrow=false
+                                  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                  OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
+                                  Style="overflow-y: auto; max-height: 200px;"/>
+                </EditTemplate>
+            </PropertyColumn>
+            }
+            @if(!_isCellEditMode){
+            <PropertyColumn Property="x => x.GetNoteValue(targetId)" Title="Private Notes" Editable=false Required=false>
+                <CellTemplate>
                     @{
 
                         string noteValue = userNotesDict.ContainsKey(context.Item.UserId)
@@ -154,7 +151,8 @@ else
                                   Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                                   OnAdornmentClick="@(() => OpenNoteDialog(noteValue,context) )" />
                 </CellTemplate>
-                </PropertyColumn>
+            </PropertyColumn>
+            }
         </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
@@ -179,6 +177,15 @@ else
 }
 
 @code {
+    private bool FilterNotes(UserRoleViewModel User, string searchText)
+    {
+        if (userNotesDict.ContainsKey(User.UserId))
+        {
+            var noteValue = userNotesDict[User.UserId]?.Note ?? string.Empty;
+            return noteValue.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
     private bool _readOnly;
     private bool _loading = true;
     private bool _error;
