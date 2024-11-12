@@ -67,6 +67,7 @@
                 <CellTemplate >
                     @{
                         string descriptionValue = context.Item.Description ?? string.Empty;
+
                     }
                     <MudTextField T="string"
                         HelperText="Click to expand" Value="@descriptionValue" 
@@ -74,7 +75,7 @@
                         AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                         AutoGrow=true
                         MaxLines="4"
-                        OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context))">
+                        OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
                             <MudTooltip Text="Expand">
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"/>
                             </MudTooltip>
@@ -248,21 +249,21 @@
 
 
     }
+    //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
-        if (_isClientView)
-            projects = await ProjectService.GetProjectByClientIdAsync(_isArchived, _currentUserId);
         if(_isAdminView || _isEditorView)
             projects = await ProjectService.GetProjectsAsync(_isArchived);
         StateHasChanged();
     }
+    // Loading Projects for Client View
     private async Task LoadProjectsForClient()
     {
         projects = await ProjectService.GetProjectByClientIdAsync(_isArchived, _currentUserId);
         StateHasChanged();
     }
 
-
+    // Add new project dialog
     private async Task AddProjectDialogAsync(DialogOptions options)
     {
 
@@ -276,6 +277,7 @@
             StateHasChanged();
         }
     }
+    // Archiving and Unarchiving the project
     public async Task ArchiveProject(DialogOptions options,Project project)
     {
         var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
@@ -296,21 +298,30 @@
         await ProjectService.UnarchiveProjectAsync(project.ProjectId);
         await LoadProjects();
     }
-    private void OpenDescriptionDialog(string description, object context)
+    // Opens Description Dialog
+    private async void OpenDescriptionDialog(string description, object context)
     {
         var parameters = new DialogParameters
         {
-            { "Description", description }
+            { "Description", description },
+            { "NewDescription", EventCallback.Factory.Create<string>(this, async (newDescription) =>
+                {
+                    await SaveDescription(newDescription, context);
+                })
+            }
         };
         var options = new DialogOptions { FullScreen = true };
         DialogService.Show<DescriptionDialog>("Project Description", parameters, options);
     }
-
-
-
-
-
-
+    // Update description and save it to DB
+    private async Task SaveDescription(string newDescription, object context)
+    {
+        if (context is Project project)
+        {
+            project.Description = newDescription;
+            await ProjectService.UpdateProjectAsync(project);
+        }
+    }
 
 
 
