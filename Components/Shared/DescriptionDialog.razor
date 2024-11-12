@@ -2,14 +2,14 @@
 
 <MudDialog FullScreen="true">
     <DialogContent>
-        <MudTextField T="string" Label="Description" Variant="Variant.Outlined" Lines="10" AutoGrow=true
-                      Value="@Description" ValueChanged="OnNoteTextChanged" Immediate="true" />
-        <MudHtmlEditor >
+        <MudHtmlEditor Html="@Description" HtmlChanged="OnNoteTextChanged">
             <MudHtmlToolbarOptions InsertImage="false" /> 
         </MudHtmlEditor>
     </DialogContent>
+
     <DialogActions>
         <MudButton OnClick="@Cancel">Close</MudButton>
+        <MudButton OnClick="@Save">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -20,14 +20,18 @@
     [Parameter] public EventCallback<string> NewDescription { get; set; }
 
 
-    private void Close() => Dialog.Close();
     private void OnNoteTextChanged(string text)
     {
         Description = text;
-        NewDescription.InvokeAsync(text);
     }
+    private async Task Save()
+    {
+        await NewDescription.InvokeAsync(Description); // Pass the new description back
+        Dialog.Close(DialogResult.Ok(Description));
+    }
+
     private void Cancel()
     {
-        Dialog.Close(DialogResult.Ok(Description));
+        Dialog.Close(DialogResult.Cancel());
     }
 }
