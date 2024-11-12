@@ -76,6 +76,26 @@ public class UserServices
             return false;
         }
     }
+    public async Task<bool> UpdateHourlyRateAsync(string userId, decimal? newHourlyRate)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.HourlyRate = newHourlyRate;
+                await _userManager.UpdateAsync(user);
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to update hourly rate for user {userId}. Error: {ex.Message}");
+            return false;
+        }
+    }
+
 }
 
 public class UserRoleViewModel
