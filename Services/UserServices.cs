@@ -21,7 +21,7 @@ public class UserServices
         _logger = logger;
     }
 
-    public async Task<List<UserRoleViewModel>> GetAllUsersAsync()
+    public async Task<List<UserRoleViewModel>> GetAllUsersAsync(decimal? storedValue)
     {
         // Query: Get all users
         var users = await _userManager.Users.ToListAsync();
@@ -45,12 +45,14 @@ public class UserServices
             UserId = user.Id,
             UserName = user.UserName,
             HourlyRate = user.HourlyRate,
+            HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : (decimal?) null,
             Roles = userRoles.Where(ur => ur.UserId == user.Id)
                             .Select(ur => ur.RoleName)
                             .ToList(),
             SelectedRole = userRoles.FirstOrDefault(ur => ur.UserId == user.Id)?.RoleName ?? "",
             Notes = notes.Where(n => n.TargetUserId == user.Id)
                         .ToDictionary(n => n.TargetUserId, n => n)
+
         }).ToList();
 
         return result;
@@ -106,6 +108,7 @@ public class UserRoleViewModel
     public string SelectedRole { get; set; }
     public Dictionary<string, UserNote> Notes { get; set; }
     public decimal? HourlyRate { get; set; }
+    public decimal? HourlyRateInLek { get; set; }
     public string GetNoteValue(string targetUserId)
     {
         // Check if the targetUserId is null or empty

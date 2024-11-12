@@ -113,14 +113,31 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Property="x => x.HourlyRate" Title="Rate $" 
-                Style="" CellStyle="text-align: center" 
-                ShowFilterIcon="false" Format="C">
-                </PropertyColumn>
-            <PropertyColumn Property="x => x.HourlyRate * storedValue" Title="Rate Lek"
-                Style="" CellStyle="text-align: center" ShowFilterIcon="false"
-                            ShowColumnOptions="false" Format="L #,##0">
-                </PropertyColumn>
+            <PropertyColumn Property="x => x.HourlyRate" Title="Rate $"
+                            CellStyle="text-align: center"
+                            ShowFilterIcon="false" Format="C">
+                <EditTemplate>
+                    <MudTextField T="decimal?"
+                                  @bind-Value="context.Item.HourlyRate"
+                                  @onblur="() => UpdateHourlyRate(context.Item)"
+                                  Format="N"
+                                  Adornment="Adornment.Start"
+                                  AdornmentText="$" IconSize="Size.Small" />
+                </EditTemplate>
+            </PropertyColumn>
+
+            <PropertyColumn Property="x => x.HourlyRateInLek" Title="Rate Lek"
+                            CellStyle="text-align: center"
+                            ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0">
+                <EditTemplate>
+                    <MudTextField T="decimal?"
+                                  @bind-Value="context.Item.HourlyRateInLek"
+                                  @onblur="() => UpdateHourlyRateInLek(context.Item)"
+                                  Format="N"
+                                  Adornment="Adornment.Start"
+                                  AdornmentText="L" IconSize="Size.Small" />
+                </EditTemplate>
+            </PropertyColumn>
 
             <PropertyColumn  Property="x => x.GetNoteValue(targetId)" Title="Private Notes" Editable=false Required=false>
                 <CellTemplate >
@@ -132,7 +149,7 @@ else
                     }
                     <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="3"
                                   Value="@noteValue"
-                                  ValueChanged="@(text => OnValueChanged(text, context))"
+                                  ValueChanged="@(text => OnNoteTextChanged(text, context))"
                                   Immediate="true"
                                   Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                                   OnAdornmentClick="@(() => OpenNoteDialog(noteValue,context) )" />
@@ -164,11 +181,11 @@ else
 @code {
     private bool _readOnly;
     private bool _loading = true;
-    private bool _error = false;
+    private bool _error;
     private bool _isUpdating;
     private bool _usdToLek;
-    private bool isNoteChanged = false; // Flag to track if the note has changed
-    private bool isCurrencyChanged = false; // Flag to track if the currency value has changed
+    private bool isNoteChanged; // Flag to track if the note has changed
+    private bool isCurrencyChanged; // Flag to track if the currency value has changed
     private string _updateMessage;
     private string _updateMessageClass;
     private string _updatingUserId;
@@ -176,36 +193,31 @@ else
     private string creatorId; // DELETE  LATER
     private string targetId;
     private string _pendingNoteText;
-    private System.Timers.Timer _timer;
+    private decimal _storedValue;
+    private decimal lastSavedValue;
     private const double Delay = 100 ; // 0.1 Second Delay
+    private System.Timers.Timer _timer;
     private UserNote userNotes = new();
     private Dictionary<string, UserNote> userNotesDict = new();
     private List<string> _allAvailableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
-    private decimal _storedValue;
-    public decimal storedValue
-    {
-        get => _storedValue;
-        set
-        {
-            if (_storedValue != value)
-            {
-                _storedValue = value;
-                SaveCurrencyValue();
-            }
-        }
-    }
-    private decimal lastSavedValue;
+
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var currentUser = authState.User;
-            // NOT USED ANYMORE LATER WILL DELETE creatorId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value; // to retrieve current logged-in user ID
+            storedValue = await localStorage.GetItemAsync<decimal>("usdLek");
+            if (storedValue == 0)
+            {
+                storedValue = 100;
+            }
+            lastSavedValue = storedValue;
             _allAvailableRoles = await GetAvailableRoles();
-            AllUsers = await UserManagementService.GetAllUsersAsync();
+            AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
             _users = AllUsers.ToList();
 
             await LoadUserNotes();
@@ -214,12 +226,7 @@ else
             _timer = new System.Timers.Timer(Delay);
             _timer.Elapsed += OnTimedEvent;
             _timer.AutoReset = false; // to prevent timer from restarting automatically
-            storedValue = await localStorage.GetItemAsync<decimal>("usdLek");
-            if(storedValue == 0)
-            {
-                storedValue = 100;
-            }
-            lastSavedValue = storedValue;
+
 
         }
         catch (Exception ex)
@@ -244,7 +251,7 @@ else
         {
             if (!task.IsCanceled && task.Result.Data is string updatedText)
             {
-                OnValueChanged(updatedText, context);
+                OnNoteTextChanged(updatedText, context);
             }
         });
     }
@@ -261,7 +268,7 @@ else
             }
         }
     }
-    // Save notes when user stops writing
+    // Save notes or (currency exchange ratio) when user stops writing
     private void OnTimedEvent(object sender, ElapsedEventArgs e)
     {
         _timer.Stop();
@@ -283,16 +290,13 @@ else
         });
 
     }
-    private void OnValueChanged(string text, CellContext<UserRoleViewModel> context)
+    private void OnNoteTextChanged(string text, CellContext<UserRoleViewModel> context)
     {
-
         targetId = context.Item.UserId;
-
         if (!userNotesDict.ContainsKey(targetId))
         {
             userNotesDict[targetId] = new UserNote { TargetUserId = targetId };
         }
-
         // Update the note text
         userNotesDict[targetId].Note = text;
         _pendingNoteText = text;  
@@ -301,22 +305,7 @@ else
         _timer.Stop();
         _timer.Start(); 
     }
-    private async Task SaveCurrencyValue()
-    {
-        // Save the currency value only if it has changed
-        if (storedValue != lastSavedValue)
-        {
-            await SaveToStorage();
-            lastSavedValue = storedValue; // Update the last saved value
-        }
 
-        // Set the flag to true as the currency has changed
-        isCurrencyChanged = true;
-
-        // Restart the timer after saving
-        _timer.Stop();
-        _timer.Start(); 
-    }
     private async Task SaveNotes()
     {
         if (userNotesDict.ContainsKey(targetId))
@@ -354,20 +343,16 @@ else
                 }
                 else
                 {
-
                     Console.WriteLine(result.Message);
                 }
             }
         }
     }        
+    // Get all available roles to allow drop-list menu to choose new roles
     private async Task<List<string>> GetAvailableRoles()
     {
         var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
         return roles.Where(r => r != null).ToList();
-    }
-    private string GetRolesAsString(UserRoleViewModel user)
-    {
-        return string.Join(", ", user.Roles ?? new List<string>());
     }
     private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
@@ -425,6 +410,44 @@ else
             StateHasChanged();
         }
     }
+    
+    // UpdateHourlyRate AND UpdateHourlyRateInLek to update the display only.
+    private void UpdateHourlyRateInLek(UserRoleViewModel user)
+    {
+        user.HourlyRate = user.HourlyRateInLek / storedValue;
+    }
+    private void UpdateHourlyRate(UserRoleViewModel user)
+    {
+        user.HourlyRateInLek = user.HourlyRate * storedValue;
+    }
+
+    // Saving usd to lek exchange rate in local storage
+    public decimal storedValue
+    {
+        get => _storedValue;
+        set
+        {
+            if (_storedValue != value)
+            {
+                _storedValue = value;
+                SaveCurrencyValue();
+            }
+        }
+    }
+    private async Task SaveCurrencyValue()
+    {
+        // Save the currency value only if it has changed
+        if (storedValue != lastSavedValue)
+        {
+            await SaveToStorage();
+            lastSavedValue = storedValue; // Update the last saved value
+        }
+        // Set the flag to true as the currency has changed
+        isCurrencyChanged = true;
+
+        _timer.Stop();
+        _timer.Start();
+    }
     private async Task SaveToStorage()
     {
         await localStorage.SetItemAsync("usdLek", storedValue);
@@ -436,17 +459,16 @@ else
     private bool _isCellEditMode;
     private string _originalRole;
     private decimal? _originalHourlyRate;
+
     void StartedEditingItem(UserRoleViewModel user)
     {
         // Store the original values before editing
         _originalRole = user.SelectedRole;
         _originalHourlyRate = user.HourlyRate;
     }
-
     void CanceledEditingItem(UserRoleViewModel item)
     {
     }
-
     private async Task CommittedItemChanges(UserRoleViewModel user)
     {
         bool roleChanged = user.SelectedRole != _originalRole;
@@ -468,4 +490,5 @@ else
             StateHasChanged();
         }
     }
+
 }
