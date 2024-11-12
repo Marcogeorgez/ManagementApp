@@ -3,9 +3,10 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single"
-    Dense=false Hover="true" Bordered=true 
-    QuickFilter="new Func<Project,bool>(FilterFunc1)">
+<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" 
+    Dense=true Hover="true" Bordered=true 
+    FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
+             DragIndicatorSize="Size.Small">
     <ToolBarContent>
             <MudText Typo="Typo.h6">Your @_userName Projects</MudText>
             <MudSpacer />
@@ -325,18 +326,7 @@
 
 
 
-    // Filter and Styling Functions
-    private bool FilterFunc1(Project project) => FilterFunc(project, _searchString);
-    private bool FilterFunc(Project project, string searchString)
-    {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (project.ProjectName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (project.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
-    }
+
     private Func<Project, string> _cellStyleFunc => x =>
     {
         string style = string.Empty;
