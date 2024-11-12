@@ -3,6 +3,7 @@ using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Migrations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static LuminaryVisuals.Services.UserRoleViewModel;
 
 namespace LuminaryVisuals.Services;
 
@@ -98,6 +99,66 @@ public class UserServices
         }
     }
 
+    // Method to get all users with the "Editor" role and their associated projects
+    public async Task<List<UserProjectViewModel>> GetEditorsWithProjectsAsync()
+    {
+        var editors = await _userManager.GetUsersInRoleAsync("Editor");
+        var result = await _context.Users
+            .Where(u => editors.Select(e => e.Id).Contains(u.Id))
+            .Include(u => u.VideoEditors)
+                .ThenInclude(ve => ve.Project)
+            .Select(u => new UserProjectViewModel
+            {
+                UserId = u.Id,
+                UserName = u.UserName,
+                HourlyRate = u.HourlyRate,
+                UserRole = "Editor",
+                Projects = u.VideoEditors.Select(ve => new Project
+                {
+                    ProjectId = ve.Project.ProjectId,
+                    ProjectName = ve.Project.ProjectName,
+                    Description = ve.Project.Description,
+                    ShootDate = ve.Project.ShootDate,
+                    DueDate = ve.Project.DueDate,
+                    ProgressBar = ve.Project.ProgressBar,
+                    Status = ve.Project.Status
+                }).ToList()
+            })
+            .ToListAsync();
+
+        return result;
+    }
+
+    // Fetches users with "Client" role and their associated projects
+    public async Task<List<UserProjectViewModel>> GetClientsWithProjectsAsync()
+    {
+        var clients = await _userManager.GetUsersInRoleAsync("Client");
+
+        var result = await _context.Users
+            .Where(u => clients.Select(c => c.Id).Contains(u.Id))
+            .Include(u => u.Payments)
+                .ThenInclude(p => p.Project)
+            .Select(u => new UserProjectViewModel
+            {
+                UserId = u.Id,
+                UserName = u.UserName,
+                HourlyRate = u.HourlyRate,
+                UserRole = "Client",
+                Projects = u.Payments.Select(p => new Project
+                {
+                    ProjectId = p.Project.ProjectId,
+                    ProjectName = p.Project.ProjectName,
+                    Description = p.Project.Description,
+                    ShootDate = p.Project.ShootDate,
+                    DueDate = p.Project.DueDate,
+                    ProgressBar = p.Project.ProgressBar,
+                    Status = p.Project.Status
+                }).ToList()
+            })
+            .ToListAsync();
+
+        return result;
+    }
 }
 
 public class UserRoleViewModel
@@ -107,6 +168,7 @@ public class UserRoleViewModel
     public List<string> Roles { get; set; }
     public string SelectedRole { get; set; }
     public Dictionary<string, UserNote> Notes { get; set; }
+    public string Note => Notes.ContainsKey(UserId) ? Notes[UserId]?.Note ?? string.Empty : string.Empty;
     public decimal? HourlyRate { get; set; }
     public decimal? HourlyRateInLek { get; set; }
     public string GetNoteValue(string targetUserId)
@@ -119,5 +181,14 @@ public class UserRoleViewModel
 
         // Try to get the note from the dictionary
         return Notes.TryGetValue(targetUserId, out var note) ? note?.Note ?? string.Empty : string.Empty;
+    }
+    public class UserProjectViewModel
+    {
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public string UserRole { get; set; }
+        public bool IsSelected { get; set; }
+        public decimal? HourlyRate { get; set; }
+        public List<Project> Projects { get; set; }
     }
 }

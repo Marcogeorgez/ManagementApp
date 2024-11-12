@@ -121,7 +121,7 @@
                             <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
                                         Variant="Variant.Filled"
                                         Size="Size.Small"
-                                        OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(_closeButton, context.Item))"
+                                        OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(DialogOptions, context.Item))"
                                         StartIcon="@Icons.Material.Filled.Archive"
                                         Class="ml-2">
                                 @(context.Item.IsArchived ? "Unarchive" : "Archive")
@@ -132,7 +132,7 @@
                             <MudButton Color="Color.Warning"
                                         Variant="Variant.Filled"
                                         Size="Size.Small"
-                                        OnClick="@(() => ArchiveProject(_closeButton, context.Item))"
+                                        OnClick="@(() => ArchiveProject(DialogOptions, context.Item))"
                                         StartIcon="@Icons.Material.Filled.Archive"
                                         Class="ml-2">
                                 Archive
@@ -143,7 +143,7 @@
                             <MudButton Color="Color.Info"
                                        Variant="Variant.Filled"
                                        Size="Size.Small"
-                                       OnClick="@(() => AddProjectDialogAsync(_closeButton))"
+                                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))"
                                        StartIcon="@Icons.Material.Filled.Archive"
                                        Class="ml-2">
                                 Modify
@@ -178,9 +178,15 @@
         <MudButton Color="Color.Success"
                    Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.AddCircle"
-                   OnClick="@(() => AddProjectDialogAsync(_closeButton))">
+                   OnClick="@(() => AddProjectDialogAsync(DialogOptions))">
             Add New Project
         </MudButton>
+    <MudButton Color="Color.Success"
+               Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.AddCircle"
+               OnClick="@(() => AssignUsersToProjectAsync(DialogOptions))">
+        Assign To Project
+    </MudButton>
     </div>
 
 @code {
@@ -188,7 +194,7 @@
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
-    private readonly DialogOptions _closeButton = new() { CloseButton = true, FullScreen = true };
+    private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived = false;
     private bool _isAdminView = false;
     private bool _isEditorView = false;
@@ -279,6 +285,16 @@
             StateHasChanged();
         }
     }
+    // Asign to project
+       private async Task AssignUsersToProjectAsync(DialogOptions options)
+    {
+        var dialog = await DialogService.ShowAsync<AssignUsersToProject>("Assign To Project", options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            StateHasChanged();
+        }
+    }
     // Archiving and Unarchiving the project
     public async Task ArchiveProject(DialogOptions options,Project project)
     {
@@ -322,6 +338,14 @@
         {
             project.Description = newDescription;
             await ProjectService.UpdateProjectAsync(project);
+        }
+    }
+
+    private async Task AssignProjectToClient(Project project, string newUserId)
+    {
+        if (project.ProjectId != null && newUserId != null)
+        {
+            await ProjectService.AssignProjectToClientAsync(project, newUserId);
         }
     }
 

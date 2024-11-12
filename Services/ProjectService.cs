@@ -27,6 +27,13 @@ public class ProjectService
                 .Include(p => p.EditorPayments)
                 .ToListAsync();
     }
+    public async Task<List<Project>> GetProjectsAsync()
+    {
+        return await _context.Projects
+            .Include(p => p.VideoEditors)
+            .ToListAsync();
+    }
+
 
     public async Task<List<Project?>> GetProjectByClientIdAsync(bool isArchived,string UserId)
     {
@@ -61,9 +68,9 @@ public class ProjectService
 
     public async Task AddProjectAsync(Project project)
     {
-        var client = await _context.Users.FirstOrDefaultAsync(u => u.Id == project.ClientId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == project.ClientId);
 
-        if (client == null)
+        if (user == null)
         {
             // Handle the case where the client does not exist.
             throw new Exception("Client not found.");
@@ -75,7 +82,7 @@ public class ProjectService
         if (existingProject == null)
         {
             // Set the ClientId for the project, though it's already set in the project, it's good to confirm
-            project.ClientId = client.Id;  // Ensure ClientId is assigned to the project
+            project.ClientId = user.Id;  // Ensure ClientId is assigned to the project
 
             // Add the project to the context and save changes
             _context.Projects.Add(project);
@@ -104,6 +111,18 @@ public class ProjectService
             await _context.SaveChangesAsync();
         }
     }
+    public async Task AssignProjectToClientAsync(Project project, string newUserId)
+    {
+        // Make sure project exist
+        var _project = await _context.Projects.FindAsync(project.ProjectId);
+        var clientId = await _context.Users.FirstOrDefaultAsync(u => u.Id == newUserId);
+        if (clientId != null && _project != null)
+        {
+            _project.ClientId = clientId.Id;
+            _context.Projects.Update(_project);
+            await _context.SaveChangesAsync();
+        }
+    }
     public async Task UnarchiveProjectAsync(int projectId)
     {
         var project = await _context.Projects.FindAsync(projectId);
@@ -112,6 +131,10 @@ public class ProjectService
             await DeleteArchiveAsync(projectId);
             project.IsArchived = false;
             await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ArgumentException("Project or client not found.");
         }
     }
     public async Task DeleteArchiveAsync(int projectId)
