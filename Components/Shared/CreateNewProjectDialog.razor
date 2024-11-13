@@ -5,22 +5,15 @@
     <DialogContent>
         <MudForm @ref="form" @bind-IsValid="@success">
             <MudTextField T="string"
-                          Label="Project Name"
+                          Label="Write Project Name"
+                          Variant="Variant.Outlined"
                           @bind-Value="newProject.ProjectName"
                           Required="true"
                           AutoGrow=true/>
-                          <MudSpacer />
-            <MudTextField T="string"
-                          Label="Description"
-                          @bind-Value="newProject.Description"
-                          Required="true" 
-                          Lines="3" AutoGrow=true/>
-            <MudSpacer />
-            <MudHtmlEditor Html="@newProject.Description" HtmlChanged="OnNoteTextChanged">
-                <MudHtmlToolbarOptions InsertImage="false" />
-            </MudHtmlEditor>
+                          <MudDivider Class="mb-3"/>
 
-            <MudDatePicker Label="Shoot Date"
+            <MudDatePicker Label="Shoot Date" Class="mb-3 mt-2"
+                           Variant="Variant.Outlined"
                            Date="newProject.ShootDate"
                            DateChanged="@(date =>
                            {
@@ -41,11 +34,17 @@
             <MudSpacer />
             <MudSelect T="ProjectStatus"
                        Label="Status"
+                       Variant="Variant.Outlined"
                        @bind-Value="newProject.Status"
                        Required="true">
                 <MudSelectItem Value="ProjectStatus.Upcoming">Upcoming</MudSelectItem>
                 <MudSelectItem Value="ProjectStatus.ReadyToEdit">Ready to Edit</MudSelectItem>
             </MudSelect>
+
+            <MudHtmlEditor Outlined="true" Html="@newProject.Description" HtmlChanged="OnNoteTextChanged" Placeholder="Write Your Project Description ">
+                <MudHtmlToolbarOptions InsertImage="false" />
+            </MudHtmlEditor>
+
 
         </MudForm>
         <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
