@@ -24,9 +24,11 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 
 // Custom Implementation of SignInManager to let new users.role Guest by default
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
+// Our Services
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<UserNoteService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<SettingService>();
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
