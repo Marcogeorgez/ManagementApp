@@ -59,6 +59,15 @@ public class UserServices
 
         return result;
     }
+    public async Task<ApplicationUser> GetUserByIdAsync(string userId)
+    {
+        // Query: Get a single user by userId
+        var user = await _userManager.Users
+                                      .Where(u => u.Id == userId)
+                                      .FirstOrDefaultAsync();
+
+        return user; // Return the user object or null if not found
+    }
 
     public async Task<bool> ChangeUserRoleAsync(string userId, string newRole)
     {
@@ -96,6 +105,25 @@ public class UserServices
         catch (Exception ex)
         {
             _logger.LogError($"Failed to update hourly rate for user {userId}. Error: {ex.Message}");
+            return false;
+        }
+    }
+    public async Task<bool> UpdateWeeksToDueDateDefault(string userId, int? WeeksToDueDateDefault)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.WeeksToDueDateDefault = WeeksToDueDateDefault;
+                await _userManager.UpdateAsync(user);
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to update Weeks Due Date Default rate for user {userId}. Error: {ex.Message}");
             return false;
         }
     }

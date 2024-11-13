@@ -422,7 +422,7 @@ else
             StateHasChanged();
         }
     }
-    
+
     // UpdateHourlyRate AND UpdateHourlyRateInLek to update the display only.
     private void UpdateHourlyRateInLek(UserRoleViewModel user)
     {
@@ -471,18 +471,21 @@ else
     private bool _isCellEditMode;
     private string _originalRole;
     private decimal? _originalHourlyRate;
+    int? _originalWeeksToDueDateDefault;
 
     void StartedEditingItem(UserRoleViewModel user)
     {
         // Store the original values before editing
         _originalRole = user.SelectedRole;
         _originalHourlyRate = user.HourlyRate;
+        _originalWeeksToDueDateDefault = user.WeeksToDueDateDefault;
     }
     void CanceledEditingItem(UserRoleViewModel item)
     {
     }
     private async Task CommittedItemChanges(UserRoleViewModel user)
     {
+        bool WeeksToDueDateDefault = user.WeeksToDueDateDefault != _originalWeeksToDueDateDefault;
         bool roleChanged = user.SelectedRole != _originalRole;
         bool hourlyRateChanged = user.HourlyRate != _originalHourlyRate;
         if (roleChanged && hourlyRateChanged)
@@ -501,6 +504,14 @@ else
             Snackbar.Add($"Successfully changed hourly rate {user.UserName} to {user.HourlyRate}$", Severity.Info);
             StateHasChanged();
         }
+        else if (WeeksToDueDateDefault)
+        {
+            await UserManagementService.UpdateWeeksToDueDateDefault(user.UserId, user.WeeksToDueDateDefault);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+            Snackbar.Add($"Successfully changed weekly due date default of {user.UserName} to {user.WeeksToDueDateDefault}", Severity.Info);
+            StateHasChanged();
+        }
+
     }
 
 }
