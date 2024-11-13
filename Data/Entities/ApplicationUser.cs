@@ -6,6 +6,7 @@ namespace LuminaryVisuals.Data.Entities;
 public class ApplicationUser : IdentityUser
 {
     public decimal? HourlyRate { get; set; }  
+    public int? WeeksToDueDateDefault { get; set; }
     // Navigation properties
     public virtual ICollection<VideoEditor> VideoEditors { get; set; }
     public virtual ICollection<ClientPayment> Payments { get; set; }

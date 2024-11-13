@@ -62,7 +62,8 @@ else
             <col style="width: 3vw;" />
             <col style="width: 10vw;" />
             <col style="width: 3vw;" />
-            <col style="width: 1vw;" />
+                <col style="width: 1vw;" />
+                <col style="width: 1vw;" />
             <col style="width: 1vw;" />
             <col style="width: 50vw;" />
             </MudHidden>
@@ -116,6 +117,10 @@ else
                                   Adornment="Adornment.Start"
                                   AdornmentText="L" IconSize="Size.Small" />
                 </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.WeeksToDueDateDefault" Title="Weeks Due Date Default"
+                            CellStyle="text-align: center"
+                            ShowFilterIcon="false" ShowColumnOptions="false">
             </PropertyColumn>
             @if (_isCellEditMode)
             {
