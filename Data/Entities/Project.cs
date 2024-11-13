@@ -11,6 +11,7 @@ public enum ProjectStatus
     Working,
     Review,
     Delivered,
+    ReadyToEdit,
     Revision,
     Paid
 }
@@ -47,7 +48,6 @@ public class Project
     [Display(Name = "Progress")]
     public int ProgressBar { get; set; }
 
-    [Required]
     [DataType(DataType.Date)]
     [Display(Name = "Working Month")]
     public DateTime? WorkingMonth { get; set; }
