@@ -28,14 +28,13 @@
                                     }
                                  })" 
                            Required="true"
-                           MinDate="@_minDate"/>
+                           />
             <MudSpacer />
 
             <MudDatePicker Label="Due Date (4 weeks after shoot date by default)"
                            Date="newProject.DueDate"
                            DateChanged="@(date => newProject.DueDate = date )"
                            Required="true" 
-                           MinDate="@_minDate" 
                            HelperText="Will remove it later, just here for visibility and debugging"
                            />
             <MudSpacer />
@@ -43,19 +42,21 @@
             <MudDatePicker Label="Working Month"
                            Date="newProject.WorkingMonth"
                            DateChanged="@(date => newProject.WorkingMonth = date)"
-                           Required="true" 
-                           MinDate="@_minDate" 
+                           Required="true"
+                           FixDay="1" 
+                           DateFormat="yyyy/MM"
                            Class="mb-3" 
                            HelperText="Will remove it later, just here for visibility and debugging" />
             <MudSpacer />
-
-            <MudNumericField T="int"
-                             Label="Progress"
-                             @bind-Value="newProject.ProgressBar"
-                             Min="0" Max="100" 
-                             Class="mb-3"
-                             HelperText="Will remove it later, just here for visibility and debugging" />
-
+            <MudSelect T="ProgressBarValue" Label="Progress"
+                       @bind-Value="ProgressEnum">
+                <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                <MudSelectItem Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                <MudSelectItem Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                <MudSelectItem Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+            </MudSelect>
             <MudSelect T="ProjectStatus"
                        Label="Status"
                        @bind-Value="newProject.Status"
@@ -73,8 +74,8 @@
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="@Submit">Add Project</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Cancel</MudButton>
+        <MudButton Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" OnClick="@Submit">Add Project</MudButton>
     </DialogActions>
 
 </MudDialog>
@@ -84,10 +85,21 @@
     private Project newProject = new Project();
     private bool success;
     private MudForm form;
-    private DateTime _minDate = DateTime.Now.Date;
     private string errorMessage;
-
-
+    private enum ProgressBarValue
+    {
+        Zero = 0,
+        Twenty = 20,
+        Forty = 40,
+        Sixty = 60,
+        Eighty = 80,
+        Hundred = 100
+    }
+    private ProgressBarValue ProgressEnum
+    {
+        get => (ProgressBarValue) newProject.ProgressBar;
+        set => newProject.ProgressBar = (int) value;
+    }
     private async void Submit()
     {
 
@@ -95,6 +107,7 @@
 
         if (form.IsValid)
         {
+
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
         }
         else
