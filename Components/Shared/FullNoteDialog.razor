@@ -5,7 +5,7 @@
         </MudHtmlEditor>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@Cancel">Close</MudButton>
+        <MudButton OnClick="@Save">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -21,8 +21,12 @@
         Text = text;
         NoteTextChanged.InvokeAsync(text);
     }
-    private void Cancel()
+    private void Save()
     {
         MudDialog.Close(DialogResult.Ok(Text));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
     }
 }
