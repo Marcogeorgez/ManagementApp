@@ -47,6 +47,7 @@ public class UserServices
             UserName = user.UserName,
             HourlyRate = user.HourlyRate,
             HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : (decimal?) null,
+            WeeksToDueDateDefault = user.WeeksToDueDateDefault,
             Roles = userRoles.Where(ur => ur.UserId == user.Id)
                             .Select(ur => ur.RoleName)
                             .ToList(),
@@ -171,6 +172,7 @@ public class UserRoleViewModel
     public string Note => Notes.ContainsKey(UserId) ? Notes[UserId]?.Note ?? string.Empty : string.Empty;
     public decimal? HourlyRate { get; set; }
     public decimal? HourlyRateInLek { get; set; }
+    public int? WeeksToDueDateDefault { get; set; }
     public string GetNoteValue(string targetUserId)
     {
         // Check if the targetUserId is null or empty
