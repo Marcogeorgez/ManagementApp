@@ -8,7 +8,7 @@
 @inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
 @inject ILocalStorageService localStorage
-
+@inject SettingService SettingService
 @attribute [Authorize(Policy = "RequireAdminRole")]
 
 <PageTitle>Admin Dashboard</PageTitle>
@@ -43,11 +43,10 @@ else
                  Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
                  DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
-                 EditTrigger="DataGridEditTrigger.OnRowClick" 
-                 EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+                 EditMode="DataGridEditMode.Cell"
+                 ReadOnly=false
                  StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
-                 CommittedItemChanges="@CommittedItemChanges" ReadOnly="@_readOnly"
-                 >
+                 CommittedItemChanges="@CommittedItemChanges">
 
         <ToolBarContent>
             <MudText Typo="Typo.h5">Admin Dashboard</MudText>
@@ -62,8 +61,8 @@ else
             <col style="width: 3vw;" />
             <col style="width: 10vw;" />
             <col style="width: 3vw;" />
-                <col style="width: 1vw;" />
-                <col style="width: 1vw;" />
+            <col style="width: 1vw;" />
+            <col style="width: 1vw;" />
             <col style="width: 1vw;" />
             <col style="width: 50vw;" />
             </MudHidden>
@@ -122,63 +121,34 @@ else
                             CellStyle="text-align: center"
                             ShowFilterIcon="false" ShowColumnOptions="false">
             </PropertyColumn>
-            @if (_isCellEditMode)
-            {
-                <PropertyColumn Property
-                ="x => x.Note" Title
-                ="Private Notes" Editable
-                ="true" Filterable
-                ="true">
-                    <EditTemplate>
+            <PropertyColumn Property="x => x.Note" Title="Private Notes" Editable="false" Filterable="true">
+                <CellTemplate>
                     <MudTextField T="string" Variant="Variant.Filled" Lines="2"
                                   Immediate="true"
                                   Value="@context.Item.Note"
-                                  ValueChanged="@(text => OnNoteTextChanged(text, context))" AutoGrow=false
-                                  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                                  OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
-                                  Style="overflow-y: auto; max-height: 200px;"/>
-                </EditTemplate>
-            </PropertyColumn>
-            }
-            @if(!_isCellEditMode){
-            <PropertyColumn Property="x => x.GetNoteValue(targetId)" Title="Private Notes" Editable=false Required=false>
-                <CellTemplate>
-                    @{
-
-                        string noteValue = userNotesDict.ContainsKey(context.Item.UserId)
-                        ? userNotesDict[context.Item.UserId]?.Note ?? string.Empty
-                        : string.Empty;
-                    }
-                    <MudTextField T="string" Label="Note" Variant="Variant.Outlined" Lines="3"
-                                  Value="@noteValue"
                                   ValueChanged="@(text => OnNoteTextChanged(text, context))"
-                                  Immediate="true"
-                                  Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                                  OnAdornmentClick="@(() => OpenNoteDialog(noteValue,context) )" />
+                                  AutoGrow="false"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                  OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
+                                  ReadOnly="true"
+                                  Style="overflow-y: auto; max-height: 200px;" />
                 </CellTemplate>
             </PropertyColumn>
-            }
+
         </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
     </MudDataGrid>
     if(_usdToLek){
-        <MudTextField T="decimal"
+        <MudTextField T="decimal?"
                   @bind-value="storedValue" Label="Usd To Lek"
-                  Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;"
-                  Immediate="true" />
+                  Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
     }
  <div class="d-flex flex-wrap mt-4">
-    <MudSwitch @bind-Value="_readOnly" Color="Color.Primary">Read Only</MudSwitch>
-        <div class="d-flex justify-start align-center">
-            <p class="mud-typography mud-typography-body1 mud-inherit-text mr-2">Form</p>
-            <MudSwitch @bind-Value="_isCellEditMode" Color="Color.Primary">Cell</MudSwitch>
-        </div>
-        <MudDivider/>
         <MudSwitch @bind-Value="_usdToLek" Color="Color.Primary">Change Conversion Rate</MudSwitch>
-
-    </div>
+</div>
 }
 
 @code {
@@ -191,7 +161,6 @@ else
         }
         return false;
     }
-    private bool _readOnly;
     private bool _loading = true;
     private bool _error;
     private bool _isUpdating;
@@ -202,44 +171,39 @@ else
     private string _updateMessageClass;
     private string _updatingUserId;
     private string _searchString;
-    private string creatorId; // DELETE  LATER
     private string targetId;
     private string _pendingNoteText;
-    private decimal _storedValue;
-    private decimal lastSavedValue;
-    private const double Delay = 100 ; // 0.1 Second Delay
+    private decimal? _storedValue;
+    private decimal? lastSavedValue;
+    private const double Delay = 250 ; // .25 Second Delay
     private System.Timers.Timer _timer;
     private UserNote userNotes = new();
     private Dictionary<string, UserNote> userNotesDict = new();
     private List<string> _allAvailableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
-
+    private ClaimsPrincipal? currentUser;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var currentUser = authState.User;
-            storedValue = await localStorage.GetItemAsync<decimal>("usdLek");
-            if (storedValue == 0)
+            currentUser = authState.User;
+            var _storedValue = await SettingService.GetSettingByNameAsync("CurrencyRate");
+            if (_storedValue != null)
             {
-                storedValue = 100;
+                storedValue = _storedValue.ConversionRateUSToLek;
+                lastSavedValue = storedValue;
             }
-            lastSavedValue = storedValue;
             _allAvailableRoles = await GetAvailableRoles();
             AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
             _users = AllUsers.ToList();
-
             await LoadUserNotes();
-
             _loading = false;
             _timer = new System.Timers.Timer(Delay);
             _timer.Elapsed += OnTimedEvent;
             _timer.AutoReset = false; // to prevent timer from restarting automatically
-
-
         }
         catch (Exception ex)
         {
@@ -366,6 +330,7 @@ else
         var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
         return roles.Where(r => r != null).ToList();
     }
+
     private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
         try
@@ -434,7 +399,7 @@ else
     }
 
     // Saving usd to lek exchange rate in local storage
-    public decimal storedValue
+    public decimal? storedValue
     {
         get => _storedValue;
         set
@@ -442,33 +407,39 @@ else
             if (_storedValue != value)
             {
                 _storedValue = value;
-                SaveCurrencyValue();
+                _ = SaveCurrencyValue();
             }
         }
     }
     private async Task SaveCurrencyValue()
     {
+        if (_timer.Enabled)
+        {
+            _timer.Stop();
+        }
         // Save the currency value only if it has changed
         if (storedValue != lastSavedValue)
         {
-            await SaveToStorage();
+            await SaveToSetting();
             lastSavedValue = storedValue; // Update the last saved value
         }
         // Set the flag to true as the currency has changed
         isCurrencyChanged = true;
-
-        _timer.Stop();
         _timer.Start();
     }
-    private async Task SaveToStorage()
+    private async Task SaveToSetting()
     {
-        await localStorage.SetItemAsync("usdLek", storedValue);
+        var userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        await SettingService.UpdateSettingAsync("CurrencyRate", storedValue, userId);
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+        Snackbar.Add($"Successfully saved conversation rate to {storedValue}", Severity.Info);
+        AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
         StateHasChanged();
     }
 
     // events
     private List<string> _events = new();
-    private bool _isCellEditMode;
     private string _originalRole;
     private decimal? _originalHourlyRate;
     int? _originalWeeksToDueDateDefault;
@@ -490,13 +461,13 @@ else
         bool hourlyRateChanged = user.HourlyRate != _originalHourlyRate;
         if (roleChanged && hourlyRateChanged)
         {
-            UpdateSelectedRole(user, user.SelectedRole);
+            await UpdateSelectedRole(user, user.SelectedRole);
             await UserManagementService.UpdateHourlyRateAsync(user.UserId, user.HourlyRate);
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
             Snackbar.Add($"Successfully changed hourly rate {user.UserName} and his role", Severity.Info);
         }
         else if (roleChanged)
-            UpdateSelectedRole(user, user.SelectedRole);
+            await UpdateSelectedRole(user, user.SelectedRole);
         else if (hourlyRateChanged)
         {
             await UserManagementService.UpdateHourlyRateAsync(user.UserId, user.HourlyRate);
