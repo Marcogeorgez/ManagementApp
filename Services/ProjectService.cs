@@ -101,17 +101,16 @@ public class ProjectService
         await _context.SaveChangesAsync();
     }
 
-    public async Task ArchiveProjectAsync(int projectId, string reason)
+    public async Task DeleteProjectAsync(int projectId)
     {
         var project = await _context.Projects.FindAsync(projectId);
-        if (project != null && !project.IsArchived)
+        if (project.ProjectId == projectId)
         {
-            project.IsArchived = true;
-            project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
+            _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
         }
     }
-    public async Task AssignProjectToClientAsync(Project project, string newUserId)
+        public async Task AssignProjectToClientAsync(Project project, string newUserId)
     {
         // Make sure project exist
         var _project = await _context.Projects.FindAsync(project.ProjectId);
@@ -120,6 +119,17 @@ public class ProjectService
         {
             _project.ClientId = clientId.Id;
             _context.Projects.Update(_project);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task ArchiveProjectAsync(int projectId, string reason)
+    {
+        var project = await _context.Projects.FindAsync(projectId);
+        if (project != null && !project.IsArchived)
+        {
+            project.IsArchived = true;
+            project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
             await _context.SaveChangesAsync();
         }
     }
