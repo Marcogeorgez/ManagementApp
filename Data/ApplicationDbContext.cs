@@ -16,6 +16,7 @@ namespace LuminaryVisuals.Data
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<UserNote> UserNote { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
