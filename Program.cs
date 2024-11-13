@@ -122,6 +122,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 // BLazored Local Storge service
 builder.Services.AddBlazoredLocalStorage();
 
+// IMPORTANT THIS BELOW REMOVE THE LIMIT OF 16k character of SignalR on how big a message can be.
+builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMessageSize = null);
+// So now it can be unlimited
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
