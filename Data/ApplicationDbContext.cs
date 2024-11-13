@@ -41,7 +41,7 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.ShootDate).IsRequired();
                 entity.Property(e => e.DueDate).IsRequired();
                 entity.Property(e => e.ProgressBar).IsRequired();
-                entity.Property(e => e.WorkingMonth).IsRequired();
+                entity.Property(e => e.WorkingMonth);
                 entity.Property(e => e.Status).IsRequired();
                 entity.Property(e => e.ShootDate).HasColumnType("DATE");
                 entity.Property(e => e.DueDate).HasColumnType("DATE");
