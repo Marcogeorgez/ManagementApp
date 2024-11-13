@@ -23,17 +23,22 @@
             <MudDatePicker Label="Shoot Date"
                            Date="newProject.ShootDate"
                            DateChanged="@(date =>
-                                {
+                           {
                                     newProject.ShootDate = date;
                                     if (date.HasValue)
                                     {
-                                        newProject.DueDate = date.Value.AddDays(28); // Set Due Date to 4 weeks later
-                                    }
-                                 })" 
-                           Required="true"
-                           />
-            <MudSpacer />
+                                        if(WeeksToDueDateDefault  != 0)
+                                        {
+                                        newProject.DueDate = date.Value.AddDays((WeeksToDueDateDefault * 7)); // Set Due Date to 4 weeks later
 
+                                        }
+                                        else{
+                                        newProject.DueDate = date.Value.AddDays(28); // Set Due Date to 4 weeks later
+                                        }
+                                    }  
+                           })"
+                           Required="true"/>
+            <MudSpacer />
             <MudSelect T="ProjectStatus"
                        Label="Status"
                        @bind-Value="newProject.Status"
@@ -57,6 +62,7 @@
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int WeeksToDueDateDefault { get; set; }
     private Project newProject = new Project();
     private bool success;
     private MudForm form;

@@ -2,6 +2,7 @@
 @inject ProjectService ProjectService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject UserServices UserServices
 
 <MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" 
     Dense=true Hover="true" Bordered=true 
@@ -310,8 +311,13 @@ else if (_isClientView)
     }
     private async Task CreateProjectDialogAsync(DialogOptions options)
     {
-
-        var dialog = await DialogService.ShowAsync<CreateNewProjectDialog>("Create New Project", options);
+        var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
+        int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
+        var dialogParameters = new DialogParameters
+        {
+            { "WeeksToDueDateDefault", weeksToDueDateDefault }
+        };
+        var dialog = await DialogService.ShowAsync<CreateNewProjectDialog>("Create New Project", dialogParameters, options);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
