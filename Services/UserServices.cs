@@ -135,24 +135,12 @@ public class UserServices
         var editors = await _userManager.GetUsersInRoleAsync("Editor");
         var result = await _context.Users
             .Where(u => editors.Select(e => e.Id).Contains(u.Id))
-            .Include(u => u.VideoEditors)
-                .ThenInclude(ve => ve.Project)
             .Select(u => new UserProjectViewModel
             {
                 UserId = u.Id,
                 UserName = u.UserName,
                 HourlyRate = u.HourlyRate,
                 UserRole = "Editor",
-                Projects = u.VideoEditors.Select(ve => new Project
-                {
-                    ProjectId = ve.Project.ProjectId,
-                    ProjectName = ve.Project.ProjectName,
-                    Description = ve.Project.Description,
-                    ShootDate = ve.Project.ShootDate,
-                    DueDate = ve.Project.DueDate,
-                    ProgressBar = ve.Project.ProgressBar,
-                    Status = ve.Project.Status
-                }).ToList()
             })
             .ToListAsync();
 
@@ -174,16 +162,6 @@ public class UserServices
                 UserName = u.UserName,
                 HourlyRate = u.HourlyRate,
                 UserRole = "Client",
-                Projects = u.Payments.Select(p => new Project
-                {
-                    ProjectId = p.Project.ProjectId,
-                    ProjectName = p.Project.ProjectName,
-                    Description = p.Project.Description,
-                    ShootDate = p.Project.ShootDate,
-                    DueDate = p.Project.DueDate,
-                    ProgressBar = p.Project.ProgressBar,
-                    Status = p.Project.Status
-                }).ToList()
             })
             .ToListAsync();
 
