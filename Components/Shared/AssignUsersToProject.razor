@@ -8,12 +8,14 @@
             <MudItem xs="4">
                 <MudPaper>
                     <MudText Typo="Typo.h6">Editors</MudText>
-                    @foreach (var editor in Editors)
-                    {
-                        <MudCheckBox T="bool" @bind-Value="editor.IsSelected" Label="@editor.UserName" Color="Color.Info"> 
-                            Value: @(editor.IsSelected == null ? "null" : editor.IsSelected.ToString())
-                            </MudCheckBox>
-                    }
+                    <MudRadioGroup T="string" @bind-Value="SelectedEditorID">
+                        @foreach (var editor in Editors)
+                        {
+                            <MudItem xs="4">
+                                <MudRadio T="string" Value="@editor.UserId" Color="Color.Info">@editor.UserName</MudRadio>
+                            </MudItem>
+                        }
+                    </MudRadioGroup>
                 </MudPaper>
             </MudItem>
             <MudItem xs="4">
@@ -58,6 +60,7 @@
         <MudButton Color="Color.Success" OnClick="SaveAssignments">Save</MudButton>
     </DialogActions>
     </MudDialog>
+
 @code {
     [CascadingParameter]
     private MudDialogInstance MudDialog { get; set; }
@@ -66,25 +69,31 @@
     private List<Project> Projects = new List<Project>();
     private string SelectedClientID { get; set; } // Stores the selected client ID
     private int SelectedProjectID { get; set; }
-
+    private string SelectedEditorID { get; set; }
     protected override async Task OnInitializedAsync()
     {
         Editors = await userServices.GetEditorsWithProjectsAsync();
         Clients = await userServices.GetClientsWithProjectsAsync();
         Projects = await projectServices.GetProjectsAsync();
     }
-    private void SaveAssignments()
+    private async Task SaveAssignments()
     {
-        var selectedEditorIds = Editors
-            .Where(e => e.IsSelected)
-            .Select(e => e.UserId)
-            .ToList();
+
         Console.WriteLine("Selected Project ID: " + SelectedProjectID);
         Console.WriteLine("Selected Client ID: " + SelectedClientID);
-        Console.WriteLine("Selected Editor IDs: " + string.Join(", ", selectedEditorIds));
-        
-        MudDialog.Close(DialogResult.Ok(true));        // Selected client ID is stored in SelectedClientId
+        if (SelectedProjectID != null)
+        {
+            if (SelectedEditorID != null)
+            {
+                await projectServices.AssignProjectToPrimaryEditorAsync(SelectedProjectID, SelectedEditorID);
+            }
+            if (SelectedClientID != null)
+            {
+                await projectServices.AssignProjectToClientAsync(SelectedProjectID, SelectedClientID);
+            }
         }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
     private void Cancel()
     {
         MudDialog.Close(DialogResult.Cancel());
