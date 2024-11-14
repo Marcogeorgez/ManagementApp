@@ -20,38 +20,38 @@
         <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
         @if (_currentRole == "Admin")
         {
-            <col style="width: 1%;" /> <!-- ID -->
-            <col style="width: 4%;" /> <!-- ProjectName -->
-            <col style="width: 35%;" /> <!-- ProjectDescription -->
-            <col style="width: 5%;" /> <!-- ProgressBar -->
-            <col style="width: 5%;" /> <!-- ShootDate -->
-            <col style="width: 5%;" /> <!-- DueDate -->
-            <col style="width: 5%;" /> <!-- WorkingMonth -->
-            <col style="width: 5%;" /> <!-- Status -->
-            <col style="width: 10%;" /> <!-- Actions -->
-            <col style="width: 10%;" /> <!-- Archive (if _isArchived) -->
+            <col style="width: 1vw;" /> <!-- ID -->
+            <col style="width: 4vw;" /> <!-- ProjectName -->
+            <col style="min-width: 25vw;" /> <!-- ProjectDescription -->
+            <col style="max-width: 5vw; min-width:3vw; width:5vw;" /> <!-- ProgressBar -->
+            <col style="width: 5vw;" /> <!-- ShootDate -->
+            <col style="width: 5vw;" /> <!-- DueDate -->
+            <col style="width: 5vw;" /> <!-- WorkingMonth -->
+            <col style="width: 5vw;" /> <!-- Status -->
+            <col style="width: 10vw;" /> <!-- Actions -->
+            <col style="width: 10vw;" /> <!-- Archive (if _isArchived) -->
         }
         else if (_currentRole == "Editor")
         {
-            <col style="width: 1%;" /> <!-- ID -->
-            <col style="width: 4%;" /> <!-- ProjectName -->
-            <col style="width: 35%;" /> <!-- ProjectDescription -->
-            <col style="width: 10%;" /> <!-- ProgressBar -->
-            <col style="width: 5%;" /> <!-- ShootDate -->
-            <col style="width: 5%;" /> <!-- DueDate -->
-            <col style="width: 5%;" /> <!-- WorkingMonth -->
-            <col style="width: 5%;" /> <!-- Status -->
+            <col style="width: 1vw;" /> <!-- ID -->
+            <col style="width: 4vw;" /> <!-- ProjectName -->
+                <col style="min-width: 20vw;" /> <!-- ProjectDescription -->
+                <col style="width: 5vw;" /> <!-- ProgressBar -->
+            <col style="width: 5vw;" /> <!-- ShootDate -->
+            <col style="width: 5vw;" /> <!-- DueDate -->
+            <col style="width: 5vw;" /> <!-- WorkingMonth -->
+            <col style="width: 5vw;" /> <!-- Status -->
         }
         else if (_currentRole == "Client")
         {
 
-            <col style="width: 1%;" /> <!-- ID -->
-            <col style="width: 15%;" /> <!-- ProjectName -->
-            <col style="width: 34%;" /> <!-- ProjectDescription -->
-            <col style="width: 10%;" /> <!-- ProgressBar -->
-            <col style="width: 5%;" /> <!-- ShootDate -->
-            <col style="width: 10%;" /> <!-- Status -->
-            <col style="width: 5%;" /> <!-- Actions  -->
+            <col style="width: 1vw;" /> <!-- ID -->
+            <col style="width: 15vw;" /> <!-- ProjectName -->
+                <col style="min-width: 20vw;" /> <!-- ProjectDescription -->
+                <col style="width: 5vw;" /> <!-- ProgressBar -->
+            <col style="width: 5vw;" /> <!-- ShootDate -->
+            <col style="width: 10vw;" /> <!-- Status -->
+            <col style="width: 5vw;" /> <!-- Actions  -->
             }
         </MudHidden>
     </ColGroup>
@@ -73,7 +73,9 @@
 
                     }
                     <MudTextField T="string"
-                        HelperText="Click to expand" Value="@descriptionValue" 
+                        HelperText="Click to expand"
+                        Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))" 
+                        ReadOnly="true"
                         Immediate="true" Adornment="Adornment.End" 
                         AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                         AutoGrow=true
@@ -89,9 +91,9 @@
             }
         @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
         {
-            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" >
+            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" CellStyle="width: 2vw; min-width:1vw;"> 
                 <CellTemplate>
-                    <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Class="my-0" />
+                    <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
                 </CellTemplate>
             </PropertyColumn>
         }
