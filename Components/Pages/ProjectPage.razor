@@ -22,6 +22,8 @@
         {
             <col style="width: 1vw;" /> <!-- ID -->
             <col style="width: 4vw;" /> <!-- ProjectName -->
+                <col style="width: 4vw;" /> <!-- Client Name -->
+                <col style="width: 4vw;" /> <!-- Editors Name -->
             <col style="min-width: 25vw;" /> <!-- ProjectDescription -->
             <col style="max-width: 5vw; min-width:3vw; width:5vw;" /> <!-- ProgressBar -->
             <col style="width: 5vw;" /> <!-- ShootDate -->
@@ -63,6 +65,18 @@
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
         {
             <PropertyColumn Property="x => x.ProjectName" Title="Project Name" />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
+        {
+            <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" />
+        }
+                @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
+        {
+            <PropertyColumn Property="x => x.PrimaryEditor.UserName" Title="Primary Editor" />
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
+        {
+            <PropertyColumn Property="x => x.SecondaryEditor.UserName" Title="Secondary Editor" />
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
         {
@@ -239,7 +253,7 @@ else if (_isClientView)
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
+        { "Admin", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
         { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status" } },
         { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
     };
@@ -337,6 +351,9 @@ else if (_isClientView)
         var result = await dialog.Result;
         if (!result.Canceled)
         {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+            Snackbar.Add($"Successful! you should be happy, really!", Severity.Info);
+
             StateHasChanged();
         }
     }
@@ -403,17 +420,6 @@ else if (_isClientView)
             await ProjectService.UpdateProjectAsync(project);
         }
     }
-
-    private async Task AssignProjectToClient(Project project, string newUserId)
-    {
-        if (project.ProjectId != null && newUserId != null)
-        {
-            await ProjectService.AssignProjectToClientAsync(project, newUserId);
-        }
-    }
-
-
-
 
     private Func<Project, string> _cellStyleFunc => x =>
     {
