@@ -27,6 +27,8 @@ public class Project
 
     public string? PrimaryEditorId { get; set; }
     public string? SecondaryEditorId { get; set; }
+    public virtual ApplicationUser PrimaryEditor { get; set; }
+    public virtual ApplicationUser SecondaryEditor { get; set; }
 
     [Required]
     [StringLength(255)]
