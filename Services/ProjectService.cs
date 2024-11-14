@@ -20,17 +20,18 @@ public class ProjectService
     {
             return await _context.Projects
                 .Where(p => p.IsArchived == isArchived)
-                .Include(p => p.VideoEditors)
                 .Include(p => p.ClientPayment)
                 .Include(p => p.Chats)
                 .Include(p => p.Archive)
                 .Include(p => p.EditorPayments)
+                .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
                 .ToListAsync();
     }
     public async Task<List<Project>> GetProjectsAsync()
     {
         return await _context.Projects
-            .Include(p => p.VideoEditors)
             .ToListAsync();
     }
 
@@ -40,7 +41,6 @@ public class ProjectService
 
         var project = await _context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
-            .Include(p => p.VideoEditors)
             .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
@@ -55,7 +55,6 @@ public class ProjectService
 
         var project = await _context.Projects
             .Where(p => p.IsArchived == isArchived)
-            .Include(p => p.VideoEditors)
             .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
@@ -95,6 +94,56 @@ public class ProjectService
         }
     }
 
+    public async Task AssignProjectToClientAsync(int projectId, string newUserId)
+    {
+        // Make sure the project exists in the database
+        var _project = await _context.Projects.FindAsync(projectId);
+
+        // Ensure the new client (user) exists
+        var client = await _context.Users.FirstOrDefaultAsync(u => u.Id == newUserId);
+
+        if (client != null && _project != null)
+        {
+            // Update the ClientId property to the new client's ID
+            _project.ClientId = client.Id;
+            _context.Projects.Update(_project);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ArgumentException("Project or client not found.");
+        }
+    }
+    public async Task AssignProjectToPrimaryEditorAsync(int projectId, string userId)
+    {
+        var _project = await _context.Projects.FindAsync(projectId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null && _project != null)
+        {
+            _project.PrimaryEditorId = userId;            
+            _context.Projects.Update(_project);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ArgumentException("Project/User not found");
+        }
+    }
+    public async Task AssignProjectToSecondaryEditorAsync(string userId, string projectId)
+    {
+        var _project = await _context.Projects.FindAsync(projectId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user != null && _project != null)
+        {
+            _project.SecondaryEditorId = userId;
+            _context.Projects.Update(_project);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ArgumentException("Project/User not found");
+        }
+    }
     public async Task UpdateProjectAsync(Project project)
     {        
         _context.Projects.Update(project);
@@ -110,19 +159,6 @@ public class ProjectService
             await _context.SaveChangesAsync();
         }
     }
-        public async Task AssignProjectToClientAsync(Project project, string newUserId)
-    {
-        // Make sure project exist
-        var _project = await _context.Projects.FindAsync(project.ProjectId);
-        var clientId = await _context.Users.FirstOrDefaultAsync(u => u.Id == newUserId);
-        if (clientId != null && _project != null)
-        {
-            _project.ClientId = clientId.Id;
-            _context.Projects.Update(_project);
-            await _context.SaveChangesAsync();
-        }
-    }
-
     public async Task ArchiveProjectAsync(int projectId, string reason)
     {
         var project = await _context.Projects.FindAsync(projectId);
