@@ -25,6 +25,9 @@ public class Project
     public string ClientId {  get; set; }
     public virtual ApplicationUser Client { get; set; } 
 
+    public string? PrimaryEditorId { get; set; }
+    public string? SecondaryEditorId { get; set; }
+
     [Required]
     [StringLength(255)]
     [Display(Name = "Project Name")]
@@ -58,7 +61,6 @@ public class Project
     public ProjectStatus Status { get; set; }
 
     // Navigation properties
-    public virtual ICollection<VideoEditor> VideoEditors { get; set; }
     public virtual ClientPayment ClientPayment { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
