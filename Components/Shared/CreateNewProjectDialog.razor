@@ -38,11 +38,24 @@
                        @bind-Value="newProject.Status"
                        Required="true">
                 <MudSelectItem Value="ProjectStatus.Upcoming">Upcoming</MudSelectItem>
-                <MudSelectItem Value="ProjectStatus.ReadyToEdit">Ready to Edit</MudSelectItem>
+                @*<MudSelectItem Value="ProjectStatus.ReadyToEdit">Ready to Edit</MudSelectItem>*@
             </MudSelect>
 
             <MudHtmlEditor Outlined="true" Html="@newProject.Description" HtmlChanged="OnNoteTextChanged" Placeholder="Write Your Project Description ">
-                <MudHtmlToolbarOptions InsertImage="false" />
+                    <select class="ql-font">
+                        <option value="sans-serif"></option>
+                        <option value="serif"></option>
+                        <option value="monospace"></option>
+                    </select>
+                    <select class="ql-size">
+                        <option value="small"></option>
+                        <option selected></option>
+                        <option value="large"></option>
+                        <option value="huge"></option>
+                    </select>
+                    <MudHtmlToolbarOptions />
+                    <button class="ql-list" value="check"></button>
+                    <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
             </MudHtmlEditor>
 
 
