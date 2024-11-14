@@ -11,7 +11,6 @@ namespace LuminaryVisuals.Data
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
-        public DbSet<VideoEditor> VideoEditors { get; set; }
         public DbSet<ClientPayment> Payments { get; set; }
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
@@ -48,10 +47,6 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.DueDate).HasColumnType("DATE");
                 entity.Property(e => e.WorkingMonth).HasColumnType("DATE");
 
-                entity.HasMany(p => p.VideoEditors)
-                      .WithOne(ve => ve.Project)
-                      .HasForeignKey(ve => ve.ProjectId)
-                      .OnDelete(DeleteBehavior.Cascade);
                 entity.HasMany(p => p.EditorPayments)
                       .WithOne(ep => ep.Project)
                       .HasForeignKey(ep => ep.ProjectId)
@@ -68,15 +63,6 @@ namespace LuminaryVisuals.Data
                       .WithOne(a => a.Project)
                       .HasForeignKey<Archive>(a => a.ProjectId)
                         .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // Configure VideoEditor
-            builder.Entity<VideoEditor>(entity =>
-            {
-                entity.ToTable("VideoEditors");
-                entity.HasOne(ve => ve.User)
-                      .WithMany(u => u.VideoEditors)
-                      .HasForeignKey(ve => ve.UserId);
             });
 
             // Configure Payment
