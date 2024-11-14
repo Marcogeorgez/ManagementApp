@@ -3,6 +3,7 @@ using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Migrations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using static LuminaryVisuals.Services.UserRoleViewModel;
 
 namespace LuminaryVisuals.Services;
@@ -211,6 +212,10 @@ public class UserRoleViewModel
 
         // Try to get the note from the dictionary
         return Notes.TryGetValue(targetUserId, out var note) ? note?.Note ?? string.Empty : string.Empty;
+    }
+    public static string StripHtmlTags(string input)
+    {
+        return Regex.Replace(input, "<.*?>", string.Empty);
     }
     public class UserProjectViewModel
     {
