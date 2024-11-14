@@ -60,34 +60,4 @@ public class UserNoteService
             return new MessageSuccess { Success = false, Message = "Note couldn't be updated." };
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
- * not being used since we can just modify it instead of deleting, which is currently useless.
-    public async Task<MessageSuccess> DeleteNoteAsync(int noteId)
-    {
-        var note = await _context.UserNote.FindAsync(noteId);
-        if (note != null)
-        { 
-            _context.Remove(note);
-            await _context.SaveChangesAsync();
-            return new MessageSuccess { Success = true, Message = "Note has been created successfully!" };
-
-        }
-        else
-        {
-            return new MessageSuccess { Success = false, Message = "Note couldn't be created!" };
-        }
-    }*/
-
 }
