@@ -32,7 +32,11 @@
     <Columns>
         @if (RoleBasedColumns[_currentRole].Contains("Id"))
         {
-            <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false" DragAndDropEnabled="false" Groupable="false" Editable=false />
+            <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false" DragAndDropEnabled="false" Groupable="false" Editable=false >
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
         {
@@ -77,9 +81,11 @@
                             <MudTooltip Text="Expand">
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"/>
                             </MudTooltip>
-                    </MudTextField>
-                    
+                    </MudTextField>                    
                     </CellTemplate>
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
             </PropertyColumn>
             }
         @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
@@ -88,29 +94,94 @@
                 <CellTemplate>
                     <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
                 </CellTemplate>
+                <EditTemplate Context="context">
+                <MudSelect T="ProgressBarValue" Label="Progress" Class="mt-3" 
+                Value="@((ProgressBarValue)context.Item.ProgressBar)"
+                Variant="Variant.Outlined"
+                ValueChanged="@(newValue => context.Item.ProgressBar = (int)newValue)">
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+                </MudSelect>
+
+                </EditTemplate>
             </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
         {
-            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" Groupable="true" />
+            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" Groupable="true">
+                        <EditTemplate Context="context">
+                            @* If changed from here I will later need of a way to change due date*@
+                            <MudDatePicker Label="Shoot Date"
+                                           Variant="Variant.Outlined"
+                                           Date="@context.Item.ShootDate"
+                                           DateChanged="@(date => context.Item.ShootDate = date)"
+                                           Class="mt-3"
+                                           Required="true" />
+                        </EditTemplate>
+            </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
         {
-            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" Groupable="true" />
+            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" Groupable="true" >
+                        <EditTemplate>
+                            <MudDatePicker Label="Due Date"
+                                           Variant="Variant.Outlined"
+                                           Class="mt-3"
+                                           Date="@context.Item.DueDate"
+                                           DateChanged="@(date => context.Item.DueDate = date)"
+                                           Required="true" />
+                        </EditTemplate>
+            </PropertyColumn>
+
         }
 
         @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
         {
-            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Groupable="true" />
+            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Groupable="true" >
+                <EditTemplate Context="context">
+                    <MudDatePicker Required="true"
+                        Label="Working Month"
+                        Variant="Variant.Outlined"
+                        Class="mt-3"
+                        FixDay="1"
+                        DateFormat="yyyy/MM"
+                        Date="@context.Item.WorkingMonth"
+                        DateChanged="@(date => context.Item.WorkingMonth = date)" />
+                </EditTemplate>
+            </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("Status"))
         {
-            <PropertyColumn Property="x => x.Status" Title="Status" CellStyleFunc="@_cellStyleFunc" Hideable="true" Groupable="true" >
+            
+            <PropertyColumn Property="x => x.FormatStatus" Title="Status" CellStyleFunc="@_cellStyleFunc" Hideable="true" Groupable="true">
+                <EditTemplate Context="context">
+                            <MudSelect T="ProjectStatus" Class="mt-3"
+                                       Variant="Variant.Outlined"
+                                       Label="Status"
+                                       @bind-Value="context.Item.Status"
+                                       Required="true">
+                                @if(!_isClientView){
+                                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                                {
+                                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                                }
+                                }
+                                else{
+                                    <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
+                                    <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
+                                }
+                            </MudSelect>
+                </EditTemplate>
                 <GroupTemplate>
                     <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
                 </GroupTemplate>
-            </PropertyColumn>
-        }
+                        </PropertyColumn>
+                    
+                }
         @if (RoleBasedColumns[_currentRole].Contains("Actions"))
         {
             <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
@@ -240,6 +311,15 @@ else if (_isClientView)
     private string _userName = "";
     private string CurrentRole => _isAdminView ? "Admin" :
                           _isEditorView ? "Editor" : "Client";
+    private enum ProgressBarValue
+    {
+        Zero = 0,
+        Twenty = 20,
+        Forty = 40,
+        Sixty = 60,
+        Eighty = 80,
+        Hundred = 100
+    }
 
     protected override async Task OnInitializedAsync()
     {
