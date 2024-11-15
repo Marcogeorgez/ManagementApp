@@ -1,69 +1,76 @@
 ﻿namespace LuminaryVisuals.Services;
 
+using LuminaryVisuals.Data;
+using LuminaryVisuals.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Data;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 public class ProjectService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<ProjectService> _logger;
 
-    public ProjectService(ApplicationDbContext context)
+    public ProjectService(ApplicationDbContext context, ILogger<ProjectService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<List<Project>> GetProjectsAsync(bool isArchived)
     {
-            return await _context.Projects
+        var projects = await _context.Projects
                 .Where(p => p.IsArchived == isArchived)
-                .Include(p => p.ClientPayment)
-                .Include(p => p.Chats)
-                .Include(p => p.Archive)
-                .Include(p => p.EditorPayments)
-                .Include(p => p.Client)
-                .Include(p => p.PrimaryEditor)
-                .Include(p => p.SecondaryEditor)
                 .ToListAsync();
+        var userIds = projects
+                .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
+                .Where(id => id != null)
+                .Distinct()
+                .ToList();
+
+        // Step 3: Fetch the user names based on the collected IDs
+        var userNames = await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.UserName })
+                .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+        // Step 4: Map user names back to each project
+        foreach (var project in projects)
+        {
+            project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
+                ? userNames[project.ClientId]!
+                : "No Client Assigned ??";
+
+            project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
+                ? userNames[project.PrimaryEditorId]!
+                : "No Editor Assigned";
+
+            project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
+                ? userNames[project.SecondaryEditorId]!
+                : "No Editor Assigned";
+        }
+
+        return projects;
     }
+
     public async Task<List<Project>> GetProjectsAsync()
     {
         return await _context.Projects
             .ToListAsync();
     }
 
-
-    public async Task<List<Project?>> GetProjectByClientIdAsync(bool isArchived,string UserId)
+    public async Task<List<Project?>> GetProjectByClientIdAsync(bool isArchived, string UserId)
     {
-
         var project = await _context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
-            .Include(p => p.EditorPayments)
             .ToListAsync();
-            if (project == null)
-                return null;
-            return project;      
-    }
-/*    public async Task<Project?> GetProjectByEditorIdAsync(bool isArchived, string EditorId)
-    {
-
-        var project = await _context.Projects
-            .Where(p => p.IsArchived == isArchived)
-            .Include(p => p.ClientPayment)
-            .Include(p => p.Chats)
-            .Include(p => p.Archive)
-            .Include(p => p.EditorPayments)
-            .FirstOrDefaultAsync(p => p. == EditorId);
         if (project == null)
             return null;
         return project;
-    }*/
+    }
 
     public async Task AddProjectAsync(Project project)
     {
@@ -114,13 +121,14 @@ public class ProjectService
             throw new ArgumentException("Project or client not found.");
         }
     }
+
     public async Task AssignProjectToPrimaryEditorAsync(int projectId, string userId)
     {
         var _project = await _context.Projects.FindAsync(projectId);
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user != null && _project != null)
         {
-            _project.PrimaryEditorId = userId;            
+            _project.PrimaryEditorId = userId;
             _context.Projects.Update(_project);
             await _context.SaveChangesAsync();
         }
@@ -129,6 +137,7 @@ public class ProjectService
             throw new ArgumentException("Project/User not found");
         }
     }
+
     public async Task AssignProjectToSecondaryEditorAsync(string userId, string projectId)
     {
         var _project = await _context.Projects.FindAsync(projectId);
@@ -144,9 +153,10 @@ public class ProjectService
             throw new ArgumentException("Project/User not found");
         }
     }
-    public async Task UpdateProjectAsync(Project project)
-    {        
-        _context.Projects.Update(project);
+
+
+    public async Task UpdateProjectAsync()
+    {
         await _context.SaveChangesAsync();
     }
 
@@ -159,6 +169,7 @@ public class ProjectService
             await _context.SaveChangesAsync();
         }
     }
+
     public async Task ArchiveProjectAsync(int projectId, string reason)
     {
         var project = await _context.Projects.FindAsync(projectId);
@@ -169,6 +180,7 @@ public class ProjectService
             await _context.SaveChangesAsync();
         }
     }
+
     public async Task UnarchiveProjectAsync(int projectId)
     {
         var project = await _context.Projects.FindAsync(projectId);
@@ -183,6 +195,7 @@ public class ProjectService
             throw new ArgumentException("Project or client not found.");
         }
     }
+
     public async Task DeleteArchiveAsync(int projectId)
     {
         var archiveRecord = await _context.Archives
@@ -194,7 +207,4 @@ public class ProjectService
             await _context.SaveChangesAsync();
         }
     }
-
-
 }
-
