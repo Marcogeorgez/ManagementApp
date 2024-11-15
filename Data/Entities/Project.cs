@@ -23,12 +23,9 @@ public class Project
 
     [Required]
     public string ClientId {  get; set; }
-    public virtual ApplicationUser Client { get; set; } 
 
     public string? PrimaryEditorId { get; set; }
     public string? SecondaryEditorId { get; set; }
-    public virtual ApplicationUser PrimaryEditor { get; set; }
-    public virtual ApplicationUser SecondaryEditor { get; set; }
 
     [Required]
     [StringLength(255)]
@@ -63,6 +60,9 @@ public class Project
     public ProjectStatus Status { get; set; }
 
     // Navigation properties
+    public virtual ApplicationUser Client { get; set; }
+    public virtual ApplicationUser PrimaryEditor { get; set; }
+    public virtual ApplicationUser SecondaryEditor { get; set; }
     public virtual ClientPayment ClientPayment { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
@@ -77,4 +77,10 @@ public class Project
 
     [NotMapped]
     public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM");
+    [NotMapped]
+    public string ClientName { get; set; }
+    [NotMapped]
+    public string PrimaryEditorName { get; set; }
+    [NotMapped]
+    public string SecondaryEditorName { get; set; }
 }
