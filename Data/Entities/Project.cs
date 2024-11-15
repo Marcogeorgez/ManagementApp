@@ -60,8 +60,14 @@ public class Project
     public ProjectStatus Status { get; set; }
 
     // Navigation properties
+    [NotMapped]
+    [ForeignKey("ClientId")]
     public virtual ApplicationUser Client { get; set; }
+    [NotMapped]
+    [ForeignKey("PrimaryEditorId")]
     public virtual ApplicationUser PrimaryEditor { get; set; }
+    [NotMapped]
+    [ForeignKey("SecondaryEditorId")]
     public virtual ApplicationUser SecondaryEditor { get; set; }
     public virtual ClientPayment ClientPayment { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }

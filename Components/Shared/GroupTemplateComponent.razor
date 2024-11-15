@@ -1,0 +1,16 @@
+﻿@using MudBlazor
+@typeparam TItem
+
+<span style="font-weight:bold">
+    @Label: @Context.Grouping.Key 
+        <MudChip T="int" Variant="Variant.Outlined" 
+                 Color="Color.Success" 
+                 Size="Size.Medium">
+            total @Context.Grouping.Count()
+        </MudChip>
+</span>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Category";
+    [Parameter, EditorRequired] public GroupDefinition<TItem> Context { get; set; }
+}

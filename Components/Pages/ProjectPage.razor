@@ -3,88 +3,67 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject UserServices UserServices
-
+<MudTabs Elevation="4" Rounded="true" Centered="true" Color="@Color.Primary">
+    <MudTabPanel Text="Project Management System">
 <MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" 
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
+    ApplyDropClassesOnDragStarted="true"
+    DragDropColumnReordering=true
+    ColumnsPanelReordering=true
+    Groupable=true
+    ShowMenuIcon=true
+    EditMode="DataGridEditMode.Form"
+    EditTrigger="DataGridEditTrigger.Manual"
+    ReadOnly=false
     DragIndicatorSize="Size.Small"
-    >
+    StartedEditingItem="@StartedEditingItem" 
+    CanceledEditingItem="@CanceledEditingItem"
+    CommittedItemChanges="@CommittedItemChanges">
+
     <ToolBarContent>
             <MudText Typo="Typo.h6">Your @_userName Projects</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="_searchString" Placeholder="Search"
-                Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                IconSize="Size.Medium" Class="mt-0" Clearable="true" Immediate="true" />
     </ToolBarContent>
     <ColGroup>
         <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
-        @if (_currentRole == "Admin")
-        {
-            <col style="width: 1vw;" /> <!-- ID -->
-            <col style="width: 4vw;" /> <!-- ProjectName -->
-                <col style="width: 4vw;" /> <!-- Client Name -->
-                <col style="width: 4vw;" /> <!-- Editors Name -->
-            <col style="min-width: 25vw;" /> <!-- ProjectDescription -->
-            <col style="max-width: 5vw; min-width:3vw; width:5vw;" /> <!-- ProgressBar -->
-            <col style="width: 5vw;" /> <!-- ShootDate -->
-            <col style="width: 5vw;" /> <!-- DueDate -->
-            <col style="width: 5vw;" /> <!-- WorkingMonth -->
-            <col style="width: 5vw;" /> <!-- Status -->
-            <col style="width: 10vw;" /> <!-- Actions -->
-            <col style="width: 10vw;" /> <!-- Archive (if _isArchived) -->
-        }
-        else if (_currentRole == "Editor")
-        {
-            <col style="width: 1vw;" /> <!-- ID -->
-            <col style="width: 4vw;" /> <!-- ProjectName -->
-                <col style="min-width: 20vw;" /> <!-- ProjectDescription -->
-                <col style="width: 5vw;" /> <!-- ProgressBar -->
-            <col style="width: 5vw;" /> <!-- ShootDate -->
-            <col style="width: 5vw;" /> <!-- DueDate -->
-            <col style="width: 5vw;" /> <!-- WorkingMonth -->
-            <col style="width: 5vw;" /> <!-- Status -->
-        }
-        else if (_currentRole == "Client")
-        {
-
-            <col style="width: 1vw;" /> <!-- ID -->
-            <col style="width: 15vw;" /> <!-- ProjectName -->
-                <col style="min-width: 20vw;" /> <!-- ProjectDescription -->
-                <col style="width: 5vw;" /> <!-- ProgressBar -->
-            <col style="width: 5vw;" /> <!-- ShootDate -->
-            <col style="width: 10vw;" /> <!-- Status -->
-            <col style="width: 5vw;" /> <!-- Actions  -->
-            }
         </MudHidden>
     </ColGroup>
     <Columns>
         @if (RoleBasedColumns[_currentRole].Contains("Id"))
         {
-            <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false"  />
+            <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false" DragAndDropEnabled="false" Groupable="false" Editable=false />
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
         {
-            <PropertyColumn Property="x => x.ProjectName" Title="Project Name" />
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Name" DragAndDropEnabled="false" Groupable="false" Editable=false />
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
         {
-            <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" />
+                    <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName" Hideable="true" Groupable="true" Editable=false Required=false >
+                        <GroupTemplate>
+                            <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
+                        </GroupTemplate>
+                    </PropertyColumn>
         }
                 @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
         {
-            <PropertyColumn Property="x => x.PrimaryEditor.UserName" Title="Primary Editor" />
+                    <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" Groupable="true" Editable=false Required=false >
+                    <GroupTemplate> 
+                            <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
+                    </GroupTemplate>    
+                    </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
         {
-            <PropertyColumn Property="x => x.SecondaryEditor.UserName" Title="Secondary Editor" />
+                    <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" Groupable="false" Editable=false Required=false />
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
         {
-            <PropertyColumn Property="x => x.Description" Title="Project Description">
+                    <PropertyColumn Property="x => x.Description" Title="Project Description" Hideable="true" Groupable="false" CellStyle="max-width:70vw;min-width:20vw;" Editable=false Required=false>
                 <CellTemplate >
                     @{
                         string descriptionValue = context.Item.Description ?? string.Empty;
-
                     }
                     <MudTextField T="string"
                         HelperText="Click to expand"
@@ -105,7 +84,7 @@
             }
         @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
         {
-            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" CellStyle="width: 2vw; min-width:1vw;"> 
+            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle="width: 2vw; min-width:1vw;"> 
                 <CellTemplate>
                     <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
                 </CellTemplate>
@@ -113,24 +92,28 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
         {
-            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" />
+            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" Groupable="true" />
         }
         @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
         {
-            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" />
+            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" Groupable="true" />
         }
 
         @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
         {
-                <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" />
+            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Groupable="true" />
         }
         @if (RoleBasedColumns[_currentRole].Contains("Status"))
         {
-        <PropertyColumn Property="x => x.Status" Title="Status" CellStyleFunc="@_cellStyleFunc" />
+            <PropertyColumn Property="x => x.Status" Title="Status" CellStyleFunc="@_cellStyleFunc" Hideable="true" Groupable="true" >
+                <GroupTemplate>
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
+                </GroupTemplate>
+            </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("Actions"))
         {
-            <TemplateColumn CellClass="" Title="Actions">
+            <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
                 <CellTemplate>
                     <MudStack Row>
                         @if (_isArchived && _isAdminView)
@@ -173,7 +156,8 @@
                                 Modify
                             </MudButton>
                         }
-                    </MudStack>
+                    </MudStack>             
+                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Filled.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                 </CellTemplate>
             </TemplateColumn>
             }
@@ -183,8 +167,8 @@
                 {
                     <PropertyColumn Property="x => x.Archive.Reason" Title="Archive Reason" />
                 }
-
         }
+        
     </Columns>
     <PagerContent>
         <MudDataGridPager T="Project"/>
@@ -192,6 +176,8 @@
 </MudDataGrid>
 <MudStack Spacing="0">
     <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+@*             <MudSwitch T="bool" Value="@_groupByClientName" ValueChanged="" Color="Color.Info">Group By Client Name</MudSwitch>
+ *@
     <MudStack Row=true>
     <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
     <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
@@ -225,6 +211,17 @@ else if (_isClientView)
         Assign To Project
     </MudButton>
     </div>
+    </MudTabPanel>
+    @if (RoleBasedColumns[_currentRole].Contains("Tabs"))
+    {
+        <MudTabPanel Text
+        ="Tracking System">
+
+
+
+    </MudTabPanel>
+    }
+</MudTabs>
 
 @code {
     [Inject]
@@ -232,16 +229,18 @@ else if (_isClientView)
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
     private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = true };
-    private bool _isArchived = false;
-    private bool _isAdminView = false;
-    private bool _isEditorView = false;
-    private bool _isClientView = false;
+    private bool _isArchived;
+    private bool _isAdminView;
+    private bool _isEditorView;
+    private bool _isClientView;
+    private bool _groupByClientName;
     private string _searchString = "";
     private string _currentUserId = "";
     private string _currentRole = "";
     private string _userName = "";
     private string CurrentRole => _isAdminView ? "Admin" :
                           _isEditorView ? "Editor" : "Client";
+
     protected override async Task OnInitializedAsync()
     {
         AdminToggle();
@@ -253,7 +252,7 @@ else if (_isClientView)
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
+        { "Admin", new List<string> { "Tabs", "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
         { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status" } },
         { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
     };
@@ -345,7 +344,7 @@ else if (_isClientView)
         }
     }
     // Asign to project
-       private async Task AssignUsersToProjectAsync(DialogOptions options)
+    private async Task AssignUsersToProjectAsync(DialogOptions options)
     {
         var dialog = await DialogService.ShowAsync<AssignUsersToProject>("Assign To Project", options);
         var result = await dialog.Result;
@@ -417,7 +416,7 @@ else if (_isClientView)
         if (context is Project project)
         {
             project.Description = newDescription;
-            await ProjectService.UpdateProjectAsync(project);
+            await ProjectService.UpdateProjectAsync();
         }
     }
 
@@ -440,8 +439,8 @@ else if (_isClientView)
                 break;
 
             case ProjectStatus.Delivered:
-            style += "background-color:  #53a653;";
-            //style += "background-color:  rgb(9,154,108);";
+                style += "background-color:  #53a653;";
+                //style += "background-color:  rgb(9,154,108);";
                 break;
             case ProjectStatus.Review:
                 style += "background-color: var(--mud-palette-warning-lighten);";
@@ -458,8 +457,28 @@ else if (_isClientView)
                 style += "background-color: transparent;";
                 break;
         }
-        style += "color: rgba(255,255,255,1); text-align: center";
+        style += "color: rgba(255,255,255,1); text-align: center; max-width: 25vw;";
 
         return style;
     };
+    // events
+    void StartedEditingItem(Project project)
+    {
+    }
+    void CanceledEditingItem(Project project)
+    {
+    }
+    private async Task CommittedItemChanges(Project project)
+    {
+        try{
+            await ProjectService.UpdateProjectAsync();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+            Snackbar.Add($"Successfully updated the project", Severity.Info);
+        }
+        catch(Exception ex)
+        {
+            throw ex; 
+        }
+
+    }
 }
