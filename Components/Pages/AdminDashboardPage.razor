@@ -67,8 +67,6 @@ else
                 <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
                 <col style="width: 50vw;" /><!-- Private notes -->
                 <col style="width: 1vw;" /><!-- Edit button -->
-
-
             </MudHidden>
         </ColGroup>
         <Columns>
@@ -154,8 +152,8 @@ else
     </MudDataGrid>
     if(_usdToLek){
         <MudTextField T="decimal?"
-                  @bind-value="storedValue" Label="Usd To Lek"
-                  Variant="Variant.Filled" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
+                  @bind-value="storedValue" Label="Usd To Lek" Class="mt-4"
+                  Variant="Variant.Outlined" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
     }
  <div class="d-flex flex-wrap mt-4">
         <MudSwitch @bind-Value="_usdToLek" Color="Color.Primary">Change Conversion Rate</MudSwitch>
