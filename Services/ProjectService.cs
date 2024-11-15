@@ -5,6 +5,7 @@ using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class ProjectService
 {
@@ -113,7 +114,8 @@ public class ProjectService
         {
             // Update the ClientId property to the new client's ID
             _project.ClientId = client.Id;
-            _context.Projects.Update(_project);
+            // Currently when the project is assigned to a new user. It updates the shoot date by the weeks to due date default from THE DATE OF SHOOT DATE.
+            _project.DueDate = _project.ShootDate.Value.AddDays((double) client.WeeksToDueDateDefault! * 7);
             await _context.SaveChangesAsync();
         }
         else

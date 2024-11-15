@@ -6,14 +6,14 @@ namespace LuminaryVisuals.Data.Entities;
 
 public enum ProjectStatus
 {
-    Upcoming,
-    Scheduled,
-    Working,
-    Review,
-    Delivered,
-    ReadyToEdit,
-    Revision,
-    Paid
+    Upcoming = 0,
+    Ready_To_Edit = 1,
+    Scheduled = 2,
+    Working = 3,
+    Review = 4,
+    Delivered = 5,
+    Revision = 6,
+    Paid = 7
 }
 
 public class Project
@@ -83,6 +83,8 @@ public class Project
 
     [NotMapped]
     public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM");
+    [NotMapped]
+    public string FormatStatus => Status.ToString().Replace("_", " ");
     [NotMapped]
     public string ClientName { get; set; }
     [NotMapped]
