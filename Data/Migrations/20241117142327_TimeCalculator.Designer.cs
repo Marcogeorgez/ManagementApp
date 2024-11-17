@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241117142327_TimeCalculator")]
+    partial class TimeCalculator
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -364,91 +367,6 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("Chats", (string)null);
                 });
 
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.ClientEditingGuidelines", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BlackAndWhite")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ColorReferences")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CrossFades")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DoubleExposure")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FadeToBlack")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FilmReferences")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LensFlares")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MaskingTransitions")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MusicGenresArtists")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OldFilmLook")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OtherTransitions")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PictureInPicture")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SongSamples")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SoundDesignComments")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SoundDesignEmphasis")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SpeechComments")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TransitionComments")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UseSpeeches")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("VideoStructure")
-                        .HasColumnType("text");
-
-                    b.Property<string>("WebsiteLink")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ClientEditingGuidelines", (string)null);
-                });
-
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.ClientPayment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -495,6 +413,9 @@ namespace LuminaryVisuals.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PaymentId"));
 
+                    b.Property<decimal>("BillableHours")
+                        .HasColumnType("decimal(5,2)");
+
                     b.Property<DateTime>("EditorDatePaid")
                         .HasColumnType("timestamp with time zone");
 
@@ -504,24 +425,31 @@ namespace LuminaryVisuals.Migrations
                     b.Property<decimal>("PaymentAmount")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<int>("PaymentMonth")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PaymentYear")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("Undertime")
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("character varying(255)");
 
                     b.Property<decimal>("WorkingHours")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("isPaid")
-                        .HasColumnType("boolean");
+                        .HasColumnType("decimal(5,2)");
 
                     b.HasKey("PaymentId");
 
                     b.HasIndex("ProjectId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "ProjectId", "PaymentMonth", "PaymentYear")
+                        .IsUnique();
 
                     b.ToTable("EditorPayments", (string)null);
                 });
@@ -533,9 +461,6 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
-
-                    b.Property<decimal>("BillableHours")
-                        .HasColumnType("numeric");
 
                     b.Property<string>("ClientId")
                         .IsRequired()
@@ -812,17 +737,6 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.ClientEditingGuidelines", b =>
-                {
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });

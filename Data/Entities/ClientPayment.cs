@@ -25,7 +25,7 @@ public class ClientPayment
     public decimal ProjectTotalPrice { get; set; }
 
     [Display(Name = "Visible to Client")]
-    public bool PaymentVisibleClient { get; set; }
+    public bool PaymentVisibleClient { get; set; } = false;
 
     [Required]
     [StringLength(50)]

@@ -16,6 +16,10 @@ namespace LuminaryVisuals.Data
         public DbSet<Chat> Chats { get; set; }
         public DbSet<UserNote> UserNote { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<CalculationParameter> CalculationParameter { get; set; }
+        public DbSet<CalculationOption> CalculationOption { get; set; }
+        public DbSet<ClientEditingGuidelines> ClientEditingGuidelines { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -85,9 +89,6 @@ namespace LuminaryVisuals.Data
                 entity.HasOne(ep => ep.Project)
                       .WithMany(p => p.EditorPayments)
                       .HasForeignKey(ep => ep.ProjectId);
-
-                entity.HasIndex(ep => new { ep.UserId, ep.ProjectId, ep.PaymentMonth, ep.PaymentYear })
-                      .IsUnique();
             });
 
 
@@ -129,6 +130,57 @@ namespace LuminaryVisuals.Data
 
             });
 
+            builder.Entity<ClientEditingGuidelines>(entity =>
+            {
+                entity.ToTable("ClientEditingGuidelines");
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.UserId)
+                    .IsRequired();
+
+                entity.HasOne(e => e.User) 
+                    .WithMany() 
+                    .HasForeignKey(e => e.UserId) 
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Seed Parameters
+            builder.Entity<CalculationParameter>().HasData(
+                new CalculationParameter { Id = 1, Name = "HighlightsDifficulty", Description = "Highlights Difficulty ", ParameterType = "Option", DefaultValue = 1.0m },
+                new CalculationParameter { Id = 2, Name = "PrePartsPercentage", Description = "Pre-Parts Percentage", ParameterType = "Option", DefaultValue = 1.0m },
+                new CalculationParameter { Id = 3, Name = "Resolution", Description = "Resolution of video", ParameterType = "Option", DefaultValue = 1.0m },
+                new CalculationParameter { Id = 4, Name = "FootageQuality", Description = "Quality of Footage", ParameterType = "Option", DefaultValue = 1.0m },
+
+                new CalculationParameter { Id = 5, Name = "CameraMulti", Description = "Multiplier for camera when there exist more than 2", ParameterType = "Decimal", DefaultValue = 0.3m },
+                new CalculationParameter { Id = 6, Name = "SizeMulti", Description = "Multiplier for raw footage size when bigger than 300gb", ParameterType = "Decimal", DefaultValue = 0.4m }
+            );
+
+            // Seed Parameter Options
+            builder.Entity<CalculationOption>().HasData(
+                // Options for Highlights-Difficulty
+                new CalculationOption { Id = 1, CalculationParameterId = 1, OptionName = "Straight Forward Linear, little mixing", Multiplier = 0.9m },
+                new CalculationOption { Id = 2, CalculationParameterId = 1, OptionName = "Hybrid Mostly Linear", Multiplier = 1m },
+                new CalculationOption { Id = 3, CalculationParameterId = 1, OptionName = "Movie with heavy SFX + VFX", Multiplier = 1.2m },
+
+                // Options for Pre-Parts Percentage
+                new CalculationOption { Id = 4, CalculationParameterId = 2, OptionName = "0%", Multiplier = 1m },
+                new CalculationOption { Id = 5, CalculationParameterId = 2, OptionName = "30%", Multiplier = .95m },
+                new CalculationOption { Id = 6, CalculationParameterId = 2, OptionName = "60%", Multiplier = .85m },
+                new CalculationOption { Id = 7, CalculationParameterId = 2, OptionName = "100%", Multiplier = 0.7m },
+
+                // Options for Resolution
+                new CalculationOption { Id = 8, CalculationParameterId = 3, OptionName = "1080p", Multiplier = 1m },
+                new CalculationOption { Id = 9, CalculationParameterId = 3, OptionName = "Mixed", Multiplier = 1.05m },
+                new CalculationOption { Id = 10, CalculationParameterId = 3, OptionName = "4k", Multiplier = 1.1m },
+
+                // Options for Footage Quality
+                new CalculationOption { Id = 11, CalculationParameterId = 4, OptionName = "Needs work", Multiplier = 1.15m },
+                new CalculationOption { Id = 12, CalculationParameterId = 4, OptionName = "Mostly good", Multiplier = 1.05m },
+                new CalculationOption { Id = 13, CalculationParameterId = 4, OptionName = "Great", Multiplier = 1m }, 
+                new CalculationOption { Id = 14, CalculationParameterId = 4, OptionName = "Excellent", Multiplier = 0.9m }
+
+            );
         }
     }
 
