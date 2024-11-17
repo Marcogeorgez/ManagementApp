@@ -1,5 +1,6 @@
 ﻿@page "/profile"
 @using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @attribute [Authorize]
 
@@ -7,4 +8,43 @@
 
 <AuthorizeView>
 <h1>Hello, @context.User.Identity?.Name! </h1>
+<MudText>
+        Hello, @context.User.Identity?.Name!
+    </MudText>
+    @if (userRole == "Client")
+    {
+        <MudButton Color=Color.Info Variant="Variant.Filled" OnClick="buttonCLicked"> Your Projects Preferences </MudButton>
+        if(isClicked)
+        {
+            <ClientEditingGuidelinesComponent userId="@userId"/>
+
+        }
+    }
 </AuthorizeView>
+
+@code
+{
+    private ClaimsPrincipal? currentUser;
+    private string userRole;
+    private string userId;
+
+    private bool isClicked;
+    private void buttonCLicked()
+    {
+        isClicked = !isClicked;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            currentUser = authState.User;
+            userRole = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value!;
+            userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+}
