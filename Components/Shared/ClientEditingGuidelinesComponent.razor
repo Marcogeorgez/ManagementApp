@@ -1,0 +1,214 @@
+﻿@using LuminaryVisuals.Data
+@inject ApplicationDbContext context
+
+<MudExpansionPanels MultiExpansion="true">
+<MudText Typo="Typo.h5">Video Preferences Checklist:</MudText>
+    <MudForm @ref="form" Model="@preferences">
+        <MudExpansionPanel Text="Link To Website">
+        <!-- Website Link -->
+        <MudTextField Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
+    </MudExpansionPanel>
+        <MudExpansionPanel Text="Highlights Film">
+        <!-- Video Structure -->
+        <MudText Typo="Typo.h5">Highlights Film</MudText>
+
+        <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
+            <MudText Typo="Typo.h6">
+                How you like to structure the videos:
+            </MudText>
+            <MudStack Spacing="0">
+            @foreach (var structure in VideoStructureOptions)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <!-- Transitions Checklist -->
+        <MudText Typo="Typo.h6">
+            Transitions VFX to use/avoid:
+        </MudText>
+
+        <MudText Typo="Typo.body1">
+            Cross Fades:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.CrossFades">
+            <MudStack Spacing="0">
+
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <MudText Typo="Typo.body1">
+            Fades to Black:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.FadeToBlack">
+            <MudStack Spacing="0">
+ 
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <MudText Typo="Typo.body1">
+            Black and White:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.BlackAndWhite">
+            <MudStack Spacing="0">
+  
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Double exposure:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.DoubleExposure">
+            <MudStack Spacing="0">
+   
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Masking transitions:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.MaskingTransitions">
+            <MudStack Spacing="0">  
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <MudText Typo="Typo.body1">
+            Lens flares:
+        </MudText>
+        <MudRadioGroup T="string" Name="Lens flares" @bind-Value="preferences.LensFlares">
+            <MudStack Spacing="0">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Old Film look:
+        </MudText>
+        <MudRadioGroup T="string" Name="Old Film look" @bind-Value="preferences.OldFilmLook">
+            <MudStack Spacing="0">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                }
+            </MudStack>
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Picture in picture:
+        </MudText>
+        <MudRadioGroup T="string" Name="Picture in picture" @bind-Value="preferences.PictureInPicture">
+            <MudStack Spacing="0">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+
+        </MudRadioGroup>
+        </MudExpansionPanel>
+        <MudExpansionPanel Text="Documentary film guidelines (length, editing pre parts,link to samples):">
+
+        <!-- Other Transitions -->
+        <MudTextField T="string" @bind-Value="preferences.OtherTransitions" Variant="Variant.Filled" Label="Transitions Comments" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
+        </MudTextField>
+
+        <!-- Use Speeches -->
+        <MudText Typo="Typo.h6">Use Speeches</MudText>
+        <MudRadioGroup T="string" @bind-SelectedValue="preferences.UseSpeeches">
+        </MudRadioGroup>
+        <MudTextField Label="Speech Comments" @bind-Value="preferences.SpeechComments" Variant="Variant.Filled" Multiline="true" Rows="4" />
+
+        <!-- Sound Design -->
+        <MudText Typo="Typo.h6">Sound Design</MudText>
+        <MudRadioGroup T="string" @bind-SelectedValue="preferences.SoundDesignEmphasis">
+        </MudRadioGroup>
+        <MudTextField Label="Sound Design Comments" @bind-Value="preferences.SoundDesignComments" Variant="Variant.Filled" Multiline="true" Rows="4" />
+
+        <!-- Music Preferences -->
+        <MudTextField Label="Music Genres or Favorite Artists" @bind-Value="preferences.MusicGenresArtists" Variant="Variant.Filled" />
+        <MudTextField Label="Samples of Songs/Films You Like" @bind-Value="preferences.SongSamples" Variant="Variant.Filled" />
+
+        <!-- Color Preferences -->
+        <MudTextField Label="LUTs and Color References" @bind-Value="preferences.ColorReferences" Variant="Variant.Filled" />
+        <MudTextField Label="Film References and Comments" @bind-Value="preferences.FilmReferences" Variant="Variant.Filled" Multiline="true" Rows="4" />
+        </MudExpansionPanel>
+        <!-- Save Button -->
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SavePreferences">Save Preferences</MudButton>
+    </MudForm>
+</MudExpansionPanels>
+@code {
+    private MudForm form;
+    private ClientEditingGuidelines preferences = new();
+    private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };
+    private static readonly string[] Options = new[] { "Yes", "No", "Few" };
+    [Parameter]
+    public string userId { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        // Attempt to get preferences as soon as the component is initialized
+        if (!string.IsNullOrEmpty(userId))
+        {
+            preferences = await GetPreferences(userId);
+        }
+    }
+    private async Task SavePreferences()
+    {
+        preferences.UpdatedAt = DateTime.UtcNow;
+        preferences.UserId = userId;
+
+        if (preferences.Id == 0)
+        {
+            // New preferences
+            context.ClientEditingGuidelines.Add(preferences);
+        }
+        else
+        {
+            // Update existing preferences
+            context.ClientEditingGuidelines.Update(preferences);
+        }
+
+        await context.SaveChangesAsync();
+    }
+    private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
+    {
+        if(_userId != null)
+        {
+            preferences = await context.ClientEditingGuidelines
+            .FirstOrDefaultAsync(ceg => ceg.UserId == _userId);
+        }
+        if(preferences != null)
+        {
+            return preferences;
+        }
+        else
+        {
+            throw new Exception("Not Found");
+        }
+    }
+    
+    private void OnValidated()
+    {
+        Console.WriteLine("Form validated!");
+    }
+}
