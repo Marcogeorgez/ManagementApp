@@ -1,4 +1,5 @@
 ﻿@page "/project"
+@using System.Text.Json
 @inject ProjectService ProjectService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -547,19 +548,77 @@ else if (_isClientView)
 
         return style;
     };
-    // events
+    // Checks if there is changes between two projects in any property excluding the excluded.
+    private bool HasSignificantChanges(Project original, Project modified, params string[] excludeProperties)
+    {
+        var excluded = new HashSet<string>(excludeProperties);
+
+        var properties = typeof(Project).GetProperties();
+        foreach (var prop in properties)
+        {
+            if (excluded.Contains(prop.Name))
+                continue;
+
+            var originalValue = prop.GetValue(original);
+            var modifiedValue = prop.GetValue(modified);
+
+            // Check for inequality.
+            if (!Equals(originalValue, modifiedValue))
+                return true;
+        }
+
+        return false;
+    }
+    Project beforeModification;
     void StartedEditingItem(Project project)
     {
+        beforeModification = JsonSerializer.Deserialize<Project>(
+            JsonSerializer.Serialize(project))!;
     }
     void CanceledEditingItem(Project project)
     {
     }
     private async Task CommittedItemChanges(Project project)
     {
-        try{
+        try
+        {
+            if (_isClientView)
+            {
+                if (HasSignificantChanges(beforeModification, project, "Status", "ShootDate") == false)
+                {
+                    await ProjectService.UpdateProjectAsync(); 
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                    Snackbar.Add($"Successfully updated the project", Severity.Info);
+                }
+                else
+                {
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                    Snackbar.Add($"Detected unauthorized changes!", Severity.Error);
+                }
+            }
+            else if(_isAdminView)
+            {
+                await ProjectService.UpdateProjectAsync();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                Snackbar.Add($"Successfully updated the project", Severity.Info);
+
+            }
+            else
+            {
+                if (HasSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
+                {
             await ProjectService.UpdateProjectAsync();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
             Snackbar.Add($"Successfully updated the project", Severity.Info);
+        }
+                else
+                {
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                    Snackbar.Add($"Detected unauthorized changes!", Severity.Error);
+                }
+
+            }
+
         }
         catch(Exception ex)
         {
