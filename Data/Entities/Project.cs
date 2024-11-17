@@ -53,6 +53,8 @@ public class Project
     [DataType(DataType.Date)]
     [Display(Name = "Working Month")]
     public DateTime? WorkingMonth { get; set; }
+    
+    public decimal BillableHours { get; set; }
 
     [Required]
     public bool IsArchived { get; set; } = false;

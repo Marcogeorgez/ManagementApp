@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241117191528_ClientEditingGuidelinesOptions")]
+    partial class ClientEditingGuidelinesOptions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -373,63 +376,84 @@ namespace LuminaryVisuals.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BlackAndWhite")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ColorReferences")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CrossFades")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DoubleExposure")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("FadeToBlack")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("FilmReferences")
+                        .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("HighlightsFilm")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LensFlares")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("MaskingTransitions")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("MusicGenresArtists")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OldFilmLook")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OtherTransitions")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PictureInPicture")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SongSamples")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SoundDesignComments")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SoundDesignEmphasis")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SpeechComments")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TransitionComments")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UseSpeeches")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserId")
@@ -437,9 +461,11 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.Property<string>("VideoStructure")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("WebsiteLink")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
