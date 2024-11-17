@@ -94,9 +94,14 @@
                 <CellTemplate>
                     <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
                 </CellTemplate>
+
                 <EditTemplate Context="context">
-                <MudSelect T="ProgressBarValue" Label="Progress" Class="mt-3" 
-                Value="@((ProgressBarValue)context.Item.ProgressBar)"
+                            @if (!_isClientView)
+                            {
+                                <MudSelect T="ProgressBarValue" Label
+                                ="Progress" Class
+                                ="mt-3" 
+                                Value="@((ProgressBarValue)context.Item.ProgressBar)"
                 Variant="Variant.Outlined"
                 ValueChanged="@(newValue => context.Item.ProgressBar = (int)newValue)">
                     <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
@@ -105,9 +110,10 @@
                     <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
                     <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
                     <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
-                </MudSelect>
-
+                </MudSelect>            
+                }
                 </EditTemplate>
+
             </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
