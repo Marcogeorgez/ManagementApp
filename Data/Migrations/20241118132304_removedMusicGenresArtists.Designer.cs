@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241118132304_removedMusicGenresArtists")]
+    partial class removedMusicGenresArtists
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -375,9 +378,6 @@ namespace LuminaryVisuals.Migrations
                     b.Property<string>("BlackAndWhite")
                         .HasColumnType("text");
 
-                    b.Property<string>("ClientSamples")
-                        .HasColumnType("text");
-
                     b.Property<string>("ColorReferences")
                         .HasColumnType("text");
 
@@ -440,9 +440,6 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("WebsiteLink")
-                        .HasColumnType("text");
-
-                    b.Property<string>("musicLicensingSites")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
