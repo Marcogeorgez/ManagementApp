@@ -4,8 +4,6 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject UserServices UserServices
-<MudTabs Elevation="4" Rounded="true" Centered="true" Color="@Color.Primary">
-    <MudTabPanel Text="Project Management System">
 <MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" 
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -23,7 +21,6 @@
     CommittedItemChanges="@CommittedItemChanges">
 
     <ToolBarContent>
-            <MudText Typo="Typo.h6">Your @_userName Projects</MudText>
             <MudSpacer />
     </ToolBarContent>
     <ColGroup>
@@ -65,12 +62,15 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
         {
-                    <PropertyColumn Property="x => x.Description" Title="Project Description" Hideable="true" Groupable="false" CellStyle="max-width:70vw;min-width:20vw;" Editable=false Required=false>
+                <PropertyColumn Property="x => x.Description" Title="Project Description" Hideable="true" Groupable="false" CellStyle="min-width:20vw;" Editable=false Required=false>
                 <CellTemplate >
                     @{
                         string descriptionValue = context.Item.Description ?? string.Empty;
                     }
-                    <MudTextField T="string"
+                    @if(descriptionValue.Contains("Warning"))
+                    {
+                        <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                        <MudTextField T="string"
                         HelperText="Click to expand"
                         Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))" 
                         ReadOnly="true"
@@ -82,7 +82,25 @@
                             <MudTooltip Text="Expand">
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"/>
                             </MudTooltip>
-                    </MudTextField>                    
+                    </MudTextField>   
+                    }
+                    else
+                    {
+                        <MudTextField T="string"
+                                      HelperText="Click to expand"
+                                      Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))"
+                                      ReadOnly="true"
+                                      Immediate="true" Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                      AutoGrow=true
+                                      MaxLines="4"
+                                      OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
+                            <MudTooltip Text="Expand">
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                            </MudTooltip>
+                        </MudTextField>
+                    }
+                 
                     </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
@@ -91,7 +109,7 @@
             }
         @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
         {
-            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle="width: 2vw; min-width:1vw;"> 
+            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle=""> 
                 <CellTemplate>
                     <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
                 </CellTemplate>
@@ -114,7 +132,9 @@
                 </MudSelect>            
                 }
                 </EditTemplate>
-
+                <GroupTemplate>
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Progress" />
+                </GroupTemplate>
             </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
@@ -129,6 +149,9 @@
                                            Class="mt-3"
                                            Required="true" />
                         </EditTemplate>
+                <GroupTemplate>
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Shoot Date" />
+                </GroupTemplate>
             </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
@@ -142,6 +165,9 @@
                                            DateChanged="@(date => context.Item.DueDate = date)"
                                            Required="true" />
                         </EditTemplate>
+                <GroupTemplate>
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Due Date" />
+                </GroupTemplate>
             </PropertyColumn>
 
         }
@@ -159,6 +185,9 @@
                         Date="@context.Item.WorkingMonth"
                         DateChanged="@(date => context.Item.WorkingMonth = date)" />
                 </EditTemplate>
+                <GroupTemplate>
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Working Month" />
+                </GroupTemplate>
             </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("Status"))
@@ -184,7 +213,7 @@
                             </MudSelect>
                 </EditTemplate>
                 <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Status" />
                 </GroupTemplate>
                         </PropertyColumn>
                     
@@ -193,7 +222,6 @@
         {
             <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
                 <CellTemplate>
-                    <MudStack Row>
                         @if (_isArchived && _isAdminView)
                         {
                             <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
@@ -201,14 +229,15 @@
                                         Size="Size.Small"
                                         OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(DialogOptions, context.Item))"
                                         StartIcon="@Icons.Material.Filled.Archive"
-                                        Class="ml-2">
+                                        Class="mb-1">
                                 @(context.Item.IsArchived ? "Unarchive" : "Archive")
                             </MudButton>
                             <MudButton Color="Color.Error"
                                        Variant="Variant.Filled"
                                        Size="Size.Small"
                                        OnClick="@(() => DeleteDialog(context.Item))"
-                                       StartIcon="@Icons.Material.Filled.Delete">
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       Class="mb-1">
                                 Delete
                             </MudButton>
                         }
@@ -219,23 +248,11 @@
                                         Size="Size.Small"
                                         OnClick="@(() => ArchiveProject(DialogOptions, context.Item))"
                                         StartIcon="@Icons.Material.Filled.Archive"
-                                        Class="ml-2">
+                                        Class="mb-1">
                                 Archive
                             </MudButton>
                         }
-                        else if (_isClientView)
-                        {
-                            <MudButton Color="Color.Info"
-                                       Variant="Variant.Filled"
-                                       Size="Size.Small"
-                                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))"
-                                       StartIcon="@Icons.Material.Filled.Archive"
-                                       Class="ml-2">
-                                Modify
-                            </MudButton>
-                        }
-                    </MudStack>             
-                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Filled.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                        <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
                 </CellTemplate>
             </TemplateColumn>
             }
@@ -254,8 +271,6 @@
 </MudDataGrid>
 <MudStack Spacing="0">
     <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-@*             <MudSwitch T="bool" Value="@_groupByClientName" ValueChanged="" Color="Color.Info">Group By Client Name</MudSwitch>
- *@
     <MudStack Row=true>
     <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
     <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
@@ -270,6 +285,13 @@
                    OnClick="@(() => AddProjectDialogAsync(DialogOptions))">
             Add New Project
         </MudButton>
+        <MudButton Class="ml-2"
+                   Color="Color.Success"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.AddCircle"
+                   OnClick="@(() => AssignUsersToProjectAsync(DialogOptions))">
+            Assign To Project
+        </MudButton>
 }
 else if (_isClientView)
 {
@@ -280,26 +302,7 @@ else if (_isClientView)
                 Create New Project
             </MudButton>
 }
-
-    <MudButton Class="ml-2"
-        Color="Color.Success"
-               Variant="Variant.Filled"
-               StartIcon="@Icons.Material.Filled.AddCircle"
-               OnClick="@(() => AssignUsersToProjectAsync(DialogOptions))">
-        Assign To Project
-    </MudButton>
-    </div>
-    </MudTabPanel>
-    @if (RoleBasedColumns[_currentRole].Contains("Tabs"))
-    {
-        <MudTabPanel Text
-        ="Tracking System">
-
-
-
-    </MudTabPanel>
-    }
-</MudTabs>
+</div>
 
 @code {
     [Inject]
@@ -377,8 +380,6 @@ else if (_isClientView)
         _currentRole = "Client";
         await LoadProjects();
         StateHasChanged();
-
-
     }
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
@@ -544,7 +545,7 @@ else if (_isClientView)
                 style += "background-color: transparent;";
                 break;
         }
-        style += "color: rgba(255,255,255,1); text-align: center; max-width: 25vw;";
+        style += "color: rgba(255,255,255,1); text-align: center;";
 
         return style;
     };
@@ -607,10 +608,10 @@ else if (_isClientView)
             {
                 if (HasSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
                 {
-            await ProjectService.UpdateProjectAsync();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
-            Snackbar.Add($"Successfully updated the project", Severity.Info);
-        }
+                    await ProjectService.UpdateProjectAsync();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                    Snackbar.Add($"Successfully updated the project", Severity.Info);
+                }
                 else
                 {
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
@@ -622,8 +623,8 @@ else if (_isClientView)
         }
         catch(Exception ex)
         {
-            throw ex; 
+                throw ex; 
         }
-
+        
     }
 }

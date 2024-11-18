@@ -9,8 +9,8 @@
 @inject IDialogService DialogService
 @inject ILocalStorageService localStorage
 @inject SettingService SettingService
-@attribute [Authorize(Policy = "RequireAdminRole")]
-
+@* @attribute [Authorize(Policy = "RequireAdminRole")]
+ *@
 <PageTitle>Admin Dashboard</PageTitle>
 
 @if (_loading)
