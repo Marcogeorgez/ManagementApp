@@ -25,7 +25,7 @@
                            Date="@newProject.WorkingMonth"
                            ReadOnly="true" />
 
-            <MudSelect T="ArchiveReason" Label="Reason For Archiving Project"
+            <MudSelect T="ArchiveReason" Label="Reason For Archiving Project" AnchorOrigin="Origin.BottomCenter"
                        @bind-Value="Reason">
                 <MudSelectItem Value="ArchiveReason.Paid">Paid</MudSelectItem>
                 <MudSelectItem Value="ArchiveReason.Cancelled">Cancelled</MudSelectItem>

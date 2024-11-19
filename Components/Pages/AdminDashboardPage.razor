@@ -86,6 +86,7 @@ else
                     <MudSelect @bind-Value="context.Item.SelectedRole" 
                                Required Variant="Variant.Outlined"
                                RequiredError="You must select a Role!!!"
+                               AnchorOrigin="Origin.BottomCenter"
                                Margin="@Margin.Dense">
                         @foreach (var role in _allAvailableRoles)
                         {
