@@ -7,17 +7,17 @@
 <PageTitle>Profile</PageTitle>
 
 <AuthorizeView>
-<h1>Hello, @context.User.Identity?.Name! </h1>
-<MudText>
-        Hello, @context.User.Identity?.Name!
-    </MudText>
+    <MudText Typo="Typo.h4" Class="mt-2">Hello, @context.User.Identity?.Name!</MudText>
+    <MudText  Class="mt-2">Please fill the following form to know more about your preferences</MudText>
+
     @if (userRole == "Client")
     {
-        <MudButton Color=Color.Info Variant="Variant.Filled" OnClick="buttonCLicked"> Your Projects Preferences </MudButton>
+        <MudButton Class="mt-3 mb-4 ml-3 mr-3" Color=Color.Info  
+        StartIcon="@Icons.Material.Filled.EditNote" Variant="Variant.Filled" 
+        OnClick="buttonCLicked"> Projects Preferences </MudButton>
         if(isClicked)
         {
             <ClientEditingGuidelinesComponent userId="@userId"/>
-
         }
     }
 </AuthorizeView>

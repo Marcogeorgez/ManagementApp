@@ -48,7 +48,7 @@
                            Class="mb-3" 
                            HelperText="Will remove it later, just here for visibility and debugging" />
             <MudSpacer />
-            <MudSelect T="ProgressBarValue" Label="Progress"
+            <MudSelect T="ProgressBarValue" Label="Progress" AnchorOrigin="Origin.BottomCenter"
                        @bind-Value="ProgressEnum">
                 <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
                 <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
@@ -61,6 +61,7 @@
                        Label="Status"
                        @bind-Value="newProject.Status"
                        Required="true"
+                       AnchorOrigin="Origin.BottomCenter"
                        HelperText="Will remove it later, just here for visibility and debugging, once created it will be upcoming by default (or scheduled ?)">
                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                 {

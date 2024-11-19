@@ -75,7 +75,7 @@
                         Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))" 
                         ReadOnly="true"
                         Immediate="true" Adornment="Adornment.End" 
-                        AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                        AdornmentIcon="@Icons.Material.Filled.Fullscreen"
                         AutoGrow=true
                         MaxLines="4"
                         OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
@@ -117,9 +117,8 @@
                 <EditTemplate Context="context">
                             @if (!_isClientView)
                             {
-                                <MudSelect T="ProgressBarValue" Label
-                                ="Progress" Class
-                                ="mt-3" 
+                                <MudSelect T="ProgressBarValue" Label="Progress" Class="mt-3" 
+                                AnchorOrigin="Origin.BottomCenter"
                                 Value="@((ProgressBarValue)context.Item.ProgressBar)"
                 Variant="Variant.Outlined"
                 ValueChanged="@(newValue => context.Item.ProgressBar = (int)newValue)">
@@ -439,7 +438,7 @@ else if (_isClientView)
         if (!result.Canceled)
         {
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
-            Snackbar.Add($"Successful! you should be happy, really!", Severity.Info);
+            Snackbar.Add($"You have assigned project successfully!", Severity.Info);
 
             StateHasChanged();
         }
