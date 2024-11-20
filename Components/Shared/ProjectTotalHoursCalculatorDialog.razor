@@ -290,15 +290,7 @@
             _ => $"Group {parameterId}"
         };
     }
-    private Color GetColorForOption(string optionName)
-    {
-        optionName = optionName.ToLower();
-        if (optionName.Contains("straight") || optionName.Contains("easy") || optionName.Contains("little"))
-            return Color.Success;
-        if (optionName.Contains("hard") || optionName.Contains("heavy") || optionName.Contains("complex"))
-            return Color.Error;
-        return Color.Primary; // default color
-    }
+
     public class GroupedOptionsDto
     {
         public int CalculationParameterId { get; set; }
@@ -316,7 +308,8 @@
         await form.Validate();
         if (form.IsValid)
         {
-            //MudDialog.Close(DialogResult.Ok()); 
+            newProject.BillableHours = _total;
+            MudDialog.Close(DialogResult.Ok(newProject)); 
         }
         else
         {
