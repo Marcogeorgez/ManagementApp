@@ -251,7 +251,18 @@
                                 Archive
                             </MudButton>
                         }
-                        <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
+                        @if(_isAdminView || _isEditorView)
+                    {
+                        <MudButton Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="@(() => TimeCalculator(DialogOptions, context.Item))"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   Class="mb-1">
+                            Time
+                        </MudButton>
+                    }
+                    <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
                 </CellTemplate>
             </TemplateColumn>
             }
@@ -507,6 +518,21 @@ else if (_isClientView)
         }
     }
 
+    public async Task TimeCalculator(DialogOptions options, Project project)
+    {
+        var dialogParameters = new DialogParameters<ProjectTotalHoursCalculatorDialog> { { nameof(ProjectTotalHoursCalculatorDialog.newProject), project } };
+        var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            var _project = (Project) result.Data;
+            if (_project != null)
+            {
+                await ProjectService.UpdateProjectBillableHoursAsync(_project);
+                LoadProjects();
+            }
+        }
+    }
     private Func<Project, string> _cellStyleFunc => x =>
     {
         string style = string.Empty;

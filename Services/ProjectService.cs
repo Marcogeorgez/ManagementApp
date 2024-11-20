@@ -161,6 +161,20 @@ public class ProjectService
     {
         await _context.SaveChangesAsync();
     }
+    public async Task UpdateProjectBillableHoursAsync(Project project)
+    {
+        var _project = await _context.Projects.FindAsync(project.ProjectId);
+        if (_project != null)
+        {
+            _project.BillableHours = project.BillableHours;
+            _context.Projects.Update(_project);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ArgumentException("Project not found");
+        }
+    }
 
     public async Task DeleteProjectAsync(int projectId)
     {
