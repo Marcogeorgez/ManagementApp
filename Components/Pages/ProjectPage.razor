@@ -48,18 +48,18 @@
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
                         </GroupTemplate>
                 <EditTemplate>
-                    @if (Editors != null && Editors.Any())
+                    @if (Clients != null && Clients.Any())
                     {
                         <MudSelect T="string"
                                    AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
                                    Class="d-flex justify-center mud-width-full py-2"
                                    Variant="Variant.Outlined"
                                    Label="Client Name"
-                                   @bind-Value="context.Item.PrimaryEditorId">
-                            @foreach (var editor in Editors)
+                                   @bind-Value="context.Item.ClientId">
+                            @foreach (var client in Clients)
                             {
-                                <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
-                                    @editor.UserName
+                                <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                                    @client.UserName
                                 </MudSelectItem>
                             }
                         </MudSelect>
@@ -667,6 +667,7 @@ else if (_isClientView)
                     await projectServices.UpdateProjectAsync();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
+                    LoadProjects();
                     StateHasChanged();
                 }
                 else
@@ -680,6 +681,7 @@ else if (_isClientView)
                 await projectServices.UpdateProjectAsync();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
+                LoadProjects();
                 StateHasChanged();
             }
             else
@@ -689,6 +691,7 @@ else if (_isClientView)
                     await projectServices.UpdateProjectAsync();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
+                    LoadProjects();
                     StateHasChanged();
                 }
                 else
