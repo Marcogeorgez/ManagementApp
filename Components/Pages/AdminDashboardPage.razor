@@ -99,7 +99,7 @@ else
                 CellStyle="text-align: center"
                 ShowFilterIcon="false" Format="C">
                 <EditTemplate>
-                    <MudNumericField T="decimal?" Min="0"
+                    <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRate"
                                   @onblur="() => UpdateHourlyRate(context.Item)"
                                   Variant="Variant.Outlined"
@@ -157,7 +157,7 @@ else
     </MudDataGrid>
     if(_usdToLek){
         <MudNumericField T="decimal?"
-                  @bind-value="storedValue" Label="Usd To Lek" Class="mt-4"
+                  @bind-value="storedValue" Label="Usd To Lek" Class="mt-4" Min="0.0M" Required=true RequiredError="Please enter a positive number"
                   Variant="Variant.Outlined" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
     }
  <div class="d-flex flex-wrap mt-4">
@@ -205,7 +205,7 @@ else
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             currentUser = authState.User;
             var _storedValue = await SettingService.GetSettingByNameAsync("CurrencyRate");
-            if (_storedValue != null)
+            if (_storedValue.ConversionRateUSToLek != null)
             {
                 storedValue = _storedValue.ConversionRateUSToLek;
                 lastSavedValue = storedValue;
@@ -418,10 +418,15 @@ else
         get => _storedValue;
         set
         {
-            if (_storedValue != value)
+            if (_storedValue != value && value >= 0.0M)
             {
                 _storedValue = value;
                 _ = SaveCurrencyValue();
+            }
+            else
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                Snackbar.Add($"It is not possible to save conversation rate to {storedValue}, Please enter a positive value", Severity.Error);
             }
         }
     }
