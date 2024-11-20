@@ -1,9 +1,10 @@
 ﻿@page "/project"
 @using System.Text.Json
-@inject ProjectService ProjectService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject UserServices UserServices
+@inject ProjectService projectServices
+
 <MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" 
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -46,6 +47,24 @@
                         <GroupTemplate>
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
                         </GroupTemplate>
+                <EditTemplate>
+                    @if (Editors != null && Editors.Any())
+                    {
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Client Name"
+                                   @bind-Value="context.Item.PrimaryEditorId">
+                            @foreach (var editor in Editors)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                    @editor.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </EditTemplate>
                     </PropertyColumn>
         }
                 @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
@@ -53,12 +72,48 @@
                     <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" Groupable="true" Editable=false Required=false >
                     <GroupTemplate> 
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
-                    </GroupTemplate>    
+                    </GroupTemplate>   
+                    <EditTemplate>
+                    @if (Editors != null && Editors.Any()){
+                    <MudSelect T="string"
+                               AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                               Class="d-flex justify-center mud-width-full py-2"
+                               Variant="Variant.Outlined"
+                               Label="Primary Editor"
+                               @bind-Value="context.Item.PrimaryEditorId">
+                                @foreach (var editor in Editors)
+                                {
+                                    <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                        @editor.UserName
+                                    </MudSelectItem>
+                                }
+                        </MudSelect>
+                    }
+                    </EditTemplate>
                     </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
         {
-                    <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" Groupable="false" Editable=false Required=false />
+                    <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" Groupable="false" Editable=false Required=false>
+                <EditTemplate>
+                    @if (Editors != null && Editors.Any())
+                    {
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Secondary Editor"
+                                   @bind-Value="context.Item.SecondaryEditorId">
+                            @foreach (var editor in Editors)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                    @editor.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </EditTemplate>
+            </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
         {
@@ -252,17 +307,21 @@
                             </MudButton>
                         }
                         @if(_isAdminView || _isEditorView)
-                    {
-                        <MudButton Color="Color.Success"
-                                   Variant="Variant.Filled"
-                                   Size="Size.Small"
-                                   OnClick="@(() => TimeCalculator(DialogOptions, context.Item))"
-                                   StartIcon="@Icons.Material.Filled.Edit"
-                                   Class="mb-1">
-                            Time
-                        </MudButton>
-                    }
-                    <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
+                        {
+                            <MudButton Color="Color.Success"
+                                       Variant="Variant.Filled"
+                                       Size="Size.Small"
+                                       OnClick="@(() => TimeCalculator(DialogOptions, context.Item))"
+                                       StartIcon="@Icons.Material.Filled.Edit"
+                                       Class="mb-1">
+                                Time
+                            </MudButton>
+                        }
+                        @if(!_isArchived){
+                    <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit" 
+                    Color="Color.Info" Variant="Variant.Filled"
+                    OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
+                        }
                 </CellTemplate>
             </TemplateColumn>
             }
@@ -272,8 +331,7 @@
                 {
                     <PropertyColumn Property="x => x.Archive.Reason" Title="Archive Reason" />
                 }
-        }
-        
+        }        
     </Columns>
     <PagerContent>
         <MudDataGridPager T="Project"/>
@@ -295,13 +353,7 @@
                    OnClick="@(() => AddProjectDialogAsync(DialogOptions))">
             Add New Project
         </MudButton>
-        <MudButton Class="ml-2"
-                   Color="Color.Success"
-                   Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.Filled.AddCircle"
-                   OnClick="@(() => AssignUsersToProjectAsync(DialogOptions))">
-            Assign To Project
-        </MudButton>
+
 }
 else if (_isClientView)
 {
@@ -331,6 +383,8 @@ else if (_isClientView)
     private string _userName = "";
     private string CurrentRole => _isAdminView ? "Admin" :
                           _isEditorView ? "Editor" : "Client";
+    private List<UserRoleViewModel.UserProjectViewModel> Editors = new List<UserRoleViewModel.UserProjectViewModel>();
+    private List<UserRoleViewModel.UserProjectViewModel> Clients = new List<UserRoleViewModel.UserProjectViewModel>();
     private enum ProgressBarValue
     {
         Zero = 0,
@@ -352,8 +406,8 @@ else if (_isClientView)
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "Tabs", "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
-        { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status" } },
+        { "Admin", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "Actions","Archive" } },
+        { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","ClientName","PrimaryEditor","SecondaryEditor", "Actions"} },
         { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
     };
 
@@ -370,7 +424,6 @@ else if (_isClientView)
         _currentRole = "Admin";
         await LoadProjects();
         StateHasChanged();
-
     }
     private async Task EditorToggle()
     {
@@ -394,16 +447,28 @@ else if (_isClientView)
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
-        if (_isAdminView || _isEditorView)
-            projects = await ProjectService.GetProjectsAsync(_isArchived);
+        if (_isAdminView)
+        {
+            projects = await projectServices.GetProjectsAsync(_isArchived);
+            Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+            Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+        }
         else if (_isClientView)
             LoadProjectsForClient();
+        else if (_isEditorView)
+            LoadProjectsForEditors();
+        StateHasChanged();
+    }
+    // Loading Projects for Editors View
+    private async Task LoadProjectsForEditors()
+    {
+        projects = await projectServices.GetProjectsForEditors(_isArchived, _currentUserId);
         StateHasChanged();
     }
     // Loading Projects for Client View
     private async Task LoadProjectsForClient()
     {
-        projects = await ProjectService.GetProjectByClientIdAsync(_isArchived, _currentUserId);
+        projects = await projectServices.GetProjectsForClients(_isArchived, _currentUserId);
         StateHasChanged();
     }
 
@@ -417,7 +482,7 @@ else if (_isClientView)
         {
             var newProject = (Project) result.Data;
             newProject.ClientId = _currentUserId;
-            await ProjectService.AddProjectAsync(newProject);
+            await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
             StateHasChanged();
         }
@@ -436,21 +501,8 @@ else if (_isClientView)
         {
             var newProject = (Project) result.Data;
             newProject.ClientId = _currentUserId;
-            await ProjectService.AddProjectAsync(newProject);
+            await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
-            StateHasChanged();
-        }
-    }
-    // Asign to project
-    private async Task AssignUsersToProjectAsync(DialogOptions options)
-    {
-        var dialog = await DialogService.ShowAsync<AssignUsersToProject>("Assign To Project", options);
-        var result = await dialog.Result;
-        if (!result.Canceled)
-        {
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
-            Snackbar.Add($"You have assigned project successfully!", Severity.Info);
-
             StateHasChanged();
         }
     }
@@ -468,7 +520,7 @@ else if (_isClientView)
         {
             return;
         }
-        await ProjectService.DeleteProjectAsync(projectToDelete.ProjectId);
+        await projectServices.DeleteProjectAsync(projectToDelete.ProjectId);
         await LoadProjects();
         StateHasChanged();
     }
@@ -483,14 +535,14 @@ else if (_isClientView)
             var archivedProject = (string)result.Data;
             if(archivedProject != null)
             {
-                await ProjectService.ArchiveProjectAsync(project.ProjectId, archivedProject);
+                await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 LoadProjects();
             }
         }
     }
     private async Task UnarchiveProject(Project project)
     {
-        await ProjectService.UnarchiveProjectAsync(project.ProjectId);
+        await projectServices.UnarchiveProjectAsync(project.ProjectId);
         await LoadProjects();
     }
     // Opens Description Dialog
@@ -514,7 +566,7 @@ else if (_isClientView)
         if (context is Project project)
         {
             project.Description = newDescription;
-            await ProjectService.UpdateProjectAsync();
+            await projectServices.UpdateProjectAsync();
         }
     }
 
@@ -528,7 +580,7 @@ else if (_isClientView)
             var _project = (Project) result.Data;
             if (_project != null)
             {
-                await ProjectService.UpdateProjectBillableHoursAsync(_project);
+                await projectServices.UpdateProjectBillableHoursAsync(_project);
                 LoadProjects();
             }
         }
@@ -575,7 +627,7 @@ else if (_isClientView)
         return style;
     };
     // Checks if there is changes between two projects in any property excluding the excluded.
-    private bool HasSignificantChanges(Project original, Project modified, params string[] excludeProperties)
+    private bool HasNoSignificantChanges(Project original, Project modified, params string[] excludeProperties)
     {
         var excluded = new HashSet<string>(excludeProperties);
 
@@ -590,10 +642,10 @@ else if (_isClientView)
 
             // Check for inequality.
             if (!Equals(originalValue, modifiedValue))
-                return true;
+                return false;
+            break;
         }
-
-        return false;
+        return true;
     }
     Project beforeModification;
     void StartedEditingItem(Project project)
@@ -610,11 +662,12 @@ else if (_isClientView)
         {
             if (_isClientView)
             {
-                if (HasSignificantChanges(beforeModification, project, "Status", "ShootDate") == false)
+                if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate") == false)
                 {
-                    await ProjectService.UpdateProjectAsync(); 
+                    await projectServices.UpdateProjectAsync();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
+                    StateHasChanged();
                 }
                 else
                 {
@@ -624,18 +677,19 @@ else if (_isClientView)
             }
             else if(_isAdminView)
             {
-                await ProjectService.UpdateProjectAsync();
+                await projectServices.UpdateProjectAsync();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
-
+                StateHasChanged();
             }
             else
             {
-                if (HasSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
+                if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
                 {
-                    await ProjectService.UpdateProjectAsync();
+                    await projectServices.UpdateProjectAsync();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
+                    StateHasChanged();
                 }
                 else
                 {
