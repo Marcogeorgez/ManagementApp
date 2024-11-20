@@ -310,7 +310,7 @@ else
                 if (result.Success)
                 {
                     Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+ 
                     Snackbar.Add($"Successfully saved note", Severity.Info);
                     StateHasChanged();
                 }
@@ -325,8 +325,6 @@ else
                 var result = await UserNoteService.UpdateNoteAsync(noteToSave.Id, noteToSave.Note);
                 if (result.Success)
                 {
-                    Snackbar.Clear();
-                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Configuration.SnackbarVariant = Variant.Filled;
                     Snackbar.Add($"Successfully saved note", Severity.Info);
                     StateHasChanged();
