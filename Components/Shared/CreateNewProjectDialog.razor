@@ -108,12 +108,12 @@ The Bride was married like I said before, so this wedding was quite special beca
     private bool success;
     private MudForm form;
     private string errorMessage;
-    private string footagelink;
-    private string preferences;
-    private string deliverables;
-    private string footageRequirements;
-    private string filledFootageRequirements;
-    private string[] _footageRequirements = { "Resolution", "Size", "Number of cameras", "Color profile for each camera: " };
+    private string? footagelink;
+    private string? preferences;
+    private string? deliverables;
+    private string? footageRequirements;
+    private string? filledFootageRequirements;
+    private string[] _footageRequirements = { "Resolution", "Size", "Number of cameras", "Color profile" };
     private enum ProgressBarValue
     {
         Zero = 0,
@@ -143,17 +143,21 @@ The Bride was married like I said before, so this wedding was quite special beca
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(footagelink);
             sb.AppendLine(footageRequirements);
+            if (footageRequirements == null)
+            {
+                footageRequirements = "";
+            }
             foreach (var requirement in _footageRequirements)
             {
                 if (!footageRequirements.Contains(requirement))
                 {
-                    sb.AppendLine($"Warning: {requirement}");                    
+                    sb.AppendLine($"Warning: {requirement} is missing.");                    
                 }
             }
             sb.AppendLine(deliverables);
             sb.AppendLine(newProject.Description);
             if (string.IsNullOrWhiteSpace(preferences))
-                sb.AppendLine($"Warning: Music preferences:");
+                sb.AppendLine($"Warning: Music preferences is missing.");
             sb.AppendLine(preferences);
             newProject.Description = sb.ToString();
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
