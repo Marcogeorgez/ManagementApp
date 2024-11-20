@@ -1,0 +1,238 @@
+﻿@using LuminaryVisuals.Data
+@using LuminaryVisuals.Data.Entities
+@using MudBlazor
+@inject ApplicationDbContext context
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudTextField T="string"
+                          Label="Project Name"
+                          Value="@newProject.ProjectName"
+                          ReadOnly="true"
+                          Variant=Variant.Outlined
+                          Class="mb-5 " />
+            @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
+            {
+                <MudSelect T="decimal?"
+                           AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                           Class="mt-2 mb-3  "
+                           Variant="Variant.Outlined"
+                           @bind-Value="selectedMultipliers[index]"
+                           Label="@GetParameterLabel(group.CalculationParameterId)">                
+                        @foreach (var option in group.Options)
+                        {
+                            <MudSelectItem Class="" T="decimal?" Value="@option.Multiplier" Ripple=true>
+                                @option.OptionName</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+            <MudTextField T="int" Required=true
+                          @bind-Value="_cameraNum"
+                          Label="Number of Cameras"
+                          Variant=Variant.Outlined
+                          HelperTextOnFocus=true
+                          HelperText=""
+                          Class="mb-5 " />
+
+            <MudTextField T="decimal" Required=true
+                          @bind-Value="footageSize"
+                          Label="Raw footage size"
+                          Variant=Variant.Outlined
+                          HelperTextOnFocus=true
+                          HelperText=""
+                          Class="mb-5 " />
+
+            <MudTextField T="decimal" Required=true
+                          @bind-Value="_Misc"
+                          Label="Misc (managmenet, footage handeling, feedback)"
+                          HelperTextOnFocus=true
+                          HelperText=""
+                          Variant=Variant.Outlined
+                          Class="mb-5 " />
+
+            <MudTextField T="decimal" Required=true
+                          @bind-Value="prepartsDuration"
+                          Label="Pre parts Duration"
+                          Variant=Variant.Outlined
+                          HelperTextOnFocus=true
+                          HelperText=""
+                          Class="mb-5 " />   
+                          
+            <MudTextField T="decimal" Required=true
+                          @bind-Value="documentryMulticameraDuration"
+                          Label="Documentary Multicamera Duration"
+                          Variant=Variant.Outlined
+                          HelperTextOnFocus=true
+                          HelperText=""
+                          Class="mb-5 " />
+
+            <MudTextField T="decimal" Required=true
+                          @bind-Value="hightlightDuration"
+                          Label="Highlights Duration"
+                          Variant=Variant.Outlined
+                          HelperTextOnFocus=true
+                          HelperText="" Class="mb-5 " />
+
+            <MudTextField T="decimal" Required=true
+                          @bind-Value="socialMediaDuration"
+                          Label="Social Media Duration"
+                          Variant=Variant.Outlined
+                          HelperTextOnFocus=true
+                          HelperText="" 
+                          Class="mb-5 " />
+            
+            <MudTextField T="decimal" ReadOnly=true 
+                          @bind-Value="@_total"
+                          Label="Total Hours"
+                          Variant=Variant.Outlined Class="mb-5 mt-10 " />
+
+            <MudButton OnClick="CalculateBillableHours" FullWidth=false  Color="Color.Success" Variant=Variant.Outlined>Calculate Total </MudButton>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Submit">Archive Project</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project newProject { get; set; } = new Project();
+    private bool success;
+    private MudForm form;
+    private List<GroupedOptionsDto> groupedOptions = new List<GroupedOptionsDto>();
+    private List<decimal?> selectedMultipliers;
+    private int _cameraNum;
+    private decimal footageSize;
+    private decimal _Misc;
+    private decimal prepartsDuration;
+    private decimal documentryMulticameraDuration;
+    private decimal hightlightDuration;
+    private decimal socialMediaDuration;
+    private decimal _total;
+
+    protected override async Task OnInitializedAsync()
+    {
+        groupedOptions = await context.CalculationOption
+            .GroupBy(co => co.CalculationParameterId)
+            .Select(group => new GroupedOptionsDto
+                {
+                    CalculationParameterId = group.Key,
+                    Options = group.Select(co => new OptionDto { OptionName = co.OptionName, Multiplier = co.Multiplier }).ToList()
+                })
+            .ToListAsync();
+
+        selectedMultipliers = groupedOptions.Select(g => g.Options.First().Multiplier)
+        .ToList();
+    }
+    private void CalculateBillableHours()
+    {
+        decimal? _cameraValue;
+        decimal? highlightsDifficulty = selectedMultipliers[0];
+        decimal? prepartsPercentage = selectedMultipliers[1];
+        decimal? resolution = selectedMultipliers[2];
+        decimal? footageQuality = selectedMultipliers[3];
+        decimal? _footageSize = footageSize;
+        decimal? _MiscMinutes;
+        decimal? _prepartsDuration = prepartsDuration;
+        decimal? _documentryMulticameraDuration = documentryMulticameraDuration;
+        decimal? _hightlightDuration = hightlightDuration;
+        decimal? _socialMediaDuration = socialMediaDuration;
+
+
+        if (_cameraNum <= 2)
+            _cameraValue = 1;
+        else
+            _cameraValue = (_cameraNum - 2 ) * 0.03m + 1;
+
+        // add as minutes
+        if (_footageSize <= 300)
+            _footageSize = 1;
+        else
+            _footageSize = (_footageSize - 300m) * 0.4m; // minutes
+
+        _MiscMinutes = _Misc * 60; // convert it from hours to minutes
+        _prepartsDuration = _prepartsDuration * 60; // 1 prepart duration = 1 hour = 60 min
+
+        // if <= 40 then * 8 if <= 90 then multiply the rest by 6, if > 90 multiply the rest with 4
+        _documentryMulticameraDuration = _documentryMulticameraDuration <= 40
+            ? _documentryMulticameraDuration * 8
+            : _documentryMulticameraDuration <= 90
+                ? ( 40 * 8 ) + ( ( _documentryMulticameraDuration - 40 ) * 6 )
+                : ( 40 * 8 ) + ( 50 * 6 ) + ( ( _documentryMulticameraDuration - 90 ) * 4 );
+
+        if(_hightlightDuration <= 3 )
+        {
+            _hightlightDuration = _hightlightDuration * 160;// mins
+        }
+        else if (_hightlightDuration <= 7)
+        {
+            _hightlightDuration = ( 3 * 160 ) + (_hightlightDuration - 3) * 110;// mins
+        }
+        else
+        {
+            _hightlightDuration = ( 3 * 160 ) + (4 * 110) + ( _hightlightDuration - 7 ) * 60;// mins
+        }
+
+        _hightlightDuration *= prepartsPercentage.Value * highlightsDifficulty.Value;
+        _socialMediaDuration *= 30;
+        // Add all other numeric fields
+        _total = (((_footageSize
+                 + _Misc
+                 + _prepartsDuration
+                 + _documentryMulticameraDuration
+                 + _hightlightDuration
+                 + _socialMediaDuration) * (footageQuality! * resolution! * _cameraValue)).Value) / 60; // in hours
+        StateHasChanged();
+    }
+    private string GetParameterLabel(int parameterId)
+    {
+        return parameterId switch
+        {
+            1 => "Highlights Difficulty",
+            2 => "Pre-Parts Percentage",
+            3 => "Resolution",
+            4 => "Footage Quality",
+            _ => $"Group {parameterId}"
+        };
+    }
+    private Color GetColorForOption(string optionName)
+    {
+        optionName = optionName.ToLower();
+        if (optionName.Contains("straight") || optionName.Contains("easy") || optionName.Contains("little"))
+            return Color.Success;
+        if (optionName.Contains("hard") || optionName.Contains("heavy") || optionName.Contains("complex"))
+            return Color.Error;
+        return Color.Primary; // default color
+    }
+    public class GroupedOptionsDto
+    {
+        public int CalculationParameterId { get; set; }
+        public List<OptionDto> Options { get; set; }
+    }
+
+    public class OptionDto
+    {
+        public string OptionName { get; set; }
+        public decimal? Multiplier { get; set; }
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            //MudDialog.Close(DialogResult.Ok()); 
+        }
+        else
+        {
+            var errorMessage = "Please fill in all required fields correctly before submitting.";
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
