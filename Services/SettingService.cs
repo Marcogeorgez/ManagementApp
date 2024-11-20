@@ -15,7 +15,12 @@ namespace LuminaryVisuals.Services
 
         public async Task<Setting> GetSettingByNameAsync(string name)
         {
-            return await _context.Settings.FirstOrDefaultAsync(s => s.Name == name);
+            var setting = await _context.Settings.FirstOrDefaultAsync(s => s.Name == name);
+            if (setting == null)
+            {
+                setting = new Setting();
+            }
+            return setting;
         }
 
         public async Task UpdateSettingAsync(string name, decimal? ConversionRateUSToLek, string updatedByUserId)
