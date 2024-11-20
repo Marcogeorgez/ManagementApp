@@ -4,19 +4,34 @@
 @inject ApplicationDbContext context
 
 <MudDialog>
-    <DialogContent>
-        <MudForm @ref="form" @bind-IsValid="@success">
+    <DialogContent >
+        <MudForm @ref="form" @bind-IsValid="@success" >
+        <MudGrid Spacing="4" Justify="Justify.Center">
+        <MudItem xs="12">
             <MudTextField T="string"
                           Label="Project Name"
                           Value="@newProject.ProjectName"
                           ReadOnly="true"
                           Variant=Variant.Outlined
-                          Class="mb-5 " />
+                          Class="d-flex justify-center mud-width-full py-2" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudNumericField T="decimal" Required=true
+                            @bind-Value="clientDiscount"
+                            Label="Client Discount"
+                            Variant=Variant.Outlined
+                            HelperTextOnFocus=true
+                            AdornmentText="%"   
+                            Adornment="Adornment.Start"
+                            HelperText="Client Discount as Percentage for example if you enter 10, it will be 10% leave it as 0 for no discount"
+                            Class="d-flex justify-center mud-width-full mb-n7 mt-n2" />
+        </MudItem>
+        <MudItem xs="12">
             @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
             {
                 <MudSelect T="decimal?"
                            AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                           Class="mt-2 mb-3  "
+                           Class="d-flex justify-center mud-width-full py-2"
                            Variant="Variant.Outlined"
                            @bind-Value="selectedMultipliers[index]"
                            Label="@GetParameterLabel(group.CalculationParameterId)">                
@@ -27,72 +42,135 @@
                         }
                     </MudSelect>
                 }
-            <MudTextField T="int" Required=true
+        </MudItem>
+        <MudItem xs="12">
+                    <MudNumericField T="int" Required=true Min="0"
                           @bind-Value="_cameraNum"
                           Label="Number of Cameras"
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
                           HelperText=""
-                          Class="mb-5 " />
-
-            <MudTextField T="decimal" Required=true
+                          Class="d-flex justify-center mud-width-full py-2" />
+        </MudItem>
+        <MudItem xs="12">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="footageSize"
                           Label="Raw footage size"
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
-                          HelperText=""
-                          Class="mb-5 " />
-
-            <MudTextField T="decimal" Required=true
-                          @bind-Value="_Misc"
+                          HelperText="Footage Size in GB"
+                          Class="d-flex justify-center mud-width-full py-2"  />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                          @bind-Value="Misc"
                           Label="Misc (managmenet, footage handeling, feedback)"
                           HelperTextOnFocus=true
-                          HelperText=""
+                          HelperText="Add time in hours."
                           Variant=Variant.Outlined
-                          Class="mb-5 " />
-
-            <MudTextField T="decimal" Required=true
+                          Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                            @bind-Value="MiscMinutes"
+                            Label="Misc in Minutes"
+                            HelperTextOnFocus=true
+                            HelperText="Add time in minutes." 
+                            Variant=Variant.Outlined
+                            Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="prepartsDuration"
-                          Label="Pre parts Duration"
+                          Label="Pre parts Duration Hours"
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
-                          HelperText=""
-                          Class="mb-5 " />   
-                          
-            <MudTextField T="decimal" Required=true
+                          HelperText="Add time in in hours"
+                          Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                                  @bind-Value="prepartsDurationMinutes"
+                                  Label="Pre parts Duration Minutes"
+                                  Variant=Variant.Outlined
+                                  HelperTextOnFocus=true
+                                  HelperText="Add time in minutes"
+                                  Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="documentryMulticameraDuration"
                           Label="Documentary Multicamera Duration"
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
-                          HelperText=""
-                          Class="mb-5 " />
-
-            <MudTextField T="decimal" Required=true
+                          HelperText="Add in hours"
+                          Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                              @bind-Value="documentryMulticameraDurationMinutes"
+                              Label="Documentary Multicamera Duration Minutes"
+                              Variant=Variant.Outlined
+                              HelperTextOnFocus=true
+                                  HelperText="Add in minutes"
+                              Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="hightlightDuration"
                           Label="Highlights Duration"
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
-                          HelperText="" Class="mb-5 " />
-
-            <MudTextField T="decimal" Required=true
+                                  HelperText="Add in hours"
+                          Class="d-flex flex-column  mud-width-full" />
+         </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                              @bind-Value="hightlightDurationMinutes"
+                              Label="Highlights Duration Minutes"
+                              Variant=Variant.Outlined
+                              HelperTextOnFocus=true
+                                  HelperText="Add in minutes"
+                              Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="socialMediaDuration"
                           Label="Social Media Duration"
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
-                          HelperText="" 
-                          Class="mb-5 " />
-            
-            <MudTextField T="decimal" ReadOnly=true 
+                          HelperText="Add in hours"
+                          Adornment="Adornment.End"
+                          AdornmentText="hour"
+                          AdornmentColor="Color.Default"
+                          Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="6">
+                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                              @bind-Value="socialMediaDurationMinutes"
+                              Label="Social Media Duration Minutes"
+                              Variant=Variant.Outlined
+                              HelperTextOnFocus=true
+                              HelperText="Add in minutes"
+                              Adornment="Adornment.End"
+                              AdornmentText="min"
+                              AdornmentColor="Color.Default"
+                              Class="d-flex flex-column  mud-width-full" />
+        </MudItem>
+        <MudItem xs="12">
+                    <MudNumericField T="decimal" Min="0.0M"
                           @bind-Value="@_total"
                           Label="Total Hours"
-                          Variant=Variant.Outlined Class="mb-5 mt-10 " />
+                          Variant=Variant.Outlined Class="d-flex justify-center mud-width-full" />
+        </MudItem>
+        <MudButton OnClick="CalculateBillableHours" FullWidth=false  Color="Color.Success" Variant=Variant.Outlined>Calculate Total </MudButton>
+        </MudGrid>
 
-            <MudButton OnClick="CalculateBillableHours" FullWidth=false  Color="Color.Success" Variant=Variant.Outlined>Calculate Total </MudButton>
-        </MudForm>
+    </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Submit">Archive Project</MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Submit">Save Total Hours</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -100,16 +178,23 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project newProject { get; set; } = new Project();
     private bool success;
+    private bool _isOverriden;
     private MudForm form;
     private List<GroupedOptionsDto> groupedOptions = new List<GroupedOptionsDto>();
     private List<decimal?> selectedMultipliers;
     private int _cameraNum;
     private decimal footageSize;
-    private decimal _Misc;
+    private decimal Misc;
+    private decimal MiscMinutes;
     private decimal prepartsDuration;
+    private decimal prepartsDurationMinutes;
     private decimal documentryMulticameraDuration;
+    private decimal documentryMulticameraDurationMinutes;
     private decimal hightlightDuration;
+    private decimal hightlightDurationMinutes;
     private decimal socialMediaDuration;
+    private decimal socialMediaDurationMinutes;
+    private decimal clientDiscount;
     private decimal _total;
 
     protected override async Task OnInitializedAsync()
@@ -134,26 +219,24 @@
         decimal? resolution = selectedMultipliers[2];
         decimal? footageQuality = selectedMultipliers[3];
         decimal? _footageSize = footageSize;
-        decimal? _MiscMinutes;
-        decimal? _prepartsDuration = prepartsDuration;
-        decimal? _documentryMulticameraDuration = documentryMulticameraDuration;
-        decimal? _hightlightDuration = hightlightDuration;
-        decimal? _socialMediaDuration = socialMediaDuration;
+        decimal? _Misc = ( Misc * 60 ) + MiscMinutes; // Calculate it in minutes
+        decimal? _prepartsDuration = ( prepartsDuration * 60 ) + prepartsDurationMinutes;// Calculate it in minutes
+        decimal? _documentryMulticameraDuration = ( documentryMulticameraDuration * 60 ) + documentryMulticameraDurationMinutes; // Calculate it in minutes
+        decimal? _hightlightDuration = hightlightDuration + (hightlightDurationMinutes / 60); // Keep it in hours
+        decimal? _socialMediaDuration = ( socialMediaDuration * 60 ) + socialMediaDurationMinutes; // Calculate it in minutes
+        decimal? _clientDiscount = ( 1 - (clientDiscount / 100) );
 
 
-        if (_cameraNum <= 2)
+        if (_cameraNum <= 2 && _cameraNum > 0)
             _cameraValue = 1;
         else
-            _cameraValue = (_cameraNum - 2 ) * 0.03m + 1;
+            _cameraValue = (_cameraNum - 2) * 0.03m + 1;
 
         // add as minutes
         if (_footageSize <= 300)
-            _footageSize = 1;
+            _footageSize = 0;
         else
             _footageSize = (_footageSize - 300m) * 0.4m; // minutes
-
-        _MiscMinutes = _Misc * 60; // convert it from hours to minutes
-        _prepartsDuration = _prepartsDuration * 60; // 1 prepart duration = 1 hour = 60 min
 
         // if <= 40 then * 8 if <= 90 then multiply the rest by 6, if > 90 multiply the rest with 4
         _documentryMulticameraDuration = _documentryMulticameraDuration <= 40
@@ -177,13 +260,23 @@
 
         _hightlightDuration *= prepartsPercentage.Value * highlightsDifficulty.Value;
         _socialMediaDuration *= 30;
-        // Add all other numeric fields
-        _total = (((_footageSize
-                 + _Misc
-                 + _prepartsDuration
-                 + _documentryMulticameraDuration
-                 + _hightlightDuration
-                 + _socialMediaDuration) * (footageQuality! * resolution! * _cameraValue)).Value) / 60; // in hours
+
+        // Calculate the total duration of all components
+        var totalDuration = _footageSize + _Misc + _prepartsDuration
+                            + _documentryMulticameraDuration
+                            + _hightlightDuration
+                            + _socialMediaDuration;
+
+        // Calculate the quality multiplier
+        var qualityMultiplier = footageQuality!.Value * resolution!.Value
+                                * _cameraValue;
+
+        // Combine the total duration with the quality multiplier and multiply the final by the discount
+        var adjustedValue = (totalDuration * qualityMultiplier) * _clientDiscount;
+
+        // Convert to hours and round to two decimal places
+        _total = Math.Round(adjustedValue.Value / 60, 2);
+
         StateHasChanged();
     }
     private string GetParameterLabel(int parameterId)

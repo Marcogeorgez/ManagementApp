@@ -254,7 +254,9 @@
             </MudTextField>
         </MudExpansionPanel>
         <!-- Save Button -->
-        <MudButton Class="mt-5 ml-5 mr-5" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
+        <MudItem xs="12" Class="d-flex align-self-center">
+            <MudButton Class="mt-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
+        </MudItem>
     </MudForm>
 </MudExpansionPanels>
 @code {
