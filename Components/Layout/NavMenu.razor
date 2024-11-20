@@ -6,18 +6,21 @@
 
 
 
+
 @* Main Top Bar *@
 <MudAppBar Elevation="2" Dense="true">
-
-    <MudTooltip Text="Expand Sidebar">
-        <MudIconButton Class="" Icon="@GetArrowIcon()" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-    </MudTooltip>
-    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+        <MudTooltip Text="Expand Sidebar">
+            <MudIconButton Class="" Icon="@GetArrowIconForMobile()" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        </MudTooltip>
         <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image mb-2" />
         <MudText Typo="Typo.h5" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
      </MudHidden>
 
-     <MudHidden Breakpoint="Breakpoint.MdAndUp">
+     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
+        <MudTooltip Text="Expand Sidebar">
+            <MudIconButton Class="" Icon="@GetArrowIcon()" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        </MudTooltip>
         <MudImage Src="@logoSrc" Alt="Logo" Height="25" Class="fit-image mb-1" />
         <MudText Typo="Typo.h6" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
     </MudHidden>
@@ -31,19 +34,58 @@
 
 </MudAppBar>
 
+@* Desktop View*@
+<MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+    <MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="Anchor.Start" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="0" OpenMiniOnHover="true">
 
-<MudDrawer Class="" @bind-Open="_drawerOpen" Fixed="true" Variant="DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" Elevation="0" OpenMiniOnHover="true" >
-    @*Side Bar*@
+            <MudNavMenu Class="mud-width-full ">
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
+            <MudNavLink Href="profile" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
+            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
+            <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Primary">Project</MudNavLink>
+            <MudNavLink Href="tracking" Icon="@Icons.Material.Filled.TrackChanges" IconColor="Color.Primary">Tracking</MudNavLink>
+
+                    <AuthorizeView>
+                        <Authorized>
+                    <MudDivider />
+                        <MudNavLink OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Primary">
+                            Logout
+                        </MudNavLink>
+                        <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        </form>
+                        </Authorized>
+                        <NotAuthorized>
+                    <MudDivider />
+                    <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <input type="hidden" name="provider" value="Google" />
+                        <MudNavLink OnClick="@LoginClick" IconColor="Color.Primary" Icon="@googleLogo">
+                            @label
+                        </MudNavLink>
+                        </form>
+                        </NotAuthorized>
+                    </AuthorizeView>
+            </MudNavMenu>
+    </MudDrawer>
+</MudHidden>
+
+@* Mobile View*@
+<MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+    <MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="Anchor.Top" Variant="DrawerVariant.Temporary" ClipMode="DrawerClipMode.Never" Elevation="0">
+        @*Side Bar*@
         <MudNavMenu Class="mud-width-full ">
-        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
-        <MudNavLink Href="profile" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
-        <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
-        <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Primary">Project</MudNavLink>
-        <MudNavLink Href="tracking" Icon="@Icons.Material.Filled.TrackChanges" IconColor="Color.Primary">Tracking</MudNavLink>
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
+            <MudNavLink Href="profile" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
+            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Admin Dashboard</MudNavLink>
+            <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Primary">Project</MudNavLink>
+            <MudNavLink Href="tracking" Icon="@Icons.Material.Filled.TrackChanges" IconColor="Color.Primary">Tracking</MudNavLink>
 
-                <AuthorizeView>
-                    <Authorized>
-                <MudDivider />
+            <AuthorizeView>
+                <Authorized>
+                    <MudDivider />
                     <MudNavLink OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Primary">
                         Logout
                     </MudNavLink>
@@ -51,25 +93,27 @@
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                     </form>
-                    </Authorized>
-                    <NotAuthorized>
-                <MudDivider />
-                <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                    <input type="hidden" name="provider" value="Google" />
-                    <MudNavLink OnClick="@LoginClick" IconColor="Color.Primary" Icon="@googleLogo">
-                        @label
-                    </MudNavLink>
+                </Authorized>
+                <NotAuthorized>
+                    <MudDivider />
+                    <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <input type="hidden" name="provider" value="Google" />
+                        <MudNavLink OnClick="@LoginClick" IconColor="Color.Primary" Icon="@googleLogo">
+                            @label
+                        </MudNavLink>
                     </form>
-                    </NotAuthorized>
-                </AuthorizeView>
+                </NotAuthorized>
+            </AuthorizeView>
         </MudNavMenu>
-</MudDrawer>
-
+    </MudDrawer>
+</MudHidden>
 
 @code {
+
     bool _drawerOpen = false;
+    private Anchor _anchor = Anchor.Start;
     private bool _isDarkMode;
     private string logoSrc => _isDarkMode ? "/Logo.png" : "/LogoDark.png";
     private string ColorThemeIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
@@ -80,10 +124,15 @@
     {
         return _drawerOpen ? Icons.Material.Filled.ArrowCircleLeft : Icons.Material.Filled.ArrowCircleRight;
     }
+    private string GetArrowIconForMobile()
+    {
+        return _drawerOpen ? Icons.Material.Filled.ArrowCircleUp : Icons.Material.Filled.ArrowCircleDown;
+    }
     const string googleLogo = @"<svg xmlns=""http://www.w3.org/2000/svg"" x=""0px"" y=""0px"" width=""24"" height=""24"" viewBox=""0 0 24 24"">
     <path d=""M12.545,12.151L12.545,12.151c0,1.054,0.855,1.909,1.909,1.909h3.536c-0.607,1.972-2.101,3.467-4.26,3.866 c-3.431,0.635-6.862-1.865-7.19-5.339c-0.34-3.595,2.479-6.62,6.005-6.62c1.002,0,1.946,0.246,2.777,0.679 c0.757,0.395,1.683,0.236,2.286-0.368l0,0c0.954-0.954,0.701-2.563-0.498-3.179c-1.678-0.862-3.631-1.264-5.692-1.038 c-4.583,0.502-8.31,4.226-8.812,8.809C1.945,16.9,6.649,22,12.545,22c6.368,0,8.972-4.515,9.499-8.398 c0.242-1.78-1.182-3.352-2.978-3.354l-4.61-0.006C13.401,10.24,12.545,11.095,12.545,12.151z""></path>
 </svg>";
-
+    [Inject]
+    private IBrowserViewportService BrowserViewportService { get; set; }
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
