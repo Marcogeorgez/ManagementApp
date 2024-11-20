@@ -99,9 +99,11 @@ else
                 CellStyle="text-align: center"
                 ShowFilterIcon="false" Format="C">
                 <EditTemplate>
-                    <MudTextField T="decimal?"
+                    <MudNumericField T="decimal?" Min="0"
                                   @bind-Value="context.Item.HourlyRate"
                                   @onblur="() => UpdateHourlyRate(context.Item)"
+                                  Variant="Variant.Outlined"
+                                  Label="Hourly Rate in US$"
                                   Format="N"
                                   Adornment="Adornment.Start"
                                   AdornmentText="$" />
@@ -112,9 +114,11 @@ else
                             CellStyle="text-align: center"
                             ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0">
                 <EditTemplate>
-                    <MudTextField T="decimal?"
+                    <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRateInLek"
                                   @onblur="() => UpdateHourlyRateInLek(context.Item)"
+                                  Variant="Variant.Outlined"
+                                  Label="Hourly Rate in Lek"
                                   Format="N"
                                   Adornment="Adornment.Start"
                                   AdornmentText="L"/>
@@ -152,7 +156,7 @@ else
         </PagerContent>
     </MudDataGrid>
     if(_usdToLek){
-        <MudTextField T="decimal?"
+        <MudNumericField T="decimal?"
                   @bind-value="storedValue" Label="Usd To Lek" Class="mt-4"
                   Variant="Variant.Outlined" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
     }
