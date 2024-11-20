@@ -22,6 +22,7 @@ public class ProjectService
     {
         var projects = await _context.Projects
                 .Where(p => p.IsArchived == isArchived)
+                .Include(p => p.Archive)
                 .ToListAsync();
         var userIds = projects
                 .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
@@ -59,8 +60,19 @@ public class ProjectService
         return await _context.Projects
             .ToListAsync();
     }
-
-    public async Task<List<Project?>> GetProjectByClientIdAsync(bool isArchived, string UserId)
+    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string UserId)
+    {
+        var project = await _context.Projects
+            .Where(p => p.IsArchived == isArchived && p.PrimaryEditorId == UserId || p.SecondaryEditorId == UserId)
+            .Include(p => p.ClientPayment)
+            .Include(p => p.Chats)
+            .Include(p => p.Archive)
+            .ToListAsync();
+        if (project == null)
+            return null;
+        return project;
+    }
+    public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId)
     {
         var project = await _context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
