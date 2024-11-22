@@ -30,16 +30,16 @@
         </MudHidden>
     </ColGroup>
     <Columns>
-        @if (RoleBasedColumns[_currentRole].Contains("Id"))
+        @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
         {
             <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
-@*                         <EditTemplate>
-                        @if(_isClientView){
-                        <MudText Style="display:none;" />
-                    }
-
-                </EditTemplate> *@
+                    </PropertyColumn>
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
+        {
+            <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
+                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                     </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
@@ -505,9 +505,9 @@ else if (_isClientView)
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","BillableHours","ClientBillable","EditorBillable","Actions","Archive" } },
-        { "Editor", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","BillableHours","EditorBillable", "Actions"} },
-        { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","BillableHours","ClientBillable","EditorBillable","Actions","Archive" } },
+        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","BillableHours","EditorBillable", "Actions"} },
+        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
     };
     private Guid _gridKey = Guid.NewGuid();
 
@@ -602,6 +602,7 @@ else if (_isClientView)
         if (!result.Canceled)
         {
             var newProject = (Project) result.Data;
+            newProject.WorkingMonth = DateTime.Today;
             newProject.ClientId = _currentUserId;
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
@@ -695,9 +696,12 @@ else if (_isClientView)
     // Checks if there is changes between two projects in any property excluding the excluded.
     private bool HasNoSignificantChanges(Project original, Project modified, params string[] excludeProperties)
     {
-        var excluded = new HashSet<string>(excludeProperties);
+        if (original == null || modified == null)
+            return original == modified;  // Both null = true, one null = false
 
+        var excluded = new HashSet<string>(excludeProperties, StringComparer.OrdinalIgnoreCase);  // Added case-insensitive comparison
         var properties = typeof(Project).GetProperties();
+
         foreach (var prop in properties)
         {
             if (excluded.Contains(prop.Name))
@@ -706,10 +710,8 @@ else if (_isClientView)
             var originalValue = prop.GetValue(original);
             var modifiedValue = prop.GetValue(modified);
 
-            // Check for inequality.
             if (!Equals(originalValue, modifiedValue))
                 return false;
-            break;
         }
         return true;
     }
@@ -729,7 +731,7 @@ else if (_isClientView)
         {
             if (_isClientView)
             {
-                if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate") == false)
+                if (HasNoSignificantChanges(beforeModification, project, "ExternalOrder", "Status", "ShootDate") == false)
                 {
                     await projectServices.UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);

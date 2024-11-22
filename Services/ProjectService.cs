@@ -5,7 +5,6 @@ using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class ProjectService
 {
@@ -130,8 +129,13 @@ public class ProjectService
                     var highestOrder = context.Projects
                         .Where(p => !p.IsArchived)
                         .Max(p => (int?) p.InternalOrder) ?? 0;
-
                     project.InternalOrder = highestOrder + 1;
+
+                    var highestOrderForClient = context.Projects
+                        .Where(p => !p.IsArchived && project.ClientId == p.ClientId)
+                        .Max(p => (int?) p.ExternalOrder) ?? 0;
+                    project.ExternalOrder = highestOrderForClient + 1;
+
                     _logger.LogInformation("Lock released for InternalOrder assignment.");
 
                 }
@@ -152,7 +156,7 @@ public class ProjectService
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var _project = await context.Projects.FindAsync(projectId);
+            var _project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
             // Ensure the new client (user) exists
             var client = await context.Users.FirstOrDefaultAsync(u => u.Id == newUserId);
@@ -163,7 +167,12 @@ public class ProjectService
                 // Update the ClientId property to the new client's ID
                 _project.ClientId = client.Id;
 
-                _project.DueDate = _project.ShootDate.Value.AddDays((double) client.WeeksToDueDateDefault! * 7);
+                _project.DueDate = _project.ShootDate!.Value.AddDays((double) client.WeeksToDueDateDefault! * 7);
+
+                var highestOrderForClient = context.Projects
+                    .Where(p => !p.IsArchived && _project.ClientId == p.ClientId)
+                    .Max(p => (int?) p.ExternalOrder) ?? 0;
+                _project.ExternalOrder = highestOrderForClient + 1;
 
                 await context.SaveChangesAsync();
             }
@@ -223,6 +232,10 @@ public class ProjectService
                 {
                     await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value);
                 }
+                if (_project.ExternalOrder != project.ExternalOrder && _project.ExternalOrder != null)
+                {
+                    await ExternalOrderAsync(project.ProjectId, project.ExternalOrder!.Value);
+                }
                 context.Projects.Update(project);
 
                 await context.SaveChangesAsync();
@@ -269,6 +282,7 @@ public class ProjectService
             {
                 project.IsArchived = true;
                 project.InternalOrder = null;
+                project.ExternalOrder = null;
                 project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
                 await context.SaveChangesAsync();
             }
@@ -291,6 +305,12 @@ public class ProjectService
                         .Max(p => (int?) p.InternalOrder) ?? 0;
 
                     project.InternalOrder = highestOrder + 1;
+
+                    var highestOrderClient = context.Projects
+                        .Where(p => !p.IsArchived && p.ClientId == project.ClientId)
+                        .Max(p => (int?) p.ExternalOrder) ?? 0;
+
+                    project.ExternalOrder = highestOrderClient + 1;
                     _logger.LogInformation("Lock released for InternalOrder assignment.");
 
                 }
@@ -352,6 +372,7 @@ public class ProjectService
                 }
 
                 int? oldOrder = project.InternalOrder;
+                project.InternalOrder = null;
                 if (oldOrder.HasValue)
                 {
                     if (newOrder < oldOrder)
@@ -377,6 +398,70 @@ public class ProjectService
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
+            catch
+            {
+                // Rollback the transaction in case of an error
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+    private async Task ExternalOrderAsync(int projectId, int? newOrder)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+
+            var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            var clientId = project.ClientId;
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+
+                if (newOrder == null)
+                {
+                    // Reorder all non-archived projects for the client
+                    var projectsToReorder = await context.Projects
+                        .AsTracking()
+                        .Where(p => p.ClientId == clientId && p.IsArchived == false)
+                        .OrderBy(p => p.ExternalOrder)
+                        .ToListAsync();
+
+                    int order = 1;
+                    foreach (var p in projectsToReorder)
+                    {
+                        p.ExternalOrder = order++;
+                    }
+
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return;
+                }
+
+                int? oldOrder = project.ExternalOrder;
+                project.ExternalOrder = null;
+                if (oldOrder.HasValue)
+                {
+                    if (newOrder < oldOrder)
+                    {
+                        await context.Projects
+                            .AsTracking()
+                            .Where(p => p.ClientId == clientId && p.ExternalOrder >= newOrder && p.ExternalOrder < oldOrder && p.IsArchived == false)
+                            .ForEachAsync(p => p.ExternalOrder++);
+                    }
+                    else if (newOrder > oldOrder)
+                    {
+                        await context.Projects
+                            .AsTracking()
+                            .Where(p => p.ClientId == clientId && p.ExternalOrder > oldOrder && p.ExternalOrder <= newOrder && p.IsArchived == false)
+                            .ForEachAsync(p => p.ExternalOrder--);
+                    }
+                }
+
+                project.ExternalOrder = newOrder;
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+
             catch
             {
                 // Rollback the transaction in case of an error
