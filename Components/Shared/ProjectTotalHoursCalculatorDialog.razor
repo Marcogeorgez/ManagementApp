@@ -59,14 +59,16 @@
                           Variant=Variant.Outlined
                           HelperTextOnFocus=true
                           HelperText="Footage Size in GB"
+                          Adornment="Adornment.End"
+                          AdornmentText="GB"
                           Class="d-flex justify-center mud-width-full py-2"  />
         </MudItem>
         <MudItem xs="6">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="Misc"
                           Label="Misc (managmenet, footage handeling, feedback)"
-                          HelperTextOnFocus=true
-                          HelperText="Add time in hours."
+                          Adornment="Adornment.End"
+                          AdornmentText="hour"
                           Variant=Variant.Outlined
                           Class="d-flex flex-column  mud-width-full" />
         </MudItem>
@@ -74,8 +76,8 @@
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                             @bind-Value="MiscMinutes"
                             Label="Misc in Minutes"
-                            HelperTextOnFocus=true
-                            HelperText="Add time in minutes." 
+                            Adornment="Adornment.End"
+                            AdornmentText="min"
                             Variant=Variant.Outlined
                             Class="d-flex flex-column  mud-width-full" />
         </MudItem>
@@ -84,26 +86,26 @@
                           @bind-Value="prepartsDuration"
                           Label="Pre parts Duration Hours"
                           Variant=Variant.Outlined
-                          HelperTextOnFocus=true
-                          HelperText="Add time in in hours"
+                          Adornment="Adornment.End"
+                          AdornmentText="hour"
                           Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="6">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
-                                  @bind-Value="prepartsDurationMinutes"
-                                  Label="Pre parts Duration Minutes"
-                                  Variant=Variant.Outlined
-                                  HelperTextOnFocus=true
-                                  HelperText="Add time in minutes"
-                                  Class="d-flex flex-column  mud-width-full" />
+                        @bind-Value="prepartsDurationMinutes"
+                        Label="Pre parts Duration Minutes"
+                        Variant=Variant.Outlined
+                        Adornment="Adornment.End"
+                        AdornmentText="min"
+                        Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="6">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="documentryMulticameraDuration"
                           Label="Documentary Multicamera Duration"
                           Variant=Variant.Outlined
-                          HelperTextOnFocus=true
-                          HelperText="Add in hours"
+                          Adornment="Adornment.End"
+                          AdornmentText="hour"
                           Class="d-flex flex-column  mud-width-full" />
                 </MudItem>
         <MudItem xs="6">
@@ -111,8 +113,8 @@
                               @bind-Value="documentryMulticameraDurationMinutes"
                               Label="Documentary Multicamera Duration Minutes"
                               Variant=Variant.Outlined
-                              HelperTextOnFocus=true
-                                  HelperText="Add in minutes"
+                              Adornment="Adornment.End"
+                              AdornmentText="min"
                               Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="6">
@@ -120,8 +122,8 @@
                           @bind-Value="hightlightDuration"
                           Label="Highlights Duration"
                           Variant=Variant.Outlined
-                          HelperTextOnFocus=true
-                                  HelperText="Add in hours"
+                          Adornment="Adornment.End"
+                          AdornmentText="hour"
                           Class="d-flex flex-column  mud-width-full" />
          </MudItem>
         <MudItem xs="6">
@@ -129,8 +131,8 @@
                               @bind-Value="hightlightDurationMinutes"
                               Label="Highlights Duration Minutes"
                               Variant=Variant.Outlined
-                              HelperTextOnFocus=true
-                                  HelperText="Add in minutes"
+                              Adornment="Adornment.End"
+                              AdornmentText="min"
                               Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="6">
@@ -138,8 +140,6 @@
                           @bind-Value="socialMediaDuration"
                           Label="Social Media Duration"
                           Variant=Variant.Outlined
-                          HelperTextOnFocus=true
-                          HelperText="Add in hours"
                           Adornment="Adornment.End"
                           AdornmentText="hour"
                           AdornmentColor="Color.Default"
@@ -150,8 +150,6 @@
                               @bind-Value="socialMediaDurationMinutes"
                               Label="Social Media Duration Minutes"
                               Variant=Variant.Outlined
-                              HelperTextOnFocus=true
-                              HelperText="Add in minutes"
                               Adornment="Adornment.End"
                               AdornmentText="min"
                               AdornmentColor="Color.Default"
