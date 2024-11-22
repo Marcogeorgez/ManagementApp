@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
-using Blazored.LocalStorage;
 using MudBlazor;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,7 +65,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
-    
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();
@@ -133,8 +132,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-// BLazored Local Storge service
-builder.Services.AddBlazoredLocalStorage();
 
 // IMPORTANT THIS BELOW REMOVE THE LIMIT OF 16k character of SignalR on how big a message can be.
 builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMessageSize = null);
@@ -142,6 +139,19 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

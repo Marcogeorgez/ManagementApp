@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241121171617_mappingPrimaryEditorToGetHourlyRate")]
+    partial class mappingPrimaryEditorToGetHourlyRate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -463,10 +466,10 @@ namespace LuminaryVisuals.Migrations
                     b.Property<int>("AdminStatus")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("BillableHours")
+                    b.Property<decimal>("BillableHours")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("ClientBillable")
+                    b.Property<decimal>("ClientBillable")
                         .HasColumnType("numeric");
 
                     b.Property<string>("ClientId")
@@ -497,6 +500,7 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("NotesForProject")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PrimaryEditorId")

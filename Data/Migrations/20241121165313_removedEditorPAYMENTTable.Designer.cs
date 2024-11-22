@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241121165313_removedEditorPAYMENTTable")]
+    partial class removedEditorPAYMENTTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -463,10 +466,10 @@ namespace LuminaryVisuals.Migrations
                     b.Property<int>("AdminStatus")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("BillableHours")
+                    b.Property<decimal>("BillableHours")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("ClientBillable")
+                    b.Property<decimal>("ClientBillable")
                         .HasColumnType("numeric");
 
                     b.Property<string>("ClientId")
@@ -497,10 +500,11 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("NotesForProject")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PrimaryEditorId")
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<int>("ProgressBar")
                         .HasColumnType("integer");
@@ -511,7 +515,7 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.Property<string>("SecondaryEditorId")
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ShootDate")
                         .IsRequired()
@@ -529,10 +533,6 @@ namespace LuminaryVisuals.Migrations
                     b.HasKey("ProjectId");
 
                     b.HasIndex("ClientId");
-
-                    b.HasIndex("PrimaryEditorId");
-
-                    b.HasIndex("SecondaryEditorId");
 
                     b.ToTable("Projects", (string)null);
                 });
@@ -791,19 +791,7 @@ namespace LuminaryVisuals.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "PrimaryEditor")
-                        .WithMany()
-                        .HasForeignKey("PrimaryEditorId");
-
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "SecondaryEditor")
-                        .WithMany()
-                        .HasForeignKey("SecondaryEditorId");
-
                     b.Navigation("Client");
-
-                    b.Navigation("PrimaryEditor");
-
-                    b.Navigation("SecondaryEditor");
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Setting", b =>

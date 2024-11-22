@@ -16,6 +16,13 @@ public enum ProjectStatus
     Paid = 7
 }
 
+public enum AdminProjectStatus
+{
+    NOT_FINISHED = 0,
+    DELIVERED_NOT_PAID = 1,
+    SENT_INVOICE = 2,
+    PAID = 3,
+}
 public class Project
 {
     [Key]
@@ -23,7 +30,6 @@ public class Project
 
     [Required]
     public string ClientId {  get; set; }
-
     public string? PrimaryEditorId { get; set; }
     public string? SecondaryEditorId { get; set; }
 
@@ -35,6 +41,9 @@ public class Project
     [Required]
     [DataType(DataType.MultilineText)]
     public string Description { get; set; }
+
+    [DataType(DataType.MultilineText)]
+    public string? NotesForProject { get; set; }
 
     [Required]
     [DataType(DataType.Date)]
@@ -52,29 +61,63 @@ public class Project
 
     [DataType(DataType.Date)]
     [Display(Name = "Working Month")]
-    public DateTime? WorkingMonth { get; set; }
-    
-    public decimal BillableHours { get; set; }
+    public DateTime? WorkingMonth { get; set; }     
+    public decimal? BillableHours { get; set; }
+    public decimal? ClientBillable { get; set; }
+
+    public decimal? EditorWorkingHours { get; set; }
+
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal? EditorOvertime { get; set; }
+
+    [Column(TypeName = "decimal(10,2)")]
+    [Display(Name = "Editor Payment Amount")]
+    public decimal? EditorPaymentAmount { get; set; }
+
+    [DataType(DataType.Date)]
+    [Display(Name = "Date Paid")]
+    public DateTime? EditorDatePaid { get; set; }
+
+    public bool isEditorPaid { get; set; } = false;
 
     [Required]
     public bool IsArchived { get; set; } = false;
 
     public ProjectStatus Status { get; set; }
+    public AdminProjectStatus AdminStatus { get; set; }
+
+
+
+
+
+
+
 
     // Navigation properties
-    [NotMapped]
     [ForeignKey("ClientId")]
     public virtual ApplicationUser Client { get; set; }
-    [NotMapped]
     [ForeignKey("PrimaryEditorId")]
-    public virtual ApplicationUser PrimaryEditor { get; set; }
-    [NotMapped]
+    public virtual ApplicationUser? PrimaryEditor { get; set; }
     [ForeignKey("SecondaryEditorId")]
-    public virtual ApplicationUser SecondaryEditor { get; set; }
-    public virtual ClientPayment ClientPayment { get; set; }
+    public virtual ApplicationUser? SecondaryEditor { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
-    public virtual ICollection<EditorPayments> EditorPayments { get; set; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     [NotMapped]
@@ -87,6 +130,8 @@ public class Project
     public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM");
     [NotMapped]
     public string FormatStatus => Status.ToString().Replace("_", " ");
+    [NotMapped]
+    public string FormatAdminStatus => AdminStatus.ToString().Replace("_", " ");
     [NotMapped]
     public string ClientName { get; set; }
     [NotMapped]

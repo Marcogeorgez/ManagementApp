@@ -23,6 +23,9 @@ public class ProjectService
         var projects = await _context.Projects
                 .Where(p => p.IsArchived == isArchived)
                 .Include(p => p.Archive)
+                .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
                 .ToListAsync();
         var userIds = projects
                 .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
@@ -30,10 +33,10 @@ public class ProjectService
                 .Distinct()
                 .ToList();
 
-        // Step 3: Fetch the user names based on the collected IDs
+        // Step 3: Fetch the user names,hourly rate based on the collected IDs
         var userNames = await _context.Users
                 .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.UserName })
+                .Select(u => new { u.Id, u.UserName, u.HourlyRate })
                 .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
         // Step 4: Map user names back to each project
@@ -50,6 +53,12 @@ public class ProjectService
             project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                 ? userNames[project.SecondaryEditorId]!
                 : "No Editor Assigned";
+            if (project.BillableHours != null && project.Client.HourlyRate.Value != null)
+            {
+                project.ClientBillable = project.Client.HourlyRate.Value * project.BillableHours;
+                project.EditorPaymentAmount = project.PrimaryEditor.HourlyRate * project.BillableHours;
+            }
+
         }
 
         return projects;
@@ -64,7 +73,6 @@ public class ProjectService
     {
         var project = await _context.Projects
             .Where(p => p.IsArchived == isArchived && p.PrimaryEditorId == UserId || p.SecondaryEditorId == UserId)
-            .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
             .ToListAsync();
@@ -76,7 +84,6 @@ public class ProjectService
     {
         var project = await _context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
-            .Include(p => p.ClientPayment)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
             .ToListAsync();
@@ -169,9 +176,14 @@ public class ProjectService
     }
 
 
-    public async Task UpdateProjectAsync()
+    public async Task UpdateProjectAsync(Project project)
     {
-        await _context.SaveChangesAsync();
+        var x = await _context.Projects.FindAsync(project.ProjectId);
+        if (x != null)
+        {
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
+        }
     }
     public async Task UpdateProjectBillableHoursAsync(Project project)
     {
