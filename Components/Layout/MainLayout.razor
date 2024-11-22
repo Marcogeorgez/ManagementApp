@@ -10,7 +10,6 @@
     <MudLayout>
         <NavMenu @rendermode="InteractiveServer" />
         <MudMainContent Style="height:auto; overflow-x: hidden; overflow-y: auto;">
-
             @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
             @if (IsStaticSSR)
             {

@@ -7,7 +7,6 @@
 @inject ISnackbar Snackbar
 @inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
-@inject ILocalStorageService localStorage
 @inject SettingService SettingService
 @* @attribute [Authorize(Policy = "RequireAdminRole")]
  *@
@@ -15,7 +14,7 @@
 
 @if (_loading)
 {
-    <MudText Typo="Typo.h5">Admin Dashboard</MudText>
+    <MudText Color="Color.Default" Typo="Typo.h2" Class="mb-4 "><span style="color:peachpuff">Admin Dashboard</span></MudText>
     <MudSpacer />
     <LoadingComponent />
 }
@@ -95,9 +94,9 @@ else
                     </MudSelect>
                 </EditTemplate>
             </PropertyColumn>
-            <PropertyColumn Property="x => x.HourlyRate" Title="Rate $" HeaderStyle="text-align:center;"
-                CellStyle="text-align: center"
-                ShowFilterIcon="false" Format="C">
+            <PropertyColumn Property="x => x.HourlyRate" Title="Hourly Rate" HeaderStyle="text-align:center;"
+                CellStyle="text-align: center" Format="$#,##0.00"
+                            ShowFilterIcon="false">
                 <EditTemplate>
                     <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRate"
@@ -112,7 +111,7 @@ else
 
             <PropertyColumn Property="x => x.HourlyRateInLek" HeaderStyle="text-align:center;" Title="Rate Lek"
                             CellStyle="text-align: center"
-                            ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0">
+                            ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0.00">
                 <EditTemplate>
                     <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRateInLek"
@@ -410,7 +409,7 @@ else
         user.HourlyRateInLek = user.HourlyRate * storedValue;
     }
 
-    // Saving usd to lek exchange rate in local storage
+    // Saving usd to lek exchange rate in db
     public decimal? storedValue
     {
         get => _storedValue;

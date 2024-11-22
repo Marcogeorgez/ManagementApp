@@ -34,7 +34,6 @@
 
 </MudAppBar>
 
-@* Desktop View*@
 <MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="@_anchor" Fixed="@isFixed" Variant="@drawer" ClipMode="@_clipMode" OpenMiniOnHover="@_isMinihover" Elevation="0">
         <MudNavMenu Class=" ">
         <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary">Home</MudNavLink>
@@ -149,10 +148,10 @@
             if(!isLargeScreen)
             {
                 _anchor = Anchor.Top;
-                isFixed = false;
+                isFixed = true;
                 _isMinihover = false;
                 drawer = DrawerVariant.Temporary;
-                _clipMode = DrawerClipMode.Docked;
+                _clipMode = DrawerClipMode.Never;
             }
             // Load dark mode preference from cookies when the component is rendered
             _isDarkMode = await JSRuntime.InvokeAsync<bool>("loadDarkModePreference");
