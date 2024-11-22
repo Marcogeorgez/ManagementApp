@@ -6,46 +6,51 @@ namespace LuminaryVisuals.Services
 {
     public class SettingService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public SettingService(ApplicationDbContext context)
+        public SettingService(IDbContextFactory<ApplicationDbContext> context)
         {
-            _context = context;
+            _contextFactory = context;
         }
 
         public async Task<Setting> GetSettingByNameAsync(string name)
         {
-            var setting = await _context.Settings.FirstOrDefaultAsync(s => s.Name == name);
-            if (setting == null)
+            using (var context = _contextFactory.CreateDbContext())
             {
-                setting = new Setting();
+                var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
+                if (setting == null)
+                {
+                    setting = new Setting();
+                }
+                return setting;
             }
-            return setting;
         }
 
         public async Task UpdateSettingAsync(string name, decimal? ConversionRateUSToLek, string updatedByUserId)
         {
-            var setting = await _context.Settings.FirstOrDefaultAsync(s => s.Name == name);
-
-            if (setting == null)
-            {
-                setting = new Setting
+            using (var context = _contextFactory.CreateDbContext())
+            { 
+                var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
+                if (setting == null)
                 {
-                    Name = name,
-                    ConversionRateUSToLek = ConversionRateUSToLek,
-                    UpdatedByUserId = updatedByUserId,
-                    LastUpdated = DateTime.UtcNow
-                };
-                await _context.Settings.AddAsync(setting);
-            }
-            else
-            {
-                setting.ConversionRateUSToLek = ConversionRateUSToLek;
-                setting.UpdatedByUserId = updatedByUserId;
-                setting.LastUpdated = DateTime.UtcNow;
-            }
+                    setting = new Setting
+                    {
+                        Name = name,
+                        ConversionRateUSToLek = ConversionRateUSToLek,
+                        UpdatedByUserId = updatedByUserId,
+                        LastUpdated = DateTime.UtcNow
+                    };
+                    await context.Settings.AddAsync(setting);
+                }
+                else
+                {
+                    setting.ConversionRateUSToLek = ConversionRateUSToLek;
+                    setting.UpdatedByUserId = updatedByUserId;
+                    setting.LastUpdated = DateTime.UtcNow;
+                }
 
-            await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

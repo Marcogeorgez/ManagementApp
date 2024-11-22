@@ -32,11 +32,14 @@
     <Columns>
         @if (RoleBasedColumns[_currentRole].Contains("Id"))
         {
-            <PropertyColumn Property="x => x.ProjectId" Title="Id" Sortable="false" Filterable="false" CellStyle="text-align:center;"
-                DragAndDropEnabled="false" Groupable="false" Editable=false >
-                        <EditTemplate>
-                            <MudText Style="display:none;" />
-                        </EditTemplate>
+            <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
+                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+@*                         <EditTemplate>
+                        @if(_isClientView){
+                        <MudText Style="display:none;" />
+                    }
+
+                </EditTemplate> *@
                     </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
@@ -90,12 +93,12 @@
                                Variant="Variant.Outlined"
                                Label="Primary Editor"
                                @bind-Value="context.Item.PrimaryEditorId">
-                                @foreach (var editor in Editors)
-                                {
+                               @foreach (var editor in Editors)
+                               {
                                     <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
                                         @editor.UserName
                                     </MudSelectItem>
-                                }
+                               }
                         </MudSelect>
                     }
                     else
@@ -635,6 +638,7 @@ else if (_isClientView)
             if(archivedProject != null)
             {
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
+                await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null);
                 LoadProjects();
             }
         }

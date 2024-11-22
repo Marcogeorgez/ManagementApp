@@ -58,6 +58,8 @@ public class Project
     [Range(0, 100)]
     [Display(Name = "Progress")]
     public int ProgressBar { get; set; }
+    public int? InternalOrder { get; set; }
+    public int? ExternalOrder { get; set; }
 
     [DataType(DataType.Date)]
     [Display(Name = "Working Month")]

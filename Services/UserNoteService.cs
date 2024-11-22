@@ -1,17 +1,18 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace LuminaryVisuals.Services;
 
 
 public class UserNoteService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-    public UserNoteService(ApplicationDbContext context)
+    public UserNoteService(IDbContextFactory<ApplicationDbContext> context)
     {
-         _context = context;
+        _contextFactory = context;
     }
 
     public async Task<MessageSuccess> AddNoteAsync(string targetId, string note)
@@ -20,21 +21,22 @@ public class UserNoteService
         {
             return new MessageSuccess { Success = false, Message = "Target ID cannot be null or empty." };
         }
-
         try
         {
-
-            var userNote = new UserNote
+            using (var context = _contextFactory.CreateDbContext())
             {
-                TargetUserId = targetId,
-                Note = note
-            };
+                var userNote = new UserNote
+                {
+                    TargetUserId = targetId,
+                    Note = note
+                };
 
-            _context.UserNote.Add(userNote);
-            await _context.SaveChangesAsync();
-            return new MessageSuccess { Success = true, Message = "Note has been created successfully" };
+                context.UserNote.Add(userNote);
+                await context.SaveChangesAsync();
+                return new MessageSuccess { Success = true, Message = "Note has been created successfully" };
+            }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return new MessageSuccess { Success = false, Message = $"An error occurred: {ex.Message}" };
         }
@@ -43,21 +45,26 @@ public class UserNoteService
 
     public async Task<IEnumerable<UserNote>> GetAllNotes()
     {
-        return await _context.UserNote.ToListAsync();
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            return await context.UserNote.ToListAsync();
+        }
     }
-
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
     {
-        var note = await _context.UserNote.FindAsync(noteId);
-        if (note != null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _context.Update(note);
-            await _context.SaveChangesAsync();
-            return new MessageSuccess { Success = true , Message = "Note has been updated successfully"};
-        }
-        else
-        {
-            return new MessageSuccess { Success = false, Message = "Note couldn't be updated." };
+            var note = await context.UserNote.FindAsync(noteId);
+            if (note != null)
+            {
+                context.Update(note);
+                await context.SaveChangesAsync();
+                return new MessageSuccess { Success = true, Message = "Note has been updated successfully" };
+            }
+            else
+            {
+                return new MessageSuccess { Success = false, Message = "Note couldn't be updated." };
+            }
         }
     }
 }
