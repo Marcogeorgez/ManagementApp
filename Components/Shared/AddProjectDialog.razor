@@ -8,13 +8,13 @@
                           Label="Project Name"
                           @bind-Value="newProject.ProjectName"
                           Required="true"
-                          AutoGrow=true/>
+                          AutoGrow=true Class="mb-5" />
                           <MudSpacer />
             <MudTextField T="string"
                           Label="Description"
                           @bind-Value="newProject.Description"
                           Required="true" 
-                          Lines="3" AutoGrow=true/>
+                          Lines="3" AutoGrow=true Class="mb-5" />
             <MudSpacer />
 
             <MudDatePicker Label="Shoot Date"
@@ -33,23 +33,20 @@
 
             <MudDatePicker Label="Due Date (4 weeks after shoot date by default)"
                            Date="newProject.DueDate"
-                           DateChanged="@(date => newProject.DueDate = date )"
-                           Required="true" 
-                           HelperText="Will remove it later, just here for visibility and debugging"
-                           />
+                           DateChanged="@(date => newProject.DueDate = date  )"
+                           Required="true" Class="mb-5" />
             <MudSpacer />
 
             <MudDatePicker Label="Working Month"
                            Date="newProject.WorkingMonth"
-                           DateChanged="@(date => newProject.WorkingMonth = date)"
+                           DateChanged="@(date => newProject.WorkingMonth = date ?? DateTime.Today)"
                            Required="true"
                            FixDay="1" 
                            DateFormat="yyyy/MM"
-                           Class="mb-3" 
-                           HelperText="Will remove it later, just here for visibility and debugging" />
+                           Class="mb-5" />
             <MudSpacer />
             <MudSelect T="ProgressBarValue" Label="Progress" AnchorOrigin="Origin.BottomCenter"
-                       @bind-Value="ProgressEnum">
+                       @bind-Value="ProgressEnum" Class="mb-5">
                 <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
                 <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
                 <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
@@ -61,8 +58,7 @@
                        Label="Status"
                        @bind-Value="newProject.Status"
                        Required="true"
-                       AnchorOrigin="Origin.BottomCenter"
-                       HelperText="Will remove it later, just here for visibility and debugging, once created it will be upcoming by default (or scheduled ?)">
+                       AnchorOrigin="Origin.BottomCenter">
                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                 {
                     <MudSelectItem Value="@status">@status</MudSelectItem>
@@ -100,6 +96,10 @@
     {
         get => (ProgressBarValue) newProject.ProgressBar;
         set => newProject.ProgressBar = (int) value;
+    }
+    protected override void OnInitialized()
+    {
+        newProject.WorkingMonth = DateTime.Today;
     }
     private async void Submit()
     {
