@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241121145200_BillableTotal")]
+    partial class BillableTotal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -452,6 +455,83 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("ClientEditingGuidelines", (string)null);
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.ClientPayment", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<decimal>("BillableHours")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("ClientPaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("PaymentVisibleClient")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ProjectTotalPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("ProjectId")
+                        .IsUnique();
+
+                    b.ToTable("ClientPayment", (string)null);
+                });
+
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.EditorPayments", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<DateTime>("EditorDatePaid")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Overtime")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("PaymentAmount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<decimal>("WorkingHours")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("isPaid")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EditorPayments", (string)null);
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
                 {
                     b.Property<int>("ProjectId")
@@ -463,15 +543,15 @@ namespace LuminaryVisuals.Migrations
                     b.Property<int>("AdminStatus")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("BillableHours")
+                    b.Property<decimal>("Billable")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("ClientBillable")
+                    b.Property<decimal>("BillableHours")
                         .HasColumnType("numeric");
 
                     b.Property<string>("ClientId")
                         .IsRequired()
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -481,26 +561,15 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired()
                         .HasColumnType("DATE");
 
-                    b.Property<DateTime?>("EditorDatePaid")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("EditorOvertime")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal?>("EditorPaymentAmount")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal?>("EditorWorkingHours")
-                        .HasColumnType("numeric");
-
                     b.Property<bool>("IsArchived")
                         .HasColumnType("boolean");
 
                     b.Property<string>("NotesForProject")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PrimaryEditorId")
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<int>("ProgressBar")
                         .HasColumnType("integer");
@@ -511,7 +580,7 @@ namespace LuminaryVisuals.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.Property<string>("SecondaryEditorId")
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("ShootDate")
                         .IsRequired()
@@ -523,16 +592,7 @@ namespace LuminaryVisuals.Migrations
                     b.Property<DateTime?>("WorkingMonth")
                         .HasColumnType("DATE");
 
-                    b.Property<bool>("isEditorPaid")
-                        .HasColumnType("boolean");
-
                     b.HasKey("ProjectId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("PrimaryEditorId");
-
-                    b.HasIndex("SecondaryEditorId");
 
                     b.ToTable("Projects", (string)null);
                 });
@@ -783,27 +843,38 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.ClientPayment", b =>
                 {
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
+                        .WithOne("ClientPayment")
+                        .HasForeignKey("LuminaryVisuals.Data.Entities.ClientPayment", "ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "PrimaryEditor")
-                        .WithMany()
-                        .HasForeignKey("PrimaryEditorId");
+                    b.Navigation("Project");
+                });
 
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "SecondaryEditor")
-                        .WithMany()
-                        .HasForeignKey("SecondaryEditorId");
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.EditorPayments", b =>
+                {
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
+                        .WithMany("EditorPayments")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Client");
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "User")
+                        .WithMany("EditorPayments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("PrimaryEditor");
+                    b.Navigation("Project");
 
-                    b.Navigation("SecondaryEditor");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Setting", b =>
@@ -895,6 +966,10 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("Chats");
 
                     b.Navigation("CreatedNotes");
+
+                    b.Navigation("EditorPayments");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.CalculationParameter", b =>
@@ -908,6 +983,11 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired();
 
                     b.Navigation("Chats");
+
+                    b.Navigation("ClientPayment")
+                        .IsRequired();
+
+                    b.Navigation("EditorPayments");
                 });
 #pragma warning restore 612, 618
         }

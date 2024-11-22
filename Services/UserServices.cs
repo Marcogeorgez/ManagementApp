@@ -47,7 +47,7 @@ public class UserServices
             UserId = user.Id,
             UserName = user.UserName,
             HourlyRate = user.HourlyRate,
-            HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : (decimal?) null,
+            HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : null,
             WeeksToDueDateDefault = user.WeeksToDueDateDefault,
             Roles = userRoles.Where(ur => ur.UserId == user.Id)
                             .Select(ur => ur.RoleName)
@@ -60,21 +60,22 @@ public class UserServices
 
         return result;
     }
+    // Fetch a single user by userId
     public async Task<ApplicationUser> GetUserByIdAsync(string userId)
     {
-        // Query: Get a single user by userId
+
         var user = await _userManager.Users
                                       .Where(u => u.Id == userId)
                                       .FirstOrDefaultAsync();
 
-        return user; // Return the user object or null if not found
+        return user;
     }
 
     public async Task<bool> ChangeUserRoleAsync(string userId, string newRole)
     {
         try
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetUserByIdAsync(userId);
             if (user != null)
             {
                 var currentRoles = await _userManager.GetRolesAsync(user);
@@ -94,7 +95,7 @@ public class UserServices
     {
         try
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetUserByIdAsync(userId);
             if (user != null)
             {
                 user.HourlyRate = newHourlyRate;
@@ -113,7 +114,7 @@ public class UserServices
     {
         try
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetUserByIdAsync(userId);
             if (user != null)
             {
                 user.WeeksToDueDateDefault = WeeksToDueDateDefault;
@@ -147,15 +148,13 @@ public class UserServices
         return result;
     }
 
-    // Fetches users with "Client" role and their associated projects
+    // Method to get all users with the "Client" role and their associated projects
     public async Task<List<UserProjectViewModel>> GetClientsWithProjectsAsync()
     {
         var clients = await _userManager.GetUsersInRoleAsync("Client");
 
         var result = await _context.Users
             .Where(u => clients.Select(c => c.Id).Contains(u.Id))
-            .Include(u => u.Payments)
-                .ThenInclude(p => p.Project)
             .Select(u => new UserProjectViewModel
             {
                 UserId = u.Id,

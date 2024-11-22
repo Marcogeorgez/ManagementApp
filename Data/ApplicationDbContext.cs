@@ -11,7 +11,6 @@ namespace LuminaryVisuals.Data
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
-        public DbSet<ClientPayment> Payments { get; set; }
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<UserNote> UserNote { get; set; }
@@ -51,14 +50,16 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.DueDate).HasColumnType("DATE");
                 entity.Property(e => e.WorkingMonth).HasColumnType("DATE");
 
-                entity.HasMany(p => p.EditorPayments)
-                      .WithOne(ep => ep.Project)
-                      .HasForeignKey(ep => ep.ProjectId)
-                        .OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(p => p.ClientPayment)
-                      .WithOne(cp => cp.Project)
-                      .HasForeignKey<ClientPayment>(cp => cp.ProjectId)
-                        .OnDelete(DeleteBehavior.Cascade);
+                entity
+                    .HasOne(p => p.PrimaryEditor)
+                    .WithMany()
+                    .HasForeignKey(p => p.PrimaryEditorId)
+                    .IsRequired(false);
+                entity
+                    .HasOne(p => p.SecondaryEditor)
+                    .WithMany()
+                    .HasForeignKey(p => p.SecondaryEditorId)
+                    .IsRequired(false);
                 entity.HasMany(p => p.Chats)
                       .WithOne(c => c.Project)
                       .HasForeignKey(c => c.ProjectId)
@@ -68,29 +69,6 @@ namespace LuminaryVisuals.Data
                       .HasForeignKey<Archive>(a => a.ProjectId)
                         .OnDelete(DeleteBehavior.Cascade);
             });
-
-            // Configure Payment
-            builder.Entity<ClientPayment>(entity =>
-            {
-                entity.ToTable("ClientPayment");
-                entity.HasOne(cp => cp.Project)
-                      .WithOne(p => p.ClientPayment)
-                      .HasForeignKey<ClientPayment>(cp => cp.ProjectId);
-            });
-
-            builder.Entity<EditorPayments>(entity =>
-            {
-                entity.ToTable("EditorPayments");
-
-                entity.HasOne(ep => ep.User)
-                      .WithMany(u => u.EditorPayments)
-                      .HasForeignKey(ep => ep.UserId);
-
-                entity.HasOne(ep => ep.Project)
-                      .WithMany(p => p.EditorPayments)
-                      .HasForeignKey(ep => ep.ProjectId);
-            });
-
 
             // Configure Archive
             builder.Entity<Archive>(entity =>

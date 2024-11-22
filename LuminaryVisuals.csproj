@@ -1,17 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-LuminaryVisuals-fdc65854-d677-4a8c-9bc0-3dd9d76ed7d1</UserSecretsId>
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Documentation\**" />
+    <Compile Remove="Middleware\**" />
     <Content Remove="Documentation\**" />
+    <Content Remove="Middleware\**" />
     <EmbeddedResource Remove="Documentation\**" />
+    <EmbeddedResource Remove="Middleware\**" />
     <None Remove="Documentation\**" />
+    <None Remove="Middleware\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,8 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Blazored.Toast" Version="4.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
@@ -33,10 +36,6 @@
     <PackageReference Include="MudBlazor" Version="7.15.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageReference Include="Tizzani.MudBlazor.HtmlEditor" Version="2.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Middleware\" />
   </ItemGroup>
 
 </Project>
