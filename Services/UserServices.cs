@@ -3,6 +3,7 @@ using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Migrations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.Text.RegularExpressions;
 using static LuminaryVisuals.Services.UserRoleViewModel;
 
@@ -12,78 +13,88 @@ public class UserServices
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<UserServices> _logger;
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     public UserServices(
         UserManager<ApplicationUser> userManager,
-        ApplicationDbContext context,
+        IDbContextFactory<ApplicationDbContext> context,
         ILogger<UserServices> logger)
     {
-        _context = context;
+        _contextFactory = context;
         _userManager = userManager;
         _logger = logger;
     }
 
     public async Task<List<UserRoleViewModel>> GetAllUsersAsync(decimal? storedValue)
     {
-        // Query: Get all users
-        var users = await _userManager.Users.ToListAsync();
-
-        // Query: Get all role assignments
-        var userRoles = await ( from userRole in _context.UserRoles
-                                join role in _context.Roles
-                                    on userRole.RoleId equals role.Id
-                                select new
-                                {
-                                    UserId = userRole.UserId,
-                                    RoleName = role.Name
-                                } ).ToListAsync();
-
-        // Query: Get all notes 
-        var notes = await _context.UserNote.ToListAsync();
-
-        // Combine everything in memory and removing n+1 queries 
-        var result = users.Select(user => new UserRoleViewModel
+        using (var context = _contextFactory.CreateDbContext())
         {
-            UserId = user.Id,
-            UserName = user.UserName,
-            HourlyRate = user.HourlyRate,
-            HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : null,
-            WeeksToDueDateDefault = user.WeeksToDueDateDefault,
-            Roles = userRoles.Where(ur => ur.UserId == user.Id)
-                            .Select(ur => ur.RoleName)
-                            .ToList(),
-            SelectedRole = userRoles.FirstOrDefault(ur => ur.UserId == user.Id)?.RoleName ?? "",
-            Notes = notes.Where(n => n.TargetUserId == user.Id)
-                        .ToDictionary(n => n.TargetUserId, n => n)
+            // Query: Get all users
+            var users = await _userManager.Users.ToListAsync();
 
-        }).ToList();
+            // Query: Get all role assignments
+            var userRoles = await ( from userRole in context.UserRoles
+                                    join role in context.Roles
+                                        on userRole.RoleId equals role.Id
+                                    select new
+                                    {
+                                        UserId = userRole.UserId,
+                                        RoleName = role.Name
+                                    } ).ToListAsync();
 
-        return result;
+            // Query: Get all notes 
+            var notes = await context.UserNote.ToListAsync();
+
+            // Combine everything in memory and removing n+1 queries 
+            var result = users.Select(user => new UserRoleViewModel
+            {
+                UserId = user.Id,
+                UserName = user.UserName,
+                HourlyRate = user.HourlyRate,
+                HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : null,
+                WeeksToDueDateDefault = user.WeeksToDueDateDefault,
+                Roles = userRoles.Where(ur => ur.UserId == user.Id)
+                                .Select(ur => ur.RoleName)
+                                .ToList(),
+                SelectedRole = userRoles.FirstOrDefault(ur => ur.UserId == user.Id)?.RoleName ?? "",
+                Notes = notes.Where(n => n.TargetUserId == user.Id)
+                            .ToDictionary(n => n.TargetUserId, n => n)
+
+            }).ToList();
+        
+            return result;
+        }
     }
     // Fetch a single user by userId
     public async Task<ApplicationUser> GetUserByIdAsync(string userId)
     {
+        using (var context = _contextFactory.CreateDbContext())
+        {
 
-        var user = await _userManager.Users
+            var user = await _userManager.Users
                                       .Where(u => u.Id == userId)
                                       .FirstOrDefaultAsync();
 
-        return user;
+            return user;
+        }
     }
 
     public async Task<bool> ChangeUserRoleAsync(string userId, string newRole)
     {
         try
         {
-            var user = await GetUserByIdAsync(userId);
-            if (user != null)
+            using (var context = _contextFactory.CreateDbContext())
             {
-                var currentRoles = await _userManager.GetRolesAsync(user);
-                await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                await _userManager.AddToRoleAsync(user, newRole);
-                return true;
+
+                var user = await GetUserByIdAsync(userId);
+                if (user != null)
+                {
+                    var currentRoles = await _userManager.GetRolesAsync(user);
+                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                    await _userManager.AddToRoleAsync(user, newRole);
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
         catch
         {
@@ -95,14 +106,18 @@ public class UserServices
     {
         try
         {
-            var user = await GetUserByIdAsync(userId);
-            if (user != null)
+            using (var context = _contextFactory.CreateDbContext())
             {
-                user.HourlyRate = newHourlyRate;
-                await _userManager.UpdateAsync(user);
-                return true;
+
+                var user = await GetUserByIdAsync(userId);
+                if (user != null)
+                {
+                    user.HourlyRate = newHourlyRate;
+                    await _userManager.UpdateAsync(user);
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
         catch (Exception ex)
         {
@@ -114,14 +129,18 @@ public class UserServices
     {
         try
         {
-            var user = await GetUserByIdAsync(userId);
-            if (user != null)
+            using (var context = _contextFactory.CreateDbContext())
             {
-                user.WeeksToDueDateDefault = WeeksToDueDateDefault;
-                await _userManager.UpdateAsync(user);
-                return true;
+
+                var user = await GetUserByIdAsync(userId);
+                if (user != null)
+                {
+                    user.WeeksToDueDateDefault = WeeksToDueDateDefault;
+                    await _userManager.UpdateAsync(user);
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
         catch (Exception ex)
         {
@@ -133,38 +152,46 @@ public class UserServices
     // Method to get all users with the "Editor" role and their associated projects
     public async Task<List<UserProjectViewModel>> GetEditorsWithProjectsAsync()
     {
-        var editors = await _userManager.GetUsersInRoleAsync("Editor");
-        var result = await _context.Users
-            .Where(u => editors.Select(e => e.Id).Contains(u.Id))
-            .Select(u => new UserProjectViewModel
-            {
-                UserId = u.Id,
-                UserName = u.UserName,
-                HourlyRate = u.HourlyRate,
-                UserRole = "Editor",
-            })
-            .ToListAsync();
+        using (var context = _contextFactory.CreateDbContext())
+        {
 
-        return result;
+            var editors = await _userManager.GetUsersInRoleAsync("Editor");
+            var result = await context.Users
+                .Where(u => editors.Select(e => e.Id).Contains(u.Id))
+                .Select(u => new UserProjectViewModel
+                {
+                    UserId = u.Id,
+                    UserName = u.UserName,
+                    HourlyRate = u.HourlyRate,
+                    UserRole = "Editor",
+                })
+                .ToListAsync();
+
+            return result;
+        }
     }
 
     // Method to get all users with the "Client" role and their associated projects
     public async Task<List<UserProjectViewModel>> GetClientsWithProjectsAsync()
     {
-        var clients = await _userManager.GetUsersInRoleAsync("Client");
+        using (var context = _contextFactory.CreateDbContext())
+        {
 
-        var result = await _context.Users
-            .Where(u => clients.Select(c => c.Id).Contains(u.Id))
-            .Select(u => new UserProjectViewModel
-            {
-                UserId = u.Id,
-                UserName = u.UserName,
-                HourlyRate = u.HourlyRate,
-                UserRole = "Client",
-            })
-            .ToListAsync();
+            var clients = await _userManager.GetUsersInRoleAsync("Client");
 
-        return result;
+            var result = await context.Users
+                .Where(u => clients.Select(c => c.Id).Contains(u.Id))
+                .Select(u => new UserProjectViewModel
+                {
+                    UserId = u.Id,
+                    UserName = u.UserName,
+                    HourlyRate = u.HourlyRate,
+                    UserRole = "Client",
+                })
+                .ToListAsync();
+
+            return result;
+        }
     }
 }
 

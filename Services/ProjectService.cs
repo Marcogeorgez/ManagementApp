@@ -9,242 +9,380 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class ProjectService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly ILogger<ProjectService> _logger;
 
-    public ProjectService(ApplicationDbContext context, ILogger<ProjectService> logger)
+    public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger)
     {
-        _context = context;
+        _contextFactory = context;
         _logger = logger;
     }
 
     public async Task<List<Project>> GetProjectsAsync(bool isArchived)
     {
-        var projects = await _context.Projects
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var projects = await context.Projects
                 .Where(p => p.IsArchived == isArchived)
                 .Include(p => p.Archive)
                 .Include(p => p.Client)
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
                 .ToListAsync();
-        var userIds = projects
-                .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
-                .Where(id => id != null)
-                .Distinct()
-                .ToList();
+            var userIds = projects
+                    .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
+                    .Where(id => id != null)
+                    .Distinct()
+                    .ToList();
 
-        // Step 3: Fetch the user names,hourly rate based on the collected IDs
-        var userNames = await _context.Users
-                .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.UserName, u.HourlyRate })
-                .ToDictionaryAsync(u => u.Id, u => u.UserName);
+            // Step 3: Fetch the user names,hourly rate based on the collected IDs
+            var userNames = await context.Users
+                    .Where(u => userIds.Contains(u.Id))
+                    .Select(u => new { u.Id, u.UserName, u.HourlyRate })
+                    .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-        // Step 4: Map user names back to each project
-        foreach (var project in projects)
-        {
-            project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
-                ? userNames[project.ClientId]!
-                : "No Client Assigned ??";
-
-            project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
-                ? userNames[project.PrimaryEditorId]!
-                : "No Editor Assigned";
-
-            project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
-                ? userNames[project.SecondaryEditorId]!
-                : "No Editor Assigned";
-            if (project.BillableHours != null && project.Client.HourlyRate.Value != null)
+            // Step 4: Map user names back to each project
+            foreach (var project in projects)
             {
-                project.ClientBillable = project.Client.HourlyRate.Value * project.BillableHours;
-                project.EditorPaymentAmount = project.PrimaryEditor.HourlyRate * project.BillableHours;
+                project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
+                    ? userNames[project.ClientId]!
+                    : "No Client Assigned ??";
+
+                project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
+                    ? userNames[project.PrimaryEditorId]!
+                    : "No Editor Assigned";
+
+                project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
+                    ? userNames[project.SecondaryEditorId]!
+                    : "No Editor Assigned";
+                if (project.BillableHours != null && project.Client.HourlyRate.Value != null)
+                {
+                    project.ClientBillable = project.Client.HourlyRate.Value * project.BillableHours;
+                    project.EditorPaymentAmount = project.PrimaryEditor.HourlyRate * project.BillableHours;
+                }
+
             }
 
+            return projects;
         }
-
-        return projects;
     }
 
     public async Task<List<Project>> GetProjectsAsync()
     {
-        return await _context.Projects
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            return await context.Projects
             .ToListAsync();
+        }
     }
     public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string UserId)
     {
-        var project = await _context.Projects
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var project = await context.Projects
             .Where(p => p.IsArchived == isArchived && p.PrimaryEditorId == UserId || p.SecondaryEditorId == UserId)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
             .ToListAsync();
-        if (project == null)
-            return null;
-        return project;
+            if (project == null)
+                return null;
+            return project;
+        }
     }
     public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId)
     {
-        var project = await _context.Projects
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var project = await context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
             .ToListAsync();
-        if (project == null)
-            return null;
-        return project;
+            if (project == null)
+                return null;
+            return project;
+        }
     }
-
+    // Lock to handle concurrency issue
+    private static readonly object _orderLock = new object();
     public async Task AddProjectAsync(Project project)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == project.ClientId);
-
-        if (user == null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            // Handle the case where the client does not exist.
-            throw new Exception("Client not found.");
-        }
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == project.ClientId);
 
-        // If the project doesn't already exist, add it
-        var existingProject = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
+            if (user == null)
+            {
+                // Handle the case where the client does not exist.
+                throw new Exception("Client not found.");
+            }
 
-        if (existingProject == null)
-        {
-            // Set the ClientId for the project, though it's already set in the project, it's good to confirm
-            project.ClientId = user.Id;  // Ensure ClientId is assigned to the project
+            // If the project doesn't already exist
+            var existingProject = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
 
-            // Add the project to the context and save changes
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            // Handle the case where the project already exists (optional)
-            throw new Exception("Project already exists.");
+            if (existingProject == null)
+            {
+                project.ClientId = user.Id;  // Ensure ClientId is assigned to the project
+                                             // Ensure that no two projects if created concurrently will have the same InternalOrder
+                lock (_orderLock)
+                {
+                    _logger.LogInformation("Lock acquired for InternalOrder assignment.");
+                    var highestOrder = context.Projects
+                        .Where(p => !p.IsArchived)
+                        .Max(p => (int?) p.InternalOrder) ?? 0;
+
+                    project.InternalOrder = highestOrder + 1;
+                    _logger.LogInformation("Lock released for InternalOrder assignment.");
+
+                }
+                // Add the project to the context and save changes
+                context.Projects.Add(project);
+                await context.SaveChangesAsync();
+
+            }
+            else
+            {
+                // Handle the case where the project already exists (optional)
+                throw new Exception("Project already exists.");
+            }
         }
     }
 
     public async Task AssignProjectToClientAsync(int projectId, string newUserId)
     {
-        // Make sure the project exists in the database
-        var _project = await _context.Projects.FindAsync(projectId);
-
-        // Ensure the new client (user) exists
-        var client = await _context.Users.FirstOrDefaultAsync(u => u.Id == newUserId);
-
-        if (client != null && _project != null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            // Update the ClientId property to the new client's ID
-            _project.ClientId = client.Id;
-            // Currently when the project is assigned to a new user. It updates the shoot date by the weeks to due date default from THE DATE OF SHOOT DATE.
-            _project.DueDate = _project.ShootDate.Value.AddDays((double) client.WeeksToDueDateDefault! * 7);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ArgumentException("Project or client not found.");
+            var _project = await context.Projects.FindAsync(projectId);
+
+            // Ensure the new client (user) exists
+            var client = await context.Users.FirstOrDefaultAsync(u => u.Id == newUserId);
+
+            if (client != null && _project != null)
+            {
+
+                // Update the ClientId property to the new client's ID
+                _project.ClientId = client.Id;
+
+                _project.DueDate = _project.ShootDate.Value.AddDays((double) client.WeeksToDueDateDefault! * 7);
+
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Project or client not found.");
+            }
         }
     }
 
     public async Task AssignProjectToPrimaryEditorAsync(int projectId, string userId)
     {
-        var _project = await _context.Projects.FindAsync(projectId);
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-        if (user != null && _project != null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _project.PrimaryEditorId = userId;
-            _context.Projects.Update(_project);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ArgumentException("Project/User not found");
+            var _project = await context.Projects.FindAsync(projectId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null && _project != null)
+            {
+                _project.PrimaryEditorId = userId;
+                context.Projects.Update(_project);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Project/User not found");
+            }
         }
     }
 
     public async Task AssignProjectToSecondaryEditorAsync(string userId, string projectId)
     {
-        var _project = await _context.Projects.FindAsync(projectId);
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-        if (user != null && _project != null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _project.SecondaryEditorId = userId;
-            _context.Projects.Update(_project);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ArgumentException("Project/User not found");
+            var _project = await context.Projects.FindAsync(projectId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null && _project != null)
+            {
+                _project.SecondaryEditorId = userId;
+                context.Projects.Update(_project);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Project/User not found");
+            }
         }
     }
 
-
     public async Task UpdateProjectAsync(Project project)
     {
-        var x = await _context.Projects.FindAsync(project.ProjectId);
-        if (x != null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _context.Projects.Update(project);
-            await _context.SaveChangesAsync();
+            var _project = await context.Projects.FindAsync(project.ProjectId);
+            if (_project != null)
+            {
+                if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
+                {
+                    await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value);
+                }
+                context.Projects.Update(project);
+
+                await context.SaveChangesAsync();
+            }
         }
     }
     public async Task UpdateProjectBillableHoursAsync(Project project)
     {
-        var _project = await _context.Projects.FindAsync(project.ProjectId);
-        if (_project != null)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _project.BillableHours = project.BillableHours;
-            _context.Projects.Update(_project);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ArgumentException("Project not found");
+            var _project = await context.Projects.FindAsync(project.ProjectId);
+            if (_project != null)
+            {
+                _project.BillableHours = project.BillableHours;
+                context.Projects.Update(_project);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Project not found");
+            }
         }
     }
 
     public async Task DeleteProjectAsync(int projectId)
     {
-        var project = await _context.Projects.FindAsync(projectId);
-        if (project.ProjectId == projectId)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
+            var project = await context.Projects.FindAsync(projectId);
+            if (project.ProjectId == projectId)
+            {
+                context.Projects.Remove(project);
+                await context.SaveChangesAsync();
+            }
         }
     }
 
     public async Task ArchiveProjectAsync(int projectId, string reason)
     {
-        var project = await _context.Projects.FindAsync(projectId);
-        if (project != null && !project.IsArchived)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            project.IsArchived = true;
-            project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
-            await _context.SaveChangesAsync();
+            var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            if (project != null && !project.IsArchived)
+            {
+                project.IsArchived = true;
+                project.InternalOrder = null;
+                project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
+                await context.SaveChangesAsync();
+            }
         }
     }
 
     public async Task UnarchiveProjectAsync(int projectId)
     {
-        var project = await _context.Projects.FindAsync(projectId);
-        if (project != null && project.IsArchived)
+        using (var context = _contextFactory.CreateDbContext())
         {
-            await DeleteArchiveAsync(projectId);
-            project.IsArchived = false;
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ArgumentException("Project or client not found.");
+            var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            if (project != null && project.IsArchived)
+            {
+                await DeleteArchiveAsync(projectId);
+                lock (_orderLock)
+                {
+                    _logger.LogInformation("Lock acquired for InternalOrder assignment.");
+                    var highestOrder = context.Projects
+                        .Where(p => !p.IsArchived)
+                        .Max(p => (int?) p.InternalOrder) ?? 0;
+
+                    project.InternalOrder = highestOrder + 1;
+                    _logger.LogInformation("Lock released for InternalOrder assignment.");
+
+                }
+                project.IsArchived = false;
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException("Project or client not found.");
+            }
         }
     }
 
     public async Task DeleteArchiveAsync(int projectId)
     {
-        var archiveRecord = await _context.Archives
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var archiveRecord = await context.Archives
             .FirstOrDefaultAsync(a => a.ProjectId == projectId);
 
-        if (archiveRecord != null)
+            if (archiveRecord != null)
+            {
+                context.Archives.Remove(archiveRecord);
+                await context.SaveChangesAsync();
+            }
+        }
+    }
+
+    public async Task ReorderProjectAsync(int projectId, int? newOrder)
+    {
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _context.Archives.Remove(archiveRecord);
-            await _context.SaveChangesAsync();
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
+                if (project == null)
+                    return;
+
+                // Handle case where the project has been archived (InternalOrder = null)
+                if (newOrder == null)
+                {
+                    // Reorder all non-archived projects starting from 1
+                    var projectsToReorder = await context.Projects
+                        .AsTracking()
+                        .Where(p => p.IsArchived == false)
+                        .OrderBy(p => p.InternalOrder)
+                        .ToListAsync();
+
+                    int order = 1;  // Start re-ordering from 1
+                    foreach (var p in projectsToReorder)
+                    {
+                        p.InternalOrder = order++;
+                    }
+
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return; // Exit since reordering is complete
+                }
+
+                int? oldOrder = project.InternalOrder;
+                if (oldOrder.HasValue)
+                {
+                    if (newOrder < oldOrder)
+                    {
+                        // Move upward: Increment other projects between newOrder and oldOrder
+                        await context.Projects
+                            .AsTracking()
+                            .Where(p => p.InternalOrder >= newOrder && p.InternalOrder < oldOrder && p.IsArchived == false)
+                            .ForEachAsync(p => p.InternalOrder++);
+                    }
+                    else if (newOrder > oldOrder)
+                    {
+                        // Move downward: Decrement other projects between oldOrder and newOrder
+                        await context.Projects
+                            .AsTracking()
+                            .Where(p => p.InternalOrder > oldOrder && p.InternalOrder <= newOrder && p.IsArchived == false)
+                            .ForEachAsync(p => p.InternalOrder--);
+                    }
+                }
+
+                // Assign the new order to the current project
+                project.InternalOrder = newOrder;
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                // Rollback the transaction in case of an error
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }
