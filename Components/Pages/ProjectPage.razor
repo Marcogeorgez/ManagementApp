@@ -2,10 +2,11 @@
 @using System.Text.Json
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 @inject UserServices UserServices
 @inject ProjectService projectServices
 
-<MudDataGrid T="Project" Items="@projects" SortMode="SortMode.Single" 
+<MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ApplyDropClassesOnDragStarted="true"
@@ -44,14 +45,14 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
         {
-                    <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName"
+                    <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName" 
                         Hideable="true" Groupable="true" CellStyle="text-align:center;" 
                         Editable=false Required=false >
                         <GroupTemplate>
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
                         </GroupTemplate>
                 <EditTemplate>
-                    @if (Clients != null && Clients.Any())
+                    @if (Clients != null && Clients.Any() && _isAdminView)
                     {
                         <MudSelect T="string"
                                    AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
@@ -67,10 +68,14 @@
                             }
                         </MudSelect>
                     }
+                    else
+                    {
+                        <MudText Style="display:none;" />
+                    }
                 </EditTemplate>
                     </PropertyColumn>
         }
-                @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
+        @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
         {
                     <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" 
                         Groupable="true" Editable=false Required=false  CellStyle="text-align:center;" >
@@ -78,7 +83,7 @@
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
                     </GroupTemplate>   
                     <EditTemplate>
-                    @if (Editors != null && Editors.Any()){
+                    @if (Editors != null && Editors.Any() && _isAdminView){
                     <MudSelect T="string"
                                AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
                                Class="d-flex justify-center mud-width-full py-2"
@@ -93,15 +98,19 @@
                                 }
                         </MudSelect>
                     }
+                    else
+                    {
+                        <MudText Style="display:none;" />
+                    }
                     </EditTemplate>
                     </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
         {
             <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" 
-                Groupable="false" Editable=false Required=false CellStyle="text-align:center;">
+                Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                 <EditTemplate>
-                    @if (Editors != null && Editors.Any())
+                    @if (Editors != null && Editors.Any() && _isAdminView)
                     {
                         <MudSelect T="string"
                                    AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
@@ -117,6 +126,11 @@
                             }
                         </MudSelect>
                     }
+                    else
+                    {
+                        <MudText Style="display:none;" />
+                    }
+
                 </EditTemplate>
             </PropertyColumn>
         }
@@ -135,8 +149,8 @@
                         HelperText="Click to expand"
                         Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))" 
                         ReadOnly="true"
-                        Immediate="true" Adornment="Adornment.End" 
-                        AdornmentIcon="@Icons.Material.Filled.Fullscreen"
+                        Immediate="true" Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                         AutoGrow=true
                         MaxLines="4"
                         OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
@@ -199,15 +213,18 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
         {
-            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" Groupable="true">
+            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" 
+                Groupable="true" Editable=false CellStyle="text-align:center;">
                         <EditTemplate Context="context">
                             @* If changed from here I will later need of a way to change due date*@
+                            @if(_isAdminView || _isClientView){
                             <MudDatePicker Label="Shoot Date"
                                            Variant="Variant.Outlined"
                                            Date="@context.Item.ShootDate"
                                            DateChanged="@(date => context.Item.ShootDate = date)"
                                            Class="mt-3"
                                            Required="true" />
+                            }
                         </EditTemplate>
                 <GroupTemplate>
                     <GroupTemplateComponent TItem="Project" Context="@context" Label="Shoot Date" />
@@ -216,14 +233,17 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
         {
-            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" Groupable="true" >
+            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center;"
+                Groupable="true" Editable=false >
                         <EditTemplate>
+                            @if(@_isAdminView){
                             <MudDatePicker Label="Due Date"
                                            Variant="Variant.Outlined"
                                            Class="mt-3"
                                            Date="@context.Item.DueDate"
                                            DateChanged="@(date => context.Item.DueDate = date)"
                                            Required="true" />
+                            }
                         </EditTemplate>
                 <GroupTemplate>
                     <GroupTemplateComponent TItem="Project" Context="@context" Label="Due Date" />
@@ -231,11 +251,12 @@
             </PropertyColumn>
 
         }
-
         @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
         {
-            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Groupable="true" >
+            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true"
+                CellStyle="text-align:center;" Groupable="true" Editable=false>
                 <EditTemplate Context="context">
+                    @if(@_isAdminView){
                     <MudDatePicker Required="true"
                         Label="Working Month"
                         Variant="Variant.Outlined"
@@ -244,6 +265,7 @@
                         DateFormat="yyyy/MM"
                         Date="@context.Item.WorkingMonth"
                         DateChanged="@(date => context.Item.WorkingMonth = date)" />
+                    }
                 </EditTemplate>
                 <GroupTemplate>
                     <GroupTemplateComponent TItem="Project" Context="@context" Label="Working Month" />
@@ -277,15 +299,56 @@
             </PropertyColumn>
                     
         }
+        @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
+        {
+            <PropertyColumn Property="x => x.FormatAdminStatus" Title="AdminStatus" Hideable="true" Groupable="true" CellStyle="text-align:center;">
+                <EditTemplate Context="context">
+                    <MudSelect T="AdminProjectStatus" Class="mt-3"
+                               Variant="Variant.Outlined"
+                               Label="Status"
+                               @bind-Value="context.Item.AdminStatus"
+                               Required="true">
+                        @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+                            {
+                            <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                            }
+                    </MudSelect>
+                </EditTemplate>
+                <GroupTemplate>
+                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Payment Status" />
+                </GroupTemplate>
+            </PropertyColumn>
+
+        }
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
         {           
             <PropertyColumn Property="x => x.BillableHours" Title="Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
             </PropertyColumn>
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
+        {
+            <PropertyColumn Property="x => x.ClientBillable" Title="Billable Client" Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
+        {
+            <PropertyColumn Property="x => x.EditorPaymentAmount" Title="Editor Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>            
         }
         @if (RoleBasedColumns[_currentRole].Contains("Actions"))
         {
             <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
                 <CellTemplate>
+                      <MudStack Spacing="0" Class="mb-1">
                         @if (_isArchived && _isAdminView)
                         {
                             <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
@@ -316,22 +379,36 @@
                                 Archive
                             </MudButton>
                         }
+                        @if (!_isArchived)
+                        {
+                            <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Info" Variant="Variant.Filled"
+                                       OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
+                        }
+                    </MudStack>
+
                         @if(_isAdminView || _isEditorView)
                         {
-                            <MudButton Color="Color.Success"
+                        <MudStack Spacing="0">
+                        <MudButton Color="Color.Success"
                                        Variant="Variant.Filled"
                                        Size="Size.Small"
                                        OnClick="@(() => TimeCalculator(DialogOptions, context.Item))"
                                        StartIcon="@Icons.Material.Filled.Edit"
                                        Class="mb-1">
-                                Time
-                            </MudButton>
+                                Billable
+                        </MudButton>
+                        <MudButton Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   Class="mb-1">
+                            Logging
+                        </MudButton>
+                        </MudStack>
                         }
-                        @if(!_isArchived){
-                    <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit" 
-                    Color="Color.Info" Variant="Variant.Filled"
-                    OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
-                        }
+
                 </CellTemplate>
             </TemplateColumn>
             }
@@ -349,20 +426,27 @@
 </MudDataGrid>
 <MudStack Spacing="0">
     <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-    <MudStack Row=true>
+    <MudStack Row=false>
     <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
     <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
     <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
     </MudStack>
 </MudStack>
 <div class="mb-4">
-@if(_isAdminView || _isEditorView){
+@if(_isAdminView){
         <MudButton Color="Color.Success"
                    Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.AddCircle"
-                   OnClick="@(() => AddProjectDialogAsync(DialogOptions))">
+                   OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mb-1">
             Add New Project
         </MudButton>
+        <MudSpacer></MudSpacer>
+        <MudTooltip Text=" Download Filtered As Csv">           
+        <MudButton OnClick="DownloadFilteredAsCsv"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv</MudButton>
+                   </MudTooltip>
 
 }
 else if (_isClientView)
@@ -377,8 +461,10 @@ else if (_isClientView)
 </div>
 
 @code {
+
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    private MudDataGrid<Project> _dataGrid;
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
     private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = true };
@@ -416,43 +502,46 @@ else if (_isClientView)
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status", "BillableHours", "Actions","Archive" } },
-        { "Editor", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","ClientName","PrimaryEditor","SecondaryEditor", "Actions"} },
+        { "Admin", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","BillableHours","ClientBillable","EditorBillable","Actions","Archive" } },
+        { "Editor", new List<string> { "Id", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","BillableHours","EditorBillable", "Actions"} },
         { "Client", new List<string> { "Id", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
     };
+    private Guid _gridKey = Guid.NewGuid();
 
-    private async Task ArchivedToggle()
-    {
-        _isArchived = !_isArchived;
-        await LoadProjects();
-    }
+
     private async Task AdminToggle()
     {
+        _gridKey = Guid.NewGuid();
         _isAdminView = !_isAdminView;
         _isClientView = false;
         _isEditorView = false;
         _currentRole = "Admin";
         await LoadProjects();
-        StateHasChanged();
     }
     private async Task EditorToggle()
     {
+        _gridKey = Guid.NewGuid();
         _isEditorView = !_isEditorView;
         _isClientView = false;
         _isAdminView = false;
         _currentRole = "Editor";
         await LoadProjects();
-        StateHasChanged();
         // await LoadProjectsForEditor(context.UserId)
     }
     private async Task ClientToggle()
     {
+        _gridKey = Guid.NewGuid();
         _isClientView = !_isClientView;
         _isAdminView = false;
         _isEditorView = false;
         _currentRole = "Client";
         await LoadProjects();
-        StateHasChanged();
+    }
+
+    private async Task ArchivedToggle()
+    {
+        _isArchived = !_isArchived;
+        await LoadProjects();
     }
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
@@ -576,11 +665,11 @@ else if (_isClientView)
         if (context is Project project)
         {
             project.Description = newDescription;
-            await projectServices.UpdateProjectAsync();
+            await projectServices.UpdateProjectAsync(project);
         }
     }
 
-    public async Task TimeCalculator(DialogOptions options, Project project)
+    private async Task TimeCalculator(DialogOptions options, Project project)
     {
         var dialogParameters = new DialogParameters<ProjectTotalHoursCalculatorDialog> {
             { nameof(ProjectTotalHoursCalculatorDialog.newProject), project }
@@ -598,47 +687,7 @@ else if (_isClientView)
             }
         }
     }
-    private Func<Project, string> _cellStyleFunc => x =>
-    {
-        string style = string.Empty;
 
-        switch (x.Status)
-        {
-            case ProjectStatus.Upcoming:
-                style += "background-color: var(--mud-palette-gray-dark);";
-                break;
-
-            case ProjectStatus.Scheduled:
-                style += "background-color: var(--mud-palette-info-lighten);";
-
-                break;
-            case ProjectStatus.Working:
-                style += "background-color: var(--mud-palette-info-darken);";
-                break;
-
-            case ProjectStatus.Delivered:
-                style += "background-color:  #53a653;";
-                //style += "background-color:  rgb(9,154,108);";
-                break;
-            case ProjectStatus.Review:
-                style += "background-color: var(--mud-palette-warning-lighten);";
-                break;
-
-            case ProjectStatus.Revision:
-                style += "background-color: var(--mud-palette-error);";
-                break;
-            case ProjectStatus.Paid:
-                style += "background-color: var(--mud-palette-success-darken);";
-                break;
-
-            default:
-                style += "background-color: transparent;";
-                break;
-        }
-        style += "color: rgba(255,255,255,1); text-align: center;";
-
-        return style;
-    };
     // Checks if there is changes between two projects in any property excluding the excluded.
     private bool HasNoSignificantChanges(Project original, Project modified, params string[] excludeProperties)
     {
@@ -660,6 +709,7 @@ else if (_isClientView)
         }
         return true;
     }
+
     Project beforeModification;
     void StartedEditingItem(Project project)
     {
@@ -677,7 +727,7 @@ else if (_isClientView)
             {
                 if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate") == false)
                 {
-                    await projectServices.UpdateProjectAsync();
+                    await projectServices.UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     LoadProjects();
                     StateHasChanged();
@@ -689,7 +739,7 @@ else if (_isClientView)
             }
             else if(_isAdminView)
             {
-                await projectServices.UpdateProjectAsync();
+                await projectServices.UpdateProjectAsync(project);
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
                 LoadProjects();
@@ -699,7 +749,7 @@ else if (_isClientView)
             {
                 if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
                 {
-                    await projectServices.UpdateProjectAsync();
+                    await projectServices.UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     LoadProjects();
                     StateHasChanged();
@@ -708,14 +758,156 @@ else if (_isClientView)
                 {
                     Snackbar.Add($"Detected unauthorized changes!", Severity.Error);
                 }
-
             }
 
         }
         catch(Exception ex)
         {
-                throw ex; 
+            throw ex; 
+        }        
+    }
+    private Func<Project, string> _cellStyleFunc => x =>
+    {
+        string style = string.Empty;
+
+        switch (x.Status)
+        {
+            case ProjectStatus.Upcoming:
+                style += "background-color: var(--mud-palette-gray-dark);";
+                break;
+
+            case ProjectStatus.Scheduled:
+                style += "background-color: var(--mud-palette-info-lighten);";
+
+                break;
+            case ProjectStatus.Working:
+                style += "background-color: var(--mud-palette-info-darken);";
+                break;
+
+            case ProjectStatus.Delivered:
+                style += "background-color:  #53a653;";
+                break;
+            case ProjectStatus.Review:
+                style += "background-color: var(--mud-palette-warning-lighten);";
+                break;
+
+            case ProjectStatus.Revision:
+                style += "background-color: var(--mud-palette-error);";
+                break;
+            case ProjectStatus.Paid:
+                style += "background-color: var(--mud-palette-success-darken);";
+                break;
+
+            default:
+                style += "background-color: transparent;";
+                break;
         }
-        
+        style += "color: rgba(255,255,255,1); text-align: center;";
+
+        return style;
+    };
+
+    // Downloading Filtered as CSV
+    private async Task DownloadFilteredAsCsv()
+    {
+        try
+        {
+            var parameters = new DialogParameters
+        {
+            { "Message", "Do you want to download the filtered CSV file?" },
+        };
+
+            var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirm Download", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                var filteredItems = _dataGrid.FilteredItems.ToList();
+                var csvContent = GenerateCsvContent(filteredItems);
+                var filename = $"Projects_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.csv";
+                await DownloadFile(filename, csvContent);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
+        }
+    }
+    private async Task DownloadFile(string filename, string content)
+    {
+        try
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+            await JSRuntime.InvokeVoidAsync(
+                "saveAsFile",
+                filename,
+                Convert.ToBase64String(bytes)
+            );
+            Snackbar.Add($"File has started downloading!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"File save error: {ex.Message}", Severity.Error);
+        }
+    }
+    private string GenerateCsvContent(List<Project> projects)
+    {
+        // Create CSV header
+        decimal total = 0;
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine(string.Join(",",
+            nameof(Project.ProjectName),
+            "Price"
+            ));
+
+
+        // Add data rows
+        foreach (var project in projects)
+        {
+            csv.AppendLine(string.Join(",",
+                EscapeCsvValue(project.ProjectName),
+                project.ClientBillable
+            ));
+            total += project.ClientBillable.Value;
+        }
+        csv.AppendLine();
+        csv.AppendLine(string.Join(",",
+            $"Total Price: {total}",
+        $" Date: {DateTime.Now:yyyy/MM/dd}"));
+        return csv.ToString();
+    }
+
+    private string EscapeCsvValue(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return "";
+
+        // Escape commas and quotes
+        value = value.Replace("\"", "\"\"");
+        if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+        {
+            value = $"\"{value}\"";
+        }
+        return value;
     }
 }
+<script>
+    window.saveAsFile = (filename, base64Content) => {
+        const byteCharacters = atob(base64Content);
+        const byteNumbers = new Array(byteCharacters.length);
+
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'text/csv' });
+
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+</script>
