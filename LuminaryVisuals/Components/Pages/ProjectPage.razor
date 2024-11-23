@@ -38,12 +38,40 @@
         {
             <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                            <CellTemplate>
+                    <div class="drag-handle"
+                         draggable="true"
+                         @ondragstart="@(() => HandleDragStart(context.Item))"
+                         @ondragover:preventDefault
+                         @ondragover="@(() => HandleDragOver(context.Item))"
+                         @ondrop:preventDefault
+                         @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
+                         @ondragenter="@(() => HandleDragEnter(context.Item))"
+                         @ondragleave="@(() => HandleDragLeave(context.Item))">
+                        <MudIcon Icon="@Icons.Material.Filled.DragHandle" Class="mr-2" />
+                        @context.Item.InternalOrder
+                    </div>
+                </CellTemplate>
                     </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
         {
             <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                <CellTemplate>
+                    <div class="drag-handle"
+                         draggable="true"
+                         @ondragstart="@(() => HandleDragStart(context.Item))"
+                         @ondragover:preventDefault
+                         @ondragover="@(() => HandleDragOver(context.Item))"
+                         @ondrop:preventDefault
+                         @ondrop="@(() => HandleDropForExternalOrder(context.Item))"
+                         @ondragenter="@(() => HandleDragEnter(context.Item))"
+                         @ondragleave="@(() => HandleDragLeave(context.Item))">
+                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="mr-2" />
+                        @context.Item.ExternalOrder
+                    </div>
+                </CellTemplate>
                     </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
@@ -914,7 +942,150 @@ else if (_isClientView)
         }
         return value;
     }
+
+
+    private List<Project> _Projects { get; set; } = new();
+    private Project draggedProject;
+    private Project dropTarget;
+    private bool isDragging;
+
+
+
+    private string GetRowClass(Project project, int rowNumber)
+    {
+        var classes = new List<string> { };
+
+        if (isDragging && dropTarget?.ProjectId == project.ProjectId)
+            classes.Add("drop-target");
+
+        if (draggedProject?.ProjectId == project.ProjectId)
+            classes.Add("being-dragged");
+
+        return string.Join(" ", classes);
+    }
+
+    private void HandleDragStart(Project project)
+    {
+        draggedProject = project;
+        isDragging = true;
+        StateHasChanged();
+    }
+
+    private void HandleDragOver(Project target)
+    {
+        if (draggedProject?.ProjectId == target.ProjectId)
+            return;
+    }
+
+    private void HandleDragEnter(Project target)
+    {
+        if (draggedProject?.ProjectId != target.ProjectId)
+        {
+            dropTarget = target;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleDragLeave(Project target)
+    {
+        if (dropTarget?.ProjectId == target.ProjectId)
+        {
+            dropTarget = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleDropForInternalOrder(Project targetProject)
+    {
+        try
+        {
+            if (draggedProject == null || draggedProject.ProjectId == targetProject.ProjectId)
+                return;
+
+            int? newOrder = targetProject.InternalOrder;
+            await projectServices.ReorderProjectAsync(draggedProject.ProjectId, newOrder);
+
+            Snackbar.Add($"Project: {draggedProject.ProjectName} has been moved to '{newOrder}' successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update project order", Severity.Error);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            // Reset state
+            isDragging = false;
+            draggedProject = null;
+            dropTarget = null;
+
+            await RefreshGridData();
+        }
+    }
+    private async Task HandleDropForExternalOrder(Project targetProject)
+    {
+        try
+        {
+            if (draggedProject == null || draggedProject.ProjectId == targetProject.ProjectId)
+                return;
+
+            int? newOrder = targetProject.ExternalOrder;
+            await projectServices.ExternalOrderAsync(draggedProject.ProjectId, newOrder);
+
+            Snackbar.Add($"Project: {draggedProject.ProjectName} has been moved to '{newOrder}' successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update project order", Severity.Error);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            // Reset state
+            isDragging = false;
+            draggedProject = null;
+            dropTarget = null;
+
+            await RefreshGridData();
+        }
+    }
+
+    private async Task RefreshGridData()
+    {
+        projects = ( await projectServices.GetProjectsAsync() ).ToList();
+        await LoadProjects();
+        StateHasChanged();
+    }
 }
+
+
+<style>
+    .cursor-move {
+        cursor: grab;
+    }
+    
+    .being-dragged {
+        opacity: 0.6;
+        background-color: var(--mud-palette-success);
+    }
+    
+    .drop-target {
+        border-top: 2px solid var(--mud-palette-primary);
+
+    }
+    
+    .drag-handle {
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        cursor: move;
+    }
+    
+    .drag-handle:hover {
+        background-color: var(--mud-palette-background-grey);
+        border-radius: 4px;
+    }
+</style>
 <script>
     window.saveAsFile = (filename, base64Content) => {
         const byteCharacters = atob(base64Content);
