@@ -799,24 +799,23 @@ else if (_isClientView)
 
             case ProjectStatus.Scheduled:
                 style += "background-color: var(--mud-palette-info-lighten);";
-
                 break;
             case ProjectStatus.Ready_To_Edit:
                 style += "background-color: var(--mud-palette-error);";
                 break;
             case ProjectStatus.Working:
-                style += "background-color: var(--mud-palette-info-darken);";
+                style += "background-color: #6732cf;";
                 break;
 
             case ProjectStatus.Delivered:
-                style += "background-color:  #53a653;";
+                style += "background-color:  var(--mud-palette-success);";
                 break;
             case ProjectStatus.Review:
                 style += "background-color: var(--mud-palette-warning-lighten);";
                 break;
 
             case ProjectStatus.Revision:
-                style += "background-color: var(--mud-palette-error);";
+                style += "background-color: var(--mud-palette-error-lighten);";
                 break;
             case ProjectStatus.Paid:
                 style += "background-color: var(--mud-palette-success-darken);";
@@ -826,7 +825,7 @@ else if (_isClientView)
                 style += "background-color: transparent;";
                 break;
         }
-        style += "color: rgba(255,255,255,1); text-align: center;";
+        style += "color: rgba(255,255,255,1); text-align: center; ";
 
         return style;
     };
@@ -890,9 +889,10 @@ else if (_isClientView)
         {
             csv.AppendLine(string.Join(",",
                 EscapeCsvValue(project.ProjectName),
-                project.ClientBillable
+                project.ClientBillableHours
             ));
-            total += project.ClientBillable.Value;
+            if(project.ClientBillableHours != null )
+                total += project.ClientBillableHours.Value;
         }
         csv.AppendLine();
         csv.AppendLine(string.Join(",",
