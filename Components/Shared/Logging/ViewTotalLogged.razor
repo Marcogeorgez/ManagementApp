@@ -1,0 +1,84 @@
+﻿@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject LoggingHours loggingHours
+
+<MudDialog>
+    <DialogContent>
+        @if(loggedHours.Count == 0)
+            {
+                <MudText> Currently, There is nothing logged</MudText>
+            }
+            else
+            {
+            <MudStack Row="true" Spacing="2">
+                <MudDataGrid T="EditorLoggingHours" Items="loggedHours" Dense="true" Hover="true" Bordered="true" ReadOnly=false
+                             EditMode="DataGridEditMode.Form" 
+                             EditTrigger="DataGridEditTrigger.Manual" StartedEditingItem="@StartedEditingItem"
+                             CanceledEditingItem="@CanceledEditingItem"
+                             CommittedItemChanges="@CommittedItemChanges">
+                    <Columns>
+                        <PropertyColumn Property="x => x.FormattedDate" Title="Worked Date" DragAndDropEnabled="false" Groupable="false"  CellStyle="text-align:center;">
+                            <EditTemplate>
+                                <MudDatePicker Label="Date"
+                                               Variant="Variant.Outlined"
+                                               Date="@context.Item.Date"
+                                               DateChanged="@(date => context.Item.Date = date.Value)"
+                                               Class="mt-3"
+                                               Required="true" />
+                            </EditTemplate>    
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.EditorWorkingHours" Title="Logged Hours" DragAndDropEnabled="false" Groupable="false" CellStyle="text-align:center;" />
+                        <TemplateColumn  CellClass="d-flex justify-end">
+                            <CellTemplate>
+                                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+            </MudDataGrid>
+                </MudStack>
+
+                <MudText Typo="Typo.h6" Class="mt-5 mb-2"Align="Align.Center">Total hours worked: @loggedHours.Sum(p => p.EditorWorkingHours)</MudText>
+
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudStack Row="true" Spacing="4" Class="mt-4 ">
+            <MudButton OnClick="@Close" Class="rounded-pill" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
+            <MudButton OnClick="@Save" Class="rounded-pill" Color="Color.Success" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project Project { get; set; } = new Project();
+    List<EditorLoggingHours> loggedHours = new();
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch the logged hours when the dialog is initialized.
+        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId);
+
+    }
+    void StartedEditingItem(EditorLoggingHours editorLoggingHours)
+    {
+        Console.WriteLine("Edit button clicked");
+    }
+    void CanceledEditingItem(EditorLoggingHours editorLoggingHours)
+    {
+    }
+    private async Task CommittedItemChanges(EditorLoggingHours editorLoggingHours)
+    {
+        await loggingHours.UpdateAsync(editorLoggingHours);
+        Snackbar.Add("It have been updated successfully.", Severity.Success);
+        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId);
+    }
+    private void Save()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    private void Close()
+    {
+        MudDialog.Close();
+    }
+}
