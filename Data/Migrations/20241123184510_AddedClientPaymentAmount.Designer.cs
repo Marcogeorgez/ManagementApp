@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241123184510_AddedClientPaymentAmount")]
+    partial class AddedClientPaymentAmount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,7 +147,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("CalculationParameterId");
 
-                    b.ToTable("CalculationOption", (string)null);
+                    b.ToTable("CalculationOption");
 
                     b.HasData(
                         new
@@ -272,7 +275,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CalculationParameter", (string)null);
+                    b.ToTable("CalculationParameter");
 
                     b.HasData(
                         new
@@ -481,7 +484,7 @@ namespace LuminaryVisuals.Migrations
                     b.HasIndex("UserId", "ProjectId", "Date")
                         .IsUnique();
 
-                    b.ToTable("EditorLoggingHours", (string)null);
+                    b.ToTable("EditorLoggingHours");
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
@@ -600,7 +603,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("Settings", (string)null);
+                    b.ToTable("Settings");
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserNote", b =>
@@ -633,7 +636,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("TargetUserId");
 
-                    b.ToTable("UserNote", (string)null);
+                    b.ToTable("UserNote");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

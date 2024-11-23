@@ -22,6 +22,7 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             var projects = await context.Projects
+                .AsTracking()
                 .Where(p => p.IsArchived == isArchived)
                 .Include(p => p.Archive)
                 .Include(p => p.Client)
@@ -54,14 +55,17 @@ public class ProjectService
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                     ? userNames[project.SecondaryEditorId]!
                     : "No Editor Assigned";
-                if (project.BillableHours != null && project.Client.HourlyRate.Value != null)
+                if (project.ClientBillableHours != null && project.Client.HourlyRate.Value != null && project.PrimaryEditor != null)
                 {
-                    project.ClientBillable = project.Client.HourlyRate.Value * project.BillableHours;
+                    project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
                     project.EditorPaymentAmount = project.PrimaryEditor.HourlyRate * project.BillableHours;
+
+                    context.Entry(project).Property(p => p.ClientBillableAmount).IsModified = true;
+                    context.Entry(project).Property(p => p.EditorPaymentAmount).IsModified = true;
                 }
 
             }
-
+            await context.SaveChangesAsync();
             return projects;
         }
     }
@@ -246,10 +250,13 @@ public class ProjectService
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var _project = await context.Projects.FindAsync(project.ProjectId);
+            var _project = await context.Projects
+                .Include(p => p.Client)
+                .FirstAsync(p => p.ProjectId == project.ProjectId);
             if (_project != null)
             {
-                _project.BillableHours = project.BillableHours;
+                _project.ClientBillableHours = project.ClientBillableHours;
+                _project.ClientBillableAmount = (project.Client.HourlyRate ?? 0)* project.ClientBillableHours;
                 context.Projects.Update(_project);
                 await context.SaveChangesAsync();
             }
@@ -406,7 +413,7 @@ public class ProjectService
             }
         }
     }
-    private async Task ExternalOrderAsync(int projectId, int? newOrder)
+    public async Task ExternalOrderAsync(int projectId, int? newOrder)
     {
         using (var context = _contextFactory.CreateDbContext())
         {

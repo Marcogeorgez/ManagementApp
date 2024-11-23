@@ -65,23 +65,14 @@ public class Project
     [Display(Name = "Working Month")]
     public DateTime? WorkingMonth { get; set; }     
     public decimal? BillableHours { get; set; }
-    public decimal? ClientBillable { get; set; }
+    public decimal? ClientBillableHours { get; set; }
+    public decimal? ClientBillableAmount { get; set; }
 
-    public decimal? EditorWorkingHours { get; set; }
 
     [Column(TypeName = "decimal(5,2)")]
     public decimal? EditorOvertime { get; set; }
-
-    [Column(TypeName = "decimal(10,2)")]
-    [Display(Name = "Editor Payment Amount")]
     public decimal? EditorPaymentAmount { get; set; }
-
-    [DataType(DataType.Date)]
-    [Display(Name = "Date Paid")]
-    public DateTime? EditorDatePaid { get; set; }
-
     public bool isEditorPaid { get; set; } = false;
-
     [Required]
     public bool IsArchived { get; set; } = false;
 
@@ -104,15 +95,6 @@ public class Project
     public virtual ApplicationUser? SecondaryEditor { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual Archive Archive { get; set; }
-
-
-
-
-
-
-
-
-
 
 
 
