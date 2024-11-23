@@ -1,5 +1,6 @@
 ﻿@page "/project"
 @using System.Text.Json
+@using LuminaryVisuals.Components.Shared.Logging
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
@@ -20,7 +21,9 @@
     DragIndicatorSize="Size.Small"
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
-    CommittedItemChanges="@CommittedItemChanges">
+    CommittedItemChanges="@CommittedItemChanges"
+    RowClassFunc="@GetRowClass"
+    >
 
     <ToolBarContent>
             <MudSpacer />
@@ -30,6 +33,7 @@
         </MudHidden>
     </ColGroup>
     <Columns>
+
         @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
         {
             <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
@@ -325,7 +329,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
         {           
-            <PropertyColumn Property="x => x.BillableHours" Title="Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.BillableHours" Title="Editor Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -333,15 +337,15 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <PropertyColumn Property="x => x.ClientBillable" Title="Billable Client" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
         }
-        @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
+        @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <PropertyColumn Property="x => x.EditorPaymentAmount" Title="Editor Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -357,7 +361,7 @@
                             <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
                                         Variant="Variant.Filled"
                                         Size="Size.Small"
-                                        OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(DialogOptions, context.Item))"
+                                        OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(context.Item))"
                                         StartIcon="@Icons.Material.Filled.Archive"
                                         Class="mb-1">
                                 @(context.Item.IsArchived ? "Unarchive" : "Archive")
@@ -376,7 +380,7 @@
                             <MudButton Color="Color.Warning"
                                         Variant="Variant.Filled"
                                         Size="Size.Small"
-                                        OnClick="@(() => ArchiveProject(DialogOptions, context.Item))"
+                                        OnClick="@(() => ArchiveProject(context.Item))"
                                         StartIcon="@Icons.Material.Filled.Archive"
                                         Class="mb-1">
                                 Archive
@@ -396,7 +400,7 @@
                         <MudButton Color="Color.Success"
                                        Variant="Variant.Filled"
                                        Size="Size.Small"
-                                       OnClick="@(() => TimeCalculator(DialogOptions, context.Item))"
+                                       OnClick="@(() => TimeCalculator(context.Item))"
                                        StartIcon="@Icons.Material.Filled.Edit"
                                        Class="mb-1">
                                 Billable
@@ -404,7 +408,7 @@
                         <MudButton Color="Color.Success"
                                    Variant="Variant.Filled"
                                    Size="Size.Small"
-                                   
+                                   OnClick="@(() => Logging(context.Item))"
                                    StartIcon="@Icons.Material.Filled.Edit"
                                    Class="mb-1">
                             Logging
@@ -628,10 +632,10 @@ else if (_isClientView)
         StateHasChanged();
     }
     // Archiving and Unarchiving the project
-    public async Task ArchiveProject(DialogOptions options,Project project)
+    public async Task ArchiveProject(Project project)
     {
         var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
-        var dialog = await DialogService.ShowAsync<ArchivingDialog>("Archive Project", dialogParameters, options);
+        var dialog = await DialogService.ShowAsync<ArchivingDialog>("Archive Project", dialogParameters);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
@@ -673,13 +677,13 @@ else if (_isClientView)
             await projectServices.UpdateProjectAsync(project);
         }
     }
-
-    private async Task TimeCalculator(DialogOptions options, Project project)
+    // Calculates Total Client Billable hours based on a formula.
+    private async Task TimeCalculator( Project project)
     {
         var dialogParameters = new DialogParameters<ProjectTotalHoursCalculatorDialog> {
             { nameof(ProjectTotalHoursCalculatorDialog.newProject), project }
         };
-        var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters, options);
+        var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
@@ -688,9 +692,20 @@ else if (_isClientView)
             {
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
                 Snackbar.Add($"Successfully updated the billable hours to {_project.BillableHours} of project", Severity.Info);
-                LoadProjects();
+                await LoadProjects();
             }
         }
+    }
+
+    private async Task Logging(Project project)
+    {
+        var dialogParameters = new DialogParameters<LoggingDialog> {
+            { nameof(LoggingDialog.currentProject), project }
+        };
+        var dialog = await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
+        var result = await dialog.Result;
+        await LoadProjects();
+
     }
 
     // Checks if there is changes between two projects in any property excluding the excluded.
@@ -779,12 +794,15 @@ else if (_isClientView)
         switch (x.Status)
         {
             case ProjectStatus.Upcoming:
-                style += "background-color: var(--mud-palette-gray-dark);";
+                style += "background-color: #9999FF;";
                 break;
 
             case ProjectStatus.Scheduled:
                 style += "background-color: var(--mud-palette-info-lighten);";
 
+                break;
+            case ProjectStatus.Ready_To_Edit:
+                style += "background-color: var(--mud-palette-error);";
                 break;
             case ProjectStatus.Working:
                 style += "background-color: var(--mud-palette-info-darken);";
