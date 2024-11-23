@@ -34,6 +34,7 @@ builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>(
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<UserNoteService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<LoggingHours>();
 builder.Services.AddScoped<SettingService>();
 builder.Services.AddHttpClient();
 // Google Authentication 
