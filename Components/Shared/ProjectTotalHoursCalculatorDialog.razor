@@ -1,7 +1,7 @@
 ﻿@using LuminaryVisuals.Data
 @using LuminaryVisuals.Data.Entities
 @using MudBlazor
-@inject ApplicationDbContext context
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 
 <MudDialog>
     <DialogContent >
@@ -72,16 +72,7 @@
                           Variant=Variant.Outlined
                           Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="6">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                            @bind-Value="MiscMinutes"
-                            Label="Misc in Minutes"
-                            Adornment="Adornment.End"
-                            AdornmentText="min"
-                            Variant=Variant.Outlined
-                            Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
-        <MudItem xs="6">
+        <MudItem xs="12">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                           @bind-Value="prepartsDuration"
                           Label="Pre parts Duration Hours"
@@ -183,7 +174,6 @@
     private int _cameraNum;
     private decimal footageSize;
     private decimal Misc;
-    private decimal MiscMinutes;
     private decimal prepartsDuration;
     private decimal prepartsDurationMinutes;
     private decimal documentryMulticameraDuration;
@@ -197,17 +187,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        groupedOptions = await context.CalculationOption
-            .GroupBy(co => co.CalculationParameterId)
-            .Select(group => new GroupedOptionsDto
-                {
-                    CalculationParameterId = group.Key,
-                    Options = group.Select(co => new OptionDto { OptionName = co.OptionName, Multiplier = co.Multiplier }).ToList()
-                })
-            .ToListAsync();
+        using (var context = DbFactory.CreateDbContext())
+    {
+            groupedOptions = await context.CalculationOption
+                .GroupBy(co => co.CalculationParameterId)
+                .Select(group => new GroupedOptionsDto
+                    {
+                        CalculationParameterId = group.Key,
+                        Options = group.Select(co => new OptionDto { OptionName = co.OptionName, Multiplier = co.Multiplier }).ToList()
+                    })
+                .ToListAsync();
 
-        selectedMultipliers = groupedOptions.Select(g => g.Options.First().Multiplier)
-        .ToList();
+            selectedMultipliers = groupedOptions.Select(g => g.Options.First().Multiplier)
+            .ToList();
+        }
     }
     private void CalculateBillableHours()
     {
@@ -217,7 +210,7 @@
         decimal? resolution = selectedMultipliers[2];
         decimal? footageQuality = selectedMultipliers[3];
         decimal? _footageSize = footageSize;
-        decimal? _Misc = ( Misc * 60 ) + MiscMinutes; // Calculate it in minutes
+        decimal? _Misc = ( Misc * 60 ); // Calculate it in minutes
         decimal? _prepartsDuration = ( prepartsDuration * 60 ) + prepartsDurationMinutes;// Calculate it in minutes
         decimal? _documentryMulticameraDuration = ( documentryMulticameraDuration * 60 ) + documentryMulticameraDurationMinutes; // Calculate it in minutes
         decimal? _hightlightDuration = hightlightDuration + (hightlightDurationMinutes / 60); // Keep it in hours
@@ -306,7 +299,7 @@
         await form.Validate();
         if (form.IsValid)
         {
-            newProject.BillableHours = _total;
+            newProject.ClientBillableHours = _total;
             MudDialog.Close(DialogResult.Ok(newProject)); 
         }
         else
