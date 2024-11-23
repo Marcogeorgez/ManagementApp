@@ -1,5 +1,5 @@
 ﻿@using LuminaryVisuals.Data
-@inject ApplicationDbContext context
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ISnackbar Snackbar
 
 
@@ -286,7 +286,7 @@
     {
         preferences.UpdatedAt = DateTime.UtcNow;
         preferences.UserId = userId;
-
+        using var context = DbFactory.CreateDbContext();
         if (preferences.Id == 0)
         {
             // New preferences
@@ -303,6 +303,7 @@
     }
     private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
     {
+        using var context = DbFactory.CreateDbContext();
         if(_userId != null)
         {
             preferences = await context.ClientEditingGuidelines
