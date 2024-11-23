@@ -1,0 +1,78 @@
+﻿@inject IDialogService DialogService
+@inject LoggingHours loggingHours
+@inject ISnackbar Snackbar
+
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Row="true" Spacing="2">
+            <MudText Typo="Typo.h6">Add Logging Hours</MudText>
+
+            <MudTextField @bind-Value="LoggedHours" Label="Hours Worked" Placeholder="Enter hours"
+                          Adornment="Adornment.Start" AdornmentText="Hrs"
+                          Variant="Variant.Outlined" Immediate="true" />
+
+            <MudDatePicker @bind-Date="SelectedDate" Label="Date" Variant="Variant.Outlined" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudStack Row="true" Spacing="4" Class="mb-4 ">
+        <MudButton OnClick="@Close" Class="rounded-pill" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Save" Class="rounded-pill" Color="Color.Success" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project Project { get; set; } = new Project();
+    private decimal LoggedHours; 
+    private DateTime? SelectedDate;
+    private async Task Save()
+    {
+        if (LoggedHours <= 0 || SelectedDate == null)
+        {
+            Snackbar.Add("Please enter valid hours and a date.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            if (Project.PrimaryEditorId == null && Project.SecondaryEditorId == null)
+            {
+                Snackbar.Add($"Cannot Add Logging hours to a Project which doesn't have an Editor !!!", Severity.Error);
+                MudDialog.Close();
+            }
+            else
+            {
+                var newEntry = new EditorLoggingHours
+                    {
+                        UserId = Project.PrimaryEditorId,
+                        ProjectId = Project.ProjectId,
+                        Date = SelectedDate.Value,
+                        EditorWorkingHours = LoggedHours
+                    };
+
+                // Save to the database.
+                var isSuccessful = await loggingHours.CreateAsync(newEntry);
+                if (!isSuccessful)
+                    Snackbar.Add("Couldn't Log hours. Check if the Date is already logged!!", Severity.Error);
+                else
+                {
+                    Snackbar.Add("Hours added successfully.", Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to save hours: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Close()
+    {
+        MudDialog.Close();
+    }
+}
