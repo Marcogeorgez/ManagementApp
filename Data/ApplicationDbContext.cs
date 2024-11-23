@@ -18,6 +18,7 @@ namespace LuminaryVisuals.Data
         public DbSet<CalculationParameter> CalculationParameter { get; set; }
         public DbSet<CalculationOption> CalculationOption { get; set; }
         public DbSet<ClientEditingGuidelines> ClientEditingGuidelines { get; set; }
+        public DbSet<EditorLoggingHours> EditorLoggingHours { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -106,7 +107,20 @@ namespace LuminaryVisuals.Data
                       .HasForeignKey(un => un.CreatedByUserId)
                       .OnDelete(DeleteBehavior.SetNull);
 
+
             });
+            builder.Entity<EditorLoggingHours>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.ProjectId, e.Date })
+                .IsUnique();
+
+                entity.Property(e => e.EditorWorkingHours)
+                .HasPrecision(5, 2);
+
+                entity.Property(e => e.Date)
+                .HasColumnType("date");
+            });
+
 
             builder.Entity<ClientEditingGuidelines>(entity =>
             {
@@ -122,6 +136,7 @@ namespace LuminaryVisuals.Data
                     .HasForeignKey(e => e.UserId) 
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
 
             // Seed Parameters
             builder.Entity<CalculationParameter>().HasData(
