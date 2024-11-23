@@ -6,3 +6,7 @@
 /.vs
 /obj
 /ProjectStatus.md
+/LuminaryVisuals/bin/Debug/net8.0
+/LuminaryVisuals/Documentation
+/LuminaryVisuals/obj
+/LuminaryVisuals/bin/Release/net8.0

@@ -120,7 +120,7 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.Date)
                 .HasColumnType("date");
             });
-
+                
 
             builder.Entity<ClientEditingGuidelines>(entity =>
             {

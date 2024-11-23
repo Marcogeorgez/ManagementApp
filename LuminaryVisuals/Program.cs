@@ -12,15 +12,31 @@ using MudBlazor.Services;
 using MudBlazor;
 
 var builder = WebApplication.CreateBuilder(args);
+string? connectionString = "";
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};Port={uri.Port};SSL Mode=Require;Trust Server Certificate=true;";
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+}
+else
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+}
 
 // Added services to the container.
 builder.Services.AddMudServices(config =>
-{
-    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
-    config.SnackbarConfiguration.PreventDuplicates = false;
-    config.SnackbarConfiguration.NewestOnTop = false;
-    config.SnackbarConfiguration.ShowCloseIcon = true;
-});
+    {
+        config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
+        config.SnackbarConfiguration.PreventDuplicates = false;
+        config.SnackbarConfiguration.NewestOnTop = false;
+        config.SnackbarConfiguration.ShowCloseIcon = true;
+    });
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCascadingAuthenticationState();
@@ -40,11 +56,10 @@ builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 {
-    var clientId = builder.Configuration["Authentication:Google:ClientId"]
+    var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")
         ?? throw new InvalidOperationException("Google ClientId not found in configuration.");
-    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
+    var clientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
         ?? throw new InvalidOperationException("Google ClientSecret not found in configuration.");
-
     googleOptions.ClientId = clientId;
     googleOptions.ClientSecret = clientSecret;
     googleOptions.CallbackPath = "/signin-google";
@@ -60,9 +75,6 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     options.SlidingExpiration = true; 
 });
 
-// database context
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
@@ -118,7 +130,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery(options =>
     {
         options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -159,10 +171,19 @@ if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
 }
-else
+
+// Replace your existing HTTP pipeline configuration with this:
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
+
+    // Only use HTTPS redirection if not running in a container
+    if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+    {
+        Console.WriteLine("This is wrong this is wrong this is wrong");
+        app.UseHsts();
+        app.UseHttpsRedirection();
+    }
 }
 
 app.UseHttpsRedirection();
