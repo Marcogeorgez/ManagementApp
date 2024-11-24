@@ -71,6 +71,7 @@ public class UserServices
         {
 
             var user = await _userManager.Users
+                                      .AsTracking()
                                       .Where(u => u.Id == userId)
                                       .FirstOrDefaultAsync();
 
@@ -102,7 +103,7 @@ public class UserServices
             return false;
         }
     }
-    public async Task<bool> UpdateHourlyRateAsync(string userId, decimal? newHourlyRate)
+    public async Task<bool> UpdateHourlyRateAsync(string userId, UserRoleViewModel _user)
     {
         try
         {
@@ -112,8 +113,10 @@ public class UserServices
                 var user = await GetUserByIdAsync(userId);
                 if (user != null)
                 {
-                    user.HourlyRate = newHourlyRate;
+                    user.WeeksToDueDateDefault = _user.WeeksToDueDateDefault;
+                    user.HourlyRate = _user.HourlyRate;
                     await _userManager.UpdateAsync(user);
+                    await context.SaveChangesAsync();
                     return true;
                 }
                 return false;
@@ -122,29 +125,6 @@ public class UserServices
         catch (Exception ex)
         {
             _logger.LogError($"Failed to update hourly rate for user {userId}. Error: {ex.Message}");
-            return false;
-        }
-    }
-    public async Task<bool> UpdateWeeksToDueDateDefault(string userId, int? WeeksToDueDateDefault)
-    {
-        try
-        {
-            using (var context = _contextFactory.CreateDbContext())
-            {
-
-                var user = await GetUserByIdAsync(userId);
-                if (user != null)
-                {
-                    user.WeeksToDueDateDefault = WeeksToDueDateDefault;
-                    await _userManager.UpdateAsync(user);
-                    return true;
-                }
-                return false;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Failed to update Weeks Due Date Default rate for user {userId}. Error: {ex.Message}");
             return false;
         }
     }
