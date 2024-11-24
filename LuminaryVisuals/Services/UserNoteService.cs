@@ -55,7 +55,10 @@ public class UserNoteService
         using (var context = _contextFactory.CreateDbContext())
         {
             var EntityNote = await context.UserNote.FirstOrDefaultAsync(u => u.TargetUserId == userId);
-            return EntityNote.Note;
+            if(EntityNote != null )
+                return EntityNote.Note;
+            else
+                return "";
         }
     }
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
