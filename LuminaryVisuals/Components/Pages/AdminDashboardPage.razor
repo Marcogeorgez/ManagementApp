@@ -60,6 +60,7 @@ else
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
                 <col style="width: 1vw;" /><!-- # -->
                 <col style="width: 5vw;" /><!--User Name-->
+                <col style="width: 5vw;" /><!--User Email-->
                 <col style="width: 3vw;" /><!-- Current Role -->
                 <col style="width: 1vw;" /><!-- Rate $ -->
                 <col style="width: 1vw;" /><!-- Rate Lek -->
@@ -78,6 +79,8 @@ else
                 </CellTemplate>
             </TemplateColumn>
             <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="User Name" CellStyle="text-align: center" Editable=false>
+            </PropertyColumn>
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="User Name" CellStyle="text-align: center" Editable=false>
             </PropertyColumn>
             <PropertyColumn Property="x => x.SelectedRole" Title="Current Role" HeaderStyle="text-align:center;"
                             Style="min-width: 150px;" CellStyle="text-align: center" >
@@ -241,6 +244,7 @@ else
             if (!task.IsCanceled && task.Result.Data is string updatedText)
             {
                 OnNoteTextChanged(updatedText, context);
+                // Update the UI for notes instead of re-loading the entire data it which is an expensive operation
             }
         });
     }
