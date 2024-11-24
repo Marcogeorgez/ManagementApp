@@ -95,9 +95,11 @@ namespace LuminaryVisuals.Services
                         // Create new user
                         user = new ApplicationUser
                         {
-                            UserName = email, // Use email as username
+                            UserName = info.Principal.FindFirstValue(ClaimTypes.Name),
                             Email = email,
                             EmailConfirmed = true // Google emails are already verified
+
+
                         };
 
                         var createResult = await UserManager.CreateAsync(user);

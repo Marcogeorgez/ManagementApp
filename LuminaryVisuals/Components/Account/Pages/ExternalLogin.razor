@@ -120,9 +120,10 @@
         }
 
         // If the user does not have an account, then ask the user to create an account.
-        if (externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+        if (!result.Succeeded)
         {
-            Input.Email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
+            RedirectManager.RedirectTo("/failed-register");
+
         }
     }
 
