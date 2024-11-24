@@ -1,4 +1,6 @@
 ﻿@page "/admin-dashboard"
+@using LuminaryVisuals.Components.Shared.AgencyCreation
+@using LuminaryVisuals.Data
 @inject UserServices UserManagementService
 @inject HttpClient httpClient
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -8,8 +10,8 @@
 @inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
 @inject SettingService SettingService
-@attribute [Authorize(Policy = "RequireAdminRole")]
-
+@* @attribute [Authorize(Policy = "RequireAdminRole")]
+ *@
 <PageTitle>Admin Dashboard</PageTitle>
 
 @if (_loading)
@@ -38,7 +40,8 @@ else
     }
 
 
-    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true 
+    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true
+                 SelectedItems="SelectedItems"
                  Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
                  DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
@@ -59,9 +62,9 @@ else
         <ColGroup>
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
                 <col style="width: 1vw;" /><!-- # -->
+                <col style="width: 1vw;" /><!-- # -->
                 <col style="width: 5vw;" /><!--User Name-->
                 <col style="width: 5vw;" /><!--User Email-->
-
                 <col style="width: 3vw;" /><!-- Current Role -->
                 <col style="width: 1vw;" /><!-- Rate $ -->
                 <col style="width: 1vw;" /><!-- Rate Lek -->
@@ -71,6 +74,7 @@ else
             </MudHidden>
         </ColGroup>
         <Columns>
+            <SelectColumn T="UserRoleViewModel"  />
             <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;" Editable=false>
                 <CellTemplate Context="cell">
                     @{
@@ -166,6 +170,11 @@ else
  <div class="d-flex flex-wrap mt-4">
         <MudSwitch @bind-Value="_usdToLek" Color="Color.Primary">Change Conversion Rate</MudSwitch>
 </div>
+<MudButton Color="Color.Error" 
+           OnClick="@(() => OpenDialog())">
+    Migrate Selected Users to New Agency
+</MudButton>
+
 }
 
 @code {
@@ -200,6 +209,40 @@ else
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
     private ClaimsPrincipal? currentUser;
+    // For Agency Creation
+    private bool dialogVisible;
+    private string agencyName = "";
+    private string agencyEmail = "";
+    private HashSet<UserRoleViewModel> SelectedItems = new();
+    private async Task OpenDialog()
+    {
+        if (!SelectedItems.Any())
+        {
+            Snackbar.Add("Please select users first.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+            {
+                ["SelectedUsers"] = SelectedItems
+            };
+
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            };
+
+        var dialog = await DialogService.ShowAsync<AgencyMigrationDialog>("Create New Agency", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            AllUsers = await UserManagementService.GetAllUsersAsync(storedValue); // Refresh the grid after update
+        }
+    }
+    // done
 
     protected override async Task OnInitializedAsync()
     {
@@ -320,7 +363,6 @@ else
                 {
                     Snackbar.Clear(); 
                     Snackbar.Add($"Successfully saved note", Severity.Info);
-//                    AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
                     StateHasChanged();
                 }
                 else
@@ -498,5 +540,4 @@ else
 
 
     }
-
 }
