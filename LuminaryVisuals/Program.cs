@@ -1,4 +1,4 @@
-using LuminaryVisuals.Components;
+﻿using LuminaryVisuals.Components;
 using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
@@ -115,6 +115,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedAccount = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
+
+    options.User.AllowedUserNameCharacters = "abcçdefgğhijklmnoöpqrsştuüvwxyzABCÇDEFGĞHIİJKLMNOÖPQRSŞTUÜVWXYZ0123456789-._ ";
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
