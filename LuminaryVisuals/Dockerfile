@@ -33,3 +33,5 @@ ENV PORT=8080
 
 # Start the app
 ENTRYPOINT ["dotnet", "LuminaryVisuals.dll"]
+# Adds a volume for Data Protection keys
+VOLUME /app/data-protection-keys
