@@ -61,6 +61,7 @@ else
                 <col style="width: 1vw;" /><!-- # -->
                 <col style="width: 5vw;" /><!--User Name-->
                 <col style="width: 5vw;" /><!--User Email-->
+
                 <col style="width: 3vw;" /><!-- Current Role -->
                 <col style="width: 1vw;" /><!-- Rate $ -->
                 <col style="width: 1vw;" /><!-- Rate Lek -->
@@ -244,7 +245,12 @@ else
             if (!task.IsCanceled && task.Result.Data is string updatedText)
             {
                 OnNoteTextChanged(updatedText, context);
-                // Update the UI for notes instead of re-loading the entire data it which is an expensive operation
+                // Update the UI for notes instead of re-loading the entire data which is an expensive operation
+                if (context.Item.Notes.ContainsKey(context.Item.UserId))
+                {
+                    context.Item.Notes[context.Item.UserId].Note = updatedText;
+                }
+
             }
         });
     }
@@ -312,9 +318,9 @@ else
                 var result = await UserNoteService.AddNoteAsync(targetId, noteToSave.Note);
                 if (result.Success)
                 {
-                    Snackbar.Clear();
- 
+                    Snackbar.Clear(); 
                     Snackbar.Add($"Successfully saved note", Severity.Info);
+//                    AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
                     StateHasChanged();
                 }
                 else

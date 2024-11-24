@@ -49,6 +49,7 @@ public class UserServices
             {
                 UserId = user.Id,
                 UserName = user.UserName,
+                UserEmail = user.Email,
                 HourlyRate = user.HourlyRate,
                 HourlyRateInLek = user.HourlyRate.HasValue ? user.HourlyRate.Value * storedValue : null,
                 WeeksToDueDateDefault = user.WeeksToDueDateDefault,
@@ -179,10 +180,20 @@ public class UserRoleViewModel
 {
     public string UserId { get; set; }
     public string UserName { get; set; }
+    public string UserEmail { get; set; }
     public List<string> Roles { get; set; }
     public string SelectedRole { get; set; }
     public Dictionary<string, UserNote> Notes { get; set; }
-    public string Note => Notes.ContainsKey(UserId) ? Notes[UserId]?.Note ?? string.Empty : string.Empty;
+    public string Note
+    { get => Notes.ContainsKey(UserId)? Notes[UserId]?.Note ?? string.Empty : string.Empty;
+        set
+        {
+            if (Notes.ContainsKey(UserId))
+            {
+                Notes[UserId].Note = value;
+            }
+        }
+    }
     public decimal? HourlyRate { get; set; }
     public decimal? HourlyRateInLek { get; set; }
     public int? WeeksToDueDateDefault { get; set; }

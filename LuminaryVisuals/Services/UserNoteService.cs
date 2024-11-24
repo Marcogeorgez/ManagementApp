@@ -50,13 +50,22 @@ public class UserNoteService
             return await context.UserNote.ToListAsync();
         }
     }
+    public async Task<string> GetNoteByUserId(string userId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var EntityNote = await context.UserNote.FirstOrDefaultAsync(u => u.TargetUserId == userId);
+            return EntityNote.Note;
+        }
+    }
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var note = await context.UserNote.FindAsync(noteId);
+            var note = await context.UserNote.AsTracking().FirstOrDefaultAsync(n => n.Id == noteId);
             if (note != null)
             {
+                note.Note = updatedNote;
                 context.Update(note);
                 await context.SaveChangesAsync();
                 return new MessageSuccess { Success = true, Message = "Note has been updated successfully" };
