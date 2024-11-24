@@ -475,29 +475,17 @@ else
         bool WeeksToDueDateDefault = user.WeeksToDueDateDefault != _originalWeeksToDueDateDefault;
         bool roleChanged = user.SelectedRole != _originalRole;
         bool hourlyRateChanged = user.HourlyRate != _originalHourlyRate;
-        if (roleChanged && hourlyRateChanged)
-        {
+
+        if (roleChanged)
             await UpdateSelectedRole(user, user.SelectedRole);
-            await UserManagementService.UpdateHourlyRateAsync(user.UserId, user.HourlyRate);
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
-            Snackbar.Add($"Successfully changed hourly rate {user.UserName} and his role", Severity.Info);
-        }
-        else if (roleChanged)
-            await UpdateSelectedRole(user, user.SelectedRole);
-        else if (hourlyRateChanged)
+        if (hourlyRateChanged || WeeksToDueDateDefault)
         {
-            await UserManagementService.UpdateHourlyRateAsync(user.UserId, user.HourlyRate);
+            await UserManagementService.UpdateHourlyRateAsync(user.UserId, user);
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
-            Snackbar.Add($"Successfully changed hourly rate {user.UserName} to {user.HourlyRate}$", Severity.Info);
+            Snackbar.Add($"Successfully updated {user.UserName}", Severity.Info);
             StateHasChanged();
         }
-        else if (WeeksToDueDateDefault)
-        {
-            await UserManagementService.UpdateWeeksToDueDateDefault(user.UserId, user.WeeksToDueDateDefault);
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
-            Snackbar.Add($"Successfully changed weekly due date default of {user.UserName} to {user.WeeksToDueDateDefault}", Severity.Info);
-            StateHasChanged();
-        }
+
 
     }
 
