@@ -135,6 +135,8 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 // Configure authorization policies
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("RequireAdminClientEditor", policy =>
+        policy.RequireRole("Admin", "Client", "Editor"));
     options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
     options.AddPolicy("RequireEditorRole", policy => policy.RequireRole("Editor"));
     options.AddPolicy("RequireClientRole", policy => policy.RequireRole("Client"));
