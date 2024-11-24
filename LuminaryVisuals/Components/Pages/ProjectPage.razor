@@ -1,6 +1,7 @@
 ﻿@page "/project"
 @using System.Text.Json
 @using LuminaryVisuals.Components.Shared.Logging
+@using LuminaryVisuals.Components.Shared.ProfileComponents
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
@@ -39,18 +40,18 @@
             <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                             <CellTemplate>
-                    <div class="drag-handle"
-                         draggable="true"
-                         @ondragstart="@(() => HandleDragStart(context.Item))"
-                         @ondragover:preventDefault
-                         @ondragover="@(() => HandleDragOver(context.Item))"
-                         @ondrop:preventDefault
-                         @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
-                         @ondragenter="@(() => HandleDragEnter(context.Item))"
-                         @ondragleave="@(() => HandleDragLeave(context.Item))">
-                        <MudIcon Icon="@Icons.Material.Filled.DragHandle" Class="mr-2" />
-                        @context.Item.InternalOrder
-                    </div>
+                            <div class="drag-handle"
+                                 draggable="true"
+                                 @ondragstart="@(() => HandleDragStart(context.Item))"
+                                 @ondragover:preventDefault
+                                 @ondragover="@(() => HandleDragOver(context.Item))"
+                                 @ondrop:preventDefault
+                                 @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
+                                 @ondragenter="@(() => HandleDragEnter(context.Item))"
+                                 @ondragleave="@(() => HandleDragLeave(context.Item))">
+                                <MudIcon Icon="@Icons.Material.Filled.DragHandle" Class="mr-2" />
+                                @context.Item.InternalOrder
+                            </div>
                 </CellTemplate>
                     </PropertyColumn>
         }
@@ -83,6 +84,21 @@
                     <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName" 
                         Hideable="true" Groupable="true" CellStyle="text-align:center;" 
                         Editable=false Required=false >
+                <CellTemplate>
+                    <MudTextField T="string"
+                                  HelperText="Click to expand"
+                                  Value="context.Item.ClientName"
+                                  ReadOnly="true"
+                                  Immediate="true" Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                  AutoGrow=true
+                                  MaxLines="4"
+                                  OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
+                        <MudTooltip Text="See Client preferences and notes">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
+                        </MudTooltip>
+                    </MudTextField>
+                </CellTemplate>
                         <GroupTemplate>
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
                         </GroupTemplate>
@@ -695,6 +711,17 @@ else if (_isClientView)
         };
         var options = new DialogOptions { FullScreen = true };
         DialogService.Show<DescriptionDialog>("Project Description", parameters, options);
+    }
+
+
+    private async void OpenViewClientEditingGuidelinesComponent(Project context)
+    {
+        var parameters = new DialogParameters
+        {
+            { "userId", context.ClientId },
+        };
+        var options = new DialogOptions { FullScreen = true };
+        DialogService.Show<ViewClientEditingGuidelinesComponent>("Client Preferences", parameters, options);
     }
     // Update description and save it to DB
     private async Task SaveDescription(string newDescription, object context)
