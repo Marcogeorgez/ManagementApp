@@ -11,11 +11,20 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using MudBlazor;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 var builder = WebApplication.CreateBuilder(args);
 // Using Data Protection system to be saved which is needed when in production 
 builder.Services.AddDataProtection()
+    .UseCryptographicAlgorithms(
+    new AuthenticatedEncryptorConfiguration
+    {
+        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+    })
     .PersistKeysToFileSystem(new DirectoryInfo(@"/app/data-protection-keys"));
+
 string? connectionString = "";
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(databaseUrl))
