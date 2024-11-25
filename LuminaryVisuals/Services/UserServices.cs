@@ -1,9 +1,7 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Migrations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using System.Text.RegularExpressions;
 using static LuminaryVisuals.Services.UserRoleViewModel;
 

@@ -29,7 +29,7 @@ public class Project
     public int ProjectId { get; set; }
 
     [Required]
-    public string ClientId {  get; set; }
+    public string ClientId { get; set; }
     public string? PrimaryEditorId { get; set; }
     public string? SecondaryEditorId { get; set; }
 
@@ -63,15 +63,17 @@ public class Project
 
     [DataType(DataType.Date)]
     [Display(Name = "Working Month")]
-    public DateTime? WorkingMonth { get; set; }     
+    public DateTime? WorkingMonth { get; set; }
     public decimal? BillableHours { get; set; }
     public decimal? ClientBillableHours { get; set; }
     public decimal? ClientBillableAmount { get; set; }
-
+    public bool isPaymentVisible { get; set; } = false;
 
     [Column(TypeName = "decimal(5,2)")]
     public decimal? EditorOvertime { get; set; }
+    public decimal? EditorFinalBillable { get; set; }
     public decimal? EditorPaymentAmount { get; set; }
+
     public bool isEditorPaid { get; set; } = false;
     [Required]
     public bool IsArchived { get; set; } = false;
