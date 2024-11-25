@@ -56,7 +56,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-
+builder.Services.AddScoped<IConfirmationService, ConfirmationService>();
 // Custom Implementation of SignInManager to let new users.role Guest by default
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
 // Our Services
