@@ -389,23 +389,46 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
+            if(_isAdminView)
+            {
             <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
-            </PropertyColumn>            
+            </PropertyColumn>
+        }
+        else if(_isClientView)
+            {
+                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <CellTemplate Context="context">
+                        @{
+                            var project = context.Item as Project;
+                            @if (project?.isPaymentVisible == true)
+                            {
+                                @project.ClientBillableAmount
+                            }
+                            else
+                            {
+                                <span>Unassigned</span>
+                            }
+                        }
+                    </CellTemplate>
+                    <EditTemplate>
+                        <MudText Style="display:none;" />
+                    </EditTemplate>
+                </PropertyColumn>
+            }
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-        <TemplateColumn  Editable="true">
+            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false">
                 <CellTemplate>
-@*                     <MudStack Row>
-                        <MudCheckBox Size="@Size.Small" Value="@context.Item.isPaymentVisible" @onclick="OnCheckboxChecked(context.Item.ProjectId)" />
-                    </MudStack> *@
+                    <MudIconButton Icon="@(context.Item.isPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                   Color="@(context.Item.isPaymentVisible ? Color.Primary : Color.Default)"
+                                   OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
+                                   Size="Size.Small" />
                 </CellTemplate>
-        </TemplateColumn>
-        }
-
+            </TemplateColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("Actions"))
         {
@@ -1096,6 +1119,22 @@ else if (_isClientView)
         projects = ( await projectServices.GetProjectsAsync() ).ToList();
         await LoadProjects();
         StateHasChanged();
+    }
+
+    private async Task TogglePaymentVisibility(Project project)
+    {
+        try
+        {
+            var newValue = !project.isPaymentVisible;
+            project.isPaymentVisible = newValue;
+            await projectServices.UpdateProjectAsync(project);
+            Snackbar.Add($"Payment visibility updated successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update payment visibility", Severity.Error);
+            Console.WriteLine($"Error updating payment visibility: {ex.Message}");
+        }
     }
 }
 
