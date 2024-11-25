@@ -387,7 +387,7 @@
                 </EditTemplate>
             </PropertyColumn>
         }
-        @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
+        @if (RoleBasedColumns[_currentRole].Contains("ClientBillableAmount"))
         {
             if(_isAdminView)
             {
@@ -599,9 +599,9 @@ else if (_isClientView)
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","BillableHours","ClientBillable","EditorBillable","Actions","Archive" } },
-        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","BillableHours","EditorBillable", "Actions"} },
-        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate", "Status","Actions" } }
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","BillableHours","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
+        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "rogressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","BillableHours","EditorBillable", "Actions"} },
+        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status","Actions" } }
     };
     private Guid _gridKey = Guid.NewGuid();
 
