@@ -58,7 +58,7 @@ public class UserNoteService
             if(EntityNote != null )
                 return EntityNote.Note;
             else
-                return "";
+                return "This user has no notes assigned.";
         }
     }
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
