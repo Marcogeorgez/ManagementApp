@@ -41,14 +41,14 @@ else
 
 
     <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true
-                 SelectedItems="SelectedItems"
+                 SelectedItems="SelectedItems" @ref=_dataGrid
                  Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
                  DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
                  EditMode="DataGridEditMode.Form"
                  EditTrigger="DataGridEditTrigger.Manual"
                  ReadOnly=false
-                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
+                 StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItemAsync" 
                  CommittedItemChanges="@CommittedItemChanges">
 
         <ToolBarContent>
@@ -214,6 +214,9 @@ else
     private string agencyName = "";
     private string agencyEmail = "";
     private HashSet<UserRoleViewModel> SelectedItems = new();
+    [Inject]
+    private IConfirmationService ConfirmationService { get; set; } = default!;
+    private MudDataGrid<UserRoleViewModel> _dataGrid = default!;
     private async Task OpenDialog()
     {
         if (!SelectedItems.Any())
@@ -404,14 +407,7 @@ else
             }
             if (newRole == "Admin")
             {
-                var parameters = new DialogParameters
-                {
-                    { "Message" , $"Are you sure you want to change {user.UserName} role to Admin?"}
-                };
-                var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
-                var toProceed = await dialog.Result;
-
-                if (toProceed.Canceled || !(bool)toProceed.Data)
+                if (!await ConfirmationService.Confirm("Are you sure you want to change {user.UserName} role to Admin?"))
                 {
                     return;
                 }
@@ -519,9 +515,10 @@ else
         _originalHourlyRate = user.HourlyRate;
         _originalWeeksToDueDateDefault = user.WeeksToDueDateDefault;
     }
-    void CanceledEditingItem(UserRoleViewModel item)
+    private async Task CanceledEditingItemAsync(UserRoleViewModel user)
     {
     }
+
     private async Task CommittedItemChanges(UserRoleViewModel user)
     {
         bool WeeksToDueDateDefault = user.WeeksToDueDateDefault != _originalWeeksToDueDateDefault;
