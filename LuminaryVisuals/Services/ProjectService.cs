@@ -55,7 +55,7 @@ public class ProjectService
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                     ? userNames[project.SecondaryEditorId]!
                     : "No Editor Assigned";
-                if (project.ClientBillableHours != null && project.Client.HourlyRate.Value != null && project.PrimaryEditor != null)
+                if (project.ClientBillableHours != null && project.Client.HourlyRate != null && project.PrimaryEditor != null)
                 {
                     project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
                     project.EditorPaymentAmount = project.PrimaryEditor.HourlyRate * project.BillableHours;
@@ -229,7 +229,7 @@ public class ProjectService
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var _project = await context.Projects.FindAsync(project.ProjectId);
+            var _project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId ==  project.ProjectId);
             if (_project != null)
             {
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
@@ -240,7 +240,8 @@ public class ProjectService
                 {
                     await ExternalOrderAsync(project.ProjectId, project.ExternalOrder!.Value);
                 }
-                context.Projects.Update(project);
+                context.Entry(_project).CurrentValues.SetValues(project);
+                context.Projects.Update(_project);
 
                 await context.SaveChangesAsync();
             }

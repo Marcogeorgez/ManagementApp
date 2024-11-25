@@ -82,23 +82,35 @@ public class UserServices
     {
         try
         {
-            using (var context = _contextFactory.CreateDbContext())
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
             {
+                var currentRoles = await _userManager.GetRolesAsync(user);
 
-                var user = await GetUserByIdAsync(userId);
-                if (user != null)
+                // Remove existing roles
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
                 {
-                    var currentRoles = await _userManager.GetRolesAsync(user);
-                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                    await _userManager.AddToRoleAsync(user, newRole);
-                    return true;
+                    _logger.LogError($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
+                    return false;
                 }
-                return false;
+
+                // Add new role
+                var addResult = await _userManager.AddToRoleAsync(user, newRole);
+                if (!addResult.Succeeded)
+                {
+                    _logger.LogError($"Failed to add user to role: {string.Join(", ", addResult.Errors.Select(e => e.Description))}");
+                    return false;
+                }
+
+                return true;
             }
+            _logger.LogWarning($"User with ID {userId} not found");
+            return false;
         }
-        catch
+        catch (Exception ex)
         {
-            _logger.LogError($"Failed to change user role!");
+            _logger.LogError(ex, $"Failed to change user role for user {userId} to {newRole}");
             return false;
         }
     }
