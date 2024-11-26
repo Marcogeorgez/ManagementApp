@@ -240,6 +240,13 @@ public class ProjectService
                 {
                     await ExternalOrderAsync(project.ProjectId, project.ExternalOrder!.Value);
                 }
+                if(_project.ClientId != project.ClientId)
+                {
+                    if (project.Client.WeeksToDueDateDefault == null)
+                    {
+                        project.Client.WeeksToDueDateDefault = 4;
+                    }
+                }
                 context.Entry(_project).CurrentValues.SetValues(project);
                 context.Projects.Update(_project);
 
