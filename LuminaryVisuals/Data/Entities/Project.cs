@@ -13,15 +13,15 @@ public enum ProjectStatus
     Review = 4,
     Delivered = 5,
     Revision = 6,
-    Paid = 7
+    Finished = 7
 }
 
 public enum AdminProjectStatus
 {
-    NOT_FINISHED = 0,
-    DELIVERED_NOT_PAID = 1,
-    SENT_INVOICE = 2,
-    PAID = 3,
+    Not_Finished = 0,
+    Delivered_Not_Paid = 1,
+    Sent_Invoice = 2,
+    Paid = 3,
 }
 public class Project
 {
