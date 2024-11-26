@@ -124,7 +124,39 @@
                 await context.UserLogins.AddRangeAsync(newLogins);
                 await context.SaveChangesAsync();
 
-                // Now delete the users
+                // Fetch and update all projects associated with the migrated users
+                var projectsToUpdate = await context.Projects
+                    .AsTracking()
+                    .Where(p => userIds.Contains(p.ClientId) ||
+                                userIds.Contains(p.PrimaryEditorId) ||
+                                userIds.Contains(p.SecondaryEditorId))
+                    .ToListAsync();
+
+                foreach (var project in projectsToUpdate)
+                {
+                    // Update ClientId if it matches any of the migrated user IDs
+                    if (userIds.Contains(project.ClientId))
+                    {
+                        project.ClientId = newAgencyId.ToString();
+                    }
+
+                    // Update PrimaryEditorId if it matches any of the migrated user IDs
+                    if (userIds.Contains(project.PrimaryEditorId))
+                    {
+                        project.PrimaryEditorId = newAgencyId.ToString();
+                    }
+
+                    // Update SecondaryEditorId if it matches any of the migrated user IDs
+                    if (userIds.Contains(project.SecondaryEditorId))
+                    {
+                        project.SecondaryEditorId = newAgencyId.ToString();
+                    }
+                }
+
+                // Save the changes to projects
+                await context.SaveChangesAsync();
+
+                // Delete the users
                 var usersToDelete = await context.Users
                     .Where(u => userIds.Contains(u.Id))
                     .ToListAsync();
