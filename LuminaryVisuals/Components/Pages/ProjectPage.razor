@@ -25,6 +25,7 @@
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges"
     RowClassFunc="@GetRowClass">
+    
 
     <ToolBarContent>
             <MudSpacer />
@@ -37,10 +38,13 @@
 
         @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
         {
-            <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
-                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+            <PropertyColumn Property="x => x.InternalOrder"  Title="Id" Sortable="true"
+                Filterable="true" CellStyle="text-align:center;" DragAndDropEnabled="false"
+                            Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                             <CellTemplate>
-                            <div class="drag-handle"
+
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown">                    
+                            <div class="drag-handle" style="height:100px;"
                                  draggable="true"
                                  @ondragstart="@(() => HandleDragStart(context.Item))"
                                  @ondragover:preventDefault
@@ -52,8 +56,9 @@
                                 <MudIcon Icon="@Icons.Material.Filled.DragHandle" Class="mr-2" />
                                 @context.Item.InternalOrder
                             </div>
+                            </MudHidden>
                 </CellTemplate>
-                    </PropertyColumn>   
+                    </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
         {
@@ -335,7 +340,7 @@
                                 @if(!_isClientView){
                                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                                 {
-                                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                                 }
                                 }
                                 else{
@@ -352,11 +357,11 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
         {
-            <PropertyColumn Property="x => x.FormatAdminStatus" Title="AdminStatus" Hideable="true" Groupable="true" CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" CellStyle="text-align:center;">
                 <EditTemplate Context="context">
                     <MudSelect T="AdminProjectStatus" Class="mt-3"
                                Variant="Variant.Outlined"
-                               Label="Status"
+                               Label="Admin Status"
                                @bind-Value="context.Item.AdminStatus"
                                Required="true">
                         @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
@@ -738,8 +743,8 @@ else if (_isClientView)
     {
         if (await ConfirmationService.Confirm($"Are you sure you'd like to unarchive this project {project.ProjectName}?"))
         {
-        await projectServices.UnarchiveProjectAsync(project.ProjectId);
-        await LoadProjects();
+            await projectServices.UnarchiveProjectAsync(project.ProjectId);
+            await LoadProjects();
         }
 
     }
@@ -919,7 +924,7 @@ else if (_isClientView)
             case ProjectStatus.Revision:
                 style += "background-color: var(--mud-palette-error-lighten);";
                 break;
-            case ProjectStatus.Paid:
+            case ProjectStatus.Finished:
                 style += "background-color: var(--mud-palette-success-darken);";
                 break;
 
@@ -1009,7 +1014,7 @@ else if (_isClientView)
         return value;
     }
 
-
+    // DRAGGING FUNCTIONALITIES 
     private List<Project> _Projects { get; set; } = new();
     private Project draggedProject;
     private Project dropTarget;
@@ -1130,7 +1135,12 @@ else if (_isClientView)
             var newValue = !project.isPaymentVisible;
             project.isPaymentVisible = newValue;
             await projectServices.UpdateProjectAsync(project);
-            Snackbar.Add($"Payment visibility updated successfully", Severity.Success);
+            if (newValue == true)
+            { Snackbar.Add($"Payment is visible to the client now.", Severity.Success); }
+            else
+            {
+                Snackbar.Add($"Payment is hidden from the client now.", Severity.Info);
+            }
         }
         catch (Exception ex)
         {
