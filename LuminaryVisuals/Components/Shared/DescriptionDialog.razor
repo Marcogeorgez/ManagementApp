@@ -1,5 +1,5 @@
 ﻿@using MudBlazor
-
+@inject ISnackbar Snackbar
 <MudDialog>
     <DialogContent> 
         <MudHtmlEditor Html="@Description" HtmlChanged="OnNoteTextChanged" >
@@ -40,6 +40,7 @@
     private async Task Save()
     {
         await NewDescription.InvokeAsync(Description); // Pass the new description back
+        Snackbar.Add($"Successfully saved the note.", Severity.Info);
         Dialog.Close(DialogResult.Ok(Description));
     }
 
