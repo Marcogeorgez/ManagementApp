@@ -63,7 +63,7 @@
         {
             var parameters = new DialogParameters
                 {
-                    { "Message" , $"Are you sure you want to combine these users into a single agency? This will delete all their current projects and THIS IS IRREVERSIBLE!!! "}
+                    { "Message" , $"Are you sure you want to combine these users into a single agency? All of their projects will be assigned to the new agency."}
                 };
             var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
             var toProceed = await dialog.Result;
@@ -83,7 +83,7 @@
                 var newAgencyId = Guid.NewGuid();
                 var newConcurrencyStamp = Guid.NewGuid().ToString();
                 var newSecurityStamp = Guid.NewGuid().ToString();
-
+                    
                 var newAgency = new ApplicationUser
                     {
                         Id = newAgencyId.ToString(),
