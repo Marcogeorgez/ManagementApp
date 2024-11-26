@@ -87,14 +87,17 @@ public class UserServices
             {
                 var currentRoles = await _userManager.GetRolesAsync(user);
 
-                // Remove existing roles
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                if (!removeResult.Succeeded)
+                // Remove existing roles if it exist
+                if (currentRoles.Count > 0)
                 {
-                    _logger.LogError($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
-                    return false;
-                }
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
+                    if (!removeResult.Succeeded)
+                    {
+                        _logger.LogError($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
+                        return false;
+                    }
+                }
                 // Add new role
                 var addResult = await _userManager.AddToRoleAsync(user, newRole);
                 if (!addResult.Succeeded)
