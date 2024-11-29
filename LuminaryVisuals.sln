@@ -8,8 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F7D3E78B-9823-4487-9602-A9EE67A6BDD5}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		Documentation\Luminary milestone.md = Documentation\Luminary milestone.md
-		ProjectStatus.md = ProjectStatus.md
 		railway.toml = railway.toml
 	EndProjectSection
 EndProject
