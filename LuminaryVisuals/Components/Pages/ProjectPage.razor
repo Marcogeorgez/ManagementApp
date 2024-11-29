@@ -514,42 +514,43 @@
         <MudDataGridPager T="Project"/>
     </PagerContent>
 </MudDataGrid>
-<MudStack Spacing="0">
-    <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-    <MudStack Row=false>
-    <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
-    <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
-    <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
+<MudContainer Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
+    <MudStack Spacing="0">
+        <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+        <MudStack Row=true>
+        <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
+        <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
+        <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
+        </MudStack>
     </MudStack>
-</MudStack>
-<div class="mb-4">
-@if(_isAdminView){
-        <MudButton Color="Color.Success"
-                   Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.Filled.AddCircle"
-                   OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mb-1">
-            Add New Project
-        </MudButton>
-        <MudSpacer></MudSpacer>
-        <MudTooltip Text=" Download Filtered As Csv">           
-        <MudButton OnClick="DownloadFilteredAsCsv"
-                   Color="Color.Primary"
-                   Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv</MudButton>
-                   </MudTooltip>
-
-}
-else if (_isClientView)
-{
+    <div class="mb-4">
+    @if(_isAdminView){
             <MudButton Color="Color.Success"
                        Variant="Variant.Filled"
                        StartIcon="@Icons.Material.Filled.AddCircle"
-                       OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
-                Create New Project
+                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mb-1">
+                Add New Project
             </MudButton>
-}
-</div>
+            <MudSpacer></MudSpacer>
+            <MudTooltip Text=" Download Filtered As Csv">           
+            <MudButton OnClick="DownloadFilteredAsCsv"
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv</MudButton>
+                       </MudTooltip>
 
+    }
+    else if (_isClientView)
+    {
+                <MudButton Color="Color.Success"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.AddCircle"
+                           OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
+                    Create New Project
+                </MudButton>
+    }
+    </div>
+</MudContainer>
 @code {
 
     [Inject]

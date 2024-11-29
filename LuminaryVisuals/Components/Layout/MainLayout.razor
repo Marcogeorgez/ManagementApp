@@ -10,7 +10,7 @@
 <MudSnackbarProvider />
 
 <CascadingValue Value="_drawerOpen">
-    <MudLayout>
+    <MudLayout Style="position:absolute;">
         <NavMenu @rendermode="InteractiveServer" />
             @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
             @if (IsStaticSSR)
