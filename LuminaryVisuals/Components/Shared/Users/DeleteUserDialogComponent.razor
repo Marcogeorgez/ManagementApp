@@ -1,0 +1,52 @@
+﻿@using LuminaryVisuals.Data
+@using LuminaryVisuals.Data.Entities
+@using MudBlazor
+@using System.Text
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserServices UserServices
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-3">Please choose the admin that will get assigned the deleted user current projects.</MudText>
+        <MudSelect T="string"
+        AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+        Class="d-flex justify-center mud-width-full py-2"
+        Variant="Variant.Outlined"
+        Label="Admins"
+        @bind-Value="choosenAdminId">
+        @foreach (var admin in adminsList)
+        {
+                <MudSelectItem Class="" T="string" Value="@admin.Id" Ripple=true>
+                    @admin.UserName
+                </MudSelectItem>
+        }
+        </MudSelect>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Cancel</MudButton>
+        <MudButton OnClick="@Submit" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">Add Project</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public UserRoleViewModel User { get; set; }
+    private List<ApplicationUser>? adminsList { get; set; } = new();
+    private string choosenAdminId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        adminsList = await UserServices.GetAllAdminsAsync();
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    private async void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(choosenAdminId));
+    }
+}

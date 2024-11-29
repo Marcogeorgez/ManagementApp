@@ -12,19 +12,18 @@
 <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-    ApplyDropClassesOnDragStarted="true"
-    DragDropColumnReordering=true
     ColumnsPanelReordering=true
+    ShowColumnOptions=true
     Groupable=true
     ShowMenuIcon=true
     EditMode="DataGridEditMode.Form"
     EditTrigger="DataGridEditTrigger.OnRowClick"
     ReadOnly=false
-    DragIndicatorSize="Size.Small"
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges"
     RowClassFunc="@GetRowClass">
+    
 
     <ToolBarContent>
             <MudSpacer />
@@ -37,10 +36,13 @@
 
         @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
         {
-            <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
-                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+            <PropertyColumn Property="x => x.InternalOrder"  Title="Id" Sortable="true"
+                Filterable="true" CellStyle="text-align:center;" DragAndDropEnabled="false"
+                            Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                             <CellTemplate>
-                            <div class="drag-handle"
+
+                    <MudHidden Breakpoint="Breakpoint.MdAndDown">                    
+                            <div class="drag-handle" style="height:100px;"
                                  draggable="true"
                                  @ondragstart="@(() => HandleDragStart(context.Item))"
                                  @ondragover:preventDefault
@@ -52,8 +54,9 @@
                                 <MudIcon Icon="@Icons.Material.Filled.DragHandle" Class="mr-2" />
                                 @context.Item.InternalOrder
                             </div>
+                            </MudHidden>
                 </CellTemplate>
-                    </PropertyColumn>   
+                    </PropertyColumn>
         }
         @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
         {
@@ -335,7 +338,7 @@
                                 @if(!_isClientView){
                                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                                 {
-                                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                                 }
                                 }
                                 else{
@@ -352,11 +355,11 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
         {
-            <PropertyColumn Property="x => x.FormatAdminStatus" Title="AdminStatus" Hideable="true" Groupable="true" CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" CellStyle="text-align:center;">
                 <EditTemplate Context="context">
                     <MudSelect T="AdminProjectStatus" Class="mt-3"
                                Variant="Variant.Outlined"
-                               Label="Status"
+                               Label="Admin Status"
                                @bind-Value="context.Item.AdminStatus"
                                Required="true">
                         @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
@@ -373,7 +376,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
         {           
-            <PropertyColumn Property="x => x.BillableHours" Title="Editor Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.BillableHours" Title="Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -381,7 +384,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -391,7 +394,7 @@
         {
             if(_isAdminView)
             {
-            <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -399,7 +402,7 @@
         }
         else if(_isClientView)
             {
-                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
                     <CellTemplate Context="context">
                         @{
                             var project = context.Item as Project;
@@ -421,7 +424,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false">
+            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false>
                 <CellTemplate>
                     <MudIconButton Icon="@(context.Item.isPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                                    Color="@(context.Item.isPaymentVisible ? Color.Primary : Color.Default)"
@@ -738,8 +741,8 @@ else if (_isClientView)
     {
         if (await ConfirmationService.Confirm($"Are you sure you'd like to unarchive this project {project.ProjectName}?"))
         {
-        await projectServices.UnarchiveProjectAsync(project.ProjectId);
-        await LoadProjects();
+            await projectServices.UnarchiveProjectAsync(project.ProjectId);
+            await LoadProjects();
         }
 
     }
@@ -919,7 +922,7 @@ else if (_isClientView)
             case ProjectStatus.Revision:
                 style += "background-color: var(--mud-palette-error-lighten);";
                 break;
-            case ProjectStatus.Paid:
+            case ProjectStatus.Finished:
                 style += "background-color: var(--mud-palette-success-darken);";
                 break;
 
@@ -1009,7 +1012,7 @@ else if (_isClientView)
         return value;
     }
 
-
+    // DRAGGING FUNCTIONALITIES 
     private List<Project> _Projects { get; set; } = new();
     private Project draggedProject;
     private Project dropTarget;
@@ -1130,7 +1133,12 @@ else if (_isClientView)
             var newValue = !project.isPaymentVisible;
             project.isPaymentVisible = newValue;
             await projectServices.UpdateProjectAsync(project);
-            Snackbar.Add($"Payment visibility updated successfully", Severity.Success);
+            if (newValue == true)
+            { Snackbar.Add($"Payment is visible to the client now.", Severity.Success); }
+            else
+            {
+                Snackbar.Add($"Payment is hidden from the client now.", Severity.Info);
+            }
         }
         catch (Exception ex)
         {

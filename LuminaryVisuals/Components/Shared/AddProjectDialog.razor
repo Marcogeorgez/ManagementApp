@@ -1,70 +1,128 @@
 ﻿@using LuminaryVisuals.Data.Entities
 @using MudBlazor
+@using System.Text
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="form" @bind-IsValid="@success">
-            <MudTextField T="string"
-                          Label="Project Name"
-                          @bind-Value="newProject.ProjectName"
-                          Required="true"
-                          AutoGrow=true Class="mb-5" />
-                          <MudSpacer />
-            <MudTextField T="string"
-                          Label="Description"
-                          @bind-Value="newProject.Description"
-                          Required="true" 
-                          Lines="3" AutoGrow=true Class="mb-5" />
-            <MudSpacer />
-
-            <MudDatePicker Label="Shoot Date"
-                           Date="newProject.ShootDate"
-                           DateChanged="@(date =>
-                                {
-                                    newProject.ShootDate = date;
-                                    if (date.HasValue)
-                                    {
-                                        newProject.DueDate = date.Value.AddDays(28); // Set Due Date to 4 weeks later
-                                    }
-                                 })" 
-                           Required="true"
-                           />
-            <MudSpacer />
-
-            <MudDatePicker Label="Due Date (4 weeks after shoot date by default)"
-                           Date="newProject.DueDate"
-                           DateChanged="@(date => newProject.DueDate = date  )"
-                           Required="true" Class="mb-5" />
-            <MudSpacer />
-
-            <MudDatePicker Label="Working Month"
-                           Date="newProject.WorkingMonth"
-                           DateChanged="@(date => newProject.WorkingMonth = date ?? DateTime.Today)"
-                           Required="true"
-                           FixDay="1" 
-                           DateFormat="yyyy/MM"
-                           Class="mb-5" />
-            <MudSpacer />
-            <MudSelect T="ProgressBarValue" Label="Progress" AnchorOrigin="Origin.BottomCenter"
-                       @bind-Value="ProgressEnum" Class="mb-5">
-                <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
-                <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
-                <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
-                <MudSelectItem Value="ProgressBarValue.Sixty">60%</MudSelectItem>
-                <MudSelectItem Value="ProgressBarValue.Eighty">80%</MudSelectItem>
-                <MudSelectItem Value="ProgressBarValue.Hundred">100%</MudSelectItem>
-            </MudSelect>
-            <MudSelect T="ProjectStatus"
-                       Label="Status"
-                       @bind-Value="newProject.Status"
-                       Required="true"
-                       AnchorOrigin="Origin.BottomCenter">
-                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+    <MudForm @ref="form" @bind-IsValid="@success">
+        <MudTextField T="string" Label="Project Name" Variant="Variant.Outlined"
+        @bind-Value="newProject.ProjectName" Required="true" AutoGrow=true />
+        <MudDatePicker Label="Shoot Date" Class="mb-1 mt-1" Variant="Variant.Outlined" 
+        Date="newProject.ShootDate" Editable=true DateChanged="@(date =>
+        {
+                newProject.ShootDate = date;
+                if (date.HasValue)
                 {
-                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                    if(WeeksToDueDateDefault  != 0)
+                    {
+                    newProject.DueDate = date.Value.AddDays((WeeksToDueDateDefault * 7)); // Set Due Date to 4 weeks later
+
+                    }
+                    else{
+                    newProject.DueDate = date.Value.AddDays(28); // Set Due Date to 4 weeks later
+                    }
                 }
-            </MudSelect>
-        </MudForm>
+        })"
+        Required="true" />
+
+        <MudDatePicker Label="Due Date (4 weeks after shoot date by default)"
+                        Date="newProject.DueDate"
+                        DateChanged="@(date => newProject.DueDate = date  )"
+                        Required="true" Class="mb-5" />
+        <MudSpacer />
+                    <MudTextField T="string"
+                                    Label="Footage Link"
+                                    Placeholder="Add link of your footage"
+                                    Variant="Variant.Outlined"
+                                    @bind-Value="footagelink"
+                                    Required="true"
+                                    AutoGrow=true />
+
+                    <MudTextField T="string"
+                                    Label="Add Details of footage"
+                                    Placeholder="Add Details of footage like Resolution, Footage size, Number of cameras, Color profile for each camera"
+                                    Variant="Variant.Outlined"
+                                    @bind-Value="footageRequirements"
+                                    x AutoGrow=true />
+
+                    <MudTextField T="string"
+                                    Label="Deliverables"
+                                    Placeholder="Write down what the deliverables for this project will be"
+                                    Variant="Variant.Outlined"
+                                    @bind-Value="deliverables"
+                                    Required="true"
+                                    RequiredError="Please Write down what the deliverables for this project will be"
+                                    AutoGrow=true />
+                    <MudField Label="Description"></MudField>
+                    <MudHtmlEditor Outlined="true"
+                                    Text="Description"
+                                    Html="@newProject.Description"
+                                    HtmlChanged="OnNoteTextChanged"
+                                    Resizable=true
+                                    style="min-height:150px;"
+                                    Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
+This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
+This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
+The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
+                        <select class="ql-font">
+                            <option value="sans-serif"></option>
+                            <option value="serif"></option>
+                            <option value="monospace"></option>
+                        </select>
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                        <MudHtmlToolbarOptions />
+                        <button class="ql-list" value="check"></button>
+                        <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
+                    </MudHtmlEditor>
+
+                    <MudTextField T="string"
+                                    Class="mt-3"
+                                    Label="Music preferences:"
+                                    Placeholder="Place link to music here and any comments why might have"
+                                    Variant="Variant.Outlined"
+                                    @bind-Value="preferences"
+                                    AutoGrow=true />
+
+                <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
+                    @errorMessage
+                </MudText>
+        <MudSpacer />
+
+
+
+        <MudDatePicker Label="Working Month"
+                        Date="newProject.WorkingMonth"
+                        DateChanged="@(date => newProject.WorkingMonth = date ?? DateTime.Today)"
+                        Required="true"
+                        FixDay="1" 
+                        DateFormat="yyyy/MM"
+                        Class="mb-5" />
+        <MudSpacer />
+        <MudSelect T="ProgressBarValue" Label="Progress" AnchorOrigin="Origin.BottomCenter"
+                    @bind-Value="ProgressEnum" Class="mb-5">
+            <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
+            <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+            <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
+            <MudSelectItem Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+            <MudSelectItem Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+            <MudSelectItem Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+        </MudSelect>
+        <MudSelect T="ProjectStatus"
+                    Label="Status"
+                    @bind-Value="newProject.Status"
+                    Required="true"
+                    AnchorOrigin="Origin.BottomCenter">
+            @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+            {
+                <MudSelectItem Value="@status">@status</MudSelectItem>
+            }
+        </MudSelect>
+    </MudForm>
         <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
             @errorMessage
         </MudText>
@@ -79,10 +137,17 @@
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int WeeksToDueDateDefault { get; set; }
     private Project newProject = new Project();
-    private bool success;
     private MudForm form;
     private string errorMessage;
+    private bool success;
+    private string? footagelink;
+    private string? preferences;
+    private string? deliverables;
+    private string? footageRequirements;
+    private string? filledFootageRequirements;
+    private string[] _footageRequirements = { "Resolution", "Size", "Number of cameras", "Color profile" };
     private enum ProgressBarValue
     {
         Zero = 0,
@@ -101,14 +166,46 @@
     {
         newProject.WorkingMonth = DateTime.Today;
     }
+
+    private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+
+    private void OnNoteTextChanged(string text)
+    {
+        newProject.Description = text;
+    }
+
     private async void Submit()
     {
 
         await form.Validate();
-
         if (form.IsValid)
         {
-
+            newProject.Status = ProjectStatus.Upcoming;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(footagelink);
+            sb.AppendLine(footageRequirements);
+            if (footageRequirements == null)
+            {
+                footageRequirements = "";
+            }
+            foreach (var requirement in _footageRequirements)
+            {
+                if (!footageRequirements.Contains(requirement))
+                {
+                    sb.AppendLine($"Warning: {requirement} is missing.");
+                }
+            }
+            sb.AppendLine(deliverables);
+            sb.AppendLine(newProject.Description);
+            if (string.IsNullOrWhiteSpace(preferences))
+                sb.AppendLine($"Warning: Music preferences is missing.");
+            sb.AppendLine(preferences);
+            newProject.Description = sb.ToString();
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
         }
         else
@@ -116,10 +213,5 @@
             errorMessage = "Please fill in all required fields correctly before submitting.";
         }
     }
-    private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
 
-    private void Cancel()
-    {
-        MudDialog.Cancel(); // Close without saving
-    }
 }
