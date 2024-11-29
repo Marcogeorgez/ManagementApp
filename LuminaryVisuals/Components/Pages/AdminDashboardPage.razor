@@ -158,15 +158,20 @@ else
             <TemplateColumn>
                 <CellTemplate>
                     <MudStack Row=true Spacing="0">
-                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
+                        <MudTooltip Text="Change Client Preference">
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Edit">
                     <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                        </MudTooltip>
+                        <MudTooltip Text="Delete user">
                     <MudIconButton Color="Color.Error"
-                               
                                Size="Size.Medium"
                                OnClick="@(() => OpenDeleteUserDialog(context.Item))"
                                Icon="@Icons.Material.Filled.Delete"
-                               Class="">
-                    </MudIconButton>
+                               Class="" />
+                        </MudTooltip>
+
                     </MudStack>
                 </CellTemplate>
                 </TemplateColumn>
