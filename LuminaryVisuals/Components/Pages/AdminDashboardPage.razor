@@ -1,5 +1,6 @@
 ﻿@page "/admin-dashboard"
 @using LuminaryVisuals.Components.Shared.AgencyCreation
+@using LuminaryVisuals.Components.Shared.Users
 @using LuminaryVisuals.Data
 @inject UserServices UserManagementService
 @inject HttpClient httpClient
@@ -108,10 +109,10 @@ else
                 <EditTemplate>
                     <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRate"
-                                  @onblur="() => UpdateHourlyRate(context.Item)"
-                                  Variant="Variant.Outlined"
+                                  @bind-Value:event="oninput"
+                                  ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)"                                  Variant="Variant.Outlined"
                                   Label="Hourly Rate in US$"
-                                  Format="N"
+                                  Format="N" Immediate=true
                                   Adornment="Adornment.Start"
                                   AdornmentText="$" />
                 </EditTemplate>
@@ -123,7 +124,8 @@ else
                 <EditTemplate>
                     <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRateInLek"
-                                  @onblur="() => UpdateHourlyRateInLek(context.Item)"
+                                  @bind-Value:event="oninput"
+                                  ValueChanged="(newValue) => UpdateHourlyRateInLekWrapper(context.Item, newValue)"
                                   Variant="Variant.Outlined"
                                   Label="Hourly Rate in Lek"
                                   Format="N"
@@ -457,7 +459,7 @@ else
             }
             if (newRole == "Admin")
             {
-                if (!await ConfirmationService.Confirm("Are you sure you want to change {user.UserName} role to Admin?"))
+                if (!await ConfirmationService.Confirm($"Are you sure you want to change {user.UserName} role to Admin?"))
                 {
                     return;
                 }
@@ -498,6 +500,17 @@ else
     }
 
     // UpdateHourlyRate AND UpdateHourlyRateInLek to update the display only.
+    private void UpdateHourlyRateWrapper(UserRoleViewModel user, decimal? newValue)
+    {
+        user.HourlyRate = newValue;
+        UpdateHourlyRate(user);
+    }
+
+    private void UpdateHourlyRateInLekWrapper(UserRoleViewModel user, decimal? newValue)
+    {
+        user.HourlyRateInLek = newValue;
+        UpdateHourlyRateInLek(user);
+    }
     private void UpdateHourlyRateInLek(UserRoleViewModel user)
     {
         user.HourlyRate = user.HourlyRateInLek / storedValue;
