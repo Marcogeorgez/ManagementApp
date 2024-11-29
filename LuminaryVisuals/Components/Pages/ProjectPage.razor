@@ -424,7 +424,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false>
+            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true">
                 <CellTemplate>
                     <MudIconButton Icon="@(context.Item.isPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                                    Color="@(context.Item.isPaymentVisible ? Color.Primary : Color.Default)"
@@ -649,6 +649,7 @@ else if (_isClientView)
     {
         if (_isAdminView)
         {
+
             projects = await projectServices.GetProjectsAsync(_isArchived);
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();

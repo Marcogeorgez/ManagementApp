@@ -1,4 +1,34 @@
-﻿----------------------------
+﻿Reason: when saving the note as soon as it opens (before it finishes rendering),
+it saves it as a new note instead of checking if it exists first 
+(this bug only exists on server cause it takes 1 second to render so it won’t 
+show-up on my pc.
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------
 # Done This Week 20/11:
 ##### Implemented WYSIWYG HTML Editor checklist ✅ along with uploading images.
 		(Note images will cost on hosting the database because of their size)
