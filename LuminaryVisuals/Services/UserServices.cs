@@ -10,15 +10,18 @@ namespace LuminaryVisuals.Services;
 public class UserServices
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ILogger<UserServices> _logger;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     public UserServices(
         UserManager<ApplicationUser> userManager,
         IDbContextFactory<ApplicationDbContext> context,
+        RoleManager<IdentityRole> roleManager,
         ILogger<UserServices> logger)
     {
         _contextFactory = context;
         _userManager = userManager;
+        _roleManager = roleManager;
         _logger = logger;
     }
 
@@ -77,7 +80,68 @@ public class UserServices
             return user;
         }
     }
+    // Delete current user and remove his roles, then reassign all of his projects to the admin which will be selected from UI
+    public async Task<bool> DeleteUserAsync(string userId, string AdminId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            // Check if the new client exists
+            var newClient = await context.Users.FindAsync(AdminId);
+            if (newClient == null)
+            {
+                _logger.LogError("The new client (admin) does not exist.");
+                return false;
+            }
 
+            // Fetch projects where the user is the client
+            var projectsAsClient = await context.Projects
+                .Where(p => p.ClientId == userId)
+                .ToListAsync();
+
+            // Reassign projects to the new client
+            foreach (var project in projectsAsClient)
+            {
+                project.ClientId = AdminId;
+
+                // Update the ExternalOrder for the new client
+                var highestOrderForClient = await context.Projects
+                    .Where(p => p.ClientId == AdminId && !p.IsArchived)
+                    .MaxAsync(p => (int?) p.ExternalOrder) ?? 0;
+
+                project.ExternalOrder = highestOrderForClient + 1;
+            }
+
+            // Remove the user and his related notes and role
+            var user = await context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                context.Users.Remove(user);
+            }
+            else
+            {
+                _logger.LogError("User not found.");
+                return false;
+            }
+
+            // Save changes
+            await context.SaveChangesAsync();
+            return true;
+        }
+    }
+    // Get all users who have admin roles
+    public async Task<List<ApplicationUser>> GetAllAdminsAsync()
+    {
+        // Get the role by name
+        var adminRole = await _roleManager.FindByNameAsync("Admin");
+        if (adminRole == null)
+        {
+            throw new InvalidOperationException("Role 'Admin' does not exist.");
+        }
+
+        // Get all users in the role
+        var admins = await _userManager.GetUsersInRoleAsync("Admin");
+        return admins.ToList();
+    }
     public async Task<bool> ChangeUserRoleAsync(string userId, string newRole)
     {
         try
@@ -87,14 +151,17 @@ public class UserServices
             {
                 var currentRoles = await _userManager.GetRolesAsync(user);
 
-                // Remove existing roles
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                if (!removeResult.Succeeded)
+                // Remove existing roles if it exist
+                if (currentRoles.Count > 0)
                 {
-                    _logger.LogError($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
-                    return false;
-                }
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
+                    if (!removeResult.Succeeded)
+                    {
+                        _logger.LogError($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
+                        return false;
+                    }
+                }
                 // Add new role
                 var addResult = await _userManager.AddToRoleAsync(user, newRole);
                 if (!addResult.Succeeded)

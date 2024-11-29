@@ -84,7 +84,6 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 {
     options.LoginPath = "/";
     options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/AccessDenied";
     options.SlidingExpiration = true; 
 });
 
@@ -156,7 +155,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     {
         OnRedirectToLogin = context =>
         {
-            context.Response.Redirect("/accessdenied");
+            context.Response.Redirect("/");
             return Task.CompletedTask;
         }
     };

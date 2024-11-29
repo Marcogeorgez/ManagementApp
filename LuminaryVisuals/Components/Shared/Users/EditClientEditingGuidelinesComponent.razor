@@ -1,0 +1,337 @@
+﻿@using LuminaryVisuals.Data
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+<MudExpansionPanels MultiExpansion="true">
+    <MudForm @ref="form" Model="@preferences">
+        <MudExpansionPanel Text="Link To Website">
+        <!-- Website Link -->
+        <MudTextField Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
+    </MudExpansionPanel>
+        <MudExpansionPanel Text="Highlights Film">
+        <!-- Video Structure -->
+        <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
+            <MudText Typo="Typo.h6">
+                How you like to structure the videos:
+            </MudText>
+            <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+            @foreach (var structure in VideoStructureOptions)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <!-- Transitions Checklist -->
+        <MudText Typo="Typo.h6" Class="mt-3">
+            Transitions VFX to use/avoid:
+        </MudText>
+
+        <MudText Typo="Typo.body1">
+            Cross Fades:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.CrossFades">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <MudText Typo="Typo.body1">
+            Fades to Black:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.FadeToBlack">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+ 
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <MudText Typo="Typo.body1">
+            Black and White:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.BlackAndWhite">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+  
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Double exposure:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.DoubleExposure">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+   
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Masking transitions:
+        </MudText>
+        <MudRadioGroup T="string" @bind-Value="preferences.MaskingTransitions">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+        </MudRadioGroup>
+
+        <MudText Typo="Typo.body1">
+            Lens flares:
+        </MudText>
+        <MudRadioGroup T="string" Name="Lens flares" @bind-Value="preferences.LensFlares">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Old Film look:
+        </MudText>
+        <MudRadioGroup T="string" Name="Old Film look" @bind-Value="preferences.OldFilmLook">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                }
+            </MudStack>
+        </MudRadioGroup>
+        <MudText Typo="Typo.body1">
+            Picture in picture:
+        </MudText>
+        <MudRadioGroup T="string" Name="Picture in picture" @bind-Value="preferences.PictureInPicture">
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+            @foreach (var structure in Options)
+            {
+                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+            }
+            </MudStack>
+
+        </MudRadioGroup>
+            <!-- Other Transitions comments -->
+            <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
+                Transitions Comments:
+            </MudText>
+            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.OtherTransitions" Variant="Variant.Filled" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
+            </MudTextField>
+
+            <!-- speeches from the day in the highlights film -->
+            <MudRadioGroup T="string" @bind-Value="preferences.UseSpeeches">
+                <MudText Typo="Typo.h6" Class="mt-3 mb-3">
+                Do you like to use speeches from the day in the highlights film:
+                </MudText>
+                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+                @foreach (var speech in speeches)
+                    {
+                    <MudRadio Color="Color.Info" Value="@speech">@speech.ToString()</MudRadio>
+                    }
+                </MudStack>
+            </MudRadioGroup>
+            <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
+                Comments on the use of speeches:                :
+        </MudText>
+            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SpeechComments" Variant="Variant.Filled" Placeholder="">
+        </MudTextField>
+            <!-- Emphasis on sound design:-->
+            <MudRadioGroup T="string" @bind-Value="preferences.SoundDesignEmphasis">
+                <MudText Typo="Typo.h6" Class="mt-3 mb-3">
+                    Emphasis on sound design:
+                </MudText>
+                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+                    @foreach (var _soundDesign in soundDesign)
+                    {
+                        <MudRadio Color="Color.Info" Value="@_soundDesign">@_soundDesign.ToString()</MudRadio>
+                    }
+                </MudStack>
+            </MudRadioGroup>
+            <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
+                Comments on the use of sound deign:
+            </MudText>
+            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SoundDesignComments" Variant="Variant.Filled" Placeholder="">
+            </MudTextField>
+
+            <MudText Typo="Typo.h6" Class="mt-5">
+                Music genres or favorite artist + music licensing sites to use:
+            </MudText>
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.musicLicensingSites" Variant="Variant.Filled" Placeholder="">
+            </MudTextField>
+            <MudText Typo="Typo.h6" Class="mt-5">
+                Samples of songs/films with songs you like:
+            </MudText>
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SongSamples" Variant="Variant.Filled" Placeholder="">
+            </MudTextField>
+
+            <MudText Typo="Typo.h6" Class="mt-5">
+                Please provide us with your LUTs and references of how you like the color to look like:
+            </MudText>
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.ColorReferences" Variant="Variant.Filled" Placeholder="">
+            </MudTextField>
+
+            <MudText Typo="Typo.h6" Class="mt-5">
+                Links to films you like or previous edits:
+            </MudText>
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.FilmReferences" Variant="Variant.Filled"
+                          Placeholder="Please include the links and a few comments on what makes these films appeal to you.">
+            </MudTextField>
+        </MudExpansionPanel>
+        <!-- End:-->
+        <MudExpansionPanel Text="Documentary film guidelines (length, editing pre parts,link to samples):">
+            <MudText Typo="Typo.h6" Class="mt-5">
+                Sample documentary edits for reference by Lumianry Visuals:
+            </MudText>
+            <MudContainer Class="ml-5">
+                <MudLink Class="mt-5" Color="Color.Info" Href="https://www.dropbox.com/scl/fo/cci4a6gh80peazb8qf887/AKBjCHu4-hJkWC3ZRx_EDOM?rlkey=tf5n1yrr9c1zwv96cqzoyaqgk&st=mwe4pe68&dl=0">
+                Example 1 (redirect to dropbox)
+            </MudLink>
+            <br />
+            <MudLink Color="Color.Info"  Href="https://www.dropbox.com/scl/fi/51ww6bl6ry1f7znwndo8l/Matt-Vanessa-Full-Documentary-Edit-02.mp4?rlkey=qhu5etpvkyxm99e1ec1j7ye9b&st=27yis1xd&dl=0 ">
+                    Example 2 (redirect to dropbox)
+            </MudLink>
+            <MudText Typo="Typo.h6" Class="mt-5">
+                It all varies on what happens on the day of the event. Above I have linked two samples.<br />
+                 The idea is simple, <u>Document EVERYTHING</u>: <br />
+            </MudText>
+            <MudText Class="mr-8 ml-8">
+                Getting ready moments <br />
+                Short casual interviews with any of the guests/bridal party/ couple etc if any<br />
+                Gift exchange<br />
+            </MudText>
+            <MudText Class="mr-8 ml-8" Color="Color.Success">
+                First look <InfoTooltipForClientEditingGuidelines TooltipText="@_LavalierMic" /><br />
+            </MudText>
+            <MudText Class="mr-8 ml-8">
+                Moments during photoshoot <br />
+                Details shots  from the decoration of the ceremony and people gathering<br />
+            </MudText>
+            <MudText Class="mr-8 ml-8" Color="Color.Success">
+                Entrances to the ceremony <InfoTooltipForClientEditingGuidelines TooltipText="@_LavalierMic" /><br />
+                Ceremony <InfoTooltipForClientEditingGuidelines TooltipText="@_LavalierMic" /><br />
+                Ceremony Exit <InfoTooltipForClientEditingGuidelines TooltipText="@_LavalierMic" /><br />
+            </MudText>
+            <MudText Class="mr-8 ml-8">
+                Cocktail hour shots with people hanging around<br />
+                Detail shots of the venue<br />
+                People getting inside the venue<br />
+
+            </MudText>
+            <MudText Class="mr-8 ml-8" Color="Color.Success">
+                Entrances of the bridal party and couple <InfoTooltipForClientEditingGuidelines TooltipText="@_recordedAudio" /> <br />
+                First Dance <InfoTooltipForClientEditingGuidelines TooltipText="@_djAudio" /> <br />
+                Parent Dances <InfoTooltipForClientEditingGuidelines TooltipText="@_djAudio" /><br />
+                Cake cutting <InfoTooltipForClientEditingGuidelines TooltipText="@_djAudio" /> <br />
+                Toasts  <InfoTooltipForClientEditingGuidelines TooltipText="@_djAudio" /><br />
+            </MudText>
+            <MudText Class="mr-8 ml-8">
+                Dancing clips<br />
+            </MudText>
+            <MudText Class="mt-2">
+                    Highlighted in <span style="color: var(--mud-palette-success) !important">Green</span> must be recorded with at least two cameras. At least one of the cameras should have a good angle at specific time.
+            </MudText>
+            </MudContainer>
+            <MudText Typo="Typo.h6" Class="mt-5">
+                Client Samples:
+            </MudText>
+            <MudTextField T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.ClientSamples" Variant="Variant.Filled"
+                          Placeholder="Write if you have any samples on what you prefer">
+            </MudTextField>
+        </MudExpansionPanel>
+            </MudForm>
+        </MudExpansionPanels>
+        </DialogContent>
+        <!-- Save Button -->
+        <DialogActions>
+            <MudButton Class="mt-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
+            <MudButton Class="mt-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Close (No Saving)</MudButton>
+        </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+    private MudForm form;
+    private ClientEditingGuidelines preferences = new();
+    private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };
+    private static readonly string[] Options = new[] { "Yes", "No", "Few" };
+    private static readonly string[] speeches = new[] { "No, music only", "Only when they have said something really cool",
+    "Yes, a few from each moment of the day", "Yes put great emphasis on them,built the film around speeches of the day" };
+    private static readonly string[] soundDesign = new[] { "Only music, no other sounds",
+    "A few audio from the day would be nice, documentary feel (Only if there’s something good to use)", "High focus on sound design" };
+    private const string _djAudio = "(Requires: External Recorded Audio from DJ/LAVALIER MIC from the person talking!)";
+    private const string _recordedAudio = "(Requires: External Recorded Audio!)";
+    private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
+
+    [Parameter]
+    public string userId { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        // Attempt to get preferences as soon as the component is initialized
+        if (!string.IsNullOrEmpty(userId))
+        {
+            preferences = await GetPreferences(userId);
+        }
+    }
+    private async Task SavePreferences()
+    {
+        preferences.UpdatedAt = DateTime.UtcNow;
+        preferences.UserId = userId;
+        using var context = DbFactory.CreateDbContext();
+        if (preferences.Id == 0)
+        {
+            // New preferences
+            context.ClientEditingGuidelines.Add(preferences);
+        }
+        else
+        {
+            // Update existing preferences
+            context.ClientEditingGuidelines.Update(preferences);
+        }
+        await context.SaveChangesAsync();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+        Snackbar.Add($"We have saved your preferences successfully!", Severity.Info);
+        MudDialog.Close();
+    }
+    private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
+    {
+        using var context = DbFactory.CreateDbContext();
+        if(_userId != null)
+        {
+            preferences = await context.ClientEditingGuidelines
+            .FirstOrDefaultAsync(ceg => ceg.UserId == _userId);
+        }
+        if(preferences != null)
+        {
+            return preferences;
+        }
+        else
+        {
+            return new ClientEditingGuidelines();
+        }
+    }
+
+    private void OnValidated()
+    {
+        Console.WriteLine("Form validated!");
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

@@ -6,14 +6,14 @@
 <MudDialog>
     <DialogContent >
         <MudForm @ref="form" @bind-IsValid="@success" >
-        <MudGrid Spacing="4" Justify="Justify.Center">
+        <MudGrid Spacing="1" Justify="Justify.Center">
         <MudItem xs="12">
             <MudTextField T="string"
                           Label="Project Name"
                           Value="@newProject.ProjectName"
                           ReadOnly="true"
-                          Variant=Variant.Outlined
-                          Class="d-flex justify-center mud-width-full py-2" />
+                          Variant=Variant.Text
+                          Class="d-flex justify-center mud-width-full py-2 mb-2" />
         </MudItem>
         <MudItem xs="12">
             <MudNumericField T="decimal" Required=true
@@ -23,8 +23,7 @@
                             HelperTextOnFocus=true
                             AdornmentText="%"   
                             Adornment="Adornment.Start"
-                            HelperText="Client Discount as Percentage for example if you enter 10, it will be 10% leave it as 0 for no discount"
-                            Class="d-flex justify-center mud-width-full mb-n7 mt-n2" />
+                            Class="d-flex justify-center mud-width-full  mt-n1" />
         </MudItem>
         <MudItem xs="12">
             @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
@@ -48,8 +47,6 @@
                           @bind-Value="_cameraNum"
                           Label="Number of Cameras"
                           Variant=Variant.Outlined
-                          HelperTextOnFocus=true
-                          HelperText=""
                           Class="d-flex justify-center mud-width-full py-2" />
         </MudItem>
         <MudItem xs="12">
@@ -57,11 +54,9 @@
                           @bind-Value="footageSize"
                           Label="Raw footage size"
                           Variant=Variant.Outlined
-                          HelperTextOnFocus=true
-                          HelperText="Footage Size in GB"
                           Adornment="Adornment.End"
                           AdornmentText="GB"
-                          Class="d-flex justify-center mud-width-full py-2"  />
+                          Class="d-flex justify-center mud-width-full"  />
         </MudItem>
         <MudItem xs="12">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
@@ -72,16 +67,7 @@
                           Variant=Variant.Outlined
                           Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="6">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                          @bind-Value="prepartsDuration"
-                          Label="Pre parts Duration Hours"
-                          Variant=Variant.Outlined
-                          Adornment="Adornment.End"
-                          AdornmentText="hour"
-                          Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
-        <MudItem xs="6">
+        <MudItem xs="12">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                         @bind-Value="prepartsDurationMinutes"
                         Label="Pre parts Duration Minutes"
@@ -102,22 +88,12 @@
         <MudItem xs="6">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                               @bind-Value="documentryMulticameraDurationMinutes"
-                              Label="Documentary Multicamera Duration Minutes"
                               Variant=Variant.Outlined
                               Adornment="Adornment.End"
                               AdornmentText="min"
-                              Class="d-flex flex-column  mud-width-full" />
+                              Class="d-flex flex-column  mud-width-full py-3" />
         </MudItem>
-        <MudItem xs="6">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                          @bind-Value="hightlightDuration"
-                          Label="Highlights Duration"
-                          Variant=Variant.Outlined
-                          Adornment="Adornment.End"
-                          AdornmentText="hour"
-                          Class="d-flex flex-column  mud-width-full" />
-         </MudItem>
-        <MudItem xs="6">
+        <MudItem xs="12">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                               @bind-Value="hightlightDurationMinutes"
                               Label="Highlights Duration Minutes"
@@ -126,17 +102,7 @@
                               AdornmentText="min"
                               Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="6">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                          @bind-Value="socialMediaDuration"
-                          Label="Social Media Duration"
-                          Variant=Variant.Outlined
-                          Adornment="Adornment.End"
-                          AdornmentText="hour"
-                          AdornmentColor="Color.Default"
-                          Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
-        <MudItem xs="6">
+        <MudItem xs="12">
                     <MudNumericField T="decimal" Required=true Min="0.0M"
                               @bind-Value="socialMediaDurationMinutes"
                               Label="Social Media Duration Minutes"
@@ -211,10 +177,10 @@
         decimal? footageQuality = selectedMultipliers[3];
         decimal? _footageSize = footageSize;
         decimal? _Misc = ( Misc * 60 ); // Calculate it in minutes
-        decimal? _prepartsDuration = ( prepartsDuration * 60 ) + prepartsDurationMinutes;// Calculate it in minutes
+        decimal? _prepartsDuration =  prepartsDurationMinutes;// Calculate it in minutes
         decimal? _documentryMulticameraDuration = ( documentryMulticameraDuration * 60 ) + documentryMulticameraDurationMinutes; // Calculate it in minutes
-        decimal? _hightlightDuration = hightlightDuration + (hightlightDurationMinutes / 60); // Keep it in hours
-        decimal? _socialMediaDuration = ( socialMediaDuration * 60 ) + socialMediaDurationMinutes; // Calculate it in minutes
+        decimal? _hightlightDuration = hightlightDurationMinutes; // Calculate it in minutes
+        decimal? _socialMediaDuration = socialMediaDurationMinutes; // Calculate it in minutes
         decimal? _clientDiscount = ( 1 - (clientDiscount / 100) );
 
 

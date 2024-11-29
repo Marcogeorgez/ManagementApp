@@ -1,5 +1,6 @@
 ﻿@page "/admin-dashboard"
 @using LuminaryVisuals.Components.Shared.AgencyCreation
+@using LuminaryVisuals.Components.Shared.Users
 @using LuminaryVisuals.Data
 @inject UserServices UserManagementService
 @inject HttpClient httpClient
@@ -40,7 +41,7 @@ else
     }
 
 
-    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true
+    <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
                  SelectedItems="SelectedItems" @ref=_dataGrid
                  Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -70,6 +71,8 @@ else
                 <col style="width: 1vw;" /><!-- Rate Lek -->
                 <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
                 <col style="width: 50vw;" /><!-- Private notes -->
+                <col style="width: 1vw;" /><!-- Client Preferneces -->
+
                 <col style="width: 1vw;" /><!-- Edit button -->
             </MudHidden>
         </ColGroup>
@@ -85,7 +88,7 @@ else
             </TemplateColumn>
             <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="User Name" CellStyle="text-align: center" Editable=false>
             </PropertyColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="User Name" CellStyle="text-align: center" Editable=false>
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="User Email" CellStyle="text-align: center" Editable=false>
             </PropertyColumn>
             <PropertyColumn Property="x => x.SelectedRole" Title="Current Role" HeaderStyle="text-align:center;"
                             Style="min-width: 150px;" CellStyle="text-align: center" >
@@ -108,10 +111,10 @@ else
                 <EditTemplate>
                     <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRate"
-                                  @onblur="() => UpdateHourlyRate(context.Item)"
-                                  Variant="Variant.Outlined"
+                                  @bind-Value:event="oninput"
+                                  ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)"                                  Variant="Variant.Outlined"
                                   Label="Hourly Rate in US$"
-                                  Format="N"
+                                  Format="N" Immediate=true
                                   Adornment="Adornment.Start"
                                   AdornmentText="$" />
                 </EditTemplate>
@@ -123,7 +126,8 @@ else
                 <EditTemplate>
                     <MudNumericField T="decimal?"
                                   @bind-Value="context.Item.HourlyRateInLek"
-                                  @onblur="() => UpdateHourlyRateInLek(context.Item)"
+                                  @bind-Value:event="oninput"
+                                  ValueChanged="(newValue) => UpdateHourlyRateInLekWrapper(context.Item, newValue)"
                                   Variant="Variant.Outlined"
                                   Label="Hourly Rate in Lek"
                                   Format="N"
@@ -136,7 +140,6 @@ else
                             ShowFilterIcon="false" ShowColumnOptions="false">
 
             </PropertyColumn>
-
             <PropertyColumn Property="x => x.Note" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
                 <CellTemplate>
                     <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
@@ -155,9 +158,17 @@ else
             </PropertyColumn>
             <TemplateColumn>
                 <CellTemplate>
+                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
                     <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Color="Color.Error"
+                               
+                               Size="Size.Medium"
+                               OnClick="@(() => OpenDeleteUserDialog(context.Item))"
+                               Icon="@Icons.Material.Filled.Delete"
+                               Class="">
+                    </MudIconButton>
                 </CellTemplate>
-            </TemplateColumn>
+                </TemplateColumn>
         </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
@@ -289,13 +300,21 @@ else
         var dialog = DialogService.Show<FullNoteDialog>("Edit Note",parameters,options);
         dialog.Result.ContinueWith(async task =>
         {
-            if (!task.IsCanceled && task.Result.Data is string updatedText)
+            if (!task.IsCanceled && task.Result!.Data is string updatedText )
             {
                 OnNoteTextChanged(updatedText, context);
                 // Update the UI for notes instead of re-loading the entire data which is an expensive operation
                 if (context.Item.Notes.ContainsKey(context.Item.UserId))
                 {
                     context.Item.Notes[context.Item.UserId].Note = updatedText;
+                }
+                else
+                {
+                    context.Item.Notes[context.Item.UserId] = new UserNote
+                    {
+                        TargetUserId = context.Item.UserId,
+                        Note = updatedText
+                    };
                 }
 
             }
@@ -398,6 +417,47 @@ else
         return roles.Where(r => r != null).ToList();
     }
 
+    // Delete user
+    private async Task OpenDeleteUserDialog(UserRoleViewModel User)
+    {
+        var parameters = new DialogParameters
+        {
+            { "User", User },
+        };
+        var dialog = await DialogService.ShowAsync<DeleteUserDialogComponent>("Delete User", parameters);
+        var result = await dialog.Result;
+        if(!result.Canceled && result.Data != null)
+        {
+            DeleteUser(User, result.Data.ToString());
+        }
+    }
+    private async Task DeleteUser(UserRoleViewModel User,string adminId)
+    {
+        bool isDeleted = false; ;
+        if (await ConfirmationService.Confirm($"Are you sure you want to delete {User.UserName} with Email {User.UserEmail}? All his projects will be assigned to admin user."))
+        {
+            isDeleted = await UserManagementService.DeleteUserAsync(User.UserId, adminId);
+        }
+        if(isDeleted)
+        {
+            Snackbar.Add("User have been deleted successfully", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("User have not been deleted!", Severity.Error);
+        }
+    }
+
+
+    // Client preferences:
+    private async Task OpenClientPreference(UserRoleViewModel User)
+    {
+        var parameters = new DialogParameters
+        {
+            { "userId", User.UserId },
+        };
+        var dialog = await DialogService.ShowAsync<EditClientEditingGuidelinesComponent>("Change Client Preferences", parameters);
+    }
     private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
         try
@@ -408,7 +468,7 @@ else
             }
             if (newRole == "Admin")
             {
-                if (!await ConfirmationService.Confirm("Are you sure you want to change {user.UserName} role to Admin?"))
+                if (!await ConfirmationService.Confirm($"Are you sure you want to change {user.UserName} role to Admin?"))
                 {
                     return;
                 }
@@ -449,6 +509,17 @@ else
     }
 
     // UpdateHourlyRate AND UpdateHourlyRateInLek to update the display only.
+    private void UpdateHourlyRateWrapper(UserRoleViewModel user, decimal? newValue)
+    {
+        user.HourlyRate = newValue;
+        UpdateHourlyRate(user);
+    }
+
+    private void UpdateHourlyRateInLekWrapper(UserRoleViewModel user, decimal? newValue)
+    {
+        user.HourlyRateInLek = newValue;
+        UpdateHourlyRateInLek(user);
+    }
     private void UpdateHourlyRateInLek(UserRoleViewModel user)
     {
         user.HourlyRate = user.HourlyRateInLek / storedValue;
