@@ -12,7 +12,7 @@
 <CascadingValue Value="_drawerOpen">
     <MudLayout>
         <NavMenu @rendermode="InteractiveServer" />
-        <MudMainContent Style="height:auto; overflow-x: hidden; overflow-y: auto;">
+        <MudMainContent Style="height:auto; overflow-x: hidden; overflow-y: auto; padding-top:30px;">
             @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
             @if (IsStaticSSR)
             {
