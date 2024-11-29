@@ -10,5 +10,10 @@
         display: table !important;
         margin-bottom: 20px;
     }
+    .mud-navmenu
+    {
+        height: auto !important;
+    }
 }
+
 
