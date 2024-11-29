@@ -64,15 +64,14 @@ else
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
                 <col style="width: 1vw;" /><!-- # -->
                 <col style="width: 1vw;" /><!-- # -->
-                <col style="width: 5vw;" /><!--User Name-->
-                <col style="width: 5vw;" /><!--User Email-->
-                <col style="width: 3vw;" /><!-- Current Role -->
+                <col style="width: 3vw;" /><!--User Name-->
+                <col style="width: 3vw;" /><!--User Email-->
+                <col style="width: 2vw;" /><!-- Current Role -->
                 <col style="width: 1vw;" /><!-- Rate $ -->
                 <col style="width: 1vw;" /><!-- Rate Lek -->
                 <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
-                <col style="width: 50vw;" /><!-- Private notes -->
+                <col style="width: 30vw;" /><!-- Private notes -->
                 <col style="width: 1vw;" /><!-- Client Preferneces -->
-
                 <col style="width: 1vw;" /><!-- Edit button -->
             </MudHidden>
         </ColGroup>
@@ -158,6 +157,7 @@ else
             </PropertyColumn>
             <TemplateColumn>
                 <CellTemplate>
+                    <MudStack Row=true Spacing="0">
                     <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
                     <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
                     <MudIconButton Color="Color.Error"
@@ -167,6 +167,7 @@ else
                                Icon="@Icons.Material.Filled.Delete"
                                Class="">
                     </MudIconButton>
+                    </MudStack>
                 </CellTemplate>
                 </TemplateColumn>
         </Columns>
