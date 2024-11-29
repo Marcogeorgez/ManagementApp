@@ -71,6 +71,8 @@ else
                 <col style="width: 1vw;" /><!-- Rate Lek -->
                 <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
                 <col style="width: 50vw;" /><!-- Private notes -->
+                <col style="width: 1vw;" /><!-- Client Preferneces -->
+
                 <col style="width: 1vw;" /><!-- Edit button -->
             </MudHidden>
         </ColGroup>
@@ -138,7 +140,6 @@ else
                             ShowFilterIcon="false" ShowColumnOptions="false">
 
             </PropertyColumn>
-
             <PropertyColumn Property="x => x.Note" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
                 <CellTemplate>
                     <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
@@ -167,7 +168,7 @@ else
                                Class="">
                     </MudIconButton>
                 </CellTemplate>
-            </TemplateColumn>
+                </TemplateColumn>
         </Columns>
         <PagerContent>
             <MudDataGridPager T="UserRoleViewModel" />
@@ -299,13 +300,21 @@ else
         var dialog = DialogService.Show<FullNoteDialog>("Edit Note",parameters,options);
         dialog.Result.ContinueWith(async task =>
         {
-            if (!task.IsCanceled && task.Result.Data is string updatedText)
+            if (!task.IsCanceled && task.Result!.Data is string updatedText )
             {
                 OnNoteTextChanged(updatedText, context);
                 // Update the UI for notes instead of re-loading the entire data which is an expensive operation
                 if (context.Item.Notes.ContainsKey(context.Item.UserId))
                 {
                     context.Item.Notes[context.Item.UserId].Note = updatedText;
+                }
+                else
+                {
+                    context.Item.Notes[context.Item.UserId] = new UserNote
+                    {
+                        TargetUserId = context.Item.UserId,
+                        Note = updatedText
+                    };
                 }
 
             }
