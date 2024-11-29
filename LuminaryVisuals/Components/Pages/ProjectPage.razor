@@ -12,15 +12,13 @@
 <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-    ApplyDropClassesOnDragStarted="true"
-    DragDropColumnReordering=true
     ColumnsPanelReordering=true
+    ShowColumnOptions=true
     Groupable=true
     ShowMenuIcon=true
     EditMode="DataGridEditMode.Form"
     EditTrigger="DataGridEditTrigger.Manual"
     ReadOnly=false
-    DragIndicatorSize="Size.Small"
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges"
@@ -378,7 +376,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
         {           
-            <PropertyColumn Property="x => x.BillableHours" Title="Editor Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.BillableHours" Title="Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -386,7 +384,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -396,7 +394,7 @@
         {
             if(_isAdminView)
             {
-            <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -404,7 +402,7 @@
         }
         else if(_isClientView)
             {
-                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Editable=false CellStyle="text-align:center;">
+                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
                     <CellTemplate Context="context">
                         @{
                             var project = context.Item as Project;
@@ -426,7 +424,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
-            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false">
+            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false>
                 <CellTemplate>
                     <MudIconButton Icon="@(context.Item.isPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                                    Color="@(context.Item.isPaymentVisible ? Color.Primary : Color.Default)"
