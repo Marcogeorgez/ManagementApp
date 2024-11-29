@@ -180,7 +180,9 @@ else
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
     </MudDataGrid>
-    if(_usdToLek){
+    <MudContainer Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
+   
+    @if(_usdToLek){
         <MudNumericField T="decimal?"
                   @bind-value="storedValue" Label="Usd To Lek" Class="mt-4" Min="0.0M" Required=true RequiredError="Please enter a positive number"
                   Variant="Variant.Outlined" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
@@ -192,7 +194,7 @@ else
            OnClick="@(() => OpenDialog())">
     Migrate Selected Users to New Agency
 </MudButton>
-
+    </MudContainer>
 }
 
 @code {
