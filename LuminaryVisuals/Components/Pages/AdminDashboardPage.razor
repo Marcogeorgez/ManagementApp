@@ -40,7 +40,7 @@ else
     }
 
 
-    <MudDataGrid T="UserRoleViewModel" Bordered=true CanCancelEdit=true MultiSelection=true
+    <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
                  SelectedItems="SelectedItems" @ref=_dataGrid
                  Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -155,7 +155,15 @@ else
             </PropertyColumn>
             <TemplateColumn>
                 <CellTemplate>
+                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
                     <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Color="Color.Error"
+                               
+                               Size="Size.Medium"
+                               OnClick="@(() => OpenDeleteUserDialog(context.Item))"
+                               Icon="@Icons.Material.Filled.Delete"
+                               Class="">
+                    </MudIconButton>
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
@@ -398,6 +406,47 @@ else
         return roles.Where(r => r != null).ToList();
     }
 
+    // Delete user
+    private async Task OpenDeleteUserDialog(UserRoleViewModel User)
+    {
+        var parameters = new DialogParameters
+        {
+            { "User", User },
+        };
+        var dialog = await DialogService.ShowAsync<DeleteUserDialogComponent>("Delete User", parameters);
+        var result = await dialog.Result;
+        if(!result.Canceled && result.Data != null)
+        {
+            DeleteUser(User, result.Data.ToString());
+        }
+    }
+    private async Task DeleteUser(UserRoleViewModel User,string adminId)
+    {
+        bool isDeleted = false; ;
+        if (await ConfirmationService.Confirm($"Are you sure you want to delete {User.UserName} with Email {User.UserEmail}? All his projects will be assigned to admin user."))
+        {
+            isDeleted = await UserManagementService.DeleteUserAsync(User.UserId, adminId);
+        }
+        if(isDeleted)
+        {
+            Snackbar.Add("User have been deleted successfully", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("User have not been deleted!", Severity.Error);
+        }
+    }
+
+
+    // Client preferences:
+    private async Task OpenClientPreference(UserRoleViewModel User)
+    {
+        var parameters = new DialogParameters
+        {
+            { "userId", User.UserId },
+        };
+        var dialog = await DialogService.ShowAsync<EditClientEditingGuidelinesComponent>("Change Client Preferences", parameters);
+    }
     private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
         try
