@@ -26,6 +26,7 @@
     
 
     <ToolBarContent>
+        <MudText Typo="Typo.h4">Your Projects</MudText>
             <MudSpacer />
     </ToolBarContent>
     <ColGroup>
@@ -80,8 +81,52 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
         {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Name" DragAndDropEnabled="false" Groupable="false" Editable=false CellStyle="text-align:center;" />
-        }
+        <PropertyColumn Property="x => x.Description" Title="Project" Hideable="true" CellStyle="text-align:center; min-width:20vw;"
+                        Groupable="false" Editable=false Required=false>
+            <CellTemplate>
+                @{
+                    string descriptionValue = context.Item.Description ?? string.Empty;
+                }
+                @if (descriptionValue.Contains("Warning"))
+                {
+                    <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                    <MudTextField T="string"
+                                  HelperText="Click to expand"
+                                  Value="context.Item.ProjectName"
+                                  ReadOnly="true"
+                                  Immediate="true" Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                  AutoGrow=true
+                                  MaxLines="4"
+                                  OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
+                        <MudTooltip Text="Expand">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                        </MudTooltip>
+                    </MudTextField>
+                }
+                else
+                {
+                    <MudTextField T="string"
+                                  HelperText="Click to expand"
+                                  Value="context.Item.ProjectName"
+                                  ReadOnly="true"
+                                  Immediate="true" Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                  AutoGrow=true
+                                  MaxLines="4"
+                                  OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
+                        <MudTooltip Text="Expand">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                        </MudTooltip>
+                    </MudTextField>
+                }
+
+            </CellTemplate>
+            <EditTemplate>
+                <MudText Style="display:none;" />
+            </EditTemplate>
+        </PropertyColumn>
+                }        }
         @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
         {
                     <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName" 
@@ -190,52 +235,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
         {
-                <PropertyColumn Property="x => x.Description" Title="Project Description" Hideable="true" CellStyle="text-align:center; min-width:20vw;"
-                    Groupable="false" Editable=false Required=false>
-                <CellTemplate >
-                    @{
-                        string descriptionValue = context.Item.Description ?? string.Empty;
-                    }
-                    @if(descriptionValue.Contains("Warning"))
-                    {
-                        <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
-                        <MudTextField T="string"
-                        HelperText="Click to expand"
-                        Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))" 
-                        ReadOnly="true"
-                        Immediate="true" Adornment="Adornment.End"
-                                      AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                        AutoGrow=true
-                        MaxLines="4"
-                        OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
-                            <MudTooltip Text="Expand">
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull"/>
-                            </MudTooltip>
-                    </MudTextField>   
-                    }
-                    else
-                    {
-                        <MudTextField T="string"
-                                      HelperText="Click to expand"
-                                      Value="@(UserRoleViewModel.StripHtmlTags(descriptionValue))"
-                                      ReadOnly="true"
-                                      Immediate="true" Adornment="Adornment.End"
-                                      AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                                      AutoGrow=true
-                                      MaxLines="4"
-                                      OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
-                            <MudTooltip Text="Expand">
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
-                            </MudTooltip>
-                        </MudTextField>
-                    }
-                 
-                    </CellTemplate>
-                        <EditTemplate>
-                            <MudText Style="display:none;" />
-                        </EditTemplate>
-            </PropertyColumn>
-            }
+                
         @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
         {
             <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle=""> 
@@ -515,6 +515,8 @@
     </PagerContent>
 </MudDataGrid>
 <MudContainer Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
+    @if(isAdminView)
+    { 
     <MudStack Spacing="0">
         <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
         <MudStack Row=true>
@@ -523,44 +525,53 @@
         <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
         </MudStack>
     </MudStack>
-    <div class="mb-4">
-    @if(_isAdminView){
-            <MudButton Color="Color.Success"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.AddCircle"
-                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mb-1">
-                Add New Project
-            </MudButton>
-            <MudSpacer></MudSpacer>
-            <MudTooltip Text=" Download Filtered As Csv">           
-            <MudButton OnClick="DownloadFilteredAsCsv"
-                       Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv</MudButton>
-                       </MudTooltip>
+
+    <MudButton Color="Color.Success"
+        Variant="Variant.Filled"
+        StartIcon="@Icons.Material.Filled.AddCircle"
+        OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mb-1">
+        Add New Project
+    </MudButton>
+    <MudSpacer />
+    <MudTooltip Text=" Download Filtered rows As Csv">           
+    <MudButton OnClick="DownloadFilteredAsCsv"
+        Color="Color.Primary"
+        Variant="Variant.Filled"
+        StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv
+    </MudButton>
+    </MudTooltip>
+        <MudTooltip Text=" Backup All Projects As Csv">           
+    <MudButton OnClick="DownloadFilteredAsCsv" 
+        Color="Color.Primary"
+        Variant="Variant.Filled"
+        StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download All Projects
+    </MudButton>
+    </MudTooltip>
 
     }
     else if (_isClientView)
     {
-                <MudButton Color="Color.Success"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddCircle"
-                           OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
-                    Create New Project
-                </MudButton>
+        <MudButton Color="Color.Success" Class="mt-5"
+                    Variant="Variant.Filled"
+                    StartIcon="@Icons.Material.Filled.AddCircle"
+                    OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
+            Create New Project
+        </MudButton>
     }
-    </div>
 </MudContainer>
 @code {
 
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    [Inject]
+    private IAuthorizationService AuthorizationService { get; set; }
     private MudDataGrid<Project> _dataGrid;
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
     private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = true };
     private bool _isArchived;
     private bool _isAdminView;
+    private bool isAdminView;
     private bool _isEditorView;
     private bool _isClientView;
     private bool _groupByClientName;
@@ -568,8 +579,6 @@
     private string _currentUserId = "";
     private string _currentRole = "";
     private string _userName = "";
-    private string CurrentRole => _isAdminView ? "Admin" :
-                          _isEditorView ? "Editor" : "Client";
     private List<UserRoleViewModel.UserProjectViewModel> Editors = new List<UserRoleViewModel.UserProjectViewModel>();
     private List<UserRoleViewModel.UserProjectViewModel> Clients = new List<UserRoleViewModel.UserProjectViewModel>();
     [Inject]
@@ -585,12 +594,31 @@
     }
     protected override async Task OnInitializedAsync()
     {
-        AdminToggle();
         // Get the current user ID
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var currentUser = authState.User;
         _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        if (currentUser.IsInRole("Admin"))
+        {
+            _currentRole = "Admin";
+            _isAdminView = true;
+            isAdminView = true;
+        }
+        else if (currentUser.IsInRole("Editor"))
+        {
+            _currentRole = "Editor";
+            _isEditorView = true;
+            _isAdminView = false;
+
+        }
+        else if (currentUser.IsInRole("Client"))
+        {
+            _currentRole = "Client";
+            _isClientView = true;
+            _isAdminView = false;
+        }
+        await LoadProjects();
     }
 
 
@@ -650,13 +678,18 @@
     {
         if (_isAdminView)
         {
-
             projects = await projectServices.GetProjectsAsync(_isArchived);
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
         }
-        else if (_isClientView)
+        else if (_isClientView && isAdminView == false)
             LoadProjectsForClient();
+        else if (_isClientView && isAdminView == true)
+        {
+            projects = await projectServices.GetProjectsAsync(_isArchived);
+            Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+            Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+        }
         else if (_isEditorView)
             LoadProjectsForEditors();
         StateHasChanged();
