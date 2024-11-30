@@ -40,7 +40,7 @@ else
         </MudAlert>
     }
 
-
+    
     <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
                  SelectedItems="SelectedItems" @ref=_dataGrid
                  Items="@AllUsers" SortMode="SortMode.Multiple"
@@ -53,7 +53,7 @@ else
                  CommittedItemChanges="@CommittedItemChanges">
 
         <ToolBarContent>
-            <MudText Typo="Typo.h5">Admin Dashboard</MudText>
+            <MudText Typo="Typo.h4">Admin Dashboard</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
                           Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
@@ -190,7 +190,7 @@ else
  <div class="d-flex flex-wrap mt-4">
         <MudSwitch @bind-Value="_usdToLek" Color="Color.Primary">Change Conversion Rate</MudSwitch>
 </div>
-<MudButton Color="Color.Error" 
+        <MudButton style="background-color: rgb(244,47,70,0.45)" Variant=Variant.Filled
            OnClick="@(() => OpenDialog())">
     Migrate Selected Users to New Agency
 </MudButton>
