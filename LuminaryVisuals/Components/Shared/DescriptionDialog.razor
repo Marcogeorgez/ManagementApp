@@ -2,7 +2,10 @@
 @inject ISnackbar Snackbar
 <MudDialog>
     <DialogContent> 
-        <MudHtmlEditor Html="@Description" HtmlChanged="OnNoteTextChanged" >
+        <MudTextField Class="mb-10" Label="Project Name" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
+
+        <MudText Class="mb-2">Project Description 
+        <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
             <select class="ql-font">
                 <option value="sans-serif"></option>
                 <option value="serif"></option>
@@ -18,6 +21,7 @@
             <button class="ql-list" value="check"></button>
             <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
         </MudHtmlEditor>
+        </MudText>
     </DialogContent>
 
     <DialogActions>
@@ -29,19 +33,19 @@
 @code {
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
 
-    [Parameter] public string Description { get; set; }
-    [Parameter] public EventCallback<string> NewDescription { get; set; }
+    [Parameter] public Project context { get; set; }
+    [Parameter] public EventCallback<Project> modifiedProject { get; set; }
 
 
     private void OnNoteTextChanged(string text)
     {
-        Description = text;
+        context.Description = text;
     }
     private async Task Save()
     {
-        await NewDescription.InvokeAsync(Description); // Pass the new description back
+        await modifiedProject.InvokeAsync(context); // Pass the modified project back
         Snackbar.Add($"Successfully saved the note.", Severity.Info);
-        Dialog.Close(DialogResult.Ok(Description));
+        Dialog.Close(DialogResult.Ok(context));
     }
 
     private void Cancel()

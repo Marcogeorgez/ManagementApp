@@ -81,7 +81,8 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
         {
-        <PropertyColumn Property="x => x.Description" Title="Project" Hideable="true" CellStyle="text-align:center; min-width:20vw;"
+        <PropertyColumn Property="x => x.Description" Title="Project"
+            Hideable="true" CellStyle="text-align:center; min-width:20vw;"
                         Groupable="false" Editable=false Required=false>
             <CellTemplate>
                 @{
@@ -98,7 +99,7 @@
                                   AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                                   AutoGrow=true
                                   MaxLines="4"
-                                  OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
+                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                         <MudTooltip Text="Expand">
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
                         </MudTooltip>
@@ -114,7 +115,7 @@
                                   AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                                   AutoGrow=true
                                   MaxLines="4"
-                                  OnAdornmentClick="@(() => OpenDescriptionDialog(descriptionValue, context.Item))">
+                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                         <MudTooltip Text="Expand">
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
                         </MudTooltip>
@@ -126,7 +127,7 @@
                 <MudText Style="display:none;" />
             </EditTemplate>
         </PropertyColumn>
-                }        }
+        }
         @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
         {
                     <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName" 
@@ -233,9 +234,6 @@
                 </EditTemplate>
             </PropertyColumn>
         }
-        @if (RoleBasedColumns[_currentRole].Contains("ProjectDescription"))
-        {
-                
         @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
         {
             <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle=""> 
@@ -782,14 +780,14 @@
 
     }
     // Opens Description Dialog
-    private async void OpenDescriptionDialog(string description, object context)
+    private async void OpenDescriptionDialog(Project context)
     {
         var parameters = new DialogParameters
         {
-            { "Description", description },
-            { "NewDescription", EventCallback.Factory.Create<string>(this, async (newDescription) =>
+            { "context", context },
+            { "modifiedProject", EventCallback.Factory.Create<Project>(this, async (modifiedProject) =>
                 {
-                    await SaveDescription(newDescription, context);
+                    await SaveDescription(modifiedProject);
                 })
             }
         };
@@ -797,7 +795,14 @@
         DialogService.Show<DescriptionDialog>("Project Description", parameters, options);
     }
 
-
+    // Update description and save it to DB
+    private async Task SaveDescription(Project modifiedProject)
+    {
+        if (modifiedProject is Project project)
+        {
+            await projectServices.UpdateProjectAsync(project);
+        }
+    }
     private async void OpenViewClientEditingGuidelinesComponent(Project context)
     {
         var parameters = new DialogParameters
@@ -807,15 +812,7 @@
         var options = new DialogOptions { FullScreen = true };
         DialogService.Show<ViewClientEditingGuidelinesComponent>("Client Preferences", parameters, options);
     }
-    // Update description and save it to DB
-    private async Task SaveDescription(string newDescription, object context)
-    {
-        if (context is Project project)
-        {
-            project.Description = newDescription;
-            await projectServices.UpdateProjectAsync(project);
-        }
-    }
+
     // Calculates Total Client Billable hours based on a formula.
     private async Task TimeCalculator( Project project)
     {
@@ -1021,10 +1018,10 @@
         {
             csv.AppendLine(string.Join(",",
                 EscapeCsvValue(project.ProjectName),
-                project.ClientBillableHours
+                project.ClientBillableAmount
             ));
-            if(project.ClientBillableHours != null )
-                total += project.ClientBillableHours.Value;
+            if(project.ClientBillableAmount != null )
+                total += project.ClientBillableAmount.Value;
         }
         csv.AppendLine();
         csv.AppendLine(string.Join(",",
