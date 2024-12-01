@@ -11,6 +11,8 @@
 @inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
 @inject SettingService SettingService
+@inject NavigationManager NavigationManager
+
 @* @attribute [Authorize(Policy = "RequireAdminRole")]
  *@
 <PageTitle>Admin Dashboard</PageTitle>
@@ -379,45 +381,58 @@ else
         _timer.Start(); 
     }
 
+    private readonly HashSet<string> _savingNotes = new();
+
     private async Task SaveNotes()
     {
-        if (userNotesDict.ContainsKey(targetId))
-        {
-            var noteToSave = userNotesDict[targetId];
+        if (_savingNotes.Contains(targetId))
+            return; // Prevent duplicate saves
+        _savingNotes.Add(targetId);
 
-            // Check if it's a new note or not 
-            if (noteToSave.Id == 0)
+        try
+        {
+            if (userNotesDict.ContainsKey(targetId))
             {
-                // Add the new note
-                var result = await UserNoteService.AddNoteAsync(targetId, noteToSave.Note);
-                if (result.Success)
+                var noteToSave = userNotesDict[targetId];
+
+                if (noteToSave.Id == 0)
                 {
-                    Snackbar.Clear(); 
-                    Snackbar.Add($"Successfully saved note", Severity.Info);
-                    StateHasChanged();
+                    var result = await UserNoteService.AddNoteAsync(targetId, noteToSave.Note);
+                    if (result.Success)
+                    {
+                        var noteId = await UserNoteService.GetNoteIdByUserId(targetId);
+                        userNotesDict[targetId].Id = noteId.Id;
+                        await LoadUserNotes();
+                        Snackbar.Clear();
+                        Snackbar.Add($"Successfully saved note", Severity.Info);
+                    }
+                    else
+                    {
+                        Console.WriteLine(result.Message);
+                    }
                 }
                 else
                 {
-                    Console.WriteLine(result.Message);
-                }
-            }
-            else
-            {
-                // Update the existing note
-                var result = await UserNoteService.UpdateNoteAsync(noteToSave.Id, noteToSave.Note);
-                if (result.Success)
-                {
-                    Snackbar.Configuration.SnackbarVariant = Variant.Filled;
-                    Snackbar.Add($"Successfully saved note", Severity.Info);
-                    StateHasChanged();
-                }
-                else
-                {
-                    Console.WriteLine(result.Message);
+                    var result = await UserNoteService.UpdateNoteAsync(noteToSave.Id, noteToSave.Note);
+                    if (result.Success)
+                    {
+                        Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+                        Snackbar.Add($"Successfully updated note", Severity.Info);
+                    }
+                    else
+                    {
+                        Console.WriteLine(result.Message);
+                    }
                 }
             }
         }
-    }        
+        finally
+        {
+            _savingNotes.Remove(targetId);
+            StateHasChanged();
+        }
+    }
+
     // Get all available roles to allow drop-list menu to choose new roles
     private async Task<List<string>> GetAvailableRoles()
     {
@@ -494,6 +509,7 @@ else
 
                 var elementUser = AllUsers.First(u => u.UserId == user.UserId);
                 elementUser.Roles = new List<string> { newRole };
+                NavigationManager.Refresh();
             }
             else
             {
