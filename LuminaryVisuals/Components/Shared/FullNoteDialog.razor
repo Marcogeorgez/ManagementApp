@@ -18,8 +18,8 @@
         </MudHtmlEditor>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
-        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">Save</MudButton>
+        <MudButton  OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
+        <MudButton Disabled="@isDelayed" OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -30,6 +30,13 @@
     private bool success;
     private MudForm form;
     private DateTime _minDate = DateTime.Now.Date;
+    private bool isDelayed = true;
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+        isDelayed = false;
+        StateHasChanged();
+    }
     private void OnNoteTextChanged(string text)
     {
         Text = text;
