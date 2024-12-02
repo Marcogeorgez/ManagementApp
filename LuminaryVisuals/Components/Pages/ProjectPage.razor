@@ -315,7 +315,7 @@
                         Variant="Variant.Outlined"
                         Class="mt-3"
                         FixDay="1"
-                        DateFormat="yyyy/MM"
+                        DateFormat="MM/yyyy"
                         Date="@context.Item.WorkingMonth"
                         DateChanged="@(date => context.Item.WorkingMonth = date)" />
                     }
@@ -498,12 +498,6 @@
                                 Archive
                             </MudButton>
                         }
-                        @if (!_isArchived)
-                        {
-                            <MudButton Size="@Size.Small" StartIcon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Info" Variant="Variant.Filled"
-                                       OnClick="@context.Actions.StartEditingItemAsync">Modify </MudButton>
-                        }
                     </MudStack>
 
                         @if(_isAdminView || _isEditorView)
@@ -547,37 +541,37 @@
 <MudContainer Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
     @if(isAdminView)
     { 
-    <MudStack Spacing="0">
-        <MudSwitch T="bool" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+    <MudStack Spacing="0" Class="mb-5 mt-5">
+        <MudSwitch T="bool" Class="mb-2" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
         <MudStack Row=true>
         <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
         <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
         <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
         </MudStack>
     </MudStack>
-
-    <MudButton Color="Color.Success"
+    }
+    @if(_isAdminView){
+    <MudButton Color="Color.Success" 
         Variant="Variant.Filled"
         StartIcon="@Icons.Material.Filled.AddCircle"
-        OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mb-1">
+        OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="">
         Add New Project
     </MudButton>
     <MudSpacer />
-    <MudTooltip Text=" Download Filtered rows As Csv">           
-    <MudButton OnClick="DownloadFilteredAsCsv"
-        Color="Color.Primary"
+    <MudTooltip Text=" Download Filtered rows As Csv">
+            <MudButton OnClick="DownloadFilteredAsCsv" Class="mt-5"
+                       Color="Color.Primary"
         Variant="Variant.Filled"
         StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv
     </MudButton>
     </MudTooltip>
-        <MudTooltip Text=" Backup All Projects As Csv">           
-    <MudButton OnClick="DownloadAllProjects" 
+        <MudTooltip Text=" Backup All Projects As Csv">
+            <MudButton OnClick="DownloadAllProjects" Class="mt-5"
         Color="Color.Primary"
         Variant="Variant.Filled"
         StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download All Projects
     </MudButton>
     </MudTooltip>
-
     }
     else if (_isClientView)
     {
@@ -1012,7 +1006,7 @@
             {
                 var filteredItems = _dataGrid.FilteredItems.ToList();
                 var csvContent = GenerateCsvContentFiltered(filteredItems);
-                var filename = $"Projects_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.csv";
+                var filename = $"Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
                 await DownloadFile(filename, csvContent);
             }
         }
@@ -1028,7 +1022,7 @@
             if (await ConfirmationService.Confirm("Do you want to download the All Projects as CSV file?"))
             {
                 var csvContent = ConvertProjectsToCsv(projects.ToList());
-                var filename = $"All_Projects_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.csv";
+                var filename = $"All_Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
                 await DownloadFile(filename, csvContent);
             }
         }
@@ -1083,7 +1077,7 @@
             var secondaryEditorPaymentAmount = project.SecondaryEditorDetails?.PaymentAmount?.ToString("0.##") ?? "0";
             var revisions = project.Revisions != null && project.Revisions.Any()
             ? project.Revisions.Select(r =>
-                $"{r.RevisionDate.ToString("yyyy-MM-dd")}: {r.Content.Replace("\n", " ").Replace("\r", "")}")
+                $"{r.RevisionDate.ToString("MM-dd-yyyy")}: {r.Content.Replace("\n", " ").Replace("\r", "")}")
                 .Aggregate((current, next) => current + " || " + next)
                : string.Empty;
             revisions = FormatStringToCsv(revisions);
@@ -1136,7 +1130,7 @@
         csv.AppendLine();
         csv.AppendLine(string.Join(",",
             $"Total Price: {total}",
-        $" Date: {DateTime.Now:yyyy/MM/dd}"));
+        $" Date: {DateTime.Now:MM-dd-yyyy}"));
         return csv.ToString();
     }
 

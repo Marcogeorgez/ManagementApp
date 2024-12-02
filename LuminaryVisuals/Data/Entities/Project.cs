@@ -83,10 +83,10 @@ public class Project
     public virtual ICollection<Revision> Revisions { get; set; }
 
     [NotMapped]
-    public string FormattedShootDate => ShootDate?.ToString("dd/MM/yyyy");
+    public string FormattedShootDate => ShootDate?.ToString("MM-dd-yyyy");
 
     [NotMapped]
-    public string FormattedDueDate => DueDate?.ToString("dd/MM/yyyy");
+    public string FormattedDueDate => DueDate?.ToString("MM-dd-yyyy");
 
     [NotMapped]
     public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM");

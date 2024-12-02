@@ -26,7 +26,7 @@ namespace LuminaryVisuals.Data.Entities
         public virtual Project Project { get; set; }
 
         [NotMapped]
-        public string FormattedDate => Date.ToString("dd/MM/yyyy");
+        public string FormattedDate => Date.ToString("MM-dd-yyyy");
 
     }
 }
