@@ -5,6 +5,14 @@
     border-radius: 20px !important;
 }
 
+.ql-snow .ql-tooltip.ql-flip {
+    top: 50px !important;
+    left: 100px !important;
+    width:100px;
+}
+.html-editor .ql-tooltip a {
+    color: var(--mud-palette-secondary)
+}
 @media (max-width: 600px) {
     .mud-xs-table .mud-table-row {
         display: table !important;
