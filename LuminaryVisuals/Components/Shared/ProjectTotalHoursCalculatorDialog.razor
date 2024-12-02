@@ -1,6 +1,7 @@
 ﻿@using LuminaryVisuals.Data
 @using LuminaryVisuals.Data.Entities
 @using MudBlazor
+@inject ISnackbar Snackbar
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 
 <MudDialog>
@@ -8,12 +9,8 @@
         <MudForm @ref="form" @bind-IsValid="@success" >
         <MudGrid Spacing="1" Justify="Justify.Center">
         <MudItem xs="12">
-            <MudTextField T="string"
-                          Label="Project Name"
-                          Value="@newProject.ProjectName"
-                          ReadOnly="true"
-                          Variant=Variant.Text
-                          Class="d-flex justify-center mud-width-full py-2 mb-2" />
+            <MudText Typo=Typo.body1
+                             Class="d-flex justify-center mud-width-full py-2 mb-2"> @newProject.ProjectName </MudText>
         </MudItem>
         <MudItem xs="12">
             <MudNumericField T="decimal" Required=true
@@ -68,7 +65,7 @@
                           Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="12">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                    <MudTextField T="string" Required=true
                         @bind-Value="prepartsDurationMinutes"
                         Label="Pre parts Duration Minutes"
                         Variant=Variant.Outlined
@@ -77,7 +74,7 @@
                         Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="6">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                    <MudTextField T="string" Required=true
                           @bind-Value="documentryMulticameraDuration"
                           Label="Documentary Multicamera Duration"
                           Variant=Variant.Outlined
@@ -86,15 +83,15 @@
                           Class="d-flex flex-column  mud-width-full" />
                 </MudItem>
         <MudItem xs="6">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                              @bind-Value="documentryMulticameraDurationMinutes"
+                    <MudTextField T="string" Required=true
+                                  @bind-Value="documentryMulticameraDurationMinutes"
                               Variant=Variant.Outlined
                               Adornment="Adornment.End"
                               AdornmentText="min"
-                              Class="d-flex flex-column  mud-width-full py-3" />
+                              Class="d-flex flex-column  mud-width-full py-2" />
         </MudItem>
         <MudItem xs="12">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                    <MudTextField T="string" Required=true
                               @bind-Value="hightlightDurationMinutes"
                               Label="Highlights Duration Minutes"
                               Variant=Variant.Outlined
@@ -103,7 +100,7 @@
                               Class="d-flex flex-column  mud-width-full" />
         </MudItem>
         <MudItem xs="12">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
+                    <MudTextField T="string" Required=true
                               @bind-Value="socialMediaDurationMinutes"
                               Label="Social Media Duration Minutes"
                               Variant=Variant.Outlined
@@ -140,21 +137,18 @@
     private int _cameraNum;
     private decimal footageSize;
     private decimal Misc;
-    private decimal prepartsDuration;
-    private decimal prepartsDurationMinutes;
-    private decimal documentryMulticameraDuration;
-    private decimal documentryMulticameraDurationMinutes;
-    private decimal hightlightDuration;
-    private decimal hightlightDurationMinutes;
-    private decimal socialMediaDuration;
-    private decimal socialMediaDurationMinutes;
+    private string prepartsDurationMinutes { get; set; } = string.Empty;
+    private string documentryMulticameraDuration { get; set; } = string.Empty;
+    private string documentryMulticameraDurationMinutes { get; set; } = string.Empty;
+    private string hightlightDurationMinutes { get; set; } = string.Empty;
+    private string socialMediaDurationMinutes { get; set; } = string.Empty;
     private decimal clientDiscount;
     private decimal _total;
 
     protected override async Task OnInitializedAsync()
     {
         using (var context = DbFactory.CreateDbContext())
-    {
+        {
             groupedOptions = await context.CalculationOption
                 .GroupBy(co => co.CalculationParameterId)
                 .Select(group => new GroupedOptionsDto
@@ -177,13 +171,16 @@
         decimal? footageQuality = selectedMultipliers[3];
         decimal? _footageSize = footageSize;
         decimal? _Misc = ( Misc * 60 ); // Calculate it in minutes
-        decimal? _prepartsDuration =  prepartsDurationMinutes;// Calculate it in minutes
-        decimal? _documentryMulticameraDuration = ( documentryMulticameraDuration * 60 ) + documentryMulticameraDurationMinutes; // Calculate it in minutes
-        decimal? _hightlightDuration = hightlightDurationMinutes; // Calculate it in minutes
-        decimal? _socialMediaDuration = socialMediaDurationMinutes; // Calculate it in minutes
+        decimal _prepartsDuration = 0;// Calculate it in minutes
+        decimal _documentryMulticameraDuration = 0; // Calculate it in minutes
+        decimal _hightlightDuration = 0; // Calculate it in minutes
+        decimal _socialMediaDuration = 0; // Calculate it in minutes
         decimal? _clientDiscount = ( 1 - (clientDiscount / 100) );
 
-
+        _prepartsDuration += EvaluateExpression(prepartsDurationMinutes);
+        _documentryMulticameraDuration += EvaluateExpression(documentryMulticameraDuration) * 60 + EvaluateExpression(documentryMulticameraDurationMinutes);
+        _hightlightDuration += EvaluateExpression(hightlightDurationMinutes);
+        _socialMediaDuration += EvaluateExpression(socialMediaDurationMinutes);
         if (_cameraNum <= 2 && _cameraNum > 0)
             _cameraValue = 1;
         else
@@ -223,7 +220,7 @@
                             + _documentryMulticameraDuration
                             + _hightlightDuration
                             + _socialMediaDuration;
-
+        Console.WriteLine(totalDuration);
         // Calculate the quality multiplier
         var qualityMultiplier = footageQuality!.Value * resolution!.Value
                                 * _cameraValue;
@@ -235,6 +232,44 @@
         _total = Math.Round(adjustedValue.Value / 60, 2);
 
         StateHasChanged();
+    }
+    private decimal EvaluateExpression(string expression)
+    {
+        if (string.IsNullOrEmpty(expression))
+        {
+            return 0m; // Return 0 if expression is empty or null
+        }
+
+        try
+        {
+            var cleanedExpression = expression.Replace(" ", "");
+            var expressionEvaluator = new NCalc.Expression(cleanedExpression);
+
+            var result = expressionEvaluator.Evaluate();
+
+            if (result is decimal decimalResult)
+            {
+                return decimalResult;
+            }
+            else if (result is int intResult)
+            {
+                return Convert.ToDecimal(intResult); // Convert int to decimal
+            }
+            else if (result is double doubleResult)
+            {
+                return Convert.ToDecimal(doubleResult); // Convert double to decimal
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid result type.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("You need to enter numbers only!", Severity.Error);
+            Console.WriteLine($"Error evaluating expression '{expression}': {ex.Message}");
+            return 0m; // Return 0 if the evaluation fails
+        }
     }
     private string GetParameterLabel(int parameterId)
     {
