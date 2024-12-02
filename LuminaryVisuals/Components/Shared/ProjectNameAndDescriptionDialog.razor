@@ -28,7 +28,7 @@
                     {
                         @foreach (var revision in context.Revisions)
                         {
-                            <MudTextField Label="@revision.RevisionDate.ToString("dd-MM-yyyy")" Variant="Variant.Outlined" AdornmentColor="Color.Warning" @bind-Value="revision.Content" FullWidth=true />
+                            <MudTextField Label="@revision.RevisionDate.ToString("MM-dd-yyyy")" Variant="Variant.Outlined" AdornmentColor="Color.Warning" @bind-Value="revision.Content" FullWidth=true />
                         }
                     }
 
