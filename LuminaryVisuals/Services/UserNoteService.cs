@@ -61,6 +61,17 @@ public class UserNoteService
                 return "This user has no notes assigned.";
         }
     }
+    public async Task<UserNote?> GetNoteIdByUserId(string userId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var EntityNote = await context.UserNote.FirstOrDefaultAsync(u => u.TargetUserId == userId);
+            if (EntityNote != null)
+                return EntityNote;
+            else
+                return null;
+        }
+    }
     public async Task<MessageSuccess> UpdateNoteAsync(int noteId, string updatedNote)
     {
         using (var context = _contextFactory.CreateDbContext())
