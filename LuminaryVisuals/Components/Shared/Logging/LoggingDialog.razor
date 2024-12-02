@@ -27,11 +27,14 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project currentProject { get; set; } = new Project();
+    [Parameter] public string currentUserId { get; set; }
+
     private void AddHours()
     {
         var parameters = new DialogParameters<Add>
         {
-            { x => x.Project, currentProject }
+            { x => x.Project, currentProject },
+            { "currentUserId", currentUserId }
         };
 
         var options = new DialogOptions
@@ -49,7 +52,8 @@
     {
         var parameters = new DialogParameters<ViewTotalLogged>
         {
-            { x => x.Project, currentProject }
+            { x => x.Project, currentProject },
+            { "currentUserId", currentUserId }
         };
 
         var options = new DialogOptions
