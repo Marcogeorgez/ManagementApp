@@ -36,7 +36,7 @@ namespace LuminaryVisuals.Services
                     loggingHours.Date = loggingHours.Date.Date;
                     context.EditorLoggingHours.Add(loggingHours);
                     await context.SaveChangesAsync();
-                    await CalculateAndSaveBillableHoursAsync(loggingHours.ProjectId);
+                    await CalculateAndSaveBillableHoursAsync(loggingHours);
                     _logger.LogInformation("LoggingHours entry created successfully.");
                     return true;
                 }
@@ -73,7 +73,7 @@ namespace LuminaryVisuals.Services
 
                     context.EditorLoggingHours.Update(existing);
                     await context.SaveChangesAsync();
-                    await CalculateAndSaveBillableHoursAsync(updatedLoggingHours.ProjectId);
+                    await CalculateAndSaveBillableHoursAsync(updatedLoggingHours);
                     _logger.LogInformation("LoggingHours entry updated successfully.");
                     return true;
                 }
@@ -111,7 +111,7 @@ namespace LuminaryVisuals.Services
         /// <summary>
         /// Gets a specific EditorLoggingHours entry by ProjectID.
         /// </summary>
-        public async Task<List<EditorLoggingHours?>?> GetByIdAsync(int projectId)
+        public async Task<List<EditorLoggingHours?>?> GetByIdAsync(int projectId, string currentUserId)
         {
             try
             {
@@ -119,8 +119,8 @@ namespace LuminaryVisuals.Services
                 {
                     var loggedHours = await context.EditorLoggingHours
                         .Include(e => e.User)
-                        .Include(e => e.Project) 
-                        .Where(e => e.ProjectId == projectId)
+                        .Include(e => e.Project)
+                        .Where(e => e.ProjectId == projectId && e.UserId == currentUserId)
                         .ToListAsync();
                     if (loggedHours != null)
                         return loggedHours!;
@@ -134,7 +134,7 @@ namespace LuminaryVisuals.Services
                 return null;
             }
         }
-        public async Task<bool> CalculateAndSaveBillableHoursAsync(int projectId)
+        public async Task<bool> CalculateAndSaveBillableHoursAsync(EditorLoggingHours EditorLoggingHours)
         {
             try
             {
@@ -142,16 +142,30 @@ namespace LuminaryVisuals.Services
 
                 // Fetch all EditorLoggingHours
                 var loggedHours = await context.EditorLoggingHours
-                    .Where(e => e.ProjectId == projectId)
+                    .Where(e => e.ProjectId == EditorLoggingHours.ProjectId && e.UserId == EditorLoggingHours.UserId)
                     .SumAsync(e => e.EditorWorkingHours ?? 0);
 
 
                 // Fetch projects and update their BillableHours
                 var project = await context.Projects
                     .AsTracking()
-                    .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+                    .Include(p => p.PrimaryEditor)
+                    .Include(p => p.SecondaryEditor)
+                    .FirstOrDefaultAsync(p => p.ProjectId == EditorLoggingHours.ProjectId);
 
-                project.PrimaryEditorDetails.BillableHours = loggedHours;
+                if(project.PrimaryEditor?.Id ==  EditorLoggingHours.UserId)
+                {
+                    project.PrimaryEditorDetails.BillableHours = loggedHours;
+
+                }
+                else if(project.SecondaryEditor?.Id == EditorLoggingHours.UserId)
+                {
+                    project.SecondaryEditorDetails.BillableHours = loggedHours;
+                }
+                else
+                {
+                    throw new Exception("CalculateAndSaveBillableHoursAsync can't find PrimaryeditorId or SecondaryEditorId");
+                }
 
                 // Save changes to the database
                 await context.SaveChangesAsync();
@@ -160,7 +174,7 @@ namespace LuminaryVisuals.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calculating and saving billable hours.");
+                _logger.LogError("Error calculating and saving billable hours.",ex);
                 return false;
             }
         }

@@ -27,6 +27,8 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project { get; set; } = new Project();
+    [Parameter] public string currentUserId { get; set; }
+
     private decimal LoggedHours; 
     private DateTime? SelectedDate;
     private async Task Save()
@@ -39,35 +41,44 @@
 
         try
         {
-            if (Project.PrimaryEditorId == null && Project.SecondaryEditorId == null)
+            if (Project.PrimaryEditor?.Id == null && Project.SecondaryEditor?.Id == null)
             {
                 Snackbar.Add($"Cannot Add Logging hours to a Project which doesn't have an Editor !!!", Severity.Error);
                 MudDialog.Close();
             }
             else
             {
-                var newEntry = new EditorLoggingHours
-                    {
-                        UserId = Project.PrimaryEditorId,
-                        ProjectId = Project.ProjectId,
-                        Date = SelectedDate.Value,
-                        EditorWorkingHours = LoggedHours
-                    };
+                if (currentUserId == Project.PrimaryEditor?.Id || currentUserId == Project.SecondaryEditor?.Id)
+                {
+                    var newEntry = new EditorLoggingHours
+                        {
+                            UserId = currentUserId,
+                            ProjectId = Project.ProjectId,
+                            Date = SelectedDate.Value,
+                            EditorWorkingHours = LoggedHours
+                        };
 
-                // Save to the database.
-                var isSuccessful = await loggingHours.CreateAsync(newEntry);
-                if (!isSuccessful)
-                    Snackbar.Add("Couldn't Log hours. Check if the Date is already logged!!", Severity.Error);
+                    // Save to the database.
+                    var isSuccessful = await loggingHours.CreateAsync(newEntry);
+                    if (!isSuccessful)
+                        Snackbar.Add("Couldn't Log hours. Check if the Date is already logged!", Severity.Error);
+                    else
+                    {
+                        Snackbar.Add("Hours added successfully.", Severity.Success);
+                        MudDialog.Close(DialogResult.Ok(true));
+                    }
+                }
                 else
                 {
-                    Snackbar.Add("Hours added successfully.", Severity.Success);
-                    MudDialog.Close(DialogResult.Ok(true));
+                    Snackbar.Add("Couldn't Log hours. You aren't the primary editor or the secondary editor of this project!!", Severity.Error);
+
                 }
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Failed to save hours: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Failed to save hours.", Severity.Error);
+            Console.WriteLine(ex);
         }
     }
 

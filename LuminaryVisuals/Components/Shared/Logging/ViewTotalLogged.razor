@@ -53,11 +53,12 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project { get; set; } = new Project();
+    [Parameter] public string currentUserId { get; set; }
     List<EditorLoggingHours> loggedHours = new();
     protected override async Task OnInitializedAsync()
     {
         // Fetch the logged hours when the dialog is initialized.
-        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId);
+        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId,currentUserId);
 
     }
     void StartedEditingItem(EditorLoggingHours editorLoggingHours)
@@ -71,7 +72,7 @@
     {
         await loggingHours.UpdateAsync(editorLoggingHours);
         Snackbar.Add("It have been updated successfully.", Severity.Success);
-        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId);
+        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId, currentUserId);
     }
     private void Save()
     {

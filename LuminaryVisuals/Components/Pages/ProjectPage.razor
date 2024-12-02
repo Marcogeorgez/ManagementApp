@@ -410,6 +410,21 @@
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
+            <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
 
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
@@ -863,10 +878,11 @@
         }
     }
 
-    private async Task Logging(Project project)
+    private async Task Logging(Project project,string currentUserId)
     {
         var dialogParameters = new DialogParameters<LoggingDialog> {
-            { nameof(LoggingDialog.currentProject), project }
+            { nameof(LoggingDialog.currentProject), project },
+            { "CurrentUserId", currentUserId}
         };
         var dialog = await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
         var result = await dialog.Result;
