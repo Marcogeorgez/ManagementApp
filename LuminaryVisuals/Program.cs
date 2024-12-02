@@ -6,14 +6,13 @@ using LuminaryVisuals.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using MudBlazor.Services;
 using MudBlazor;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
-
+using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 // Using Data Protection system to be saved which is needed when in production 
 builder.Services.AddDataProtection()
@@ -76,7 +75,13 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     googleOptions.ClientId = clientId;
     googleOptions.ClientSecret = clientSecret;
     googleOptions.CallbackPath = "/signin-google";
-
+    googleOptions.Events.OnRedirectToAuthorizationEndpoint = context =>
+    {
+        var redirectUri = context.RedirectUri;
+        redirectUri += "&prompt=select_account";
+        context.Response.Redirect(redirectUri);
+        return Task.CompletedTask;
+    };
     googleOptions.Scope.Add("email");
     googleOptions.Scope.Add("profile");
 })
@@ -205,9 +210,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
-app.UseAuthorization();
 
 // Initialize roles
 using (var scope = app.Services.CreateScope())
