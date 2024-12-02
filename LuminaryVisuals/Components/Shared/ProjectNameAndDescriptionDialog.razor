@@ -2,7 +2,7 @@
 @inject ISnackbar Snackbar
 <MudDialog>
     <DialogContent> 
-        <MudTextField Class="mb-10" Label="Project Name" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
+        <MudTextField Class="mb-10" Label="Project Name" ReadOnly="!isAdmin" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
 
         <MudText Class="mb-2">Project Description 
         <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
@@ -19,7 +19,7 @@
             </select>
             <MudHtmlToolbarOptions />
             <button class="ql-list" value="check"></button>
-            <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
+            <button class="ql-clean">Remove Formatting</button>
         </MudHtmlEditor>
 
             <MudText Typo=Typo.body1  Class="mt-5" >Revisions:</MudText>
@@ -49,8 +49,15 @@
     [CascadingParameter] MudDialogInstance Dialog { get; set; }
 
     [Parameter] public Project context { get; set; }
+    [Parameter] public string currentRole { get; set; }
     [Parameter] public EventCallback<Project> modifiedProject { get; set; }
-    
+    private string projectTitle;
+    bool isAdmin = false;
+    protected override void OnInitialized()
+    {
+        isAdmin = currentRole == "Admin";
+        projectTitle = context.ProjectName;
+    }
     private void AddRevision()
     {
         var newRevision = new Revision
@@ -66,6 +73,11 @@
     }
     private async Task Save()
     {
+        if (!isAdmin && projectTitle != context.ProjectName)
+        {
+            Snackbar.Add("You are not authorized to save changes.", Severity.Error);
+            return;
+        }
         // Remove revisions with empty content
         context.Revisions = context.Revisions.Where(r => !string.IsNullOrWhiteSpace(r.Content)).ToList();
 
