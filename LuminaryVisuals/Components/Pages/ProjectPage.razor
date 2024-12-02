@@ -64,7 +64,7 @@
             <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                 <CellTemplate>
-                    <div class="drag-handle"
+                    <div class="drag-handle" style="height:100px;"
                          draggable="true"
                          @ondragstart="@(() => HandleDragStart(context.Item))"
                          @ondragover:preventDefault
@@ -372,7 +372,7 @@
             </PropertyColumn>
 
         }
-        <PropertyColumn Property="x => x.link" Title="Project Link" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+        <PropertyColumn Property="x => x.link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
             <CellTemplate>
                 @if (!String.IsNullOrEmpty(@context.Item.link))
                 {
