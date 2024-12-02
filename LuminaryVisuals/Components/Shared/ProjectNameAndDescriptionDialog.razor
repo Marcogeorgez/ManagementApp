@@ -21,6 +21,21 @@
             <button class="ql-list" value="check"></button>
             <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
         </MudHtmlEditor>
+
+            <MudText Typo=Typo.body1  Class="mt-5" >Revisions:</MudText>
+
+                    @if (context.Revisions != null)
+                    {
+                        @foreach (var revision in context.Revisions)
+                        {
+                            <MudTextField Label="@revision.RevisionDate.ToString("dd-MM-yyyy")" Variant="Variant.Outlined" AdornmentColor="Color.Warning" @bind-Value="revision.Content" FullWidth=true />
+                        }
+                    }
+
+
+            <!-- Button to add a new revision -->
+            <MudButton Class="mt-5" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRevision">Add New Revision</MudButton>
+
         </MudText>
     </DialogContent>
 
@@ -35,14 +50,25 @@
 
     [Parameter] public Project context { get; set; }
     [Parameter] public EventCallback<Project> modifiedProject { get; set; }
-
-
+    
+    private void AddRevision()
+    {
+        var newRevision = new Revision
+            {
+                RevisionDate = DateTime.UtcNow, // Set current date by default
+                Content = string.Empty // Empty content initially
+            };
+        context.Revisions.Add(newRevision);
+    }
     private void OnNoteTextChanged(string text)
     {
         context.Description = text;
     }
     private async Task Save()
     {
+        // Remove revisions with empty content
+        context.Revisions = context.Revisions.Where(r => !string.IsNullOrWhiteSpace(r.Content)).ToList();
+
         await modifiedProject.InvokeAsync(context); // Pass the modified project back
         Snackbar.Add($"Successfully saved the note.", Severity.Info);
         Dialog.Close(DialogResult.Ok(context));
