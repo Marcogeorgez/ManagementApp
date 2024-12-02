@@ -137,11 +137,11 @@
     private int _cameraNum;
     private decimal footageSize;
     private decimal Misc;
-    private string prepartsDurationMinutes { get; set; } = string.Empty;
-    private string documentryMulticameraDuration { get; set; } = string.Empty;
-    private string documentryMulticameraDurationMinutes { get; set; } = string.Empty;
-    private string hightlightDurationMinutes { get; set; } = string.Empty;
-    private string socialMediaDurationMinutes { get; set; } = string.Empty;
+    private string prepartsDurationMinutes { get; set; } = "0";
+    private string documentryMulticameraDuration { get; set; } = "0";
+    private string documentryMulticameraDurationMinutes { get; set; } = "0";
+    private string hightlightDurationMinutes { get; set; } = "0";
+    private string socialMediaDurationMinutes { get; set; } = "0";
     private decimal clientDiscount;
     private decimal _total;
 
@@ -177,7 +177,7 @@
         decimal _socialMediaDuration = 0; // Calculate it in minutes
         decimal? _clientDiscount = ( 1 - (clientDiscount / 100) );
 
-        _prepartsDuration += EvaluateExpression(prepartsDurationMinutes);
+        _prepartsDuration += EvaluateExpression(prepartsDurationMinutes) * 60;
         _documentryMulticameraDuration += EvaluateExpression(documentryMulticameraDuration) * 60 + EvaluateExpression(documentryMulticameraDurationMinutes);
         _hightlightDuration += EvaluateExpression(hightlightDurationMinutes);
         _socialMediaDuration += EvaluateExpression(socialMediaDurationMinutes);
