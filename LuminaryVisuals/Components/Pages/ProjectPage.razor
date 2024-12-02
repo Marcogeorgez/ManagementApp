@@ -372,13 +372,39 @@
             </PropertyColumn>
 
         }
+        <PropertyColumn Property="x => x.link" Title="Project Link" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+            <CellTemplate>
+                @if (!String.IsNullOrEmpty(@context.Item.link))
+                {
+                <MudLink Underline="Underline.Always" Style="color:dodgerblue !important" Href="@context.Item.link">
+                    Project Link
+                    </MudLink>
+                }
+                else
+                {
+                    <MudField>Not Assigned</MudField>
+                }
+            </CellTemplate>
+            </PropertyColumn>
+        @* Editors Info*@
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
-        {           
-            <PropertyColumn Property="x => x.BillableHours" Title="Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+        {
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                <EditTemplate>
+                    <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
+
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
@@ -787,16 +813,16 @@
             { "context", context },
             { "modifiedProject", EventCallback.Factory.Create<Project>(this, async (modifiedProject) =>
                 {
-                    await SaveDescription(modifiedProject);
+                    await updateProject(modifiedProject);
                 })
             }
         };
         var options = new DialogOptions { FullScreen = true };
-        DialogService.Show<DescriptionDialog>("Project Description", parameters, options);
+        DialogService.Show<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
     }
 
     // Update description and save it to DB
-    private async Task SaveDescription(Project modifiedProject)
+    private async Task updateProject(Project modifiedProject)
     {
         if (modifiedProject is Project project)
         {
@@ -827,7 +853,7 @@
             if (_project != null)
             {
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
-                Snackbar.Add($"Successfully updated the billable hours to {_project.BillableHours} of project", Severity.Info);
+                Snackbar.Add($"Successfully updated the billable hours to {_project.ClientBillableHours} of project", Severity.Info);
                 await LoadProjects();
             }
         }

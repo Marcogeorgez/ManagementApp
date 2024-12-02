@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241201141937_Revisions")]
+    partial class Revisions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -484,6 +487,100 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("EditorLoggingHours");
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
+                {
+                    b.Property<int>("ProjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
+
+                    b.Property<int>("AdminStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("BillableHours")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("ClientBillableAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("ClientBillableHours")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DueDate")
+                        .IsRequired()
+                        .HasColumnType("DATE");
+
+                    b.Property<decimal?>("EditorFinalBillable")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("EditorOvertime")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal?>("EditorPaymentAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("ExternalOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("InternalOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NotesForProject")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrimaryEditorId")
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("ProgressBar")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProjectName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SecondaryEditorId")
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("ShootDate")
+                        .IsRequired()
+                        .HasColumnType("DATE");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("WorkingMonth")
+                        .HasColumnType("DATE");
+
+                    b.Property<bool>("isEditorPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("isPaymentVisible")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("ProjectId");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("PrimaryEditorId");
+
+                    b.HasIndex("SecondaryEditorId");
+
+                    b.ToTable("Projects", (string)null);
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Revision", b =>
                 {
                     b.Property<int>("RevisionId")
@@ -705,91 +802,9 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Project", b =>
-                {
-                    b.Property<int>("ProjectId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
-
-                    b.Property<int>("AdminStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal?>("ClientBillableAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("ClientBillableHours")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DueDate")
-                        .IsRequired()
-                        .HasColumnType("DATE");
-
-                    b.Property<int?>("ExternalOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("InternalOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("NotesForProject")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PrimaryEditorId")
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<int>("ProgressBar")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ProjectName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("SecondaryEditorId")
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime?>("ShootDate")
-                        .IsRequired()
-                        .HasColumnType("DATE");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("WorkingMonth")
-                        .HasColumnType("DATE");
-
-                    b.Property<bool>("isPaymentVisible")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("link")
-                        .HasColumnType("text");
-
-                    b.HasKey("ProjectId");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("PrimaryEditorId");
-
-                    b.HasIndex("SecondaryEditorId");
-
-                    b.ToTable("Projects", (string)null);
-                });
-
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Archive", b =>
                 {
-                    b.HasOne("Project", "Project")
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
                         .WithOne("Archive")
                         .HasForeignKey("LuminaryVisuals.Data.Entities.Archive", "ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -809,7 +824,7 @@ namespace LuminaryVisuals.Migrations
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Chat", b =>
                 {
-                    b.HasOne("Project", "Project")
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
                         .WithMany("Chats")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -839,7 +854,7 @@ namespace LuminaryVisuals.Migrations
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.EditorLoggingHours", b =>
                 {
-                    b.HasOne("Project", "Project")
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -856,9 +871,32 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
+                {
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "PrimaryEditor")
+                        .WithMany()
+                        .HasForeignKey("PrimaryEditorId");
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "SecondaryEditor")
+                        .WithMany()
+                        .HasForeignKey("SecondaryEditorId");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("PrimaryEditor");
+
+                    b.Navigation("SecondaryEditor");
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Revision", b =>
                 {
-                    b.HasOne("Project", "Project")
+                    b.HasOne("LuminaryVisuals.Data.Entities.Project", "Project")
                         .WithMany("Revisions")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -951,111 +989,6 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Project", b =>
-                {
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "PrimaryEditor")
-                        .WithMany()
-                        .HasForeignKey("PrimaryEditorId");
-
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "SecondaryEditor")
-                        .WithMany()
-                        .HasForeignKey("SecondaryEditorId");
-
-                    b.OwnsOne("LuminaryVisuals.Models.ProjectSpecifications", "ProjectSpecifications", b1 =>
-                        {
-                            b1.Property<int>("ProjectId")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("CameraNumber")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("ColorProfile")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Resolution")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Size")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("ProjectId");
-
-                            b1.ToTable("Projects");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProjectId");
-                        });
-
-                    b.OwnsOne("LuminaryVisuals.Models.EditorDetails", "PrimaryEditorDetails", b1 =>
-                        {
-                            b1.Property<int>("ProjectId")
-                                .HasColumnType("integer");
-
-                            b1.Property<decimal?>("BillableHours")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("Overtime")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("PaymentAmount")
-                                .HasColumnType("numeric");
-
-                            b1.HasKey("ProjectId");
-
-                            b1.ToTable("Projects");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProjectId");
-                        });
-
-                    b.OwnsOne("LuminaryVisuals.Models.EditorDetails", "SecondaryEditorDetails", b1 =>
-                        {
-                            b1.Property<int>("ProjectId")
-                                .HasColumnType("integer");
-
-                            b1.Property<decimal?>("BillableHours")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("Overtime")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("PaymentAmount")
-                                .HasColumnType("numeric");
-
-                            b1.HasKey("ProjectId");
-
-                            b1.ToTable("Projects");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProjectId");
-                        });
-
-                    b.Navigation("Client");
-
-                    b.Navigation("PrimaryEditor");
-
-                    b.Navigation("PrimaryEditorDetails")
-                        .IsRequired();
-
-                    b.Navigation("ProjectSpecifications")
-                        .IsRequired();
-
-                    b.Navigation("SecondaryEditor");
-
-                    b.Navigation("SecondaryEditorDetails")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.ApplicationUser", b =>
                 {
                     b.Navigation("Chats");
@@ -1068,7 +1001,7 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("Options");
                 });
 
-            modelBuilder.Entity("Project", b =>
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Project", b =>
                 {
                     b.Navigation("Archive")
                         .IsRequired();
