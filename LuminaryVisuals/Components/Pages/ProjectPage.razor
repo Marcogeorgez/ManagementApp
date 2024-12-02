@@ -152,6 +152,7 @@
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
                         </GroupTemplate>
                 <EditTemplate>
+
                     @if (Clients != null && Clients.Any() && _isAdminView)
                     {
                         <MudSelect T="string"
@@ -385,6 +386,11 @@
                     <MudField>Not Assigned</MudField>
                 }
             </CellTemplate>
+            <EditTemplate>
+                <div class="@EditTemplateCss">
+                    <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.link" />
+                </div>
+            </EditTemplate>
             </PropertyColumn>
         @* Editors Info*@
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
@@ -603,6 +609,7 @@
     private string _currentUserId = "";
     private string _currentRole = "";
     private string _userName = "";
+    private string EditTemplateCss => _currentRole == "Client" ? "d-none" : "d-block";
     private List<UserRoleViewModel.UserProjectViewModel> Editors = new List<UserRoleViewModel.UserProjectViewModel>();
     private List<UserRoleViewModel.UserProjectViewModel> Clients = new List<UserRoleViewModel.UserProjectViewModel>();
     [Inject]
@@ -706,8 +713,10 @@
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
         }
+        // for client view which will fetch his own projects only)
         else if (_isClientView && isAdminView == false)
             LoadProjectsForClient();
+            // this is for the admin to see all the projects but from the client view
         else if (_isClientView && isAdminView == true)
         {
             projects = await projectServices.GetProjectsAsync(_isArchived);
@@ -811,6 +820,7 @@
         var parameters = new DialogParameters
         {
             { "context", context },
+            { "currentRole", _currentRole},
             { "modifiedProject", EventCallback.Factory.Create<Project>(this, async (modifiedProject) =>
                 {
                     await updateProject(modifiedProject);
