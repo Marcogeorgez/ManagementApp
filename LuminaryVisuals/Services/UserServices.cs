@@ -169,7 +169,7 @@ public class UserServices
                     _logger.LogError($"Failed to add user to role: {string.Join(", ", addResult.Errors.Select(e => e.Description))}");
                     return false;
                 }
-
+                await _userManager.UpdateSecurityStampAsync(user);
                 return true;
             }
             _logger.LogWarning($"User with ID {userId} not found");
