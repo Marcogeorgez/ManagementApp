@@ -717,13 +717,13 @@
         else if (_isClientView && isAdminView == false)
             LoadProjectsForClient();
         // this is for the admin to see all the projects but from the client view
-        else if (_isClientView && isAdminView == true)
+        else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
         {
             projects = await projectServices.GetProjectsAsync(_isArchived);
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
         }
-        else if (_isEditorView)
+        else if (_isEditorView && isAdminView == false)
             LoadProjectsForEditors();
         StateHasChanged();
     }
