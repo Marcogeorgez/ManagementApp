@@ -1,5 +1,4 @@
-﻿@using LuminaryVisuals.Data
-@inject IDbContextFactory<ApplicationDbContext> DbFactory
+﻿@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject UserNoteService UserNotesService
 
 <MudDialog>
@@ -9,8 +8,10 @@
     <MudForm @ref="form" Model="@preferences">
         <MudExpansionPanel Text="Link To Website">
             <!-- Website Link -->
-            <MudTextField Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
-        </MudExpansionPanel>
+            
+                    <TextWithLinks Content="@preferences.WebsiteLink" />
+
+                </MudExpansionPanel>
         <MudExpansionPanel Text="Highlights Film">
             <!-- Video Structure -->
             <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
@@ -131,8 +132,8 @@
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Transitions Comments:
             </MudText>
-            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.OtherTransitions" Variant="Variant.Filled" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
-            </MudTextField>
+                    <TextWithLinks Content="@preferences.OtherTransitions" />
+
 
             <!-- speeches from the day in the highlights film -->
             <MudRadioGroup T="string" @bind-Value="preferences.UseSpeeches">
@@ -147,10 +148,10 @@
                 </MudStack>
             </MudRadioGroup>
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
-                Comments on the use of speeches:                :
+                Comments on the use of speeches:
             </MudText>
-            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SpeechComments" Variant="Variant.Filled" Placeholder="">
-            </MudTextField>
+            <TextWithLinks Content="@preferences.SpeechComments" />
+
             <!-- Emphasis on sound design:-->
             <MudRadioGroup T="string" @bind-Value="preferences.SoundDesignEmphasis">
                 <MudText Typo="Typo.h6" Class="mt-3 mb-3">
@@ -166,32 +167,29 @@
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Comments on the use of sound deign:
             </MudText>
-            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SoundDesignComments" Variant="Variant.Filled" Placeholder="">
-            </MudTextField>
+                    <TextWithLinks Content="@preferences.SoundDesignComments" />
 
             <MudText Typo="Typo.h6" Class="mt-5">
                 Music genres or favorite artist + music licensing sites to use:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.musicLicensingSites" Variant="Variant.Filled" Placeholder="">
-            </MudTextField>
+                    <TextWithLinks Content="@preferences.musicLicensingSites" />
+
             <MudText Typo="Typo.h6" Class="mt-5">
                 Samples of songs/films with songs you like:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SongSamples" Variant="Variant.Filled" Placeholder="">
-            </MudTextField>
+            <TextWithLinks Content="@preferences.SongSamples" />
 
             <MudText Typo="Typo.h6" Class="mt-5">
                 Please provide us with your LUTs and references of how you like the color to look like:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.ColorReferences" Variant="Variant.Filled" Placeholder="">
-            </MudTextField>
+            <TextWithLinks Content="@preferences.ColorReferences" />
 
             <MudText Typo="Typo.h6" Class="mt-5">
                 Links to films you like or previous edits:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.FilmReferences" Variant="Variant.Filled"
-                          Placeholder="Please include the links and a few comments on what makes these films appeal to you.">
-            </MudTextField>
+
+            <TextWithLinks Content="@preferences.FilmReferences" />
+
         </MudExpansionPanel>
         <!-- End:-->
         <MudExpansionPanel Text="Documentary film guidelines (length, editing pre parts,link to samples):">
@@ -250,9 +248,9 @@
             <MudText Typo="Typo.h6" Class="mt-5">
                 Client Samples:
             </MudText>
-            <MudTextField T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.ClientSamples" Variant="Variant.Filled"
-                          Placeholder="Write if you have any samples on what you prefer">
-            </MudTextField>
+                
+            <TextWithLinks Content="@preferences.ClientSamples" />
+
         </MudExpansionPanel>
     </MudForm>
 </MudExpansionPanels>
@@ -285,6 +283,8 @@
     private const string _recordedAudio = "(Requires: External Recorded Audio!)";
     private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
 
+
+
     [Parameter]
     public string userId { get; set; }
     private string Text;
@@ -298,6 +298,7 @@
 
         }
     }
+
     private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
     {
         using var context = DbFactory.CreateDbContext();
