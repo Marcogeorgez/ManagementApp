@@ -571,7 +571,7 @@
     </MudButton>
     </MudTooltip>
         <MudTooltip Text=" Backup All Projects As Csv">           
-    <MudButton OnClick="DownloadFilteredAsCsv" 
+    <MudButton OnClick="DownloadAllProjects" 
         Color="Color.Primary"
         Variant="Variant.Filled"
         StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download All Projects
@@ -716,7 +716,7 @@
         // for client view which will fetch his own projects only)
         else if (_isClientView && isAdminView == false)
             LoadProjectsForClient();
-            // this is for the admin to see all the projects but from the client view
+        // this is for the admin to see all the projects but from the client view
         else if (_isClientView && isAdminView == true)
         {
             projects = await projectServices.GetProjectsAsync(_isArchived);
@@ -1011,7 +1011,7 @@
             if (await ConfirmationService.Confirm("Do you want to download the filtered CSV file?"))
             {
                 var filteredItems = _dataGrid.FilteredItems.ToList();
-                var csvContent = GenerateCsvContent(filteredItems);
+                var csvContent = GenerateCsvContentFiltered(filteredItems);
                 var filename = $"Projects_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.csv";
                 await DownloadFile(filename, csvContent);
             }
@@ -1021,6 +1021,80 @@
             Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
         }
     }
+    private async Task DownloadAllProjects()
+    {
+        try
+        {
+            if (await ConfirmationService.Confirm("Do you want to download the All Projects as CSV file?"))
+            {
+                var csvContent = ConvertProjectsToCsv(projects.ToList());
+                var filename = $"All_Projects_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.csv";
+                await DownloadFile(filename, csvContent);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
+        }
+    }
+    private string FormatStringToCsv(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        // If the string contains commas, newline characters, or double quotes, wrap it in double quotes
+        if (value.Contains(",") || value.Contains("\n") || value.Contains("\r") || value.Contains("\""))
+        {
+            // Escape double quotes by replacing them with two double quotes
+            value = "\"" + value.Replace("\"", "\"\"") + "\"";
+        }
+
+        return value;
+    }
+
+    public string ConvertProjectsToCsv(List<Project> projects)
+    {
+        var sb = new System.Text.StringBuilder();
+
+        // Add CSV headers with the additional fields for editor details
+        sb.AppendLine("ID,Project Name,Project Description,Client Name,Primary Editor Name,Secondary Editor Name,Progress,Shoot Date,Due Date,Status, Payment Status,Client Billable Hours,Client Billable Amount,Primary Editor Billable Hours,Primary Editor Overtime,Primary Editor Payment Amount,Secondary Editor Billable Hours,Secondary Editor Overtime,Secondary Editor Payment Amount, Revisions");
+
+        // Add each project as a CSV line
+        foreach (var project in projects)
+        {
+            // Populate the names for the client and editors
+            var clientName = project.Client?.UserName ?? "N/A";
+            var primaryEditorName = project.PrimaryEditor?.UserName ?? "N/A";
+            var secondaryEditorName = project.SecondaryEditor?.UserName ?? "N/A";
+            // Remove HTML tags from the Description
+            var descriptionWithoutHtml = System.Text.RegularExpressions.Regex.Replace(project.Description, "<.*?>", String.Empty); // Removes HTML tags
+            descriptionWithoutHtml = FormatStringToCsv(descriptionWithoutHtml);
+
+            // Retrieve the Billable Hours and Payment Amounts for Client and Editors
+            var clientBillableHours = project.ClientBillableHours?.ToString("0.##") ?? "0";
+            var clientBillableAmount = project.ClientBillableAmount?.ToString("0.##") ?? "0";
+
+            var primaryEditorBillableHours = project.PrimaryEditorDetails?.BillableHours?.ToString("0.##") ?? "0";
+            var primaryEditorOvertime = project.PrimaryEditorDetails?.Overtime?.ToString("0.##") ?? "0";
+            var primaryEditorPaymentAmount = project.PrimaryEditorDetails?.PaymentAmount?.ToString("0.##") ?? "0";
+
+            var secondaryEditorBillableHours = project.SecondaryEditorDetails?.BillableHours?.ToString("0.##") ?? "0";
+            var secondaryEditorOvertime = project.SecondaryEditorDetails?.Overtime?.ToString("0.##") ?? "0";
+            var secondaryEditorPaymentAmount = project.SecondaryEditorDetails?.PaymentAmount?.ToString("0.##") ?? "0";
+            var revisions = project.Revisions != null && project.Revisions.Any()
+            ? project.Revisions.Select(r =>
+                $"{r.RevisionDate.ToString("yyyy-MM-dd")}: {r.Content.Replace("\n", " ").Replace("\r", "")}")
+                .Aggregate((current, next) => current + " || " + next)
+               : string.Empty;
+            revisions = FormatStringToCsv(revisions);
+            // Append the project data to the CSV
+            sb.AppendLine($"{project.ProjectId},{project.ProjectName},{descriptionWithoutHtml},{clientName},{primaryEditorName},{secondaryEditorName},{project.ProgressBar},{project.FormattedShootDate},{project.FormattedDueDate},{project.FormatStatus},{project.FormatAdminStatus},{clientBillableHours},{clientBillableAmount},{primaryEditorBillableHours},{primaryEditorOvertime},{primaryEditorPaymentAmount},{secondaryEditorBillableHours},{secondaryEditorOvertime},{secondaryEditorPaymentAmount},{revisions}");
+        }
+
+        return sb.ToString();
+    }
+
+
     private async Task DownloadFile(string filename, string content)
     {
         try
@@ -1038,7 +1112,7 @@
             Snackbar.Add($"File save error: {ex.Message}", Severity.Error);
         }
     }
-    private string GenerateCsvContent(List<Project> projects)
+    private string GenerateCsvContentFiltered(List<Project> projects)
     {
         // Create CSV header
         decimal total = 0;
