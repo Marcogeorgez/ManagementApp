@@ -37,10 +37,15 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         </div
 
         <MudSpacer />
+        <AuthorizeView Roles="Admin,Client,Editor">
         <MudNavLink Href="profile" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin">
         <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Admin Dashboard</MudNavLink>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin,Client,Editor">
         <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
-
+        </AuthorizeView>
                 <AuthorizeView>
                     <Authorized>
                 
