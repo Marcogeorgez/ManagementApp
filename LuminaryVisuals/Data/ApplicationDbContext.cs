@@ -2,7 +2,6 @@ using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
-using Project = LuminaryVisuals.Data.Entities.Project;
 
 namespace LuminaryVisuals.Data
 {
@@ -11,6 +10,7 @@ namespace LuminaryVisuals.Data
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
+        public DbSet<Revision> Revisions { get; set; }
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<UserNote> UserNote { get; set; }
@@ -61,10 +61,17 @@ namespace LuminaryVisuals.Data
                     .WithMany()
                     .HasForeignKey(p => p.SecondaryEditorId)
                     .IsRequired(false);
+
+                entity.OwnsOne(p => p.PrimaryEditorDetails);
+                entity.OwnsOne(p => p.SecondaryEditorDetails);
+                entity.OwnsOne(p => p.ProjectSpecifications);
+
+
                 entity.HasMany(p => p.Chats)
                       .WithOne(c => c.Project)
                       .HasForeignKey(c => c.ProjectId)
                         .OnDelete(DeleteBehavior.Cascade);
+
                 entity.HasOne(p => p.Archive)
                       .WithOne(a => a.Project)
                       .HasForeignKey<Archive>(a => a.ProjectId)

@@ -151,7 +151,7 @@ namespace LuminaryVisuals.Services
                     .AsTracking()
                     .FirstOrDefaultAsync(p => p.ProjectId == projectId);
 
-                project.BillableHours = loggedHours;
+                project.PrimaryEditorDetails.BillableHours = loggedHours;
 
                 // Save changes to the database
                 await context.SaveChangesAsync();

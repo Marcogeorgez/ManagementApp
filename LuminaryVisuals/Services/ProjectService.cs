@@ -28,6 +28,7 @@ public class ProjectService
                 .Include(p => p.Client)
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
+                .Include(p => p.Revisions)
                 .ToListAsync();
             var userIds = projects
                     .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
@@ -57,11 +58,9 @@ public class ProjectService
                     : "No Editor Assigned";
                 if (project.ClientBillableHours != null && project.Client.HourlyRate != null && project.PrimaryEditor != null)
                 {
+                    project.PrimaryEditorDetails.Overtime = (project.ClientBillableHours ?? 0)- (project.PrimaryEditorDetails.BillableHours ?? 0 );
                     project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
-                    project.EditorPaymentAmount = project.PrimaryEditor.HourlyRate * project.BillableHours;
-
-                    context.Entry(project).Property(p => p.ClientBillableAmount).IsModified = true;
-                    context.Entry(project).Property(p => p.EditorPaymentAmount).IsModified = true;
+                    project.PrimaryEditorDetails.PaymentAmount = (project.PrimaryEditor.HourlyRate ?? 0) * (project.PrimaryEditorDetails.BillableHours ?? 0 );
                 }
 
             }
@@ -69,7 +68,7 @@ public class ProjectService
             return projects;
         }
     }
-
+    // Used for dragging orders to update projects when dragged
     public async Task<List<Project>> GetProjectsAsync()
     {
         using (var context = _contextFactory.CreateDbContext())
@@ -229,7 +228,9 @@ public class ProjectService
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var _project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId ==  project.ProjectId);
+            var _project = await context.Projects
+                .Include(p => p.Revisions)
+                .FirstOrDefaultAsync(p => p.ProjectId ==  project.ProjectId);
             if (_project != null)
             {
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
@@ -248,6 +249,26 @@ public class ProjectService
                     }
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
+                if(project.Revisions != null)
+                { 
+                foreach (var revision in project.Revisions)
+                {
+                    var existingRevision = _project.Revisions
+                        .FirstOrDefault(r => r.RevisionId == revision.RevisionId);
+
+                    if (existingRevision != null)
+                    {
+                        // If the revision already exists, update its content
+                        existingRevision.Content = revision.Content;
+                        existingRevision.RevisionDate = revision.RevisionDate;
+                    }
+                    else
+                    {
+                        // If the revision is new, add it to the project
+                        _project.Revisions.Add(revision);
+                    }
+                }
+                }
                 context.Projects.Update(_project);
 
                 await context.SaveChangesAsync();

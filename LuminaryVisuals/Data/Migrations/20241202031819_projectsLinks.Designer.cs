@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241202031819_projectsLinks")]
+    partial class projectsLinks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -967,36 +970,7 @@ namespace LuminaryVisuals.Migrations
                         .WithMany()
                         .HasForeignKey("SecondaryEditorId");
 
-                    b.OwnsOne("LuminaryVisuals.Models.ProjectSpecifications", "ProjectSpecifications", b1 =>
-                        {
-                            b1.Property<int>("ProjectId")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("CameraNumber")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("ColorProfile")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Resolution")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Size")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("ProjectId");
-
-                            b1.ToTable("Projects");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProjectId");
-                        });
-
-                    b.OwnsOne("LuminaryVisuals.Models.EditorDetails", "PrimaryEditorDetails", b1 =>
+                    b.OwnsOne("LuminaryVisuals.Data.Entities.EditorDetails", "PrimaryEditorDetails", b1 =>
                         {
                             b1.Property<int>("ProjectId")
                                 .HasColumnType("integer");
@@ -1018,7 +992,7 @@ namespace LuminaryVisuals.Migrations
                                 .HasForeignKey("ProjectId");
                         });
 
-                    b.OwnsOne("LuminaryVisuals.Models.EditorDetails", "SecondaryEditorDetails", b1 =>
+                    b.OwnsOne("LuminaryVisuals.Data.Entities.EditorDetails", "SecondaryEditorDetails", b1 =>
                         {
                             b1.Property<int>("ProjectId")
                                 .HasColumnType("integer");
@@ -1045,9 +1019,6 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("PrimaryEditor");
 
                     b.Navigation("PrimaryEditorDetails")
-                        .IsRequired();
-
-                    b.Navigation("ProjectSpecifications")
                         .IsRequired();
 
                     b.Navigation("SecondaryEditor");
