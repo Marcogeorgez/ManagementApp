@@ -28,7 +28,24 @@
                     {
                         @foreach (var revision in context.Revisions)
                         {
-                            <MudTextField Label="@revision.RevisionDate.ToString("MM-dd-yyyy")" Variant="Variant.Outlined" AdornmentColor="Color.Warning" @bind-Value="revision.Content" FullWidth=true />
+                    <MudText Class="mt-1 mb-2">@revision.RevisionDate.ToString("MM-dd-yyyy"):
+                        <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content" HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
+                            <select class="ql-font">
+                                <option value="sans-serif"></option>
+                                <option value="serif"></option>
+                                <option value="monospace"></option>
+                            </select>
+                            <select class="ql-size">
+                                <option value="small"></option>
+                                <option selected></option>
+                                <option value="large"></option>
+                                <option value="huge"></option>
+                            </select>
+                            <MudHtmlToolbarOptions />
+                            <button class="ql-list" value="check"></button>
+                            <button class="ql-clean">Remove Formatting</button>
+                        </MudHtmlEditor>
+                    </MudText>
                         }
                     }
 
@@ -70,6 +87,17 @@
     private void OnNoteTextChanged(string text)
     {
         context.Description = text;
+    }
+    private void OnNoteTextChangedForRevision(Revision revision,string text)
+    {
+        revision.Content = text;
+        var existingRevision = context.Revisions.FirstOrDefault(r => r.RevisionId == revision.RevisionId);
+        if(existingRevision != null)
+            existingRevision.Content = text;
+        else
+        {
+            context.Revisions.Add(revision);
+        }
     }
     private async Task Save()
     {

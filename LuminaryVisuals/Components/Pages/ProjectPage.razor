@@ -130,13 +130,13 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
         {
-                    <PropertyColumn Property="x => x.ClientName" Title="Client Name" Grouping="_groupByClientName" 
+                    <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" 
                         Hideable="true" Groupable="true" CellStyle="text-align:center;" 
                         Editable=false Required=false >
                 <CellTemplate>
                     <MudTextField T="string"
                                   HelperText="Click to expand"
-                                  Value="context.Item.ClientName"
+                                  Value="context.Item.Client.UserName"
                                   ReadOnly="true"
                                   Immediate="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
@@ -178,7 +178,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
         {
-                    <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" 
+                    <PropertyColumn Property="x => x.PrimaryEditor.UserName" Title="Primary Editor" Hideable="true" 
                         Groupable="true" Editable=false Required=false  CellStyle="text-align:center;" >
                     <GroupTemplate> 
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
@@ -208,7 +208,7 @@
         }
         @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
         {
-            <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" 
+            <PropertyColumn Property="x => x.SecondaryEditor.UserName" Title="2nd Editor" Hideable="true" 
                 Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                 <EditTemplate>
                     @if (Editors != null && Editors.Any() && _isAdminView)
@@ -373,6 +373,30 @@
             </PropertyColumn>
 
         }
+        @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
+        {
+            <PropertyColumn Property="x => x.NotesForProject" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
+                            Editable=false Required=false>
+                <CellTemplate>
+                    <MudTextField T="string"
+                                  HelperText="Click to expand"
+                                  Text="Private notes for Project"
+                                  ReadOnly="true" Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                  AutoGrow=false
+                                  MaxLines="1"
+                                  OnAdornmentClick="@(() => OpensPrivateNoteForProject(context.Item))">
+                        <MudTooltip Text="Click to view/change private note">
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
+                        </MudTooltip>
+                    </MudTextField>
+                </CellTemplate>
+                <EditTemplate>
+                        <MudText Style="display:none;" />
+                </EditTemplate>
+            </PropertyColumn>
+        }
+
         <PropertyColumn Property="x => x.link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
             <CellTemplate>
                 @if (!String.IsNullOrEmpty(@context.Item.link))
@@ -529,7 +553,7 @@
                         <MudButton Color="Color.Success"
                                    Variant="Variant.Filled"
                                    Size="Size.Small"
-                                   OnClick="@(() => Logging(context.Item))"
+                                   OnClick="@(() => Logging(context.Item,_currentUserId))"
                                    StartIcon="@Icons.Material.Filled.Edit"
                                    Class="mb-1">
                             Logging
@@ -672,8 +696,8 @@
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","BillableHours","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
-        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "rogressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","BillableHours","EditorBillable", "Actions"} },
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","BillableHours","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
+        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "rogressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable", "Actions"} },
         { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status","Actions" } }
     };
     private Guid _gridKey = Guid.NewGuid();
@@ -857,6 +881,26 @@
         var options = new DialogOptions { FullScreen = true };
         DialogService.Show<ViewClientEditingGuidelinesComponent>("Client Preferences", parameters, options);
     }
+
+    // Opens private note for modification
+    private async Task OpensPrivateNoteForProject(Project context)
+    {
+        var parameters = new DialogParameters
+        {
+            { "project", context },
+        };
+        var options = new DialogOptions { FullScreen = true };
+        var dialog = await DialogService.ShowAsync<PrivateNoteForProjectComponent>("Private Notes", parameters, options);
+        var result = await dialog.Result;
+        if(!result.Canceled)
+        {
+            var project = (Project) result.Data;
+            await projectServices.UpdateProjectAsync(project);
+            Snackbar.Add($"Successfully updated the project notes", Severity.Info);
+            await LoadProjects();
+        }
+    }
+
 
     // Calculates Total Client Billable hours based on a formula.
     private async Task TimeCalculator( Project project)

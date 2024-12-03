@@ -1,0 +1,63 @@
+﻿@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserNoteService UserNotesService
+
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mt-5 mb-3" Typo="Typo.h5">Private Notes For This Project:</MudText>
+        <MudHtmlEditor Html="@Text" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
+            <select class="ql-font">
+                <option value="sans-serif"></option>
+                <option value="serif"></option>
+                <option value="monospace"></option>
+            </select>
+            <select class="ql-size">
+                <option value="small"></option>
+                <option selected></option>
+                <option value="large"></option>
+                <option value="huge"></option>
+            </select>
+            <MudHtmlToolbarOptions />
+            <button class="ql-list" value="check"></button>
+            <button class="ql-clean">Remove Formatting</button>
+        </MudHtmlEditor>
+
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Class="mr-3" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Class="mr-3" Size="Size.Large">Save</MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private MudForm form;
+
+    [Parameter]
+    public Project project { get; set; }
+    private string? Text = "";
+    protected override async Task OnInitializedAsync()
+    {
+        // fetch note if exists
+        if (!string.IsNullOrEmpty(project.NotesForProject))
+        {
+            Text = project.NotesForProject;
+        }
+    }
+
+    private void OnNoteTextChanged(string text)
+    {
+        project.NotesForProject = text;
+    }
+    private async Task Save()
+    {
+
+        MudDialog.Close(DialogResult.Ok(project));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+}
