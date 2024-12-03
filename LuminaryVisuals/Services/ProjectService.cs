@@ -82,12 +82,16 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             var project = await context.Projects
-            .Where(p => p.IsArchived == isArchived && p.PrimaryEditorId == UserId || p.SecondaryEditorId == UserId)
-            .Include(p => p.Chats)
-            .Include(p => p.Archive)
+            .Where(p => p.IsArchived == isArchived && (p.PrimaryEditorId == UserId || p.SecondaryEditorId == UserId))
+                .Include(p => p.Archive)
+                .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
+                .Include(p => p.Revisions)
             .ToListAsync();
             if (project == null)
                 return null;
+
             return project;
         }
     }
@@ -99,6 +103,7 @@ public class ProjectService
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.Chats)
             .Include(p => p.Archive)
+            .Include(p => p.Revisions)
             .ToListAsync();
             if (project == null)
                 return null;
