@@ -8,7 +8,12 @@
 @inject UserServices UserServices
 @inject ProjectService projectServices
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
-
+@if (_loading)
+{
+    <SplashScreen />
+}
+else
+{
 <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
     Dense=true Hover="true" Bordered=true 
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -452,11 +457,15 @@
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
+        <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" 
+            Editable="false" CellStyle="text-align:center;">
+            <CellTemplate>
+                    <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
+            </CellTemplate>
+            <EditTemplate>
+                <MudText Style="display:none;" />
+            </EditTemplate>
+        </PropertyColumn>
             <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
@@ -486,6 +495,9 @@
                 </EditTemplate>
             </PropertyColumn>
             <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                <CellTemplate>
+                    <MudText>$@context.Item.SecondaryEditorDetails.PaymentAmount</MudText>
+                </CellTemplate>
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -663,8 +675,9 @@
         </MudButton>
     }
 </MudContainer>
+}
 @code {
-
+    bool _loading = true;
     [Inject]
     private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
     [Inject]
@@ -672,7 +685,7 @@
     private MudDataGrid<Project> _dataGrid;
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
-    private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = true };
+    private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = false };
     private bool _isArchived;
     private bool _isAdminView;
     private bool isAdminView;
@@ -724,15 +737,7 @@
             _isAdminView = false;
         }
         await LoadProjects();
-    }
-
-
-    // Triggered when the checkbox is checked
-    private async Task OnCheckboxChecked(int projectId)
-    {
-        // Select the row
-
-        //await projectServices.UpdateProjectAsync();
+        _loading = false;
     }
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()
