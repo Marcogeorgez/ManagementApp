@@ -3,6 +3,47 @@
 <MudDialog>
     <DialogContent> 
         <MudTextField Class="mb-10" Label="Project Name" ReadOnly="!isAdmin" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
+        <MudTextField T="string"
+                      Label="Footage Link"
+                      Placeholder="Add link of your footage"
+                      Variant="Variant.Outlined"
+                      @bind-Value="context.footageLink"
+                      AutoGrow=true />
+
+        <MudTextField T="string"
+                      Label="Add Details of Resolution"
+                      Placeholder="Add Details of Footage Resolution"
+                      Variant="Variant.Outlined"
+                      @bind-Value="context.ProjectSpecifications.Resolution"
+                      AutoGrow=true />
+
+        <MudTextField T="string"
+                      Label="Add Details of Footage size"
+                      Placeholder="Add Details of Footage size"
+                      Variant="Variant.Outlined"
+                      @bind-Value="context.ProjectSpecifications.Size"
+                      AutoGrow=true/>
+
+        <MudTextField T="string"
+                      Label="Add Details of Footage Number of Cameras"
+                      Placeholder="Add Details of Number of cameras"
+                      Variant="Variant.Outlined"
+                      @bind-Value="context.ProjectSpecifications.CameraNumber"
+                      AutoGrow=true />
+
+        <MudTextField T="string"
+                      Label="Add Details of Color profile"
+                      Placeholder="Add Details of Color profile for each camera"
+                      Variant="Variant.Outlined"
+                      @bind-Value="context.ProjectSpecifications.ColorProfile"
+                      AutoGrow=true/>
+
+        <MudTextField T="string"
+                      Label="Deliverables"
+                      Placeholder="Write down what the deliverables for this project will be"
+                      Variant="Variant.Outlined"
+                      @bind-Value="context.Deliverables"
+                      AutoGrow=true />
 
         <MudText Class="mb-2">Project Description 
         <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
@@ -21,6 +62,14 @@
             <button class="ql-list" value="check"></button>
             <button class="ql-clean">Remove Formatting</button>
         </MudHtmlEditor>
+
+            <MudTextField T="string"
+                          Class="mt-3 mb-3"
+                          Label="Music preferences:"
+                          Placeholder="Place link to music here and any comments why might have"
+                          Variant="Variant.Outlined"
+                          @bind-Value="context.MusicPreference"
+                          AutoGrow=true />
 
             <MudText Typo=Typo.body1  Class="mt-5" >Revisions:</MudText>
 

@@ -78,7 +78,7 @@
                                     Label="Deliverables"
                                     Placeholder="Write down what the deliverables for this project will be"
                                     Variant="Variant.Outlined"
-                                    @bind-Value="deliverables"
+                                    @bind-Value="newProject.Deliverables"
                                     Required="true"
                                     RequiredError="Please Write down what the deliverables for this project will be"
                                     AutoGrow=true />
@@ -165,12 +165,6 @@ The Bride was married like I said before, so this wedding was quite special beca
     private MudForm form;
     private string errorMessage;
     private bool success;
-    private string? footagelink;
-    private string? preferences;
-    private string? deliverables;
-    private string? footageRequirements;
-    private string? filledFootageRequirements;
-    private string[] _footageRequirements = { "Resolution", "Size", "Number of cameras", "Color profile" };
     private enum ProgressBarValue
     {
         Zero = 0,

@@ -36,26 +36,56 @@
                           Label="Footage Link"
                           Placeholder="Add link of your footage"
                           Variant="Variant.Outlined"
-                          @bind-Value="footagelink"
+                          @bind-Value="newProject.footageLink"
                           Required="true"
                           AutoGrow=true />
 
             <MudTextField T="string"
-                          Label="Add Details of footage"
-                          Placeholder="Add Details of footage like Resolution, Footage size, Number of cameras, Color profile for each camera"
+                          Label="Add Details of Resolution"
+                          Placeholder="Add Details of Footage Resolution"
                           Variant="Variant.Outlined"
-                          @bind-Value="footageRequirements"
-x                         AutoGrow=true />
+                          @bind-Value="newProject.ProjectSpecifications.Resolution"
+                          AutoGrow=true
+                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+
+            <MudTextField T="string"
+                          Label="Add Details of Footage size"
+                          Placeholder="Add Details of Footage size"
+                          Variant="Variant.Outlined"
+                          @bind-Value="newProject.ProjectSpecifications.Size"
+                          AutoGrow=true
+                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+
+            <MudTextField T="string"
+                          Label="Add Details of Footage Number of Cameras"
+                          Placeholder="Add Details of Number of cameras"
+                          Variant="Variant.Outlined"
+                          @bind-Value="newProject.ProjectSpecifications.CameraNumber"
+                          AutoGrow=true
+                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+
+            <MudTextField T="string"
+                          Label="Add Details of Color profile"
+                          Placeholder="Add Details of Color profile for each camera"
+                          Variant="Variant.Outlined"
+                          @bind-Value="newProject.ProjectSpecifications.ColorProfile"
+                          AutoGrow=true
+                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                          RequiredError="This is required when the status of project is not 'Upcoming'" />
 
             <MudTextField T="string"
                           Label="Deliverables"
                           Placeholder="Write down what the deliverables for this project will be"
                           Variant="Variant.Outlined"
-                          @bind-Value="deliverables"
+                          @bind-Value="newProject.Deliverables"
                           Required="true"
                           RequiredError="Please Write down what the deliverables for this project will be"
                           AutoGrow=true />
-            <MudField Label="Description"  ></MudField>
+
+            <MudText Typo=Typo.body1 Class="mt-5">Description: </MudText>
             <MudHtmlEditor Outlined="true"
                            Text="Description"
                            Html="@newProject.Description"
@@ -65,29 +95,29 @@ x                         AutoGrow=true />
                            Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
 This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
 This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
-The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola." >
-                    <select class="ql-font">
-                        <option value="sans-serif"></option>
-                        <option value="serif"></option>
-                        <option value="monospace"></option>
-                    </select>
-                    <select class="ql-size">
-                        <option value="small"></option>
-                        <option selected></option>
-                        <option value="large"></option>
-                        <option value="huge"></option>
-                    </select>
-                    <MudHtmlToolbarOptions />
-                    <button class="ql-list" value="check"></button>
-                    <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
+The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
+                <select class="ql-font">
+                    <option value="sans-serif"></option>
+                    <option value="serif"></option>
+                    <option value="monospace"></option>
+                </select>
+                <select class="ql-size">
+                    <option value="small"></option>
+                    <option selected></option>
+                    <option value="large"></option>
+                    <option value="huge"></option>
+                </select>
+                <MudHtmlToolbarOptions />
+                <button class="ql-list" value="check"></button>
+                <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
             </MudHtmlEditor>
 
             <MudTextField T="string"
-                    Class="mt-3"
+                          Class="mt-3 mb-3"
                           Label="Music preferences:"
                           Placeholder="Place link to music here and any comments why might have"
                           Variant="Variant.Outlined"
-                          @bind-Value="preferences"
+                          @bind-Value="newProject.MusicPreference"
                           AutoGrow=true />
         </MudForm>
         <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
@@ -105,16 +135,13 @@ The Bride was married like I said before, so this wedding was quite special beca
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public int WeeksToDueDateDefault { get; set; }
-    private Project newProject = new Project();
+    private Project newProject = new Project()
+        {
+            ProjectSpecifications = new Models.ProjectSpecifications()
+        };
     private bool success;
     private MudForm form;
     private string errorMessage;
-    private string? footagelink;
-    private string? preferences;
-    private string? deliverables;
-    private string? footageRequirements;
-    private string? filledFootageRequirements;
-    private string[] _footageRequirements = { "Resolution", "Size", "Number of cameras", "Color profile" };
     private enum ProgressBarValue
     {
         Zero = 0,
@@ -141,26 +168,6 @@ The Bride was married like I said before, so this wedding was quite special beca
         if (form.IsValid)
         {
             newProject.Status = ProjectStatus.Upcoming;
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(footagelink);
-            sb.AppendLine(footageRequirements);
-            if (footageRequirements == null)
-            {
-                footageRequirements = "";
-            }
-            foreach (var requirement in _footageRequirements)
-            {
-                if (!footageRequirements.Contains(requirement))
-                {
-                    sb.AppendLine($"Warning: {requirement} is missing.");                    
-                }
-            }
-            sb.AppendLine(deliverables);
-            sb.AppendLine(newProject.Description);
-            if (string.IsNullOrWhiteSpace(preferences))
-                sb.AppendLine($"Warning: Music preferences is missing.");
-            sb.AppendLine(preferences);
-            newProject.Description = sb.ToString();
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
         }
         else
