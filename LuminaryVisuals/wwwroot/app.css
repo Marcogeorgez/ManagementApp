@@ -13,7 +13,7 @@
 .html-editor .ql-tooltip a {
     color: var(--mud-palette-secondary)
 }
-@media (max-width: 600px) {
+@media (max-width: 960px) {
     .mud-xs-table .mud-table-row {
         display: table !important;
         margin-bottom: 20px;
