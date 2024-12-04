@@ -136,7 +136,8 @@ The Bride was married like I said before, so this wedding was quite special beca
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public int WeeksToDueDateDefault { get; set; }
     private Project newProject = new Project()
-        {
+        { 
+            Status = ProjectStatus.Upcoming,
             ProjectSpecifications = new Models.ProjectSpecifications()
         };
     private bool success;
@@ -167,7 +168,7 @@ The Bride was married like I said before, so this wedding was quite special beca
         await form.Validate();
         if (form.IsValid)
         {
-            newProject.Status = ProjectStatus.Upcoming;
+            
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
         }
         else
