@@ -37,24 +37,25 @@
 
         @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
         {
-            <PropertyColumn Property="x => x.InternalOrder"  Title="Id" Sortable="true"
-                Filterable="true" CellStyle="text-align:center;" DragAndDropEnabled="false"
-                            Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
-                            <CellTemplate>
-
-                    <MudHidden Breakpoint="Breakpoint.MdAndDown">                    
-                            <div class="drag-handle" style="height:100px;"
-                                 draggable="true"
-                                 @ondragstart="@(() => HandleDragStart(context.Item))"
-                                 @ondragover:preventDefault
-                                 @ondragover="@(() => HandleDragOver(context.Item))"
-                                 @ondrop:preventDefault
-                                 @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
-                                 @ondragenter="@(() => HandleDragEnter(context.Item))"
-                                 @ondragleave="@(() => HandleDragLeave(context.Item))">
-                                <MudIcon Icon="@Icons.Material.Filled.DragHandle" Class="mr-2" />
-                                @context.Item.InternalOrder
-                            </div>
+                        <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
+                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                <CellTemplate>
+                            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
+                                <div class="drag-handle" style="height:100px;"
+                         draggable="true"
+                         @ondragstart="@(() => HandleDragStart(context.Item))"
+                         @ondragover:preventDefault
+                         @ondragover="@(() => HandleDragOver(context.Item))"
+                         @ondrop:preventDefault
+                             @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
+                         @ondragenter="@(() => HandleDragEnter(context.Item))"
+                         @ondragleave="@(() => HandleDragLeave(context.Item))">
+                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="mr-2" />
+                        @context.Item.InternalOrder
+                    </div>
+                    </MudHidden>
+                            <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
+                        <MudText>@context.Item.InternalOrder</MudText>
                             </MudHidden>
                 </CellTemplate>
                     </PropertyColumn>
@@ -64,8 +65,8 @@
             <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                 <CellTemplate>
-                    <div class="drag-handle" style="height:100px;"
-                         draggable="true"
+                            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
+                                <div class="drag-handle" style="height:100px;" draggable="true"
                          @ondragstart="@(() => HandleDragStart(context.Item))"
                          @ondragover:preventDefault
                          @ondragover="@(() => HandleDragOver(context.Item))"
@@ -76,6 +77,10 @@
                         <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="mr-2" />
                         @context.Item.ExternalOrder
                     </div>
+                    </MudHidden>
+                            <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
+                                <MudNumericField>@context.Item.ExternalOrder</MudNumericField>
+                            </MudHidden>
                 </CellTemplate>
                     </PropertyColumn>
         }
