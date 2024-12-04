@@ -4,11 +4,11 @@
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider CloseButton="true"
+                   MaxWidth="MaxWidth.Medium"
                    BackdropClick="false"
                    Position="DialogPosition.Center"
                    CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
-
 <CascadingValue Value="_drawerOpen">
     <MudLayout Style="position:absolute;">
         <NavMenu @rendermode="InteractiveServer" />
@@ -37,9 +37,9 @@
             }
         </script>
 
+
     </MudLayout>
 </CascadingValue>
-
 @code {
     private bool _drawerOpen = false;
 
