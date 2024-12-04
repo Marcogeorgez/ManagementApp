@@ -28,7 +28,7 @@
                     {
                         @foreach (var revision in context.Revisions)
                         {
-                    <MudText Class="mt-1 mb-2">@revision.RevisionDate.ToString("MM-dd-yyyy"):
+                    <MudExpansionPanel Text="@($"Revision Date: {revision.RevisionDate:MM-dd-yyyy}")">
                         <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content" HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
                             <select class="ql-font">
                                 <option value="sans-serif"></option>
@@ -45,7 +45,7 @@
                             <button class="ql-list" value="check"></button>
                             <button class="ql-clean">Remove Formatting</button>
                         </MudHtmlEditor>
-                    </MudText>
+                    </MudExpansionPanel>
                         }
                     }
 
