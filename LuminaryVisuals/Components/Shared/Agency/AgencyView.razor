@@ -1,0 +1,112 @@
+﻿@using LuminaryVisuals.Data
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
+@inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 500px; overflow-y: auto">
+            <MudText Class="mb-3">Users Associated with the Agency:</MudText>
+
+            <MudList T="ApplicationUser" Dense="true">
+                @foreach (var user in AgencyUsers)
+                {
+                    <MudListItem>
+                        <MudText>User Name:@user.UserName
+                            <MudSpacer/>
+                            User Email:(@user.Email)</MudText>
+                        <MudButton Class="mt-2" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => DeleteGoogleProviderByNameAndEmail(user.UserName,user.Email)">Remove Google Login</MudButton>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="mr-5" OnClick="Cancel" Color="Color.Error">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string AgencyId { get; set; }
+
+    private List<ApplicationUser> AgencyUsers { get; set; } = new List<ApplicationUser>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAgencyUsers();
+    }
+
+    private async Task LoadAgencyUsers()
+    {
+        // Get the users associated with the agency via their Google login provider
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+
+        var usersWithGoogleLogin = await context.UserLogins
+            .Where(ul => ul.UserId == AgencyId)
+            .Join(context.MigratedUsers, // Join on the GoogleProviderKey
+                ul => ul.ProviderKey,
+                mu => mu.GoogleProviderKey, // Match the Google provider key
+                (ul, mu) => new ApplicationUser
+                    {
+                        Id = ul.UserId,
+                        UserName = mu.Name, // Map the Name from MigratedUser
+                        Email = mu.Email     // Map the Email from MigratedUser
+
+                    })
+        .ToListAsync();
+
+        AgencyUsers = usersWithGoogleLogin;
+    }
+
+    private async Task DeleteGoogleProviderByNameAndEmail(string userName, string email)
+    {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // Find the corresponding MigratedUser based on name and email
+            var migratedUser = await context.MigratedUsers
+                .FirstOrDefaultAsync(mu => mu.Name == userName && mu.Email == email);
+
+            if (migratedUser == null)
+            {
+                Snackbar.Add("No user found with the specified name and email.", Severity.Warning);
+                return;
+            }
+
+            // Retrieve the GoogleProviderKey from the MigratedUser which we will use later to fetch it from UserLogin table
+            var googleProviderKey = migratedUser.GoogleProviderKey;
+
+            var googleLogin = await context.UserLogins
+                .FirstOrDefaultAsync(ul => ul.ProviderKey == googleProviderKey && ul.LoginProvider == "Google");
+
+            if (googleLogin != null)
+            {
+                context.UserLogins.Remove(googleLogin);
+            }
+
+            context.MigratedUsers.Remove(migratedUser);
+
+            await context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            MudDialog.Close(DialogResult.Ok(true));
+            Snackbar.Add("User has been removed successfully", Severity.Success);
+            
+        }
+        catch (Exception ex)
+        {
+            // Rollback in case of any errors
+            await transaction.RollbackAsync();
+            Snackbar.Add($"Error removing Google provider: {ex.Message}", Severity.Error);
+        }
+    }
+
+
+    private void Cancel() => MudDialog.Cancel();
+}

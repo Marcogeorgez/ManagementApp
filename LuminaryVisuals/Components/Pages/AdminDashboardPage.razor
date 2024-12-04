@@ -1,5 +1,5 @@
 ﻿@page "/admin-dashboard"
-@using LuminaryVisuals.Components.Shared.AgencyCreation
+@using LuminaryVisuals.Components.Shared.Agency
 @using LuminaryVisuals.Components.Shared.Users
 @using LuminaryVisuals.Data
 @inject UserServices UserManagementService
@@ -66,7 +66,7 @@ else
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
                 <col style="width: 1vw;" /><!-- # -->
                 <col style="width: 1vw;" /><!-- # -->
-                <col style="width: 3vw;" /><!--User Name-->
+                <col style="width: 10vw;" /><!--User Name-->
                 <col style="width: 3vw;" /><!--User Email-->
                 <col style="width: 2vw;" /><!-- Current Role -->
                 <col style="width: 1vw;" /><!-- Rate $ -->
@@ -87,11 +87,27 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="User Name" CellStyle="text-align: center" Editable=false>
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name" CellStyle="text-align: center" Editable=false>
+            <CellTemplate>
+            <MudTextField T="string"
+                          HelperText="Click to expand"
+                          Value="context.Item.UserName"
+                          ReadOnly="true"
+                          Immediate="true" Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                          AutoGrow=true
+                          MaxLines="4"
+                          OnAdornmentClick="@(() => OpenAgencyList(context.Item.UserId))">
+                <MudTooltip Text="Expand">
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                </MudTooltip>
+            </MudTextField>
+                </CellTemplate>
             </PropertyColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="User Email" CellStyle="text-align: center" Editable=false>
+
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="Email" CellStyle="text-align: center" Editable=false>
             </PropertyColumn>
-            <PropertyColumn Property="x => x.SelectedRole" Title="Current Role" HeaderStyle="text-align:center;"
+            <PropertyColumn Property="x => x.SelectedRole" Title="Role" HeaderStyle="text-align:center;"
                             Style="min-width: 150px;" CellStyle="text-align: center" >
                 <EditTemplate >
                     <MudSelect @bind-Value="context.Item.SelectedRole" 
@@ -531,7 +547,15 @@ else
             StateHasChanged();
         }
     }
-
+    private async void OpenAgencyList(string AgencyId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "AgencyId", AgencyId },
+        };
+        var options = new DialogOptions { FullScreen = false };
+        DialogService.Show<AgencyView>("Agency View Members", parameters, options);
+    }
     // UpdateHourlyRate AND UpdateHourlyRateInLek to update the display only.
     private void UpdateHourlyRateWrapper(UserRoleViewModel user, decimal? newValue)
     {
