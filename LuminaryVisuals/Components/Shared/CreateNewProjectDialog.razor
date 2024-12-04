@@ -5,120 +5,127 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="form" @bind-IsValid="@success">
-            <MudTextField T="string"
-                          Label="Project Name"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.ProjectName"
-                          Required="true"
-                          AutoGrow=true/>
+            <MudGrid Spacing="1">
+                <MudItem xs="12" sm="12">
+                    <MudTextField T="string"
+                                  Label="Project Name"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectName"
+                                  Required="true"
+                                  AutoGrow="true" />
+                </MudItem>
 
-            <MudDatePicker Label="Shoot Date" Class="mb-1 mt-1"
-                           Variant="Variant.Outlined"
-                           Date="newProject.ShootDate"
-                           Editable=true 
-                           DateChanged="@(date =>
-                           {
-                                    newProject.ShootDate = date;
-                                    if (date.HasValue)
-                                    {
-                                        if(WeeksToDueDateDefault  != 0)
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Shoot Date" Class="pt-1"
+                                   Variant="Variant.Outlined"
+                                   Date="newProject.ShootDate"
+                                   DateChanged="@(date =>
+                                   {
+                                        newProject.ShootDate = date;
+                                        if (date.HasValue)
                                         {
-                                        newProject.DueDate = date.Value.AddDays((WeeksToDueDateDefault * 7)); // Set Due Date to 4 weeks later
-
+                                            if(WeeksToDueDateDefault != 0)
+                                            {
+                                                newProject.DueDate = date.Value.AddDays((WeeksToDueDateDefault * 7));
+                                            }
+                                            else
+                                            {
+                                                newProject.DueDate = date.Value.AddDays(28);
+                                            }
                                         }
-                                        else{
-                                        newProject.DueDate = date.Value.AddDays(28); // Set Due Date to 4 weeks later
-                                        }
-                                    }  
-                           })"
-                           Required="true"/>
-            <MudTextField T="string"
-                          Label="Footage Link"
-                          Placeholder="Add link of your footage"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.footageLink"
-                          Required="true"
-                          AutoGrow=true />
+                                   })"
+                                   Required="true" />
+                </MudItem>
 
-            <MudTextField T="string"
-                          Label="Add Details of Resolution"
-                          Placeholder="Add Details of Footage Resolution"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.ProjectSpecifications.Resolution"
-                          AutoGrow=true
-                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
-                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Footage Link" Class="mt-1"
+                                  Placeholder="Add link of your footage"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.footageLink"
+                                  Required="true"
+                                  AutoGrow="true" />
+                </MudItem>
 
-            <MudTextField T="string"
-                          Label="Add Details of Footage size"
-                          Placeholder="Add Details of Footage size"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.ProjectSpecifications.Size"
-                          AutoGrow=true
-                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
-                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Add Details of Resolution"
+                                  Placeholder="Add Details of Footage Resolution"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.Resolution"
+                                  AutoGrow="true"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
 
-            <MudTextField T="string"
-                          Label="Add Details of Footage Number of Cameras"
-                          Placeholder="Add Details of Number of cameras"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.ProjectSpecifications.CameraNumber"
-                          AutoGrow=true
-                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
-                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Add Details of Footage size"
+                                  Placeholder="Add Details of Footage size"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.Size"
+                                  AutoGrow="true"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
 
-            <MudTextField T="string"
-                          Label="Add Details of Color profile"
-                          Placeholder="Add Details of Color profile for each camera"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.ProjectSpecifications.ColorProfile"
-                          AutoGrow=true
-                          Required="@(newProject.Status != ProjectStatus.Upcoming)"
-                          RequiredError="This is required when the status of project is not 'Upcoming'" />
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Add Details of Footage Number of Cameras"
+                                  Placeholder="Add Details of Number of cameras"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.CameraNumber"
+                                  AutoGrow="true"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
 
-            <MudTextField T="string"
-                          Label="Deliverables"
-                          Placeholder="Write down what the deliverables for this project will be"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.Deliverables"
-                          Required="true"
-                          RequiredError="Please Write down what the deliverables for this project will be"
-                          AutoGrow=true />
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Add Details of Color profile"
+                                  Placeholder="Add Details of Color profile"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.ColorProfile"
+                                  AutoGrow="true"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
 
-            <MudText Typo=Typo.body1 Class="mt-5">Description*: </MudText>
-            <MudHtmlEditor Outlined="true"
-                           Text="Description"
-                           Html="@newProject.Description"
-                           HtmlChanged="OnNoteTextChanged"
-                           Resizable=true
-                           style="min-height:150px;"
-                           Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
-This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
-This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
-The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
-                <select class="ql-font">
-                    <option value="sans-serif"></option>
-                    <option value="serif"></option>
-                    <option value="monospace"></option>
-                </select>
-                <select class="ql-size">
-                    <option value="small"></option>
-                    <option selected></option>
-                    <option value="large"></option>
-                    <option value="huge"></option>
-                </select>
-                <MudHtmlToolbarOptions />
-                <button class="ql-list" value="check"></button>
-                <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
-            </MudHtmlEditor>
+                <MudItem xs="12" sm="12" Class="mb-15">
+                    <MudText Typo="Typo.body1" Class="mt-3 mb-5">Description*:</MudText>
+                    <MudHtmlEditor Outlined="true"
+                                   Text="Description"
+                                   Html="@newProject.Description"
+                                   HtmlChanged="OnNoteTextChanged"
+                                   Resizable="true"
+                                   style="min-height:150px;"
+                                   Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms. This is the Bride's second marriage...">
+                        <select class="ql-font">
+                            <option value="sans-serif"></option>
+                            <option value="serif"></option>
+                            <option value="monospace"></option>
+                        </select>
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                        <MudHtmlToolbarOptions />
+                        <button class="ql-list" value="check"></button>
+                        <button class="ql-clean">Remove Formatting</button>
+                    </MudHtmlEditor>
+                </MudItem>
 
-            <MudTextField T="string"
-                          Class="mt-3 mb-3"
-                          Label="Music preferences:"
-                          Placeholder="Place link to music here and any comments why might have"
-                          Variant="Variant.Outlined"
-                          @bind-Value="newProject.MusicPreference"
-                          AutoGrow=true />
+                <MudItem xs="12" sm="12">
+                    <MudTextField T="string"
+                                  Label="Music Preferences"
+                                  Placeholder="Place link to music here and any comments"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.MusicPreference"
+                                  AutoGrow="true" />
+                </MudItem>
+            </MudGrid>
         </MudForm>
         <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
             @errorMessage
@@ -127,9 +134,8 @@ The Bride was married like I said before, so this wedding was quite special beca
 
     <DialogActions>
         <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Cancel</MudButton>
-        <MudButton Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" OnClick="@Submit">Add Project</MudButton>
+        <MudButton Size="Size.Large" Color="Color.Success" Variant="Variant.Filled" OnClick="@Submit">Add Project</MudButton>
     </DialogActions>
-
 </MudDialog>
 
 @code {
@@ -139,25 +145,12 @@ The Bride was married like I said before, so this wedding was quite special beca
     private bool success;
     private MudForm form;
     private string errorMessage;
-    private enum ProgressBarValue
-    {
-        Zero = 0,
-        Twenty = 20,
-        Forty = 40,
-        Sixty = 60,
-        Eighty = 80,
-        Hundred = 100
-    }
+
     private void OnNoteTextChanged(string text)
     {
         newProject.Description = text;
     }
 
-    private ProgressBarValue ProgressEnum
-    {
-        get => (ProgressBarValue) newProject.ProgressBar;
-        set => newProject.ProgressBar = (int) value;
-    }
     private async void Submit()
     {
 
@@ -170,7 +163,7 @@ The Bride was married like I said before, so this wedding was quite special beca
         }
         if (form.IsValid)
         {
-            
+            newProject.Status = ProjectStatus.Upcoming;
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
         }
         else

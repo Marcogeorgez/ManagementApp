@@ -1,17 +1,123 @@
+* {
+    font-family: 'Inter', sans-serif !important;
+}
+
 :root .mud-dialog.mud-dialog-width-sm {
     border-radius: 20px !important;
 }
+
 .mud-button {
     border-radius: 20px !important;
 }
-
+.mud-dialog-container
+{
+    width:  100vw !important;
+    height: 100vh !important;
+}
 .ql-snow .ql-tooltip.ql-flip {
     top: 50px !important;
     left: 100px !important;
-    width:100px;
+    width: 100px;
 }
 .html-editor .ql-tooltip a {
     color: var(--mud-palette-secondary)
+}
+
+
+.loading-screen-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#synchorn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+.loading-screen-stack {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction:column;
+}
+.loading-screen-title {
+    color: #FFB647;
+    font: inherit;
+    font-size: 76px;
+    height: 45%;
+    margin: 100px;
+    text-align: center;
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 5.5em;
+    line-height: 1.125;
+    font-weight: 600;
+    background-image: linear-gradient(275deg, #FFC700 0%, #FFFFFF 59%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.mud-progress-circular {
+    position: absolute;
+    color: white;
+    z-index: 10;
+    margin-top:25%;
+}
+
+.loading-text {
+    color: #f0f0f0;
+    font: inherit;
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: pulse 1.5s ease-in-out infinite alternate, fade-in 1s ease-in;
+    opacity: 0.9;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    height:50%;
+
+}
+#components-reconnect-modal h5
+{
+    color:white;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 0.9;
+        transform: translateY(0);
+    }
 }
 @media (max-width: 960px) {
     .mud-xs-table .mud-table-row {

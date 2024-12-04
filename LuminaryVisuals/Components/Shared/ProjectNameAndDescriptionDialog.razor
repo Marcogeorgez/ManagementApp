@@ -2,76 +2,97 @@
 @inject ISnackbar Snackbar
 <MudDialog>
     <DialogContent> 
-        <MudTextField Class="mb-10" Label="Project Name" ReadOnly="!isAdmin" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
-        <MudTextField T="string"
-                      Label="Footage Link"
-                      Placeholder="Add link of your footage"
-                      Variant="Variant.Outlined"
-                      @bind-Value="context.footageLink"
-                      AutoGrow=true />
+    <MudGrid Spacing="1">
+       <MudItem xs="12" sm="12">
+            <MudTextField Class="mb-5" Label="Project Name" ReadOnly="!isAdmin" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="6">
 
-        <MudTextField T="string"
-                      Label="Add Details of Resolution"
-                      Placeholder="Add Details of Footage Resolution"
-                      Variant="Variant.Outlined"
-                      @bind-Value="context.ProjectSpecifications.Resolution"
-                      AutoGrow=true />
+            <MudTextField T="string"
+                          Label="Footage Link"
+                          Placeholder="Add link of your footage"
+                          Variant="Variant.Outlined"
+                          @bind-Value="context.footageLink"
+                          AutoGrow=true />
+       </MudItem>
+        <MudItem xs="12" sm="6">
+                <MudTextField T="string"
+                              Label="Add Details of Resolution"
+                              Placeholder="Add Details of Footage Resolution"
+                              Variant="Variant.Outlined"
+                              @bind-Value="context.ProjectSpecifications.Resolution"
+                              AutoGrow=true />
+        </MudItem>
 
+        <MudItem xs="12" sm="6">
         <MudTextField T="string"
                       Label="Add Details of Footage size"
                       Placeholder="Add Details of Footage size"
                       Variant="Variant.Outlined"
                       @bind-Value="context.ProjectSpecifications.Size"
                       AutoGrow=true/>
+        </MudItem>
 
+        <MudItem xs="12" sm="6">
         <MudTextField T="string"
                       Label="Add Details of Footage Number of Cameras"
                       Placeholder="Add Details of Number of cameras"
                       Variant="Variant.Outlined"
                       @bind-Value="context.ProjectSpecifications.CameraNumber"
                       AutoGrow=true />
+        </MudItem>
 
+        <MudItem xs="12" sm="6">
         <MudTextField T="string"
                       Label="Add Details of Color profile"
                       Placeholder="Add Details of Color profile for each camera"
                       Variant="Variant.Outlined"
                       @bind-Value="context.ProjectSpecifications.ColorProfile"
                       AutoGrow=true/>
+        </MudItem>
 
-        <MudTextField T="string"
+        <MudItem xs="12" sm="6">
+                <MudTextField T="string"
                       Label="Deliverables"
                       Placeholder="Write down what the deliverables for this project will be"
                       Variant="Variant.Outlined"
                       @bind-Value="context.Deliverables"
                       AutoGrow=true />
+        </MudItem>
 
+        <MudItem xs="12" sm="12">
         <MudText Class="mb-2">Project Description 
-        <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
-            <select class="ql-font">
-                <option value="sans-serif"></option>
-                <option value="serif"></option>
-                <option value="monospace"></option>
-            </select>
-            <select class="ql-size">
-                <option value="small"></option>
-                <option selected></option>
-                <option value="large"></option>
-                <option value="huge"></option>
-            </select>
-            <MudHtmlToolbarOptions />
-            <button class="ql-list" value="check"></button>
-            <button class="ql-clean">Remove Formatting</button>
-        </MudHtmlEditor>
+                <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
+                    <select class="ql-font">
+                        <option value="sans-serif"></option>
+                        <option value="serif"></option>
+                        <option value="monospace"></option>
+                    </select>
+                    <select class="ql-size">
+                        <option value="small"></option>
+                        <option selected></option>
+                        <option value="large"></option>
+                        <option value="huge"></option>
+                    </select>
+                    <MudHtmlToolbarOptions />
+                    <button class="ql-list" value="check"></button>
+                    <button class="ql-clean">Remove Formatting</button>
+                </MudHtmlEditor>
+            </MudText>
+        </MudItem>
 
+                <MudItem xs="12" sm="12">
             <MudTextField T="string"
                           Class="mt-3 mb-3"
                           Label="Music preferences:"
-                          Placeholder="Place link to music here and any comments why might have"
+                          Placeholder="Place links to music here and any comments you might have"
                           Variant="Variant.Outlined"
                           @bind-Value="context.MusicPreference"
                           AutoGrow=true />
+                                          </MudItem>
 
-            <MudText Typo=Typo.body1  Class="mt-5" >Revisions:</MudText>
+            <MudItem xs="12" sm="12">
+            <MudText Typo=Typo.body1  Class="mt-5" >Revisions:
 
                     @if (context.Revisions != null)
                     {
@@ -95,6 +116,7 @@
                             <button class="ql-clean">Remove Formatting</button>
                         </MudHtmlEditor>
                     </MudExpansionPanel>
+
                         }
                     }
 
@@ -103,6 +125,8 @@
             <MudButton Class="mt-5" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRevision">Add New Revision</MudButton>
 
         </MudText>
+            </MudItem>
+            </MudGrid>
     </DialogContent>
 
     <DialogActions>
