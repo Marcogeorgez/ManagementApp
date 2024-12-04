@@ -19,17 +19,26 @@ public class Project
     [Display(Name = "Project Name")]
     public string ProjectName { get; set; }
 
+
+
+
+    public string footageLink { get; set; }
+
+    [DataType(DataType.MultilineText)]
+    public string Deliverables { get; set; }
+    
     [Required]
     [DataType(DataType.MultilineText)]
     public string Description { get; set; }
-
-    public ProjectSpecifications ProjectSpecifications { get; set; }
+    
+    [DataType(DataType.MultilineText)]
+    public string? MusicPreference { get; set; }
+    public ProjectSpecifications? ProjectSpecifications { get; set; }
 
 
     [DataType(DataType.MultilineText)]
     public string? NotesForProject { get; set; }
 
-    [DataType(DataType.MultilineText)]
     public string? link { get; set; }
     [Required]
     [DataType(DataType.Date)]
