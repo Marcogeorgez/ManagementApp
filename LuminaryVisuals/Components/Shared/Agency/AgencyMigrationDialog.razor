@@ -2,8 +2,10 @@
 @using System.ComponentModel.DataAnnotations
 @inject ISnackbar Snackbar
 @inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 @inject IDialogService DialogService
+
 
 <MudDialog>
     <DialogContent>
@@ -21,8 +23,7 @@
                               Label="Agency Email"
                               Required="true"
                               RequiredError="Agency email is required!"
-                              Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"
-                              Mask="@emailMask" />
+                              Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
 
                 <MudText Class="mb-4 mt-4">Selected Users:</MudText>
                 <MudList T=UserRoleViewModel Dense="true" DisablePadding="true">
@@ -56,7 +57,6 @@
 
     private string agencyName = string.Empty;
     private string agencyEmail = string.Empty;
-    private IMask emailMask = RegexMask.Email();
 
     private void Cancel() => MudDialog.Cancel();
 
@@ -146,6 +146,7 @@
             var newAgency = CreateNewAgency(newAgencyId);
 
             var newLogins = CreateNewLogins(googleLogins, newAgencyId);
+            await AssignRoleToUser(newAgency, "Client");
 
             await SaveNewAgencyAndLogins(context, newAgency, newLogins);
             await UpdateProjectOwnership(context, userIds, newAgencyId);
@@ -183,6 +184,20 @@
         await context.SaveChangesAsync();
 
         return googleLogins;
+    }
+    private async Task AssignRoleToUser(ApplicationUser user, string roleName)
+    {
+        var roleExist = await RoleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            var role = new IdentityRole(roleName);
+            await RoleManager.CreateAsync(role);
+        }
+
+        if (!await UserManager.IsInRoleAsync(user, roleName))
+        {
+            await UserManager.AddToRoleAsync(user, roleName);
+        }
     }
 
     private List<IdentityUserLogin<string>> CreateNewLogins(List<IdentityUserLogin<string>> googleLogins, Guid newAgencyId) =>
