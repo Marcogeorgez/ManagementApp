@@ -234,7 +234,10 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             var _project = await context.Projects
+                .AsTracking()
                 .Include(p => p.Revisions)
+                .Include(p => p.PrimaryEditorDetails)
+                .Include(p => p.SecondaryEditorDetails)
                 .FirstOrDefaultAsync(p => p.ProjectId ==  project.ProjectId);
             if (_project != null)
             {
@@ -254,7 +257,11 @@ public class ProjectService
                     }
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
-                if(project.Revisions != null)
+                context.Entry(_project.PrimaryEditorDetails).CurrentValues.SetValues(project.PrimaryEditorDetails);
+                context.Entry(_project.SecondaryEditorDetails).CurrentValues.SetValues(project.SecondaryEditorDetails);
+                context.Entry(_project.ProjectSpecifications).CurrentValues.SetValues(project.ProjectSpecifications);
+
+                if (project.Revisions != null)
                 { 
                 foreach (var revision in project.Revisions)
                 {
@@ -274,8 +281,6 @@ public class ProjectService
                     }
                 }
                 }
-                context.Projects.Update(_project);
-
                 await context.SaveChangesAsync();
             }
         }
