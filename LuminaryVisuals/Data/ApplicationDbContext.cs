@@ -9,6 +9,7 @@ namespace LuminaryVisuals.Data
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<MigratedUser> MigratedUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Revision> Revisions { get; set; }
         public DbSet<Archive> Archives { get; set; }
@@ -77,6 +78,9 @@ namespace LuminaryVisuals.Data
                       .HasForeignKey<Archive>(a => a.ProjectId)
                         .OnDelete(DeleteBehavior.Cascade);
             });
+            builder.Entity<MigratedUser>()
+                .HasIndex(g => g.GoogleProviderKey)
+                .IsUnique();
 
             // Configure Archive
             builder.Entity<Archive>(entity =>
