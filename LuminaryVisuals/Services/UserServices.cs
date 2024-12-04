@@ -142,7 +142,7 @@ public class UserServices
         var admins = await _userManager.GetUsersInRoleAsync("Admin");
         return admins.ToList();
     }
-    public async Task<bool> ChangeUserRoleAsync(string userId, string newRole)
+    public async Task ChangeUserRoleAsync(string userId, string newRole)
     {
         try
         {
@@ -151,36 +151,37 @@ public class UserServices
             {
                 var currentRoles = await _userManager.GetRolesAsync(user);
 
-                // Remove existing roles if it exist
+                // Remove existing roles if they exist
                 if (currentRoles.Count > 0)
                 {
                     var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-
                     if (!removeResult.Succeeded)
                     {
-                        _logger.LogError($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
-                        return false;
+                        throw new Exception($"Failed to remove user roles: {string.Join(", ", removeResult.Errors.Select(e => e.Description))}");
                     }
                 }
+
                 // Add new role
                 var addResult = await _userManager.AddToRoleAsync(user, newRole);
                 if (!addResult.Succeeded)
                 {
-                    _logger.LogError($"Failed to add user to role: {string.Join(", ", addResult.Errors.Select(e => e.Description))}");
-                    return false;
+                    throw new Exception($"Failed to add user to role: {string.Join(", ", addResult.Errors.Select(e => e.Description))}");
                 }
+
                 await _userManager.UpdateSecurityStampAsync(user);
-                return true;
             }
-            _logger.LogWarning($"User with ID {userId} not found");
-            return false;
+            else
+            {
+                throw new Exception($"User with ID {userId} not found");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Failed to change user role for user {userId} to {newRole}");
-            return false;
+            throw; // Rethrow the exception so the caller can handle it
         }
     }
+
     public async Task<bool> UpdateHourlyRateAsync(string userId, UserRoleViewModel _user)
     {
         try

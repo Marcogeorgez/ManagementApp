@@ -874,7 +874,7 @@
             if(archivedProject != null)
             {
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
-                await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null);
+                await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null, false);
                 LoadProjects();
             }
         }
@@ -1018,7 +1018,7 @@
                 {
                     await projectServices.UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
-                    LoadProjects();
+                    await LoadProjects();
                     StateHasChanged();
                 }
                 else
@@ -1031,7 +1031,7 @@
                 await projectServices.UpdateProjectAsync(project);
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
-                LoadProjects();
+                    await LoadProjects();
                 StateHasChanged();
             }
             else
@@ -1040,7 +1040,7 @@
                 {
                     await projectServices.UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
-                    LoadProjects();
+                    await LoadProjects();
                     StateHasChanged();
                 }
                 else
@@ -1052,7 +1052,8 @@
         }
         catch(Exception ex)
         {
-            throw ex; 
+            Snackbar.Add(ex.Message ,Severity.Error);
+            await LoadProjects();
         }        
     }
     private Func<Project, string> _cellStyleFunc => x =>
@@ -1309,7 +1310,7 @@
                 return;
 
             int? newOrder = targetProject.InternalOrder;
-            await projectServices.ReorderProjectAsync(draggedProject.ProjectId, newOrder);
+            await projectServices.ReorderProjectAsync(draggedProject.ProjectId, newOrder,false);
 
             Snackbar.Add($"Project: {draggedProject.ProjectName} has been moved to '{newOrder}' successfully", Severity.Success);
         }
@@ -1336,7 +1337,7 @@
                 return;
 
             int? newOrder = targetProject.ExternalOrder;
-            await projectServices.ExternalOrderAsync(draggedProject.ProjectId, newOrder);
+            await projectServices.ReorderProjectAsync(draggedProject.ProjectId, newOrder,true);
 
             Snackbar.Add($"Project: {draggedProject.ProjectName} has been moved to '{newOrder}' successfully", Severity.Success);
         }

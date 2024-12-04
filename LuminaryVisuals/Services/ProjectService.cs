@@ -243,11 +243,11 @@ public class ProjectService
             {
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
                 {
-                    await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value);
+                    await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value,false);
                 }
                 if (_project.ExternalOrder != project.ExternalOrder && _project.ExternalOrder != null)
                 {
-                    await ExternalOrderAsync(project.ProjectId, project.ExternalOrder!.Value);
+                    await ReorderProjectAsync(project.ProjectId, project.ExternalOrder!.Value,true);
                 }
                 if(_project.ClientId != project.ClientId)
                 {
@@ -385,71 +385,94 @@ public class ProjectService
         }
     }
 
-    public async Task ReorderProjectAsync(int projectId, int? newOrder)
-    {
+/*    public async Task ReorderProjectAsync(int projectId, int? newOrder)
+*//*    {
         using (var context = _contextFactory.CreateDbContext())
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
-                if (project == null)
-                    return;
-
-                // Handle case where the project has been archived (InternalOrder = null)
-                if (newOrder == null)
+                // Fetch all non-archived projects ordered by their current internal order
+                var projectsToReorder = await context.Projects
+                    .AsTracking()
+                    .Where(p => p.IsArchived == false)
+                    .OrderBy(p => p.InternalOrder)
+                    .ToListAsync();
+                // Check if new order is within valid range
+                if (newOrder < 1 || newOrder > projectsToReorder.Count)
+                    throw new Exception($"Invalid order. Must be between 1 and {projectsToReorder.Count}.");
+                // If the list is empty or has unexpected order, normalize it
+                if (!projectsToReorder.Any() || !IsProjectOrderValid(projectsToReorder, newOrder))
                 {
-                    // Reorder all non-archived projects starting from 1
-                    var projectsToReorder = await context.Projects
-                        .AsTracking()
-                        .Where(p => p.IsArchived == false)
-                        .OrderBy(p => p.InternalOrder)
-                        .ToListAsync();
-
-                    int order = 1;  // Start re-ordering from 1
-                    foreach (var p in projectsToReorder)
-                    {
-                        p.InternalOrder = order++;
-                    }
-
+                    NormalizeProjectOrder(projectsToReorder);
                     await context.SaveChangesAsync();
                     await transaction.CommitAsync();
-                    return; // Exit since reordering is complete
+                    return;
                 }
 
-                int? oldOrder = project.InternalOrder;
-                project.InternalOrder = null;
-                if (oldOrder.HasValue)
+                // Find the project being moved
+                var projectToMove = projectsToReorder.FirstOrDefault(p => p.ProjectId == projectId);
+                if (projectToMove == null)
+                    return;
+
+                // If newOrder is null, perform a full reordering
+                if (newOrder == null)
                 {
-                    if (newOrder < oldOrder)
-                    {
-                        // Move upward: Increment other projects between newOrder and oldOrder
-                        await context.Projects
-                            .AsTracking()
-                            .Where(p => p.InternalOrder >= newOrder && p.InternalOrder < oldOrder && p.IsArchived == false)
-                            .ForEachAsync(p => p.InternalOrder++);
-                    }
-                    else if (newOrder > oldOrder)
-                    {
-                        // Move downward: Decrement other projects between oldOrder and newOrder
-                        await context.Projects
-                            .AsTracking()
-                            .Where(p => p.InternalOrder > oldOrder && p.InternalOrder <= newOrder && p.IsArchived == false)
-                            .ForEachAsync(p => p.InternalOrder--);
-                    }
+                    NormalizeProjectOrder(projectsToReorder);
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return;
                 }
 
-                // Assign the new order to the current project
-                project.InternalOrder = newOrder;
+                // Perform the reordering
+                PerformProjectReordering(projectsToReorder, projectToMove, newOrder.Value);
+
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
             {
-                // Rollback the transaction in case of an error
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+    }
+
+    private bool IsProjectOrderValid(List<Project> projects, int? newOrder)
+    {
+        // Check if projects are in a continuous sequence starting from 1
+        return projects
+            .Select(p => p.InternalOrder ?? 0)
+            .OrderBy(o => o)
+            .Select((order, index) => order == index + 1)
+            .All(isValid => isValid);
+    }
+
+    private void NormalizeProjectOrder(List<Project> projects)
+    {
+        // Sort projects by their current order, then assign new sequential order
+        var orderedProjects = projects
+            .OrderBy(p => p.InternalOrder ?? int.MaxValue)
+            .ToList();
+
+        for (int i = 0; i < orderedProjects.Count; i++)
+        {
+            orderedProjects[i].InternalOrder = i + 1;
+        }
+    }
+
+    private void PerformProjectReordering(List<Project> projects, Project projectToMove, int newOrder)
+    {
+        // Remove the project from its current position
+        projects.Remove(projectToMove);
+
+        // Insert the project at the new position
+        projects.Insert(newOrder - 1, projectToMove);
+
+        // Reassign orders
+        for (int i = 0; i < projects.Count; i++)
+        {
+            projects[i].InternalOrder = i + 1;
         }
     }
     public async Task ExternalOrderAsync(int projectId, int? newOrder)
@@ -515,5 +538,124 @@ public class ProjectService
                 throw;
             }
         }
+    }*/
+    public async Task ReorderProjectAsync(int projectId, int? newOrder, bool isExternalOrder)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                List<Project> projectsToReorder = new();
+                // Fetch all non-archived projects
+                if (isExternalOrder)
+                {
+                    var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
+                    var clientId = project.ClientId;
+
+                    projectsToReorder = await context.Projects
+                        .AsTracking()
+                        .Where(p => p.IsArchived == false && p.ClientId == clientId)
+                        .OrderBy(p => isExternalOrder ? p.ExternalOrder : p.InternalOrder)
+                        .ToListAsync();
+                }
+                else
+                {
+                    projectsToReorder = await context.Projects
+                        .AsTracking()
+                        .Where(p => p.IsArchived == false)
+                        .OrderBy(p => isExternalOrder ? p.ExternalOrder : p.InternalOrder)
+                        .ToListAsync();
+                }
+                // Validate input order
+                ValidateNewOrder(projectsToReorder, newOrder);
+
+                // If the list is empty or has unexpected order, normalize it
+                if (!projectsToReorder.Any() || !IsProjectOrderValid(projectsToReorder, isExternalOrder, newOrder))
+                {
+                    NormalizeProjectOrder(projectsToReorder, isExternalOrder);
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return;
+                }
+
+                // Find the project being moved
+                var projectToMove = projectsToReorder.FirstOrDefault(p => p.ProjectId == projectId);
+                if (projectToMove == null)
+                    return;
+
+                // If newOrder is null, perform a full reordering
+                if (newOrder == null)
+                {
+                    NormalizeProjectOrder(projectsToReorder, isExternalOrder);
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return;
+                }
+
+                // Perform the reordering
+                PerformProjectReordering(projectsToReorder, projectToMove, newOrder.Value, isExternalOrder);
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
+    private bool IsProjectOrderValid(List<Project> projects, bool isExternalOrder, int? newOrder = null)
+    {
+        // Validate if projects are in a continuous sequence based on ExternalOrder or InternalOrder
+        return projects
+            .Select(p => isExternalOrder ? p.ExternalOrder ?? 0 : p.InternalOrder ?? 0)
+            .OrderBy(o => o)
+            .Select((order, index) => order == index + 1)
+            .All(isValid => isValid);
+    }
+
+    private void NormalizeProjectOrder(List<Project> projects, bool isExternalOrder)
+    {
+        // Sort projects by their current order (ExternalOrder or InternalOrder), then assign new sequential order
+        var orderedProjects = projects
+            .OrderBy(p => isExternalOrder ? p.ExternalOrder ?? int.MaxValue : p.InternalOrder ?? int.MaxValue)
+            .ToList();
+
+        for (int i = 0; i < orderedProjects.Count; i++)
+        {
+            if (isExternalOrder)
+                orderedProjects[i].ExternalOrder = i + 1;
+            else
+                orderedProjects[i].InternalOrder = i + 1;
+        }
+    }
+    private void PerformProjectReordering(List<Project> projects, Project projectToMove, int newOrder, bool isExternalOrder)
+    {
+        // Remove the project from its current position
+        projects.Remove(projectToMove);
+
+        // Insert the project at the new position
+        projects.Insert(newOrder - 1, projectToMove);
+
+        // Reassign orders based on ExternalOrder or InternalOrder
+        for (int i = 0; i < projects.Count; i++)
+        {
+            if (isExternalOrder)
+                projects[i].ExternalOrder = i + 1;
+            else
+                projects[i].InternalOrder = i + 1;
+        }
+    }
+    private void ValidateNewOrder(List<Project> projects, int? newOrder)
+    {
+        if (newOrder == null)
+            return;
+
+        // Check if new order is within valid range
+        if (newOrder < 1 || newOrder > projects.Count)
+            throw new InvalidProjectOrderException($"Invalid order. Must be between 1 and {projects.Count}.");
+    }
+
 }
