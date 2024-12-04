@@ -514,31 +514,23 @@ else
             }
             _isUpdating = true;
             _updatingUserId = user.UserId;
-            var result = await UserManagementService.ChangeUserRoleAsync(user.UserId, newRole);
+            await UserManagementService.ChangeUserRoleAsync(user.UserId, newRole);
+            var updatedUser = _users.First(u => u.UserId == user.UserId);
+            updatedUser.Roles = new List<string> { newRole };
+            _updateMessage = $"Successfully updated role for {user.UserName} to {newRole}";
+            _updateMessageClass = "alert-success";
 
-            if (result)
-            {
-                var updatedUser = _users.First(u => u.UserId == user.UserId);
-                updatedUser.Roles = new List<string> { newRole };
-                _updateMessage = $"Successfully updated role for {user.UserName} to {newRole}";
-                _updateMessageClass = "alert-success";
+            var elementUser = AllUsers.First(u => u.UserId == user.UserId);
+            elementUser.Roles = new List<string> { newRole };
+            NavigationManager.Refresh();
 
-                var elementUser = AllUsers.First(u => u.UserId == user.UserId);
-                elementUser.Roles = new List<string> { newRole };
-                NavigationManager.Refresh();
-            }
-            else
-            {
-                _updateMessage = $"Failed to update role for {user.UserName}";
-                _updateMessageClass = "alert-danger";
-                Logger.LogError($"Failed to update role for user {user.UserName}");
-            }
         }
         catch (Exception ex)
         {
-            _updateMessage = $"Error updating role: {ex.Message}";
+            _updateMessage = $"Failed to update the user role.";
             _updateMessageClass = "alert-danger";
-            Logger.LogError(ex, "Error changing user role");
+            Snackbar.Add(ex.Message, Severity.Error);
+            Logger.LogError(ex, "Error changing user role", user.UserName,user.UserEmail);
         }
         finally
         {

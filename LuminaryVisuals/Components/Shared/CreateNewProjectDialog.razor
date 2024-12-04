@@ -85,7 +85,7 @@
                           RequiredError="Please Write down what the deliverables for this project will be"
                           AutoGrow=true />
 
-            <MudText Typo=Typo.body1 Class="mt-5">Description: </MudText>
+            <MudText Typo=Typo.body1 Class="mt-5">Description*: </MudText>
             <MudHtmlEditor Outlined="true"
                            Text="Description"
                            Html="@newProject.Description"
@@ -135,11 +135,7 @@ The Bride was married like I said before, so this wedding was quite special beca
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public int WeeksToDueDateDefault { get; set; }
-    private Project newProject = new Project()
-        { 
-            Status = ProjectStatus.Upcoming,
-            ProjectSpecifications = new Models.ProjectSpecifications()
-        };
+    private Project newProject = new Project();
     private bool success;
     private MudForm form;
     private string errorMessage;
@@ -166,6 +162,12 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
 
         await form.Validate();
+        if (string.IsNullOrWhiteSpace(newProject.Description))
+        {
+            errorMessage = "Description is required.";
+            success = false;
+            return;
+        }
         if (form.IsValid)
         {
             
