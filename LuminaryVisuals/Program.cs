@@ -60,6 +60,7 @@ builder.Services.AddScoped<IConfirmationService, ConfirmationService>();
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
 // Our Services
 builder.Services.AddScoped<UserServices>();
+builder.Services.AddScoped<MigratedUser>();
 builder.Services.AddScoped<UserNoteService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<LoggingHours>();
