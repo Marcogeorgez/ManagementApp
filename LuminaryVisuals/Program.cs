@@ -1,4 +1,5 @@
-﻿using LuminaryVisuals.Components;
+﻿using Blazr.RenderState.Server;
+using LuminaryVisuals.Components;
 using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
@@ -171,7 +172,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 // IMPORTANT THIS BELOW REMOVE THE LIMIT OF 16k character of SignalR on how big a message can be.
 builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMessageSize = null);
 // So now it can be unlimited
-
+// Adds render state to control splash page
+builder.AddBlazrRenderStateServerServices();
 
 var app = builder.Build();
 
