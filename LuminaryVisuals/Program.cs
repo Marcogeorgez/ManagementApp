@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using MudBlazor.Services;
@@ -182,8 +183,34 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true; // Enable compression for HTTPS
+    options.Providers.Add<GzipCompressionProvider>(); // Add gzip compression
+    options.Providers.Add<BrotliCompressionProvider>(); // Add Brotli compression
 
+    // Specify MIME types to compress
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/javascript",  
+        "application/json",        
+        "text/css",                
+        "text/html",               
+        "text/plain",              
+        "image/svg+xml",           
+        "application/xml"          
+    });
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.SmallestSize;
+});
 var app = builder.Build();
+app.UseResponseCompression();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -203,7 +230,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
 }
-
 // Replace your existing HTTP pipeline configuration with this:
 if (!app.Environment.IsDevelopment())
 {
@@ -212,7 +238,6 @@ if (!app.Environment.IsDevelopment())
     // Only use HTTPS redirection if not running in a container
     if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
     {
-        Console.WriteLine("This is wrong this is wrong this is wrong");
         app.UseHsts();
         app.UseHttpsRedirection();
     }
