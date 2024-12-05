@@ -46,8 +46,9 @@ else
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                 <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                                <div class="drag-handle" style="height:100px;"
-                         draggable="true"
+                                <div style="height:100px;"
+                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "")"
+                                draggable="true"
                          @ondragstart="@(() => HandleDragStart(context.Item))"
                          @ondragover:preventDefault
                          @ondragover="@(() => HandleDragOver(context.Item))"
@@ -1423,6 +1424,7 @@ else
     
     .being-dragged {
         opacity: 0.6;
+        cursor: grabbing;
         background-color: var(--mud-palette-success);
     }
     
@@ -1435,13 +1437,16 @@ else
         display: flex;
         align-items: center;
         padding: 4px;
-        cursor: move;
+        cursor: grab;
     }
     
     .drag-handle:hover {
         background-color: var(--mud-palette-background-grey);
         border-radius: 4px;
     }
+    .drag-handle.grabbing {
+    cursor: grabbing;
+}
 </style>
 <script>
     window.saveAsFile = (filename, base64Content) => {
