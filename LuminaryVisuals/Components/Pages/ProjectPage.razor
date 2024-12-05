@@ -15,7 +15,7 @@
 else
 {
 <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
-    Dense=true Hover="true" Bordered=true 
+    Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.Sm"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ColumnsPanelReordering=true
     ShowColumnOptions=true
@@ -427,7 +427,7 @@ else
             </EditTemplate>
             </PropertyColumn>
         @* Editors Info*@
-        @if (RoleBasedColumns[_currentRole].Contains("BillableHours"))
+        @if (RoleBasedColumns[_currentRole].Contains("AdminBillableHoursView"))
         {
             <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
@@ -460,7 +460,9 @@ else
         <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" 
             Editable="false" CellStyle="text-align:center;">
             <CellTemplate>
+                @if(context.Item.PrimaryEditorDetails.PaymentAmount >= 0){
                     <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
+                }
             </CellTemplate>
             <EditTemplate>
                 <MudText Style="display:none;" />
@@ -496,13 +498,19 @@ else
             </PropertyColumn>
             <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <CellTemplate>
+                @if (context.Item.SecondaryEditorDetails.PaymentAmount >= 0)
+                {
                     <MudText>$@context.Item.SecondaryEditorDetails.PaymentAmount</MudText>
+                }
                 </CellTemplate>
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
 
+        }
+        @if (RoleBasedColumns[_currentRole].Contains("BillableHours")){
+            
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
         {
@@ -548,10 +556,12 @@ else
         {
             <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true">
                 <CellTemplate>
+                    <MudItem Align="center">
                     <MudIconButton Icon="@(context.Item.isPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                                    Color="@(context.Item.isPaymentVisible ? Color.Primary : Color.Default)"
                                    OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
                                    Size="Size.Small" />
+                        </MudItem>
                 </CellTemplate>
             </TemplateColumn>
         }
@@ -742,7 +752,7 @@ else
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","BillableHours","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
         { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "rogressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable", "Actions"} },
         { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status" } }
     };
@@ -952,7 +962,8 @@ else
     private async Task TimeCalculator( Project project)
     {
         var dialogParameters = new DialogParameters<ProjectTotalHoursCalculatorDialog> {
-            { nameof(ProjectTotalHoursCalculatorDialog.newProject), project }
+            { nameof(ProjectTotalHoursCalculatorDialog.newProject), project },
+            { "_isAdminView", _isAdminView}
         };
         var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters);
         var result = await dialog.Result;
@@ -1021,6 +1032,14 @@ else
             {
                 if (HasNoSignificantChanges(beforeModification, project, "ExternalOrder", "Status", "ShootDate") == false)
                 {
+                    if(project.Status != ProjectStatus.Upcoming && (
+                            string.IsNullOrEmpty(project.ProjectSpecifications?.Resolution) ||
+                            string.IsNullOrEmpty(project.ProjectSpecifications?.Size) ||
+                            string.IsNullOrEmpty(project.ProjectSpecifications?.CameraNumber) ||
+                            string.IsNullOrEmpty(project.ProjectSpecifications?.ColorProfile) ))
+                    {
+                        throw new Exception("Please Open Project Brief and fill-out all the information before changing status.");
+                    }
                     await projectServices.UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     await LoadProjects();
@@ -1057,7 +1076,7 @@ else
         }
         catch(Exception ex)
         {
-            Snackbar.Add(ex.Message ,Severity.Error);
+            Snackbar.Add(ex.Message ,Severity.Warning);
             await LoadProjects();
         }        
     }
