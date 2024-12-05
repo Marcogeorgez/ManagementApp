@@ -146,13 +146,15 @@
             var newAgency = CreateNewAgency(newAgencyId);
 
             var newLogins = CreateNewLogins(googleLogins, newAgencyId);
-            await AssignRoleToUser(newAgency, "Client");
 
             await SaveNewAgencyAndLogins(context, newAgency, newLogins);
             await UpdateProjectOwnership(context, userIds, newAgencyId);
             await DeleteOldUsers(context, userIds);
-
             await transaction.CommitAsync();
+
+            await AssignRoleToUser(newAgency, "Client");
+
+
 
             Snackbar.Add("Agency created successfully!", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));
@@ -187,6 +189,12 @@
     }
     private async Task AssignRoleToUser(ApplicationUser user, string roleName)
     {
+        // Ensure the user exists in the database
+        var userFromDb = await UserManager.FindByIdAsync(user.Id);
+        if (userFromDb == null)
+            throw new InvalidOperationException("User must exist in the database before assigning roles.");
+
+        // Ensure the role exists
         var roleExist = await RoleManager.RoleExistsAsync(roleName);
         if (!roleExist)
         {
@@ -194,11 +202,14 @@
             await RoleManager.CreateAsync(role);
         }
 
-        if (!await UserManager.IsInRoleAsync(user, roleName))
+        // Assign the role if not already assigned
+        if (!await UserManager.IsInRoleAsync(userFromDb, roleName))
         {
-            await UserManager.AddToRoleAsync(user, roleName);
+            await UserManager.AddToRoleAsync(userFromDb, roleName);
+            
         }
     }
+
 
     private List<IdentityUserLogin<string>> CreateNewLogins(List<IdentityUserLogin<string>> googleLogins, Guid newAgencyId) =>
         googleLogins.Select(login => new IdentityUserLogin<string>
