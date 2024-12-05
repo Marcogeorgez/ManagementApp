@@ -1,14 +1,7 @@
 ﻿@using LuminaryVisuals.Components.Account.Shared
 @using LuminaryVisuals.Components.Pages
 @inject NavigationManager NavManager
-@using Blazr.RenderState
-@inject IBlazrRenderStateService RenderState
-@* 
-@if (RenderState.IsPreRender)
-{
-    <SplashScreen />
-    return;
-} *@
+
 
 
     <Router AppAssembly="@typeof(Program).Assembly">
