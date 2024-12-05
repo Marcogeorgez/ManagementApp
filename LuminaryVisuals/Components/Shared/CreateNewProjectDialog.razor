@@ -163,6 +163,7 @@
         }
         if (form.IsValid)
         {
+newProject.footageLink =" ";
             newProject.Status = ProjectStatus.Upcoming;
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
         }
