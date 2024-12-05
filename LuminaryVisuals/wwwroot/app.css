@@ -34,9 +34,23 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.9); /* Optional: Add a background overlay */
+    z-index: 10000;
+}
+.mud-layout {
+    z-index: 1;
 }
 
-#synchorn {
+.mud-navmenu {
+    z-index: 5;
+}
+#synchorn {.mud-layout {
+    z-index: 1;
+}
+
+.mud-navmenu {
+    z-index: 5;
+}
     position: absolute;
     top: 0;
     left: 0;

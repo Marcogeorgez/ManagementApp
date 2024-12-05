@@ -1,5 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@using Blazr.RenderState
+@inject IBlazrRenderStateService RenderState
+
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -11,6 +14,10 @@
 <MudSnackbarProvider />
 <CascadingValue Value="_drawerOpen">
     <MudLayout Style="position:absolute;">
+        @if (_showSplashScreen && !IsStaticSSR)
+        {
+            <SplashScreen />
+        }
         <NavMenu @rendermode="InteractiveServer" />
             @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
             @if (IsStaticSSR)
@@ -20,14 +27,14 @@
             else
             {
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
-                <MudMainContent Style="height:auto; overflow-x: hidden; overflow-y: auto; padding-top:70px; padding-left:25px; padding-right:10px;  ">
-
+                    <MudMainContent Style="height:auto; overflow-x: hidden; overflow-y: auto; padding-top:70px; padding-left:25px; padding-right:10px;">
                         @Body
-                </MudMainContent>
+                    </MudMainContent>
                 </MudHidden>
                 <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
                     @Body
                 </MudHidden>
+            }
             }
 
 
@@ -42,6 +49,17 @@
 </CascadingValue>
 @code {
     private bool _drawerOpen = false;
-
+    private bool _showSplashScreen = true; // Splash screen visibility state
+    private bool _isFirstRender = true; // To track the first render
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender )
+        {
+            // Keep the splash screen for 15 seconds after the first render
+            _showSplashScreen = false;
+            _isFirstRender = false; // Prevent further splash screen rendering
+            StateHasChanged(); // Trigger a UI update
+        }
+    }
     private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
 }
