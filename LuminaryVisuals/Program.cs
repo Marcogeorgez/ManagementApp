@@ -6,6 +6,7 @@ using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -174,6 +175,7 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 // So now it can be unlimited
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
+builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
 
 var app = builder.Build();
 
@@ -227,7 +229,6 @@ using (var scope = app.Services.CreateScope())
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
 app.MapAdditionalIdentityEndpoints();
 
 app.Run();

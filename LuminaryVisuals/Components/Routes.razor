@@ -3,32 +3,14 @@
 @inject NavigationManager NavManager
 @using Blazr.RenderState
 @inject IBlazrRenderStateService RenderState
-
+@* 
 @if (RenderState.IsPreRender)
 {
     <SplashScreen />
     return;
 }
+ *@
 
-@code {
-    private bool _showSplashScreen = true;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            _showSplashScreen = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-}
-
-@if (_showSplashScreen)
-{
-    <SplashScreen />
-}
-else
-{
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="routeData" DefaultLayout="@typeof(Layout.MainLayout)">
@@ -45,4 +27,3 @@ else
             </LayoutView>
         </NotFound>
     </Router>
-}
