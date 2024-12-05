@@ -22,7 +22,7 @@ public class Project
 
 
 
-    public string footageLink { get; set; }
+    public string? footageLink { get; set; }
 
     [DataType(DataType.MultilineText)]
     public string Deliverables { get; set; }
