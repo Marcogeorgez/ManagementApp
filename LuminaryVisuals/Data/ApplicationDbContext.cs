@@ -63,6 +63,7 @@ namespace LuminaryVisuals.Data
                     .HasForeignKey(p => p.SecondaryEditorId)
                     .IsRequired(false);
 
+                entity.OwnsOne(p => p.CalculationDetails);
                 entity.OwnsOne(p => p.PrimaryEditorDetails);
                 entity.OwnsOne(p => p.SecondaryEditorDetails);
                 entity.OwnsOne(p => p.ProjectSpecifications);

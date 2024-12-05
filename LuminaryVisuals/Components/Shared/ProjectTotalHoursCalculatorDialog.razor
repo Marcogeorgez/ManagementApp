@@ -7,27 +7,28 @@
 <MudDialog>
     <DialogContent >
         <MudForm @ref="form" @bind-IsValid="@success" >
-        <MudGrid Spacing="1" Justify="Justify.Center">
-        <MudItem xs="12">
+        <MudGrid Spacing="2" Justify="Justify.Center">
+        <MudItem xs="12" sm="12">
             <MudText Typo=Typo.body1
-                             Class="d-flex justify-center mud-width-full py-2 mb-2"> @newProject.ProjectName </MudText>
+                             Class="d-flex justify-center mud-width-full mb-2"> @newProject.ProjectName </MudText>
         </MudItem>
-        <MudItem xs="12">
-            <MudNumericField T="decimal" Required=true
-                            @bind-Value="clientDiscount"
+        <MudItem xs="12" sm="12">
+            <MudNumericField T="decimal?" Required=true
+                            @bind-Value="newProject.CalculationDetails.ClientDiscount"
                             Label="Client Discount"
                             Variant=Variant.Outlined
                             HelperTextOnFocus=true
                             AdornmentText="%"   
                             Adornment="Adornment.Start"
-                            Class="d-flex justify-center mud-width-full  mt-n1" />
+                            Class="d-flex justify-center mud-width-full" />
         </MudItem>
-        <MudItem xs="12">
             @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
             {
+                <MudItem xs="12" sm="6">
+
                 <MudSelect T="decimal?"
                            AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                           Class="d-flex justify-center mud-width-full py-2"
+                           Class="d-flex justify-center mud-width-full"
                            Variant="Variant.Outlined"
                            @bind-Value="selectedMultipliers[index]"
                            Label="@GetParameterLabel(group.CalculationParameterId)">                
@@ -37,71 +38,72 @@
                                 @option.OptionName</MudSelectItem>
                         }
                     </MudSelect>
+                </MudItem>
+
                 }
-        </MudItem>
-        <MudItem xs="12">
+                <MudItem xs="12" sm="3">
                     <MudNumericField T="int" Required=true Min="0"
                           @bind-Value="_cameraNum"
                           Label="Number of Cameras"
                           Variant=Variant.Outlined
-                          Class="d-flex justify-center mud-width-full py-2" />
+                          Class="d-flex justify-center mud-width-full" />
         </MudItem>
-        <MudItem xs="12">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                          @bind-Value="footageSize"
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="decimal?" Required=true
+                          @bind-Value="newProject.CalculationDetails.FootageSize"
                           Label="Raw footage size"
                           Variant=Variant.Outlined
                           Adornment="Adornment.End"
                           AdornmentText="GB"
                           Class="d-flex justify-center mud-width-full"  />
         </MudItem>
-        <MudItem xs="12">
-                    <MudNumericField T="decimal" Required=true Min="0.0M"
-                          @bind-Value="Misc"
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="decimal?" Required=true
+                          @bind-Value="newProject.CalculationDetails.Misc"
                           Label="Misc (managmenet, footage handeling, feedback)"
                           Adornment="Adornment.End"
                           AdornmentText="hour"
                           Variant=Variant.Outlined
                           Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="12">
+                <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                        @bind-Value="prepartsDurationMinutes"
+                        @bind-Value="newProject.CalculationDetails.PrePartsDuration"
                         Label="Pre parts Duration Minutes"
                         Variant=Variant.Outlined
                         Adornment="Adornment.End"
                         AdornmentText="min"
                         Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="6">
+                <MudItem xs="6" sm="3">
                     <MudTextField T="string" Required=true
-                          @bind-Value="documentryMulticameraDuration"
+                          @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDurationHours"
                           Label="Documentary Multicamera Duration"
                           Variant=Variant.Outlined
                           Adornment="Adornment.End"
                           AdornmentText="hour"
                           Class="d-flex flex-column  mud-width-full" />
                 </MudItem>
-        <MudItem xs="6">
+                <MudItem xs="6" sm="3">
                     <MudTextField T="string" Required=true
-                                  @bind-Value="documentryMulticameraDurationMinutes"
+                                  @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDuration"
                               Variant=Variant.Outlined
                               Adornment="Adornment.End"
                               AdornmentText="min"
                               Class="d-flex flex-column  mud-width-full py-2" />
         </MudItem>
-        <MudItem xs="12">
+                <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                              @bind-Value="hightlightDurationMinutes"
+                              @bind-Value="newProject.CalculationDetails.HighlightsDuration"
                               Label="Highlights Duration Minutes"
                               Variant=Variant.Outlined
                               Adornment="Adornment.End"
                               AdornmentText="min"
                               Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="12">
+                <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                              @bind-Value="socialMediaDurationMinutes"
+                              @bind-Value="newProject.CalculationDetails.SocialMediaDuration"
                               Label="Social Media Duration Minutes"
                               Variant=Variant.Outlined
                               Adornment="Adornment.End"
@@ -109,25 +111,31 @@
                               AdornmentColor="Color.Default"
                               Class="d-flex flex-column  mud-width-full" />
         </MudItem>
-        <MudItem xs="12">
-                    <MudNumericField T="decimal" Min="0.0M"
-                          @bind-Value="@_total"
-                          Label="Total Hours"
-                          Variant=Variant.Outlined Class="d-flex justify-center mud-width-full" />
-        </MudItem>
-        <MudButton OnClick="CalculateBillableHours" FullWidth=false  Color="Color.Success" Variant=Variant.Outlined>Calculate Total </MudButton>
+
+                @if (_isAdminView)
+                {
+                    <MudItem xs="12">
+                        <MudNumericField T="decimal?" Min="0.0M"
+                                         @bind-Value="@newProject.CalculationDetails.FinalProjectBillableHours"
+                                         Label="Total Hours"
+                                         Variant=Variant.Filled Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                    </MudItem>
+                    <MudButton OnClick="CalculateBillableHours" FullWidth=false  Color="Color.Success" 
+                        Variant=Variant.Outlined>Calculate Total </MudButton>
+                }
         </MudGrid>
 
     </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Submit">Save Total Hours</MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" Class="py-2" OnClick="@Submit">Save Total Hours</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public bool _isAdminView { get; set; } 
     [Parameter] public Project newProject { get; set; } = new Project();
     private bool success;
     private bool _isOverriden;
@@ -137,11 +145,6 @@
     private int _cameraNum;
     private decimal footageSize;
     private decimal Misc;
-    private string prepartsDurationMinutes { get; set; } = "0";
-    private string documentryMulticameraDuration { get; set; } = "0";
-    private string documentryMulticameraDurationMinutes { get; set; } = "0";
-    private string hightlightDurationMinutes { get; set; } = "0";
-    private string socialMediaDurationMinutes { get; set; } = "0";
     private decimal clientDiscount;
     private decimal _total;
 
@@ -157,9 +160,21 @@
                         Options = group.Select(co => new OptionDto { OptionName = co.OptionName, Multiplier = co.Multiplier }).ToList()
                     })
                 .ToListAsync();
+            selectedMultipliers = new List<decimal?>
+            {
+            newProject.CalculationDetails?.HighlightsDifficulty
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 1)?.Options.FirstOrDefault()?.Multiplier,
 
-            selectedMultipliers = groupedOptions.Select(g => g.Options.First().Multiplier)
-            .ToList();
+            newProject.CalculationDetails?.PrePartsPrecentage
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 2)?.Options.FirstOrDefault()?.Multiplier,
+
+            newProject.CalculationDetails?.Resolution
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 3)?.Options.FirstOrDefault()?.Multiplier,
+
+            newProject.CalculationDetails?.FootageQuality
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 4)?.Options.FirstOrDefault()?.Multiplier
+            };
+
         }
     }
 
@@ -167,22 +182,22 @@
     private void CalculateBillableHours()
     {
         decimal? _cameraValue;
-        decimal? highlightsDifficulty = selectedMultipliers[0];
-        decimal? prepartsPercentage = selectedMultipliers[1];
-        decimal? resolution = selectedMultipliers[2];
-        decimal? footageQuality = selectedMultipliers[3];
-        decimal? _footageSize = footageSize;
-        decimal? _Misc = ( Misc * 60 ); // Calculate it in minutes
+        newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+        newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+        newProject.CalculationDetails.Resolution = selectedMultipliers[2];
+        newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
+        decimal? _footageSize = newProject.CalculationDetails.FootageSize;
+        decimal? _Misc = ( newProject.CalculationDetails.Misc * 60 ); // Calculate it in minutes
         decimal _prepartsDuration = 0;// Calculate it in minutes
         decimal _documentryMulticameraDuration = 0; // Calculate it in minutes
         decimal _hightlightDuration = 0; // Calculate it in minutes
         decimal _socialMediaDuration = 0; // Calculate it in minutes
-        decimal? _clientDiscount = ( 1 - (clientDiscount / 100) );
+        decimal? _clientDiscount = ( 1 - (newProject.CalculationDetails.ClientDiscount / 100) );
 
-        _prepartsDuration += EvaluateExpression(prepartsDurationMinutes) * 60;
-        _documentryMulticameraDuration += EvaluateExpression(documentryMulticameraDuration) * 60 + EvaluateExpression(documentryMulticameraDurationMinutes);
-        _hightlightDuration += EvaluateExpression(hightlightDurationMinutes);
-        _socialMediaDuration += EvaluateExpression(socialMediaDurationMinutes);
+        _prepartsDuration += EvaluateExpression(newProject.CalculationDetails.PrePartsDuration) * 60;
+        _documentryMulticameraDuration += EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDurationHours) * 60 + EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDuration);
+        _hightlightDuration += EvaluateExpression(newProject.CalculationDetails.HighlightsDuration);
+        _socialMediaDuration += EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration);
         if (_cameraNum <= 2 && _cameraNum > 0)
             _cameraValue = 1;
         else
@@ -214,7 +229,7 @@
             _hightlightDuration = ( 3 * 160 ) + (4 * 110) + ( _hightlightDuration - 7 ) * 60;// mins
         }
 
-        _hightlightDuration *= prepartsPercentage.Value * highlightsDifficulty.Value;
+        _hightlightDuration *= newProject.CalculationDetails.PrePartsPrecentage.Value * newProject.CalculationDetails.HighlightsDifficulty.Value;
         _socialMediaDuration *= 30;
 
         // Calculate the total duration of all components
@@ -224,14 +239,14 @@
                             + _socialMediaDuration;
         Console.WriteLine(totalDuration);
         // Calculate the quality multiplier
-        var qualityMultiplier = footageQuality!.Value * resolution!.Value
+        var qualityMultiplier = newProject.CalculationDetails.FootageQuality!.Value * newProject.CalculationDetails.Resolution!.Value
                                 * _cameraValue;
 
         // Combine the total duration with the quality multiplier and multiply the final by the discount
         var adjustedValue = (totalDuration * qualityMultiplier) * _clientDiscount;
 
         // Convert to hours and round to two decimal places
-        _total = Math.Round(adjustedValue.Value / 60, 2);
+        newProject.CalculationDetails.FinalProjectBillableHours = Math.Round(adjustedValue.Value / 60, 2);
 
         StateHasChanged();
     }
@@ -302,7 +317,11 @@
         await form.Validate();
         if (form.IsValid)
         {
-            newProject.ClientBillableHours = _total;
+            newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+            newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+            newProject.CalculationDetails.Resolution = selectedMultipliers[2];
+            newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
+            newProject.ClientBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
             MudDialog.Close(DialogResult.Ok(newProject)); 
         }
         else
