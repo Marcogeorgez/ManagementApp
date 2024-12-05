@@ -174,7 +174,7 @@
     font: inherit;
     font-size: 76px;
     height: 45%;
-    margin: 100px;
+    margin: 80px;
     text-align: center;
     color: #FFFFFF;
     font-family: 'Inter', sans-serif;
@@ -245,6 +245,22 @@
     }
     .mud-navmenu {
         height: auto !important;
+    }
+    .loading-screen-title {
+        color: #FFB647;
+        font: inherit;
+        font-size: 76px;
+        height: 45%;
+        margin: 80px;
+        text-align: center;
+        color: #FFFFFF;
+        font-family: 'Inter', sans-serif;
+        font-size: 3.5em;
+        line-height: 1.125;
+        font-weight: 600;
+        background-image: linear-gradient(275deg, #FFC700 0%, #FFFFFF 59%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 }
 
