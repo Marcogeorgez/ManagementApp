@@ -69,9 +69,9 @@ namespace LuminaryVisuals.Data
                 entity.OwnsOne(p => p.ProjectSpecifications);
 
 
-                entity.HasMany(p => p.Chats)
+                entity.HasOne(p => p.Chat)
                       .WithOne(c => c.Project)
-                      .HasForeignKey(c => c.ProjectId)
+                      .HasForeignKey<Chat>(c => c.ProjectId)
                         .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(p => p.Archive)

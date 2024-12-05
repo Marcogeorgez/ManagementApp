@@ -84,7 +84,7 @@ else
                     </div>
                     </MudHidden>
                             <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
-                                <MudNumericField>@context.Item.ExternalOrder</MudNumericField>
+                            <MudText>@context.Item.ExternalOrder</MudText>
                             </MudHidden>
                 </CellTemplate>
                     </PropertyColumn>
@@ -101,14 +101,12 @@ else
                             string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
                 {
                     <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
-                    <MudTextField T="string"
+                    <MudTextField T="string" 
                                   HelperText="Click to expand"
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true"
                                   Immediate="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                                  AutoGrow=true
-                                  MaxLines="4"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"Variant=Variant.Text
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                         <MudTooltip Text="Expand">
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
@@ -122,9 +120,7 @@ else
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true"
                                   Immediate="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                                  AutoGrow=true
-                                  MaxLines="4"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull" Variant=Variant.Text
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                         <MudTooltip Text="Expand">
                             <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
@@ -459,11 +455,16 @@ else
             </PropertyColumn>
         <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" 
             Editable="false" CellStyle="text-align:center;">
-            <CellTemplate>
-                @if(context.Item.PrimaryEditorDetails.PaymentAmount >= 0){
-                    <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
-                }
-            </CellTemplate>
+                    <CellTemplate>
+                        @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
+                        {
+                            <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
+                        }
+                        else
+                        {
+                            <MudText>N/A</MudText>
+                        }
+                    </CellTemplate>
             <EditTemplate>
                 <MudText Style="display:none;" />
             </EditTemplate>
@@ -498,10 +499,14 @@ else
             </PropertyColumn>
             <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <CellTemplate>
-                @if (context.Item.SecondaryEditorDetails.PaymentAmount >= 0)
-                {
-                    <MudText>$@context.Item.SecondaryEditorDetails.PaymentAmount</MudText>
-                }
+                    @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
+                    {
+                        <MudText>$@context.Item.SecondaryEditorDetails.PaymentAmount</MudText>
+                    }
+                    else
+                    {
+                        <MudText>N/A</MudText>
+                    }
                 </CellTemplate>
                 <EditTemplate>
                     <MudText Style="display:none;" />
