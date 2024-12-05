@@ -43,6 +43,7 @@ else
     
     <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
                  SelectedItems="SelectedItems" @ref=_dataGrid
+                 Breakpoint="Breakpoint.Sm"
                  Items="@AllUsers" SortMode="SortMode.Multiple"
                  FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
                  DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
