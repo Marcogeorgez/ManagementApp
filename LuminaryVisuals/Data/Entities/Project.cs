@@ -34,13 +34,17 @@ public class Project
     [DataType(DataType.MultilineText)]
     public string? MusicPreference { get; set; }
     private ProjectSpecifications? _projectSpecifications;
-
-    public ProjectSpecifications ProjectSpecifications
+    public ProjectSpecifications? ProjectSpecifications
     {
         get => _projectSpecifications ??= new ProjectSpecifications();
         set => _projectSpecifications = value;
     }
 
+    private ProjectCalculationDetails? _calculationDetails;
+    public ProjectCalculationDetails? CalculationDetails {
+        get => _calculationDetails ??= new ProjectCalculationDetails();
+        set => _calculationDetails = value;
+    }
     [DataType(DataType.MultilineText)]
     public string? NotesForProject { get; set; }
 

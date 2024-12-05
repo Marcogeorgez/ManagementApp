@@ -2,6 +2,7 @@
 
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -292,11 +293,17 @@ public class ProjectService
         {
             var _project = await context.Projects
                 .Include(p => p.Client)
+                .Include(p => p.CalculationDetails)
                 .FirstAsync(p => p.ProjectId == project.ProjectId);
             if (_project != null)
             {
                 _project.ClientBillableHours = project.ClientBillableHours;
-                _project.ClientBillableAmount = (project.Client.HourlyRate ?? 0)* project.ClientBillableHours;
+                _project.ClientBillableAmount = (project.Client.HourlyRate ?? 0 ) * project.ClientBillableHours;
+                foreach (var property in typeof(ProjectCalculationDetails).GetProperties())
+                {
+                    var newValue = property.GetValue(project.CalculationDetails);
+                    property.SetValue(_project.CalculationDetails, newValue);
+                }
                 context.Projects.Update(_project);
                 await context.SaveChangesAsync();
             }
