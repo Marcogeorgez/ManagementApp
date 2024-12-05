@@ -14,8 +14,7 @@
         <MudTooltip Text="Expand Sidebar">
             <MudIconButton Class="" Icon="@GetArrowIconForMobile()" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         </MudTooltip>
-        <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image mb-2" />
-        <MudText Typo="Typo.h5" Color="Color.Primary" Class="ml-2">Luminary Visuals</MudText>
+        <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " Style="margin:35vw" />
      </MudHidden>
 
     <MudSpacer />
@@ -28,12 +27,10 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
     
     <MudNavMenu Style="display: flex; flex-direction: column; height:100vh; ">
-        <div class="mud-nav-item" >
-            <MudTooltip Text="Click To Change View Mode">
+        <div class="mud-nav-item" style="justify-content:center !important;" >
         <MudImage Style="margin:8px 9px 2px 14px;" Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-2" onclick="@ToggleDarkMode"/>
-            </MudTooltip>
             
-            <div class="mud-nav-link-text" style="margin:13px -10px 1px 1px;padding-left:4px; display:none;">Luminary Visuals</div>
+            <div class="mud-nav-link-text" style="margin:13px -10px 1px 1px;padding-left:4px; display:none;"></div>
         </div
 
         <MudSpacer />
