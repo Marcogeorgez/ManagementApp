@@ -39,11 +39,11 @@
 
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
-                                  Label="Footage Link" Class="mt-1"
+                                  Label="Footage Link" Class="mt-3"
                                   Placeholder="Add link of your footage"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.footageLink"
-                                  Required="true"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   AutoGrow="true" />
                 </MudItem>
 
@@ -155,7 +155,7 @@
     {
 
         await form.Validate();
-        if (string.IsNullOrWhiteSpace(newProject.Description))
+        if (newProject.Status == ProjectStatus.Upcoming && string.IsNullOrWhiteSpace(newProject.Description))
         {
             errorMessage = "Description is required.";
             success = false;

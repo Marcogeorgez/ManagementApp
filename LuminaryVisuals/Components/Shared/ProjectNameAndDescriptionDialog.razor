@@ -61,8 +61,12 @@
         </MudItem>
 
         <MudItem xs="12" sm="12">
-        <MudText Class="mb-2">Project Description 
-                <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
+        <MudText Class="mb-2">Project Description
+                    <MudHtmlEditor Html="@context.Description"  HtmlChanged="OnNoteTextChanged" style="height:40vh;"
+                    Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
+This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
+This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
+The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
                     <select class="ql-font">
                         <option value="sans-serif"></option>
                         <option value="serif"></option>
@@ -82,14 +86,12 @@
         </MudItem>
 
                 <MudItem xs="12" sm="12">
-            <MudTextField T="string"
-                          Class="mt-3 mb-3"
-                          Label="Music preferences:"
-                          Placeholder="Place links to music here and any comments you might have"
-                          Variant="Variant.Outlined"
-                          @bind-Value="context.MusicPreference"
-                          AutoGrow=true />
-                                          </MudItem>
+                <MudText Class="mb-2">Music Preferences
+                <MudHtmlEditor Html="@context.MusicPreference" Outlined=true Placeholder="Place links to music here and any comments you might have" HtmlChanged="OnNoteTextChangedForMusicPreference">
+                    <button class="ql-list" value="check"></button>
+                </MudHtmlEditor>
+                </MudText>
+                </MudItem>
 
             <MudItem xs="12" sm="12">
             <MudText Typo=Typo.body1  Class="mt-5" >Revisions:
@@ -160,6 +162,10 @@
     private void OnNoteTextChanged(string text)
     {
         context.Description = text;
+    }
+    private void OnNoteTextChangedForMusicPreference(string text)
+    {
+        context.MusicPreference = text;
     }
     private void OnNoteTextChangedForRevision(Revision revision,string text)
     {
