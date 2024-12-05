@@ -22,14 +22,14 @@ public class Project
 
 
 
-    public string footageLink { get; set; }
+    public string? footageLink { get; set; }
 
     [DataType(DataType.MultilineText)]
-    public string Deliverables { get; set; }
+    public string? Deliverables { get; set; }
     
     [Required]
     [DataType(DataType.MultilineText)]
-    public string Description { get; set; }
+    public string? Description { get; set; }
     
     [DataType(DataType.MultilineText)]
     public string? MusicPreference { get; set; }
@@ -75,8 +75,8 @@ public class Project
     public bool isPaymentVisible { get; set; } = false;
 
     // Billable hours, overtime, and payment details for both editors
-    public EditorDetails PrimaryEditorDetails { get; set; }
-    public EditorDetails SecondaryEditorDetails { get; set; }
+    public EditorDetails? PrimaryEditorDetails { get; set; }
+    public EditorDetails? SecondaryEditorDetails { get; set; }
 
     [Required]
     public bool IsArchived { get; set; } = false;
@@ -94,11 +94,11 @@ public class Project
     [ForeignKey("SecondaryEditorId")]
     public virtual ApplicationUser? SecondaryEditor { get; set; }
 
-    public virtual ICollection<Chat> Chats { get; set; }
+    public virtual Chat Chat { get; set; }
     public virtual Archive Archive { get; set; }
 
     [JsonIgnore]
-    public virtual ICollection<Revision> Revisions { get; set; }
+    public virtual ICollection<Revision?> Revisions { get; set; }
 
     [NotMapped]
     public string FormattedShootDate => ShootDate?.ToString("MM-dd-yyyy");
@@ -118,7 +118,7 @@ public class Project
     [NotMapped]
     public string ClientName { get; set; }
     [NotMapped]
-    public string PrimaryEditorName { get; set; }
+    public string? PrimaryEditorName { get; set; }
     [NotMapped]
-    public string SecondaryEditorName { get; set; }
+    public string? SecondaryEditorName { get; set; }
 }

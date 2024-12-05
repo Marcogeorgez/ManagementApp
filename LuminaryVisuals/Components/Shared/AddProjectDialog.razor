@@ -99,7 +99,7 @@
                                   Placeholder="Write down what the deliverables for this project will be"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.Deliverables"
-                                  Required="true"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="Please write down what the deliverables for this project will be"
                                   AutoGrow="true" />
                 </MudItem>
@@ -132,6 +132,13 @@ The Bride was married like I said before, so this wedding was quite special beca
                         <button class="ql-clean">Remove Formatting</button>
                     </MudHtmlEditor>
                 </MudItem>
+                <MudItem xs="12" sm="12">
+                    <MudText Typo="Typo.body2" Color="Color.Error" Class="" Style="@ErrorMessageDisplay">
+                        @errorMessage
+                    </MudText>
+                </MudItem>
+
+
 
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
@@ -183,9 +190,7 @@ The Bride was married like I said before, so this wedding was quite special beca
                 </MudItem>
             </MudGrid>
         </MudForm>
-        <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
-            @errorMessage
-        </MudText>
+
     </DialogContent>
 
     <DialogActions>
@@ -237,13 +242,13 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
 
         await form.Validate();
-        if (string.IsNullOrWhiteSpace(newProject.Description))
+        if (string.IsNullOrWhiteSpace(newProject.Description) && newProject.Status != ProjectStatus.Upcoming)
         {
             errorMessage = "Description is required.";
             success = false;
             return;
         }
-        if (form.IsValid)
+        if (form.IsValid)   
         {
 
             MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component

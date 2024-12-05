@@ -116,6 +116,11 @@
                         <button class="ql-clean">Remove Formatting</button>
                     </MudHtmlEditor>
                 </MudItem>
+                <MudItem xs="12" sm="12">
+                <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
+                    @errorMessage
+                </MudText>
+                </MudItem>
 
                 <MudItem xs="12" sm="12">
                     <MudTextField T="string"
@@ -127,9 +132,7 @@
                 </MudItem>
             </MudGrid>
         </MudForm>
-        <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2" Style="@ErrorMessageDisplay">
-            @errorMessage
-        </MudText>
+
     </DialogContent>
 
     <DialogActions>
@@ -155,7 +158,7 @@
     {
 
         await form.Validate();
-        if (newProject.Status == ProjectStatus.Upcoming && string.IsNullOrWhiteSpace(newProject.Description))
+        if (newProject.Status != ProjectStatus.Upcoming && string.IsNullOrWhiteSpace(newProject.Description))
         {
             errorMessage = "Description is required.";
             success = false;
