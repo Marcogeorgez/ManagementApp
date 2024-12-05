@@ -60,7 +60,7 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
                     <NotAuthorized>
                 <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
                     <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                    <input type="hidden" name="ReturnUrl" value="project" />
                     <input type="hidden" name="provider" value="Google" />
                     <MudNavLink OnClick="@LoginClick" IconColor="Color.Tertiary" Icon="@googleLogo">
                         @label
@@ -106,20 +106,11 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     }
     MudTheme _theme = new MudTheme()
         {
-            PaletteLight = new PaletteLight()
-            {
-                Primary = Colors.BlueGray.Darken3,
-                Secondary = Colors.Green.Accent4,
-                AppbarBackground = Colors.Blue.Accent1,
-                DrawerBackground = Colors.Blue.Accent1,
-                DrawerText = Colors.Shades.Black,
-
-            },
             //  for the background #0d0e19 , for the table background #13131b , for the sidebar #02020a and .
             //for the logos a slightly grayish color will work(not pure white like #efefef ),
             PaletteDark = new PaletteDark()
             {
-                
+
                 Tertiary = "#efefef",
                 DrawerBackground = "#02020a",
                 AppbarBackground = "#13131b",
@@ -146,13 +137,13 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
 
     private async Task ToggleDarkMode()
     {
-        _isDarkMode = !_isDarkMode;
-        await JSRuntime.InvokeVoidAsync("setDarkMode", _isDarkMode);
+        _isDarkMode = true;
         StateHasChanged(); // Refresh the UI
     }
     protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        Console.WriteLine(currentUrl ,"is this the current url");
         NavigationManager.LocationChanged += OnLocationChanged;
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
