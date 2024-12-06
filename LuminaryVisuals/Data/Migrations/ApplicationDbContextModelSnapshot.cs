@@ -144,7 +144,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("CalculationParameterId");
 
-                    b.ToTable("CalculationOption");
+                    b.ToTable("CalculationOption", (string)null);
 
                     b.HasData(
                         new
@@ -272,7 +272,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CalculationParameter");
+                    b.ToTable("CalculationParameter", (string)null);
 
                     b.HasData(
                         new
@@ -482,7 +482,7 @@ namespace LuminaryVisuals.Migrations
                     b.HasIndex("UserId", "ProjectId", "Date")
                         .IsUnique();
 
-                    b.ToTable("EditorLoggingHours");
+                    b.ToTable("EditorLoggingHours", (string)null);
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.MigratedUser", b =>
@@ -513,7 +513,7 @@ namespace LuminaryVisuals.Migrations
                     b.HasIndex("GoogleProviderKey")
                         .IsUnique();
 
-                    b.ToTable("MigratedUsers");
+                    b.ToTable("MigratedUsers", (string)null);
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Revision", b =>
@@ -538,7 +538,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Revisions");
+                    b.ToTable("Revisions", (string)null);
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.Setting", b =>
@@ -569,7 +569,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("Settings");
+                    b.ToTable("Settings", (string)null);
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserNote", b =>
@@ -602,7 +602,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("TargetUserId");
 
-                    b.ToTable("UserNote");
+                    b.ToTable("UserNote", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1008,7 +1008,7 @@ namespace LuminaryVisuals.Migrations
                         .WithMany()
                         .HasForeignKey("SecondaryEditorId");
 
-                    b.OwnsOne("LuminaryVisuals.Models.ProjectCalculationDetails", "CalculationDetails", b1 =>
+                    b.OwnsOne("Project.CalculationDetails#LuminaryVisuals.Models.ProjectCalculationDetails", "CalculationDetails", b1 =>
                         {
                             b1.Property<int>("ProjectId")
                                 .HasColumnType("integer");
@@ -1057,13 +1057,41 @@ namespace LuminaryVisuals.Migrations
 
                             b1.HasKey("ProjectId");
 
-                            b1.ToTable("Projects");
+                            b1.ToTable("Projects", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ProjectId");
                         });
 
-                    b.OwnsOne("LuminaryVisuals.Models.ProjectSpecifications", "ProjectSpecifications", b1 =>
+                    b.OwnsOne("Project.PrimaryEditorDetails#LuminaryVisuals.Models.EditorDetails", "PrimaryEditorDetails", b1 =>
+                        {
+                            b1.Property<int>("ProjectId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal?>("AdjustmentHours")
+                                .HasColumnType("numeric");
+
+                            b1.Property<decimal?>("BillableHours")
+                                .HasColumnType("numeric");
+
+                            b1.Property<decimal?>("FinalBillableHours")
+                                .HasColumnType("numeric");
+
+                            b1.Property<decimal?>("Overtime")
+                                .HasColumnType("numeric");
+
+                            b1.Property<decimal?>("PaymentAmount")
+                                .HasColumnType("numeric");
+
+                            b1.HasKey("ProjectId");
+
+                            b1.ToTable("Projects", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProjectId");
+                        });
+
+                    b.OwnsOne("Project.ProjectSpecifications#LuminaryVisuals.Models.ProjectSpecifications", "ProjectSpecifications", b1 =>
                         {
                             b1.Property<int>("ProjectId")
                                 .HasColumnType("integer");
@@ -1082,13 +1110,13 @@ namespace LuminaryVisuals.Migrations
 
                             b1.HasKey("ProjectId");
 
-                            b1.ToTable("Projects");
+                            b1.ToTable("Projects", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ProjectId");
                         });
 
-                    b.OwnsOne("LuminaryVisuals.Models.EditorDetails", "PrimaryEditorDetails", b1 =>
+                    b.OwnsOne("Project.SecondaryEditorDetails#LuminaryVisuals.Models.EditorDetails", "SecondaryEditorDetails", b1 =>
                         {
                             b1.Property<int>("ProjectId")
                                 .HasColumnType("integer");
@@ -1110,35 +1138,7 @@ namespace LuminaryVisuals.Migrations
 
                             b1.HasKey("ProjectId");
 
-                            b1.ToTable("Projects");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProjectId");
-                        });
-
-                    b.OwnsOne("LuminaryVisuals.Models.EditorDetails", "SecondaryEditorDetails", b1 =>
-                        {
-                            b1.Property<int>("ProjectId")
-                                .HasColumnType("integer");
-
-                            b1.Property<decimal?>("AdjustmentHours")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("BillableHours")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("FinalBillableHours")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("Overtime")
-                                .HasColumnType("numeric");
-
-                            b1.Property<decimal?>("PaymentAmount")
-                                .HasColumnType("numeric");
-
-                            b1.HasKey("ProjectId");
-
-                            b1.ToTable("Projects");
+                            b1.ToTable("Projects", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ProjectId");
