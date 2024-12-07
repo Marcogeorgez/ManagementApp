@@ -7,7 +7,11 @@
 @inject IJSRuntime JSRuntime
 @inject UserServices UserServices
 @inject ProjectService projectServices
+@inject CircuitUpdateBroadcaster Broadcaster
+@implements IDisposable
+
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
+<Chat />
 @if (_loading)
 {
     <SplashScreen />
@@ -713,6 +717,7 @@ else
     private string _currentRole = "";
     private string _userName = "";
     private string EditTemplateCss => _currentRole == "Client" ? "d-none" : "d-block";
+    private string? CircuitId;
     private List<UserRoleViewModel.UserProjectViewModel> Editors = new List<UserRoleViewModel.UserProjectViewModel>();
     private List<UserRoleViewModel.UserProjectViewModel> Clients = new List<UserRoleViewModel.UserProjectViewModel>();
     [Inject]
@@ -752,8 +757,26 @@ else
             _isClientView = true;
             _isAdminView = false;
         }
+        CircuitId = Guid.NewGuid().ToString(); 
+        Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
         await LoadProjects();
         _loading = false;
+    }    
+    private async Task HandleProjectsUpdated()
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadProjects();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        if (CircuitId != null)
+        {
+            Broadcaster.Unsubscribe(CircuitId);
+        }
     }
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()
