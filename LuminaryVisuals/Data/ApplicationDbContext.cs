@@ -42,7 +42,7 @@ namespace LuminaryVisuals.Data
             {
                 entity.ToTable("Projects");
                 entity.Property(e => e.ProjectName).HasMaxLength(255).IsRequired();
-                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.Description);
                 entity.Property(e => e.ShootDate).IsRequired();
                 entity.Property(e => e.DueDate).IsRequired();
                 entity.Property(e => e.ProgressBar).IsRequired();

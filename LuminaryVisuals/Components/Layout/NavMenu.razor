@@ -24,11 +24,11 @@
 
 <MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="@_anchor" Fixed="@isFixed" Variant="@drawer" ClipMode="@_clipMode"
 OpenMiniOnHover="@_isMinihover" Elevation="0" >
-    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+    <MudThemeProvider IsDarkMode=true Theme="_theme" />
     
     <MudNavMenu Style="display: flex; flex-direction: column; height:100vh; ">
         <div class="mud-nav-item" style="justify-content:center !important;" >
-        <MudImage Style="margin:8px 9px 2px 14px;" Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-2" onclick="@ToggleDarkMode"/>
+        <MudImage Style="margin:8px 9px 2px 14px;" Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-2" />
             
             <div class="mud-nav-link-text" style="margin:13px -10px 1px 1px;padding-left:4px; display:none;"></div>
         </div
@@ -81,8 +81,8 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     private DrawerVariant drawer = DrawerVariant.Mini;
     private DrawerClipMode _clipMode = DrawerClipMode.Never;
     private bool _isDarkMode = true;
-    private string logoSrc => _isDarkMode ? "/Logo.png" : "/LogoDark.png";
-    private string ColorThemeIcon => _isDarkMode ? Icons.Material.Filled.DarkMode : Icons.Material.Filled.LightMode;
+    private string logoSrc =>  "/Logo.png";
+    private string ColorThemeIcon => Icons.Material.Filled.DarkMode;
     private string? currentUrl;
     private string GetLinkClass => _drawerOpen ? "max-w-[200px] flex items-center" : "justify-center";
     private string label => _drawerOpen ? "Login with Google" : "";
@@ -131,16 +131,9 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
             }
         };
 
-
-    private async Task ToggleDarkMode()
-    {
-        _isDarkMode = true;
-        StateHasChanged(); // Refresh the UI
-    }
     protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        Console.WriteLine(currentUrl ,"is this the current url");
         NavigationManager.LocationChanged += OnLocationChanged;
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -157,8 +150,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
                 drawer = DrawerVariant.Temporary;
                 _clipMode = DrawerClipMode.Never;
             }
-            // Load dark mode preference from cookies when the component is rendered
-            _isDarkMode = await JSRuntime.InvokeAsync<bool>("loadDarkModePreference");
             StateHasChanged();
         }
     }

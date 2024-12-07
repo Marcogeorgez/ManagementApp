@@ -1,0 +1,35 @@
+﻿@page "/chat"
+@inject ChatService ChatService
+@inject NavigationManager NavigationManager
+
+<div class="chat-container">
+    @foreach (var message in messages)
+    {
+        <div>@message</div>
+    }
+    <input @bind="newMessage" @onkeyup="HandleKeyUp" />
+    <button @onclick="SendMessage">Send</button>
+</div>
+
+@code {
+    private List<string> messages = new();
+    private string newMessage = "";
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrEmpty(newMessage))
+        {
+            await ChatService.SendMessageToAll(newMessage);
+            messages.Add(newMessage);
+            newMessage = "";
+        }
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+}

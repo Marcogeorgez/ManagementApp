@@ -152,8 +152,11 @@ namespace LuminaryVisuals.Services
                     .Include(p => p.PrimaryEditor)
                     .Include(p => p.SecondaryEditor)
                     .FirstOrDefaultAsync(p => p.ProjectId == EditorLoggingHours.ProjectId);
-
-                if(project.PrimaryEditor?.Id ==  EditorLoggingHours.UserId)
+                if (project == null)
+                {
+                    throw new Exception("Project not found.");
+                }
+                if (project.PrimaryEditor?.Id ==  EditorLoggingHours.UserId)
                 {
                     project.PrimaryEditorDetails.BillableHours = loggedHours;
 

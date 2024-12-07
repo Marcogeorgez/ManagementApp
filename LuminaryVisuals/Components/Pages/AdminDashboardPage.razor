@@ -466,7 +466,14 @@ else
         var result = await dialog.Result;
         if(!result.Canceled && result.Data != null)
         {
-            DeleteUser(User, result.Data.ToString());
+            await DeleteUser(User, result.Data.ToString());
+            _users.Remove(User);
+            AllUsers = _users;
+            StateHasChanged();
+        }
+        else
+        {
+            Snackbar.Add("Failed to delete user", Severity.Error);
         }
     }
     private async Task DeleteUser(UserRoleViewModel User,string adminId)

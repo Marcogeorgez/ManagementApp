@@ -44,7 +44,7 @@
                                   Label="Footage Link"
                                   Placeholder="Add link of your footage"
                                   Variant="Variant.Outlined"
-                                  @bind-Value="newProject.footageLink"
+                                  @bind-Value="newProject.FootageLink"
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   AutoGrow="true" />
                 </MudItem>
@@ -104,18 +104,20 @@
                                   AutoGrow="true" />
                 </MudItem>
 
-                <MudItem xs="12" Class="mb-15">
+                <MudItem xs="12" Class="mb-10">
                     <MudText Typo="Typo.body1" Class="mt-3 mb-5">Description*:</MudText>
+                    <div class="border-solid border-2 @(_hasError ? "mud-input-error" : "")">
                     <MudHtmlEditor Outlined="true"
-                                   Text="Description"
+                                   Text="Description" 
                                    Html="@newProject.Description"
                                    HtmlChanged="OnNoteTextChanged"
                                    Resizable="true"
-                                   style="min-height:150px;"
+                                   style="min-height:210px;" 
                                    Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
 This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
 This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
 The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
+                        
                         <select class="ql-font">
                             <option value="sans-serif"></option>
                             <option value="serif"></option>
@@ -131,12 +133,17 @@ The Bride was married like I said before, so this wedding was quite special beca
                         <button class="ql-list" value="check"></button>
                         <button class="ql-clean">Remove Formatting</button>
                     </MudHtmlEditor>
+
+
+                    </div>
+                    @if (_hasError)
+                    {
+                        <MudText Color="Color.Error" Class="mt-2 mud-input-error d-flex mud-input-helper-text mud-input-error mud-input-control-helper-container px-2 ">
+                            @_errorText
+                        </MudText>
+                    }
                 </MudItem>
-                <MudItem xs="12" sm="12">
-                    <MudText Typo="Typo.body2" Color="Color.Error" Class="" Style="@ErrorMessageDisplay">
-                        @errorMessage
-                    </MudText>
-                </MudItem>
+     
 
 
 
@@ -188,6 +195,11 @@ The Bride was married like I said before, so this wedding was quite special beca
                         }
                     </MudSelect>
                 </MudItem>
+                           <MudItem xs="12" sm="12">
+                    <MudText Typo="Typo.body2" Color="Color.Error" Class="d-flex mud-input-helper-text mud-input-error" Style="@ErrorMessageDisplay">
+                        @errorMessage
+                    </MudText>
+                </MudItem>
             </MudGrid>
         </MudForm>
 
@@ -207,6 +219,8 @@ The Bride was married like I said before, so this wedding was quite special beca
     private MudForm form;
     private string errorMessage;
     private bool success;
+        private bool _hasError = false;
+    private string _errorText = string.Empty;
     private enum ProgressBarValue
     {
         Zero = 0,
@@ -244,7 +258,8 @@ The Bride was married like I said before, so this wedding was quite special beca
         await form.Validate();
         if (string.IsNullOrWhiteSpace(newProject.Description) && newProject.Status != ProjectStatus.Upcoming)
         {
-            errorMessage = "Description is required.";
+            _hasError = true;
+            _errorText = "Description is required";
             success = false;
             return;
         }
