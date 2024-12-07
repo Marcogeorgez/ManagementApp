@@ -42,8 +42,8 @@
 
                 }
                 <MudItem xs="12" sm="3">
-                    <MudNumericField T="int" Required=true Min="0"
-                          @bind-Value="_cameraNum"
+                    <MudTextField T="string" Required=true
+                          @bind-Value="newProject.CalculationDetails.CameraNumber"
                           Label="Number of Cameras"
                           Variant=Variant.Outlined
                           Class="d-flex justify-center mud-width-full" />
@@ -322,6 +322,7 @@
             newProject.CalculationDetails.Resolution = selectedMultipliers[2];
             newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
             newProject.ClientBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
+            newProject.CalculationDetails.CameraNumber = _cameraNum.ToString();
             MudDialog.Close(DialogResult.Ok(newProject)); 
         }
         else

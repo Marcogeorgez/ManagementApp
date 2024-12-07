@@ -17,38 +17,37 @@ public class Project
     [Required]
     [StringLength(255)]
     [Display(Name = "Project Name")]
-    public string ProjectName { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
 
 
 
 
-    public string? footageLink { get; set; }
+    public string? FootageLink { get; set; }
 
     [DataType(DataType.MultilineText)]
     public string? Deliverables { get; set; }
     
-    [Required]
     [DataType(DataType.MultilineText)]
     public string? Description { get; set; }
     
     [DataType(DataType.MultilineText)]
     public string? MusicPreference { get; set; }
-    private ProjectSpecifications? _projectSpecifications;
-    public ProjectSpecifications? ProjectSpecifications
+    private ProjectSpecifications _projectSpecifications = new ProjectSpecifications();
+    public ProjectSpecifications ProjectSpecifications
     {
-        get => _projectSpecifications ??= new ProjectSpecifications();
+        get => _projectSpecifications;
         set => _projectSpecifications = value;
     }
 
-    private ProjectCalculationDetails? _calculationDetails;
-    public ProjectCalculationDetails? CalculationDetails {
-        get => _calculationDetails ??= new ProjectCalculationDetails();
+    private ProjectCalculationDetails _calculationDetails = new ProjectCalculationDetails();
+    public ProjectCalculationDetails CalculationDetails {
+        get => _calculationDetails;
         set => _calculationDetails = value;
     }
     [DataType(DataType.MultilineText)]
     public string? NotesForProject { get; set; }
 
-    public string? link { get; set; }
+    public string? Link { get; set; }
     [Required]
     [DataType(DataType.Date)]
     [Display(Name = "Shoot Date")]
@@ -72,11 +71,11 @@ public class Project
 
     public decimal? ClientBillableHours { get; set; }
     public decimal? ClientBillableAmount { get; set; }
-    public bool isPaymentVisible { get; set; } = false;
+    public bool IsPaymentVisible { get; set; } = false;
 
     // Billable hours, overtime, and payment details for both editors
-    public EditorDetails? PrimaryEditorDetails { get; set; }
-    public EditorDetails? SecondaryEditorDetails { get; set; }
+    public EditorDetails PrimaryEditorDetails { get; set; } = new EditorDetails();
+    public EditorDetails SecondaryEditorDetails { get; set; } = new EditorDetails();
 
     [Required]
     public bool IsArchived { get; set; } = false;
@@ -92,7 +91,7 @@ public class Project
     public virtual ApplicationUser? PrimaryEditor { get; set; }
 
     [ForeignKey("SecondaryEditorId")]
-    public virtual ApplicationUser? SecondaryEditor { get; set; }
+    public virtual ApplicationUser? SecondaryEditor { get; set;  }
 
     public virtual Chat Chat { get; set; }
     public virtual Archive Archive { get; set; }
@@ -101,13 +100,13 @@ public class Project
     public virtual ICollection<Revision?> Revisions { get; set; }
 
     [NotMapped]
-    public string FormattedShootDate => ShootDate?.ToString("MM-dd-yyyy");
+    public string FormattedShootDate => ShootDate?.ToString("MM-dd-yyyy") ?? "N/A";
 
     [NotMapped]
-    public string FormattedDueDate => DueDate?.ToString("MM-dd-yyyy");
+    public string FormattedDueDate => DueDate?.ToString("MM-dd-yyyy") ?? "N/A";
 
     [NotMapped]
-    public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM");
+    public string FormattedWorkingMonth => WorkingMonth?.ToString("MMMM") ?? "N/A";
 
     [NotMapped]
     public string FormatStatus => Status.ToString().Replace("_", " ");

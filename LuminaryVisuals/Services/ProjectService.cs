@@ -259,9 +259,20 @@ public class ProjectService
                     }
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
-                context.Entry(_project.PrimaryEditorDetails).CurrentValues.SetValues(project.PrimaryEditorDetails);
-                context.Entry(_project.SecondaryEditorDetails).CurrentValues.SetValues(project.SecondaryEditorDetails);
-                context.Entry(_project.ProjectSpecifications).CurrentValues.SetValues(project.ProjectSpecifications);
+                if (project.PrimaryEditorDetails != null)
+                {
+                    context.Entry(_project.PrimaryEditorDetails).CurrentValues.SetValues(project.PrimaryEditorDetails);
+                }
+
+                if (project.SecondaryEditorDetails != null)
+                {
+                    context.Entry(_project.SecondaryEditorDetails).CurrentValues.SetValues(project.SecondaryEditorDetails);
+                }
+
+                if (project.ProjectSpecifications != null)
+                {
+                    context.Entry(_project.ProjectSpecifications).CurrentValues.SetValues(project.ProjectSpecifications);
+                }
 
                 if (project.Revisions != null)
                 { 

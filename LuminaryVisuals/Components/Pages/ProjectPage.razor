@@ -404,11 +404,11 @@ else
             </PropertyColumn>
         }
 
-        <PropertyColumn Property="x => x.link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+        <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
             <CellTemplate>
-                @if (!String.IsNullOrEmpty(@context.Item.link))
+                @if (!String.IsNullOrEmpty(@context.Item.Link))
                 {
-                <MudLink Underline="Underline.Always" Style="color:dodgerblue !important" Href="@context.Item.link">
+                <MudLink Underline="Underline.Always" Style="color:dodgerblue !important" Href="@context.Item.Link">
                     Project Link
                     </MudLink>
                 }
@@ -419,7 +419,7 @@ else
             </CellTemplate>
             <EditTemplate>
                 <div class="@EditTemplateCss">
-                    <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.link" />
+                    <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.Link" />
                 </div>
             </EditTemplate>
             </PropertyColumn>
@@ -542,7 +542,7 @@ else
                     <CellTemplate Context="context">
                         @{
                             var project = context.Item as Project;
-                            @if (project?.isPaymentVisible == true)
+                            @if (project?.IsPaymentVisible == true)
                             {
                                 @project.ClientBillableAmount
                             }
@@ -563,8 +563,8 @@ else
             <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true">
                 <CellTemplate>
                     <MudItem Align="center">
-                    <MudIconButton Icon="@(context.Item.isPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                   Color="@(context.Item.isPaymentVisible ? Color.Primary : Color.Default)"
+                    <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                   Color="@(context.Item.IsPaymentVisible ? Color.Primary : Color.Default)"
                                    OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
                                    Size="Size.Small" />
                         </MudItem>
@@ -858,7 +858,7 @@ else
         {
             { "WeeksToDueDateDefault", weeksToDueDateDefault }
         };
-        var dialog = await DialogService.ShowAsync<CreateNewProjectDialog>("Create New Project", dialogParameters, options);
+        var dialog = await DialogService.ShowAsync<AddProjectDialog>("Create New Project", dialogParameters, options);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
@@ -1398,8 +1398,8 @@ else
     {
         try
         {
-            var newValue = !project.isPaymentVisible;
-            project.isPaymentVisible = newValue;
+            var newValue = !project.IsPaymentVisible;
+            project.IsPaymentVisible = newValue;
             await projectServices.UpdateProjectAsync(project);
             if (newValue == true)
             { Snackbar.Add($"Payment is visible to the client now.", Severity.Success); }

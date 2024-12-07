@@ -183,34 +183,9 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
-builder.Services.AddResponseCompression(options =>
-{
-    options.EnableForHttps = true; // Enable compression for HTTPS
-    options.Providers.Add<GzipCompressionProvider>(); // Add gzip compression
-    options.Providers.Add<BrotliCompressionProvider>(); // Add Brotli compression
-
-    // Specify MIME types to compress
-    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
-    {
-        "application/javascript",  
-        "application/json",        
-        "text/css",                
-        "text/html",               
-        "text/plain",              
-        "image/svg+xml",           
-        "application/xml"          
-    });
-});
-builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
-{
-    options.Level = System.IO.Compression.CompressionLevel.Fastest;
-});
-builder.Services.Configure<GzipCompressionProviderOptions>(options =>
-{
-    options.Level = System.IO.Compression.CompressionLevel.SmallestSize;
-});
+builder.Services.AddSignalR();
+builder.Services.AddScoped<ChatService>();
 var app = builder.Build();
-app.UseResponseCompression();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -261,5 +236,5 @@ using (var scope = app.Services.CreateScope())
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
-
+app.MapHub<ChatHub>("/chathub");
 app.Run();

@@ -67,6 +67,7 @@ namespace LuminaryVisuals.Services
             bool isPersistent,
             bool bypassTwoFactor)
         {
+            ApplicationUser user = null;
             // Only allow Google authentication
             if (loginProvider != "Google")
             {
@@ -83,11 +84,11 @@ namespace LuminaryVisuals.Services
                     var info = await base.GetExternalLoginInfoAsync();
                     if (info == null)
                     {
-                        return SignInResult.Failed;
+                        throw new Exception($"Sign In Failed! There is no account found. Try contact us.");
                     }
 
                     // Check if user already exists
-                    var user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
+                    user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
                     if (user == null)
                     {
                         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
@@ -117,6 +118,10 @@ namespace LuminaryVisuals.Services
                                 return SignInResult.Success;
                             }
                         }
+                        else
+                        {
+                            throw new Exception($"Can't register this account, because of {createResult.Errors}");
+                        }
                     }
                 }
 
@@ -124,9 +129,14 @@ namespace LuminaryVisuals.Services
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error during Google authentication: {ex.Message}");
+                Logger.LogError($"Error during Google authentication: {ex.Message}, Date: {DateTime.UtcNow}, User: {user}");
                 return SignInResult.Failed;
             }
         }
+    }
+    public class SignInResultWithMessage
+    {
+        public SignInResult Result { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }
