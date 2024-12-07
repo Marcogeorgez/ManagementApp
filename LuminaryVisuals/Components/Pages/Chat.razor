@@ -1,35 +1,23 @@
 ﻿@page "/chat"
+@using LuminaryVisuals.Components.Shared.Chat
 @inject ChatService ChatService
-@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
-<div class="chat-container">
-    @foreach (var message in messages)
-    {
-        <div>@message</div>
-    }
-    <input @bind="newMessage" @onkeyup="HandleKeyUp" />
-    <button @onclick="SendMessage">Send</button>
-</div>
+<MudFab Color="Color.Primary"
+        StartIcon="@Icons.Material.Filled.Chat"
+        Class="floating-chat-icon"
+        Style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"
+        OnClick="OpenChatPopup" />
 
 @code {
-    private List<string> messages = new();
-    private string newMessage = "";
-
-    private async Task SendMessage()
+    private void OpenChatPopup()
     {
-        if (!string.IsNullOrEmpty(newMessage))
-        {
-            await ChatService.SendMessageToAll(newMessage);
-            messages.Add(newMessage);
-            newMessage = "";
-        }
-    }
-
-    private async Task HandleKeyUp(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await SendMessage();
-        }
+        var options = new DialogOptions
+            {
+                CloseButton = false,
+                MaxWidth = MaxWidth.Small,
+                Position = DialogPosition.BottomRight
+            };
+        DialogService.Show<ChatPopup>("Chat", options);
     }
 }

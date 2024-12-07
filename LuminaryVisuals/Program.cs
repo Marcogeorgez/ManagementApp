@@ -4,6 +4,7 @@ using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
+using LuminaryVisuals.Services.Events;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -74,6 +75,10 @@ builder.Services.AddScoped<UserNoteService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<LoggingHours>();
 builder.Services.AddScoped<SettingService>();
+builder.Services.AddScoped<ChatService>();
+
+builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
+
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
@@ -183,8 +188,7 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
-builder.Services.AddSignalR();
-builder.Services.AddScoped<ChatService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -236,5 +240,5 @@ using (var scope = app.Services.CreateScope())
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
-app.MapHub<ChatHub>("/chathub");
+
 app.Run();

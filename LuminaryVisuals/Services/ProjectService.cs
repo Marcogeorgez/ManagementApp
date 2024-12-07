@@ -1,8 +1,8 @@
 ﻿namespace LuminaryVisuals.Services;
-
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Models;
+using LuminaryVisuals.Services.Events;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,11 +11,14 @@ public class ProjectService
 {
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly ILogger<ProjectService> _logger;
+    private readonly CircuitUpdateBroadcaster _broadcaster;
 
-    public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger)
+    public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger,
+        CircuitUpdateBroadcaster projectUpdateService)
     {
         _contextFactory = context;
         _logger = logger;
+        _broadcaster = projectUpdateService;
     }
 
     public async Task<List<Project>> GetProjectsAsync(bool isArchived)
@@ -295,6 +298,9 @@ public class ProjectService
                 }
                 }
                 await context.SaveChangesAsync();
+
+                await _broadcaster.NotifyAllAsync();
+                
             }
         }
     }
@@ -317,6 +323,7 @@ public class ProjectService
                 }
                 context.Projects.Update(_project);
                 await context.SaveChangesAsync();
+        await _broadcaster.NotifyAllAsync();
             }
             else
             {
@@ -334,6 +341,7 @@ public class ProjectService
             {
                 context.Projects.Remove(project);
                 await context.SaveChangesAsync();
+        await _broadcaster.NotifyAllAsync();
             }
         }
     }
@@ -350,6 +358,7 @@ public class ProjectService
                 project.ExternalOrder = null;
                 project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
                 await context.SaveChangesAsync();
+        await _broadcaster.NotifyAllAsync();
             }
         }
     }
@@ -381,6 +390,7 @@ public class ProjectService
                 }
                 project.IsArchived = false;
                 await context.SaveChangesAsync();
+        await _broadcaster.NotifyAllAsync();
             }
             else
             {
@@ -400,6 +410,7 @@ public class ProjectService
             {
                 context.Archives.Remove(archiveRecord);
                 await context.SaveChangesAsync();
+        await _broadcaster.NotifyAllAsync();
             }
         }
     }
@@ -435,7 +446,7 @@ public class ProjectService
                 ValidateNewOrder(projectsToReorder, newOrder);
 
                 // If the list is empty or has unexpected order, normalize it
-                if (!projectsToReorder.Any() || !IsProjectOrderValid(projectsToReorder, isExternalOrder, newOrder))
+                if (!projectsToReorder.Any() || !IsProjectOrderValid(projectsToReorder, isExternalOrder))
                 {
                     NormalizeProjectOrder(projectsToReorder, isExternalOrder);
                     await context.SaveChangesAsync();
@@ -462,6 +473,8 @@ public class ProjectService
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+        await _broadcaster.NotifyAllAsync();
             }
             catch
             {
@@ -470,7 +483,7 @@ public class ProjectService
             }
         }
     }
-    private bool IsProjectOrderValid(List<Project> projects, bool isExternalOrder, int? newOrder = null)
+    private bool IsProjectOrderValid(List<Project> projects, bool isExternalOrder)
     {
         // Validate if projects are in a continuous sequence based on ExternalOrder or InternalOrder
         return projects
