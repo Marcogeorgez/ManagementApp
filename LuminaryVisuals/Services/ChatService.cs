@@ -81,7 +81,14 @@ public class ChatService
 
         if (chat == null)
         {
-            throw new Exception("Chat not found.");
+            chat = new Chat
+            {
+                ProjectId = projectId,
+                Messages = new List<Message>() // Initialize an empty list of messages
+            };
+
+            context.Chats.Add(chat);
+            await context.SaveChangesAsync();
         }
 
         // Return messages based on approval status and whether the user is a client

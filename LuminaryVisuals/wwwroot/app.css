@@ -6,6 +6,7 @@
     border-radius: 20px !important;
 }
 
+
 .mud-button {
     border-radius: 20px !important;
 }
@@ -266,6 +267,10 @@
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
+    .container-for-toggles {
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
 }
 
 @media(min-width: 961px) {
@@ -276,6 +281,10 @@
         flex-direction: column;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .container-for-toggles {
+        margin-left: 40px !important;
+        margin-right: inherit !important;
     }
 }
 .chat-header {
