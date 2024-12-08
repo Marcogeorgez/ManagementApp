@@ -1,7 +1,7 @@
 ﻿@inject ProjectService ProjectService
 @inject ChatService ChatService
 @inject IDialogService DialogService
-
+@inject ISnackbar Snackbar
 <MudDialog>
     <DialogContent>
         <MudContainer>
@@ -34,7 +34,9 @@
 @code {
     private List<Project> projects = new List<Project>();  // Initialize as an empty list
     [Parameter] public string userId { get; set; }
-
+    [Parameter] public bool isAdminView { get; set; }
+    [Parameter] public bool isEditorView { get; set; }
+    [Parameter] public bool isClientView { get; set; }
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
@@ -42,12 +44,26 @@
     {
         try
         {
-            projects = await ProjectService.GetProjectsForClients(false, userId);
+            if (isAdminView)
+            {
+                projects = await ProjectService.GetProjectsAsync();
+            }
+            else if (isEditorView)
+            {
+                projects = (await ProjectService.GetProjectsForEditors(false, userId))!;
+            }
+            else if(isClientView)
+            {
+                projects = (await ProjectService.GetProjectsForClients(false, userId))!;
+            }
+            else
+            {
+                Snackbar.Add("Not authorized! Please contact owner.", Severity.Warning);
+            }
         }
         catch (Exception ex)
         {
-            // Log the error if needed
-            projects = new List<Project>();  // Ensure projects is never null
+            projects = new List<Project>();  // Ensures projects are never null
         }
         finally
         {
@@ -75,7 +91,6 @@
 
     private int GetUnreadMessageCount(int projectId)
     {
-        // You might want to implement a caching mechanism for this
         return 5;
     }
 }

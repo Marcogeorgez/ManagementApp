@@ -39,16 +39,7 @@
         </MudContainer>
     </DialogContent>
 </MudDialog>
-                @*                    <MudListItem>
-                <MudText
-                Typo="@(message.IsApproved ? Typo.body2 : Typo.body1)"
-                Color="@(message.IsApproved ? Color.Secondary : Color.Default)">
-                @message.Content
-                </MudText>
-                <MudText Typo="Typo.caption">
-                @message.Timestamp.ToLocalTime().ToString("g")
-                </MudText>
-                </MudListItem> *@
+
 @code {
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
@@ -87,13 +78,9 @@
         try 
         {
             await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, false);
-            
             // Reload messages to show the new message
             await LoadMessages();
-            
             await ScrollManager.ScrollToBottomAsync(".chat-messages", ScrollBehavior.Smooth);
-
-            // Clear the input
             newMessage = string.Empty;
 
 
@@ -115,7 +102,7 @@
 
     private async Task CloseChat()
     {
-        if (newMessage != string.Empty)
+        if (!string.IsNullOrEmpty(newMessage))
         {
             var parameters = new DialogParameters
             {

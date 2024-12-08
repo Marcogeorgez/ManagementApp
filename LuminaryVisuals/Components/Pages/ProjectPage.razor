@@ -11,7 +11,7 @@
 @implements IDisposable
 
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
-<Chat userId="@_currentUserId" />
+<Chat userId="@_currentUserId" isAdminView="@isAdminView" isClientView="@_isClientView" isEditorView="@_isEditorView" />
 @if (_loading)
 {
     <SplashScreen />
@@ -652,7 +652,7 @@ else
         <MudDataGridPager T="Project"/>
     </PagerContent>
 </MudDataGrid>
-    <MudContainer Class="justify-center d-flex flex-grow-1 gap-2 flex-wrap" Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
+    <MudContainer Class="justify-start d-flex flex-grow-1 gap-2 flex-wrap container-for-toggles" Gutters=false>
     @if(isAdminView)
     { 
     <MudStack Spacing="0" Class=" mt-5">
@@ -664,15 +664,18 @@ else
         </MudStack>
     </MudStack>
             <MudDivider style="border-width:0px !important;" />
+            <div class="flex-none d-flex " style=" flex: none !important; margin-left:80px;" />
+
             <MudButton Color="Color.Success"
                        Variant="Variant.Filled" Size="Size.Small"
         StartIcon="@Icons.Material.Filled.AddCircle"
         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="">
         Add Project
     </MudButton>
+            <MudSpacer />
+
             <MudDivider style="border-width:0px !important;" />
 
-    <MudSpacer />
     <MudTooltip Text="Download Filtered Projects ">
     <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
     Color="Color.Primary" Variant="Variant.Filled" 
@@ -686,7 +689,10 @@ else
                 Backup Projects
         </MudButton>
     </MudTooltip>
+    <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
+
             <MudSpacer />
+            </MudHidden>
 
     }
     else if (_isClientView)
@@ -698,7 +704,7 @@ else
             Create New Project
         </MudButton>
     }
-</MudContainer>
+    </MudContainer>
 }
 @code {
     bool _loading = true;
