@@ -1,0 +1,81 @@
+﻿@inject ProjectService ProjectService
+@inject ChatService ChatService
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer>
+            <MudText Typo="Typo.h6" Class="mb-4">Your Projects</MudText>
+
+            @if (projects.Any())
+            {
+                <MudList T="Project">
+                    @foreach (var project in projects)
+                    {
+                        <MudListItem OnClick="() => OpenProjectChat(project.ProjectId)">
+                            <div class="d-flex justify-space-between align-center">
+                                <MudText>@project.ProjectName</MudText>
+                                <MudBadge Content="@GetUnreadMessageCount(project.ProjectId)"
+                                          Color="Color.Secondary"
+                                          Visible="GetUnreadMessageCount(project.ProjectId) > 0" />
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">No projects found.</MudAlert>
+            }
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private List<Project> projects = new List<Project>();  // Initialize as an empty list
+    [Parameter] public string userId { get; set; }
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            projects = await ProjectService.GetProjectsForClients(false, userId);
+        }
+        catch (Exception ex)
+        {
+            // Log the error if needed
+            projects = new List<Project>();  // Ensure projects is never null
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private void OpenProjectChat(int projectId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ProjectId", projectId },
+            { "UserId", userId }
+        };
+
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                Position = DialogPosition.BottomRight,
+                NoHeader = true
+            };
+        MudDialog.Close();
+        DialogService.Show<ProjectChatDialog>("", parameters, options);
+    }
+
+    private int GetUnreadMessageCount(int projectId)
+    {
+        // You might want to implement a caching mechanism for this
+        return 5;
+    }
+}

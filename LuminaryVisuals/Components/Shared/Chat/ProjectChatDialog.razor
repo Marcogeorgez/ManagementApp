@@ -1,0 +1,140 @@
+﻿@inject ChatService ChatService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IScrollManager ScrollManager
+<MudDialog>
+    <DialogContent class="chat-dialog">
+        <MudContainer Class="chat-popup" Gutters=false>
+            <MudPaper Elevation="3" Class="chat-header" Outlined=true>
+                <MudText Typo="Typo.h6">Chat</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                Color="Color.Info"
+                                OnClick="CloseChat" />
+            </MudPaper>
+            <MudPaper Class="chat-messages" Elevation="0">
+                @foreach (var message in messages)
+                {
+                    <div class="@(message.UserId == UserId ? "message-right" : "message-left")">
+                        <div class="chat-message">
+                            <MudText Typo="Typo.body2">@message.Content</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Inherit">
+                                @message.Timestamp.ToString("HH:mm")
+                            </MudText>
+                        </div>
+                    </div>
+                }
+            </MudPaper>
+            <MudPaper Class="chat-input-area rounded-pill  " Elevation="0">
+                <MudTextField @bind-Value="newMessage" Class="rounded-pill"
+                                Placeholder="Type a message..."
+                                Variant="Variant.Outlined"
+                                Immediate=true
+                                Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.Send"
+                                TextUpdateSuppression=false
+                                OnAdornmentClick="SendMessage"
+                                AutoFocus=true
+                                OnKeyDown="HandleKeyPress" />
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+                @*                    <MudListItem>
+                <MudText
+                Typo="@(message.IsApproved ? Typo.body2 : Typo.body1)"
+                Color="@(message.IsApproved ? Color.Secondary : Color.Default)">
+                @message.Content
+                </MudText>
+                <MudText Typo="Typo.caption">
+                @message.Timestamp.ToLocalTime().ToString("g")
+                </MudText>
+                </MudListItem> *@
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public string UserId { get; set; }
+
+    private string newMessage;
+    private List<Message> messages = new List<Message>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMessages();
+        await MarkMessagesAsRead();
+    }
+
+    private async Task LoadMessages()
+    {
+        messages = await ChatService.GetMessagesAsync(ProjectId, true);
+        StateHasChanged();
+    }
+
+    private async Task MarkMessagesAsRead()
+    {
+        await ChatService.MarkMessagesAsReadAsync(ProjectId, UserId);
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(newMessage))
+        {
+            Snackbar.Add("Message cannot be empty", Severity.Warning);
+            return;
+        }
+
+        try 
+        {
+            await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, false);
+            
+            // Reload messages to show the new message
+            await LoadMessages();
+            
+            await ScrollManager.ScrollToBottomAsync(".chat-messages", ScrollBehavior.Smooth);
+
+            // Clear the input
+            newMessage = string.Empty;
+
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to send message", Severity.Error);
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage))
+        {
+            await SendMessage();
+        }
+    }
+
+
+    private async Task CloseChat()
+    {
+        if (newMessage != string.Empty)
+        {
+            var parameters = new DialogParameters
+            {
+                { "Message", "There is an unsent message. Are you sure you want to close?" }
+            };
+            var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+            var result = await dialog.Result;
+            if (!result.Canceled)
+            {
+                MudDialog.Close();
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            MudDialog.Close();
+        }
+    }
+}
