@@ -11,6 +11,10 @@
 
 @code {
     [Parameter] public string userId { get; set; }
+    [Parameter] public bool isAdminView { get; set; }
+    [Parameter] public bool isEditorView{ get; set; }
+    [Parameter] public bool isClientView{ get; set; }
+
 
     private void OpenChatPopup()
     {
@@ -23,73 +27,11 @@
         var parameters = new DialogParameters<ChatProjectListDialog>
         {
             { "userId" , userId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , isEditorView },
+            { "isClientView" , isClientView },
+
         };
         DialogService.Show<ChatProjectListDialog>("", parameters, options);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@* @page "/chat"
-@using LuminaryVisuals.Components.Shared.Chat
-@inject ChatService ChatService
-@inject ProjectService ProjectService
-
-@inject IDialogService DialogService
-
-<MudFab Color="Color.Primary"
-        StartIcon="@Icons.Material.Filled.Chat"
-        Class="floating-chat-icon"
-        Style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"
-        OnClick="OpenChatPopup" />
-
-@code {
-    [Parameter] public string UserId { get; set; }
-    private List<Project?> projects = new();
-    private List<Data.Entities.Chat> chatMessages = new();
-    private string selectedProjectId;
-    private bool isLoadingProjects = true;
-    private bool isLoadingMessages = false;
-    protected override async Task OnInitializedAsync()
-    {
-        projects = await ProjectService.GetProjectsForClients(false, UserId); // Fetch projects (not archived)
-        isLoadingProjects = false;
-    }
-
-    private void OpenChatPopup()
-    {
-        var options = new DialogOptions
-            {
-                CloseButton = true,
-                MaxWidth = MaxWidth.Medium,
-                Position = DialogPosition.BottomRight,
-                NoHeader = true
-            };
-        DialogService.Show<ChatPoppup>("",options);
-    }
-    private async Task LoadMessagesForProject(int projectId)
-    {
-        isLoadingMessages = true;
-        chatMessages = await ChatService.GetMessagesAsync(projectId, UserId,true); // Fetch messages based on projectId
-        isLoadingMessages = false;
-    }
-}
- *@
