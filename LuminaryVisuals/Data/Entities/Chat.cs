@@ -19,7 +19,6 @@ public class Chat
     // Navigation properties
 
     public virtual Project Project { get; set; }
-    public virtual ApplicationUser User { get; set; }
 }
 
 
