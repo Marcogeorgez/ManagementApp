@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241208003219_isDeletedChatAndChatReadStatus")]
+    partial class isDeletedChatAndChatReadStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -333,8 +336,26 @@ namespace LuminaryVisuals.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ChatId"));
 
+                    b.Property<bool>("IsApproved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsEditorMessage")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -358,11 +379,11 @@ namespace LuminaryVisuals.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ChatId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
-
-                    b.Property<int>("MessageId")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("ReadTimestamp")
                         .HasColumnType("timestamp with time zone");
@@ -375,7 +396,7 @@ namespace LuminaryVisuals.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("MessageId", "UserId")
+                    b.HasIndex("ChatId", "UserId")
                         .IsUnique();
 
                     b.ToTable("ChatReadStatus");
@@ -499,47 +520,6 @@ namespace LuminaryVisuals.Migrations
                         .IsUnique();
 
                     b.ToTable("EditorLoggingHours");
-                });
-
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Message", b =>
-                {
-                    b.Property<int>("MessageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MessageId"));
-
-                    b.Property<int>("ChatId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsApproved")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("character varying(255)");
-
-                    b.HasKey("MessageId");
-
-                    b.HasIndex("ChatId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.MigratedUser", b =>
@@ -928,9 +908,9 @@ namespace LuminaryVisuals.Migrations
 
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.ChatReadStatus", b =>
                 {
-                    b.HasOne("LuminaryVisuals.Data.Entities.Message", "Message")
+                    b.HasOne("LuminaryVisuals.Data.Entities.Chat", "Chat")
                         .WithMany()
-                        .HasForeignKey("MessageId")
+                        .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -940,7 +920,7 @@ namespace LuminaryVisuals.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Message");
+                    b.Navigation("Chat");
 
                     b.Navigation("User");
                 });
@@ -971,25 +951,6 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Message", b =>
-                {
-                    b.HasOne("LuminaryVisuals.Data.Entities.Chat", "Chat")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
 
                     b.Navigation("User");
                 });
@@ -1270,11 +1231,6 @@ namespace LuminaryVisuals.Migrations
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.CalculationParameter", b =>
                 {
                     b.Navigation("Options");
-                });
-
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.Chat", b =>
-                {
-                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("Project", b =>

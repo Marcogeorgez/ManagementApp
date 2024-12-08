@@ -14,6 +14,9 @@ namespace LuminaryVisuals.Data
         public DbSet<Revision> Revisions { get; set; }
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<ChatReadStatus> ChatReadStatus { get; set; }
+
         public DbSet<UserNote> UserNote { get; set; }
         public DbSet<Setting> Settings { get; set; }
         public DbSet<CalculationParameter> CalculationParameter { get; set; }
@@ -69,10 +72,10 @@ namespace LuminaryVisuals.Data
                 entity.OwnsOne(p => p.ProjectSpecifications);
 
 
-                entity.HasOne(p => p.Chat)
-                      .WithOne(c => c.Project)
-                      .HasForeignKey<Chat>(c => c.ProjectId)
-                        .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(p => p.Chat)
+                          .WithOne(c => c.Project)
+                          .HasForeignKey<Chat>(c => c.ProjectId)
+                            .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(p => p.Archive)
                       .WithOne(a => a.Project)
@@ -97,13 +100,42 @@ namespace LuminaryVisuals.Data
             builder.Entity<Chat>(entity =>
             {
                 entity.ToTable("Chats");
-                entity.HasOne(c => c.User)
-                      .WithMany(u => u.Chats)
-                      .HasForeignKey(c => c.UserId);
-                entity.Property(c => c.IsApproved)
+
+                // Foreign Key - Project: Each Chat belongs to a specific project
+                entity.HasOne(c => c.Project)
+                      .WithOne(p => p.Chat)  // Project has one Chat (one-to-one relationship)
+                      .HasForeignKey<Chat>(c => c.ProjectId)
+                      .OnDelete(DeleteBehavior.Cascade); 
+            });
+            // Configure Chat Messages
+            builder.Entity<Message>(entity =>
+            {
+                entity.ToTable("Messages");
+
+                // Foreign Key - Chat: A message belongs to a chat
+                entity.HasOne(m => m.Chat)
+                      .WithMany(c => c.Messages)  // A chat can have many messages
+                      .HasForeignKey(m => m.ChatId)  // Foreign key to Chat
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Foreign Key - User: A message is sent by a user
+                entity.HasOne(m => m.User)
+                      .WithMany()  // A user can send many messages
+                      .HasForeignKey(m => m.UserId)  // Foreign key to User
+                      .OnDelete(DeleteBehavior.Restrict);  // Prevent deletion of User from deleting their messages
+
+                // Required properties
+                entity.Property(m => m.Content)
+                      .IsRequired();  // Content is required
+
+                entity.Property(m => m.Timestamp)
+                      .IsRequired();  
+
+                entity.Property(m => m.IsApproved)
+                      .HasDefaultValue(false);  
+
+                entity.Property(m => m.IsDeleted)
                       .HasDefaultValue(false);
-                entity.Property(c => c.IsEditorMessage)
-                      .IsRequired();
             });
 
             // Configure User Notes 
@@ -147,6 +179,35 @@ namespace LuminaryVisuals.Data
                     .WithMany() 
                     .HasForeignKey(e => e.UserId) 
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+            // ChatReadStatus entity configuration
+            builder.Entity<ChatReadStatus>(entity =>
+            {
+                // Primary Key
+                entity.HasKey(crs => crs.Id);
+
+                // Foreign Key - Message (changed from Chat to Message)
+                entity.HasOne(crs => crs.Message)
+                      .WithMany()  // Each message can have many read statuses
+                      .HasForeignKey(crs => crs.MessageId)
+                      .OnDelete(DeleteBehavior.Cascade); // Cascade delete when a Message is deleted
+
+                // Foreign Key - User
+                entity.HasOne(crs => crs.User)
+                      .WithMany()  // Each user can have many read statuses
+                      .HasForeignKey(crs => crs.UserId)
+                      .OnDelete(DeleteBehavior.Restrict); // Prevent user deletion from removing read statuses
+
+                // Indexes for better performance on queries (unique read status per user and message)
+                entity.HasIndex(crs => new { crs.MessageId, crs.UserId })
+                      .IsUnique(); // Ensure a unique read status per user per message
+
+                // Required properties
+                entity.Property(crs => crs.IsRead)
+                      .IsRequired();
+
+                entity.Property(crs => crs.ReadTimestamp)
+                      .IsRequired();
             });
 
 
