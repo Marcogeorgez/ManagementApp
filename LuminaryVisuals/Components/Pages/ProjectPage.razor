@@ -412,9 +412,11 @@ else
             <CellTemplate>
                 @if (!String.IsNullOrEmpty(@context.Item.Link))
                 {
+                <MudTooltip Text="@context.Item.Link" >
                 <MudLink Underline="Underline.Always" Style="color:dodgerblue !important" Href="@context.Item.Link">
                     Project Link
                     </MudLink>
+                </MudTooltip>
                 }
                 else
                 {
@@ -542,7 +544,7 @@ else
         }
         else if(_isClientView)
             {
-                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
+                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
                     <CellTemplate Context="context">
                         @{
                             var project = context.Item as Project;
@@ -650,46 +652,48 @@ else
         <MudDataGridPager T="Project"/>
     </PagerContent>
 </MudDataGrid>
-<MudContainer Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
+    <MudContainer Class="justify-center d-flex flex-grow-1 gap-2 flex-wrap" Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
     @if(isAdminView)
     { 
-    <MudStack Spacing="0" Class="mb-5 mt-5">
-        <MudSwitch T="bool" Class="mb-2" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+    <MudStack Spacing="0" Class=" mt-5">
+        <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
         <MudStack Row=true>
-        <MudSwitch T="bool" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin View</MudSwitch>
-        <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor View</MudSwitch>
-        <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client View</MudSwitch>
+        <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
+        <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
+        <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
         </MudStack>
     </MudStack>
-    }
-    @if(_isAdminView){
-    <MudButton Color="Color.Success" 
-        Variant="Variant.Filled"
+            <MudDivider style="border-width:0px !important;" />
+            <MudButton Color="Color.Success"
+                       Variant="Variant.Filled" Size="Size.Small"
         StartIcon="@Icons.Material.Filled.AddCircle"
         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="">
-        Add New Project
+        Add Project
     </MudButton>
+            <MudDivider style="border-width:0px !important;" />
+
     <MudSpacer />
-    <MudTooltip Text=" Download Filtered rows As Csv">
-            <MudButton OnClick="DownloadFilteredAsCsv" Class="mt-5"
-                       Color="Color.Primary"
-        Variant="Variant.Filled"
-        StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download Filtered As Csv
+    <MudTooltip Text="Download Filtered Projects ">
+    <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
+    Color="Color.Primary" Variant="Variant.Filled" 
+    StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+            Download Filtered
     </MudButton>
     </MudTooltip>
-        <MudTooltip Text=" Backup All Projects As Csv">
-            <MudButton OnClick="DownloadAllProjects" Class="mt-5"
-        Color="Color.Primary"
-        Variant="Variant.Filled"
-        StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">Download All Projects
-    </MudButton>
+    <MudTooltip Text="Download All Projects">
+                <MudButton OnClick="DownloadAllProjects" Class="" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small"
+            StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                Backup Projects
+        </MudButton>
     </MudTooltip>
+            <MudSpacer />
+
     }
     else if (_isClientView)
     {
-        <MudButton Color="Color.Success" Class="mt-5"
+        <MudButton Color="Color.Success" Class="mt-10"
                     Variant="Variant.Filled"
-                    StartIcon="@Icons.Material.Filled.AddCircle"
+                       StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
                     OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
             Create New Project
         </MudButton>
@@ -860,9 +864,17 @@ else
 
     // Add new project dialog
     private async Task AddProjectDialogAsync(DialogOptions options)
-    {
+    {   
+        var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
+        int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
 
-        var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", options);
+        var dialogParameters = new DialogParameters
+        {
+            { "WeeksToDueDateDefault", weeksToDueDateDefault },
+            { "_isClientView", _isClientView}
+        };
+
+        var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", dialogParameters,options);
         var result = await dialog.Result;
         if (!result.Canceled)
         {
@@ -879,7 +891,8 @@ else
         int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
         var dialogParameters = new DialogParameters
         {
-            { "WeeksToDueDateDefault", weeksToDueDateDefault }
+            { "WeeksToDueDateDefault", weeksToDueDateDefault },
+            { "_isClientView", _isClientView}
         };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Create New Project", dialogParameters, options);
         var result = await dialog.Result;

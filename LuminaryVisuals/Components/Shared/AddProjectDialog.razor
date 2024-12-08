@@ -18,7 +18,7 @@
                 <MudItem xs="12" sm="6">
                     <MudDatePicker Label="Shoot Date"
                                    Variant="Variant.Outlined"
-                                   Date="newProject.ShootDate"
+                                   Date="newProject.ShootDate" Editable=false
                                    DateChanged="@(date =>{newProject.ShootDate = date;
                                         if (date.HasValue)
                                         {
@@ -28,9 +28,12 @@
                                          })"
                 Required="true" />
                 </MudItem>
-
-                <MudItem xs="12" sm="6">
-                    <MudDatePicker Label="Due Date"
+                @if (!_isClientView)
+                {
+                    <MudItem xs
+                    ="12" sm
+                    ="6">
+                        <MudDatePicker Label="Due Date"
                                    Variant="Variant.Outlined"
                                    Class="d-flex flex-column mud-width-full"
                                    Date="newProject.DueDate"
@@ -38,6 +41,7 @@
                                    DateChanged="@(date => newProject.DueDate = date)"
                                    Required="true" />
                 </MudItem>
+                }
 
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
@@ -92,8 +96,50 @@
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
+                @if (!_isClientView)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker Label="Working Month"
+                                       Variant="Variant.Outlined"
+                                       Date="newProject.WorkingMonth"
+                                       DateChanged="@(date => newProject.WorkingMonth = date ?? DateTime.Today)"
+                                       Required="true"
+                                       FixDay="1"
+                                       DateFormat="MM/yyyy"
+                                       Class="" />
+                    </MudItem>
 
-                <MudItem xs="12" sm="6">
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="ProgressBarValue"
+                                   Label="Progress"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   Variant="Variant.Outlined"
+                                   @bind-Value="ProgressEnum"
+                                   Class="">
+                            <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="ProjectStatus" Variant=Variant.Outlined
+                                   Label="Status"
+                                   @bind-Value="newProject.Status"
+                                   Required="true"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                            {
+                                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+
+                <MudItem xs="12" sm="12">
                     <MudTextField T="string"
                                   Label="Deliverables"
                                   Placeholder="Write down what the deliverables for this project will be"
@@ -104,8 +150,8 @@
                                   AutoGrow="true" />
                 </MudItem>
 
-                <MudItem xs="12" Class="mb-10">
-                    <MudText Typo="Typo.body1" Class="mt-3 mb-5">Description*:</MudText>
+                <MudItem xs="12" Class="mb-3 pl-5 pr-5 ">
+                    <MudText Typo="Typo.body1" Class="mb-2">Description:</MudText>
                     <div class="border-solid border-2 @(_hasError ? "mud-input-error" : "")">
                     <MudHtmlEditor Outlined="true"
                                    Text="Description" 
@@ -143,11 +189,24 @@ The Bride was married like I said before, so this wedding was quite special beca
                         </MudText>
                     }
                 </MudItem>
-     
+
+                @if (_isClientView)
+                {
+                    <MudItem xs="12" sm="12">
+                        <MudSelect T="ProjectStatus" Variant=Variant.Outlined
+                                   Label="Status"
+                                   @bind-Value="newProject.Status"
+                                   Required="true"
+                                   AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Value="ProjectStatus.Upcoming">Upcoming</MudSelectItem>
+                                <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
+                                <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                }
 
 
-
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="12">
                     <MudTextField T="string"
                                   Label="Music Preferences"
                                   Placeholder="Place link to music here and any comments"
@@ -156,46 +215,8 @@ The Bride was married like I said before, so this wedding was quite special beca
                                   AutoGrow="true" />
                 </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudDatePicker Label="Working Month"
-                                   Variant="Variant.Outlined"
-                                   Date="newProject.WorkingMonth"
-                                   DateChanged="@(date => newProject.WorkingMonth = date ?? DateTime.Today)"
-                                   Required="true"
-                                   FixDay="1"
-                                   DateFormat="MM/yyyy"
-                                   Class="mb-3" />
-                </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudSelect T="ProgressBarValue"
-                               Label="Progress"
-                               AnchorOrigin="Origin.BottomCenter"
-                               Variant="Variant.Outlined"
-                               @bind-Value="ProgressEnum"
-                               Class="mb-3">
-                        <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
-                        <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
-                        <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
-                        <MudSelectItem Value="ProgressBarValue.Sixty">60%</MudSelectItem>
-                        <MudSelectItem Value="ProgressBarValue.Eighty">80%</MudSelectItem>
-                        <MudSelectItem Value="ProgressBarValue.Hundred">100%</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12" sm="6">
-                    <MudSelect T="ProjectStatus" Variant=Variant.Outlined
-                               Label="Status"
-                               @bind-Value="newProject.Status"
-                               Required="true"
-                               AnchorOrigin="Origin.BottomCenter">
-                        @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
-                        {
-                            <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                           <MudItem xs="12" sm="12">
+                <MudItem xs="12" sm="12">
                     <MudText Typo="Typo.body2" Color="Color.Error" Class="d-flex mud-input-helper-text mud-input-error" Style="@ErrorMessageDisplay">
                         @errorMessage
                     </MudText>
@@ -215,6 +236,8 @@ The Bride was married like I said before, so this wedding was quite special beca
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public int WeeksToDueDateDefault { get; set; }
+    [Parameter] public bool _isClientView { get; set; }
+
     private Project newProject = new Project();
     private MudForm form;
     private string errorMessage;
