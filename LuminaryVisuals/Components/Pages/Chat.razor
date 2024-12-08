@@ -3,10 +3,10 @@
 @inject ProjectService ProjectService
 @inject IDialogService DialogService
 
-<MudFab Color="Color.Primary"
+<MudFab 
         StartIcon="@Icons.Material.Filled.Chat"
         Class="floating-chat-icon"
-        Style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"
+        Style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(112,160,255,0.8);"
         OnClick="OpenChatPopup" />
 
 @code {
