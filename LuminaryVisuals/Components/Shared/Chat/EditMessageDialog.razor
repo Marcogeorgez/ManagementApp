@@ -1,0 +1,70 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudContainer>
+            <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4">Edit Message</MudText>
+
+            <MudPaper Class="original-message-container pa-4 mb-4" Elevation="0">
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Original Message:
+                </MudText>
+                <MudText Typo="Typo.body1">
+                    @Message.Content
+                </MudText>
+            </MudPaper>
+
+            <MudPaper Class="chat-input-area rounded-lg" Elevation="0">
+                <MudTextField @bind-Value="EditedMessage"
+                              Class="rounded-lg"
+                              Placeholder="Edit your message..."
+                              Variant="Variant.Outlined"
+                              Immediate="true"
+                              Lines="3"
+                              AutoFocus="true" />
+            </MudPaper>
+        </MudContainer>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary"
+                   Disabled="@string.IsNullOrWhiteSpace(EditedMessage)"
+                   OnClick="SaveEdit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Inject]
+    private IConfirmationService ConfirmationService { get; set; } = default!;
+    [Parameter] public bool isAdminView { get; set; }
+    [Parameter] public Message Message { get; set; }
+    [Parameter] public string UserId { get; set; }
+
+
+    private string EditedMessage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EditedMessage = Message.Content;
+    }
+
+    private async Task SaveEdit()
+    {
+        if (Message.UserId != UserId && !isAdminView)
+        {
+            if (await ConfirmationService.Confirm($"Are you sure you want to modify {Message.User.UserName} message ?"))
+            {
+                MudDialog.Close(DialogResult.Ok(EditedMessage));
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            MudDialog.Close(DialogResult.Ok(EditedMessage));
+        }
+
+    }
+
+}

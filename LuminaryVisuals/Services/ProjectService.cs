@@ -106,7 +106,6 @@ public class ProjectService
         {
             var project = await context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
-            .Include(p => p.Chat)
             .Include(p => p.Archive)
             .Include(p => p.Revisions)
             .ToListAsync();

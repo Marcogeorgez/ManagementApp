@@ -122,4 +122,6 @@ public class Project
     public string? PrimaryEditorName { get; set; }
     [NotMapped]
     public string? SecondaryEditorName { get; set; }
+    [NotMapped]
+    public int countUnreadMessages { get; set; } = 0;
 }

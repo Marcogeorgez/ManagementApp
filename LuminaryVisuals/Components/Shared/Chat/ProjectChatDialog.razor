@@ -2,6 +2,9 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IScrollManager ScrollManager
+@inject IJSRuntime JSRuntime
+@inject ILogger<ProjectChatDialog> Logger
+
 <MudDialog>
     <DialogContent>
         <MudContainer Class="chat-popup" Gutters=false>
@@ -12,53 +15,122 @@
                                 OnClick="CloseChat" />
             </MudPaper>
             <MudPaper Class="chat-messages" Elevation="0">
-                @foreach (var message in messages)
+                @foreach (var group in messages.GroupBy(m => GetDisplayDate(m.Timestamp)))
                 {
-                    <div class="@(message.UserId == UserId ? "message-right" : "message-left")">
-                        <div class="chat-message">
-                            <MudText Typo="Typo.body2">@message.Content</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Inherit">
-                                @message.Timestamp.ToString("HH:mm")
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Default">
+                        @group.Key
+                    </MudText>
+                    @foreach (var message in group)
+                    {
+                        if(lastUserId != message.UserId){
+                        <MudText Typo="Typo.caption" Class="message-username">
+                            @(message.UserId != UserId && !isClientView
+                                ? message.User.UserName
+                                : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
                             </MudText>
-                        </div>
-                    </div>
+                            lastUserId = message.UserId;
+                        }
+                        <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left") 
+                        @(HighlightedMessageId == message.MessageId ? "highlighted" : "")">
+
+                            @if(message.IsApproved == false && !isClientView)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Warning">
+                                Message is not approved yet!
+                                </MudText>
+
+                            }
+                            <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
+                    @foreach (var part in GetMessageWithLinks(message.Content))
+                    {
+                        if (StringHelper.IsLink(part))
+                        {
+                                        <strong><MudLink Typo=Typo.h6 Class="special-link" Href="@part" Underline="Underline.Always">@part </MudLink></strong>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.h6">@part</MudText>
+                        }
+                    }
+                    <MudText Typo="Typo.caption" Color="Color.Inherit" Style="display:flex; flex-direction:row-reverse;">
+                        @ConvertToLocalTime(message.Timestamp)
+                        <MudIcon Style="font-size:1rem; margin-right:3px; margin-top:1px; " Class="received" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
+
+                    </MudText>
+                </div>
+                    @if (message.UserId == UserId || isAdminView == true)
+                    {
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                     AriaLabel="Open user menu">
+                                @if (isAdminView)
+                                {
+                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" 
+                                                OnClick="() => DeleteMessage(message)">
+                                    Delete
+                                </MudMenuItem>
+                                <MudMenuItem Icon="@Icons.Material.Filled.CheckCircleOutline"
+                                                OnClick="() => ApproveMessage(message)">
+                                    Approve
+                                </MudMenuItem>
+                                }
+
+                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" 
+                                            OnClick="() => EditMessage(message)">
+                                    Edit
+                                </MudMenuItem>
+                            </MudMenu>
+                    }
+                </div>
+
+                }
                 }
             </MudPaper>
-            <MudPaper Class="chat-input-area rounded-pill  " Elevation="0">
-                <MudTextField @bind-Value="newMessage" Class="rounded-pill"
-                                Placeholder="Type a message..."
-                                Variant="Variant.Outlined"
-                                Immediate=true
-                                Adornment="Adornment.End"
-                                AdornmentIcon="@Icons.Material.Filled.Send"
-                                TextUpdateSuppression=false
-                                OnAdornmentClick="SendMessage"
-                                AutoFocus=true
-                                OnKeyDown="HandleKeyPress" />
+            <MudPaper Class="chat-input-area rounded-pill" Elevation="0">
+                <MudTextField @bind-Value="newMessage" 
+                              Class="rounded-pill"
+                              Placeholder="Type a message..."
+                              Variant="Variant.Outlined"
+                              Immediate=true
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Send"
+                              TextUpdateSuppression=false
+                              OnAdornmentClick="SendMessage"
+                              AutoFocus=true
+                              OnKeyDown="HandleKeyPress" />
             </MudPaper>
         </MudContainer>
     </DialogContent>
 </MudDialog>
-
 @code {
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
     [Parameter] public int ProjectId { get; set; }
     [Parameter] public string UserId { get; set; }
-
+    [Parameter] public bool isAdminView { get; set; }
+    [Parameter] public bool isEditorView { get; set; }
+    [Parameter] public bool isClientView { get; set; }
     private string newMessage;
     private List<Message> messages = new List<Message>();
-
-
+    private int timezoneOffsetMinutes;
+    private string lastUserId = null;
+    private int? HighlightedMessageId;
     protected override async Task OnInitializedAsync()
     {
         await LoadMessages();
         await MarkMessagesAsRead();
+        timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
     }
 
     private async Task LoadMessages()
     {
-        messages = await ChatService.GetMessagesAsync(ProjectId, true);
+        if (isClientView)
+        {
+            messages = await ChatService.GetMessagesAsync(ProjectId, true);
+        }
+        else if (isEditorView || isAdminView)
+        {
+            messages = await ChatService.GetMessagesAsync(ProjectId, false);
+        }
         StateHasChanged();
     }
 
@@ -74,10 +146,9 @@
             Snackbar.Add("Message cannot be empty", Severity.Warning);
             return;
         }
-
         try 
         {
-            await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, false);
+            await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, isEditorView);
             // Reload messages to show the new message
             await LoadMessages();
             await ScrollManager.ScrollToBottomAsync(".chat-messages", ScrollBehavior.Smooth);
@@ -90,6 +161,108 @@
             Snackbar.Add("Failed to send message", Severity.Error);
         }
     }
+    // Get the user local time to display the message in his own time.
+    private string ConvertToLocalTime(DateTime utcTime)
+    {
+        // Convert UTC time to user's local time based on the offset
+        var localTime = utcTime.AddMinutes(timezoneOffsetMinutes);
+        return localTime.ToString("h:mm tt"); // Format for display
+    }
+    // Display date of each chat messages grouped by their date.
+    string GetDisplayDate(DateTime timestamp)
+    {
+        var today = DateTime.Today;
+        var daysDifference = ( today - timestamp.Date ).Days;
+
+        if (timestamp.Date == today)
+        {
+            return "Today";
+        }
+        else if (timestamp.Date == today.AddDays(-1))
+        {
+            return "Yesterday";
+        }
+        else if (daysDifference <= 7)
+        {
+            return timestamp.DayOfWeek.ToString(); // Display the day of the week for messages within the past week
+        }
+        else if (daysDifference <= 14)
+        {
+            return "Last week";
+        }
+        else if (daysDifference <= 21)
+        {
+            return "2 weeks ago";
+        }
+        else if (daysDifference <= 28)
+        {
+            return "3 weeks ago";
+        }
+        else if (timestamp.Year == today.Year)
+        {
+            if (timestamp.Month == today.Month)
+            {
+                return $"Earlier this month";
+            }
+            else
+            {
+                return timestamp.ToString("MMMM dd"); // Display month and day if it is in a different month but same year
+            }
+        }
+        else
+        {
+            return timestamp.ToString("MMMM dd, yyyy"); // Display full date for messages from a different year
+        }
+    }
+
+    private bool _isContextMenuOpen = false;
+    private IEnumerable<string> GetMessageWithLinks(string messageContent)
+    {
+        return StringHelper.GetTextAndLinks(messageContent);
+    }
+    private async Task DeleteMessage(Message message)
+    {
+        await ChatService.UnsendMessageAsync(message.MessageId);
+    }
+    private async Task ApproveMessage(Message message)
+    {
+        await ChatService.ApproveMessageAsync(message.MessageId);
+        await LoadMessages();
+    }
+
+    private async Task EditMessage(Message message)
+    {
+        try
+        {
+            if(UserId != message.UserId && isAdminView != true)
+            {
+                throw new Exception("The user is trying to modify a message that he he shouldn't be able to edit !!!");
+            }
+            var parameters = new DialogParameters<EditMessageDialog>
+            {
+                { x => x.Message, message },
+                {"isAdminView", isAdminView},
+                {"UserId", UserId}
+            };  
+            var dialog = await DialogService.ShowAsync<EditMessageDialog>("Edit Message", parameters);
+            var result = await dialog.Result;
+            if (!result.Canceled)
+            {
+                var editedContent = (string) result.Data;
+                await ChatService.EditMessageAsync(message,editedContent,isEditorView);
+                await LoadMessages();
+            }        
+            else
+            {
+                Snackbar.Add("You have canceled the editing.", Severity.Warning);
+            }
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError($"The user is trying to modify a message that he he shouldn't be able to edit !!! This is the exception{ex}");
+        }
+    }
+
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
@@ -125,3 +298,9 @@
         }
     }
 }
+
+<script>
+    window.getTimezoneOffset = function () {
+        return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
+    };
+</script>

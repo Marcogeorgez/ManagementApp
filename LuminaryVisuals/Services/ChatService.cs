@@ -61,13 +61,14 @@ public class ChatService
     public async Task ApproveMessageAsync(int messageId)
     {
         using var context = _contextFactory.CreateDbContext();
-        var message = await context.Messages.FindAsync(messageId);
+        var message = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == messageId);
         if (message == null)
         {
             throw new Exception("Message not found.");
         }
 
         message.IsApproved = true;
+        message.Timestamp = DateTime.UtcNow;
         await context.SaveChangesAsync();
     }
 
@@ -77,6 +78,7 @@ public class ChatService
         using var context = _contextFactory.CreateDbContext();
         var chat = await context.Chats
             .Include(c => c.Messages)
+                .ThenInclude(m => m.User)
             .FirstOrDefaultAsync(c => c.ProjectId == projectId);
 
         if (chat == null)
@@ -93,8 +95,9 @@ public class ChatService
 
         // Return messages based on approval status and whether the user is a client
         return chat.Messages
-            .Where(message => message.IsApproved &&
-                              ( isClient ? !message.IsDeleted : true )) // Only show non-deleted messages for clients
+            // Only show approved messages for clients and show non deleted messages for rest.
+            .Where(message => isClient ? message.IsApproved && !message.IsDeleted 
+                : !message.IsDeleted) 
             .OrderBy(message => message.Timestamp)
             .ToList();
     }
@@ -126,14 +129,31 @@ public class ChatService
     // Get unread message count
     public async Task<int> GetUnreadMessageCountAsync(int projectId, string userId)
     {
-        using var context = _contextFactory.CreateDbContext();
-        return await context.Messages
-            .Where(message => message.Chat.ProjectId == projectId &&
-                             !context.ChatReadStatus
-                                 .Where(crs => crs.UserId == userId)
-                                 .Select(crs => crs.MessageId)
-                                 .Contains(message.MessageId))
-            .CountAsync();
+        try
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var readMessageIds = await context.ChatReadStatus
+                .Where(crs => crs.UserId == userId)
+                .Select(crs => crs.MessageId)
+                .ToListAsync();
+
+            var unreadMessageCount = await context.Messages
+                .Where(message =>
+                    message.Chat.ProjectId == projectId &&
+                    !readMessageIds.Contains(message.MessageId))
+                .CountAsync();
+
+            return unreadMessageCount;
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}",
+                projectId, userId);
+
+            // Optionally rethrow or return a default value
+            throw;
+        }
     }
 
     // Unsend message (logical delete)
@@ -147,6 +167,24 @@ public class ChatService
         }
 
         message.IsDeleted = true;  // Mark the message as deleted (logical deletion)
+        await context.SaveChangesAsync();
+    }
+
+    public async Task EditMessageAsync(Message message,string content,bool isEditorView)
+    {
+        using var context = _contextFactory.CreateDbContext();
+        var newMessage = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == message.MessageId);
+        if (message == null)
+        {
+            throw new Exception("Message not found.");
+        }
+        newMessage.Content = content;
+        newMessage.IsEdited = true;
+        if(isEditorView)
+        {
+            newMessage.IsApproved = false;
+        }
+
         await context.SaveChangesAsync();
     }
 }
