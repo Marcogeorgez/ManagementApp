@@ -188,7 +188,7 @@ namespace LuminaryVisuals.Data
 
                 // Foreign Key - Message (changed from Chat to Message)
                 entity.HasOne(crs => crs.Message)
-                      .WithMany()  // Each message can have many read statuses
+                      .WithMany(m => m.ChatReadStatuses)  // Each message can have many read statuses
                       .HasForeignKey(crs => crs.MessageId)
                       .OnDelete(DeleteBehavior.Cascade); // Cascade delete when a Message is deleted
 

@@ -15,9 +15,8 @@
                         <MudListItem OnClick="() => OpenProjectChat(project.ProjectId)">
                             <div class="d-flex justify-space-between align-center">
                                 <MudText>@project.ProjectName</MudText>
-                                <MudBadge Content="@GetUnreadMessageCount(project.ProjectId)"
-                                          Color="Color.Secondary"
-                                          Visible="GetUnreadMessageCount(project.ProjectId) > 0" />
+                                <MudBadge Content="project.countUnreadMessages"
+                                          Color="Color.Secondary" />
                             </div>
                         </MudListItem>
                     }
@@ -60,6 +59,13 @@
             {
                 Snackbar.Add("Not authorized! Please contact owner.", Severity.Warning);
             }
+            if (projects.Count > 0)
+            {
+                foreach (var project in projects)
+                {
+                    project.countUnreadMessages = await GetUnreadMessageCount(project.ProjectId);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -76,7 +82,10 @@
         var parameters = new DialogParameters
         {
             { "ProjectId", projectId },
-            { "UserId", userId }
+            { "UserId", userId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , isEditorView },
+            { "isClientView" , isClientView }
         };
 
         var options = new DialogOptions
@@ -89,8 +98,8 @@
         DialogService.Show<ProjectChatDialog>("", parameters, options);
     }
 
-    private int GetUnreadMessageCount(int projectId)
+    private async Task<int> GetUnreadMessageCount(int projectId)
     {
-        return 5;
+        return await ChatService.GetUnreadMessageCountAsync(projectId,userId);
     }
 }
