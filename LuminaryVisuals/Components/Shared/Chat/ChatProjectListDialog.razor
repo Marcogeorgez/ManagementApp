@@ -2,13 +2,19 @@
 @inject ChatService ChatService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-<MudPaper Elevation="4" Class="projects-panel">
+<MudPaper Elevation="4" Class="projects-panel" Style="border-radius:0px !important; padding:0px!important; overflow-x:hidden;">
+      <MudPaper Elevation="3" Class="chat-header mb-3" Outlined="true">
         <MudText Typo="Typo.h5" Class="projects-title">
                         <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
             Projects Chats
+
         </MudText>
+       <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
+        </MudPaper>
             @if (projects.Any())
             {
+                <div class="chat-panel" style="border:0px; height:inherit!important;padding: 1vw 2vw 0px 2vw;">
+
                 <MudList T="Project" Class="projects-list">
                     @foreach (var project in projects)
                     {
@@ -27,6 +33,7 @@
                         </MudListItem>
                     }
                 </MudList>
+                </div>
             }
             else
             {
@@ -71,6 +78,7 @@
                 {
                     project.countUnreadMessages = await GetUnreadMessageCount(project.ProjectId);
                 }
+                projects = projects.OrderByDescending(p => p.countUnreadMessages).ToList();
             }
         }
         catch (Exception ex)
@@ -107,5 +115,9 @@
     private async Task<int> GetUnreadMessageCount(int projectId)
     {
         return await ChatService.GetUnreadMessageCountAsync(projectId,userId);
+    }
+     private async Task CloseChat()
+    {
+        MudDialog.Close();
     }
 }
