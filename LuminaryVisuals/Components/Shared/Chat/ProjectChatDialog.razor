@@ -5,104 +5,84 @@
 @inject IJSRuntime JSRuntime
 @inject ILogger<ProjectChatDialog> Logger
 
-<MudDialog>
-    <DialogContent>
-                    <MudPaper Elevation="3" Class="chat-header" Outlined=true>
-                <MudText Typo="Typo.h6">Chat</MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Close"
-                                Color="Color.Info"
-                                OnClick="CloseChat" />
+<MudContainer Class="chat-container">
+        <MudPaper Elevation="4" Class="chat-panel">
+            <MudPaper Elevation="3" Class="chat-header" Outlined="true">
+                <MudText Typo="Typo.h6" Class="chat-title">
+                    <MudIcon Icon="@Icons.Material.Filled.Chat" Class="mr-3" />
+                    Chat
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
             </MudPaper>
-        <MudContainer Class="chat-popup" Gutters=false>
-
-            <div class="chat-messages" >
-                @foreach (var group in messages.GroupBy(m => GetDisplayDate(m.Timestamp)))
-                {
-                    <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Default">
-                        @group.Key
-                    </MudText>
-                    @foreach (var message in group)
+            <MudContainer Class="chat-content" Gutters="false" >
+                <div class="chat-messages">
+                    @foreach (var group in messages.GroupBy(m => GetDisplayDate(m.Timestamp)))
                     {
-                        if(lastUserId != message.UserId){
-                        <MudText Typo="Typo.caption" Class="message-username">
-                            @(message.UserId != UserId && !isClientView
-                                ? message.User.UserName
-                                : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
-                            </MudText>
-                            lastUserId = message.UserId;
-                        }
-                        <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left") 
-                        @(HighlightedMessageId == message.MessageId ? "highlighted" : "")">
-
-                            @if(message.IsApproved == false && !isClientView)
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
+                            @group.Key
+                        </MudText>
+                        @foreach (var message in group)
                             {
-                                <MudText Typo="Typo.caption" Color="Color.Warning">
-                                Message is not approved yet!
+                                if(lastUserId != message.UserId){
+                                    <MudText Typo="Typo.caption" Class="message-username">@(message.UserId != UserId && !isClientView
+                                        ? message.User.UserName
+                                        : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
+                                    </MudText> 
+                                    lastUserId = message.UserId; 
+                                }
+                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="ToggleClick">
+
+
+                                <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
+                                @foreach (var part in GetMessageWithLinks(message.Content))
+                                    {
+                                        if (StringHelper.IsLink(part))
+                                        {
+                                            <strong><MudLink Typo="Typo.body1" Class="special-link" Href="@part" 
+                                                Underline="Underline.Always">@part </MudLink></strong>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.body1">@part</MudText>
+                                        }
+                                    }
+                                <MudText Typo="Typo.caption" Class="message-timestamp">
+                                    @ConvertToLocalTime(message.Timestamp)
+                                    <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
                                 </MudText>
-
-                            }
-                            <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
-                    @foreach (var part in GetMessageWithLinks(message.Content))
-                    {
-                        if (StringHelper.IsLink(part))
-                        {
-                                        <strong><MudLink Typo=Typo.h6 Class="special-link" Href="@part" Underline="Underline.Always">@part </MudLink></strong>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.h6">@part</MudText>
-                        }
-                    }
-                    <MudText Typo="Typo.caption" Color="Color.Inherit" Style="display:flex; flex-direction:row-reverse;">
-                        @ConvertToLocalTime(message.Timestamp)
-                        <MudIcon Style="font-size:1rem; margin-right:3px; margin-top:1px; " Class="received" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
-
-                    </MudText>
-                </div>
-                    @if (message.UserId == UserId || isAdminView == true)
-                    {
-                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
-                                     AriaLabel="Open user menu">
+                                </div>
+                                @if (message.UserId == UserId || isAdminView == true)   
+                                {
+                                <div class="message-hover-options" style="@(isClicked == true ? "display: flex !important;" : "display:none;")" >
                                 @if (isAdminView)
                                 {
-                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" 
-                                                OnClick="() => DeleteMessage(message)">
-                                    Delete
-                                </MudMenuItem>
-                                <MudMenuItem Icon="@Icons.Material.Filled.CheckCircleOutline"
-                                                OnClick="() => ApproveMessage(message)">
-                                    Approve
-                                </MudMenuItem>
-                                }
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                    Color="Color.Error"
+                                    Size="Size.Small"
+                                    OnClick="() => DeleteMessage(message)"/>
+                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline"
+                                    Color="Color.Success"
+                                    Size="Size.Small"
+                                    OnClick="() => ApproveMessage(message)"/>
+                                    }
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
+                                    OnClick="() => EditMessage(message)"  />
+                                </div>
+                                    }
 
-                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" 
-                                            OnClick="() => EditMessage(message)">
-                                    Edit
-                                </MudMenuItem>
-                            </MudMenu>
+                            </div>
+                            }
                     }
                 </div>
+            </MudContainer>
+            <MudPaper Class="chat-input-area" Elevation="0">
+                <MudTextField @bind-Value="newMessage" Placeholder="Type a message..." Variant="Variant.Outlined" Immediate="true"
+                Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" TextUpdateSuppression="false" OnAdornmentClick="SendMessage"
+                AutoFocus="true" OnKeyDown="HandleKeyPress" /> 
+            </MudPaper>
+    </MudPaper>
+</MudContainer>
 
-                }
-                }
-            </div>
-
-        </MudContainer>
-        <MudPaper Class="chat-input-area rounded-pill" Elevation="0">
-            <MudTextField @bind-Value="newMessage"
-                          Class="rounded-pill"
-                          Placeholder="Type a message..."
-                          Variant="Variant.Outlined"
-                          Immediate=true
-                          Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Send"
-                          TextUpdateSuppression=false
-                          OnAdornmentClick="SendMessage"
-                          AutoFocus=true
-                          OnKeyDown="HandleKeyPress" />
-        </MudPaper>
-    </DialogContent>
-</MudDialog>
 @code {
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
@@ -111,6 +91,7 @@
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
+    private bool isClicked = false;
     private string newMessage;
     private List<Message> messages = new List<Message>();
     private int timezoneOffsetMinutes;
@@ -122,7 +103,10 @@
         await MarkMessagesAsRead();
         timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
     }
-
+    private void ToggleClick()
+    {
+        isClicked = !isClicked;
+    }
     private async Task LoadMessages()
     {
         if (isClientView)
@@ -134,7 +118,7 @@
             messages = await ChatService.GetMessagesAsync(ProjectId, false);
         }
         StateHasChanged();
-        await ScrollManager.ScrollToBottomAsync(".chat-messages", ScrollBehavior.Smooth);
+        await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
 
     }
 
@@ -153,6 +137,7 @@
         try 
         {
             await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, isEditorView);
+            await MarkMessagesAsRead();
             // Reload messages to show the new message
             await LoadMessages();
             newMessage = string.Empty;
