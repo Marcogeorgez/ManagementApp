@@ -18,18 +18,22 @@
                 <MudList T="Project" Class="projects-list">
                     @foreach (var project in projects)
                     {
-                        <MudListItem Class="project-item" OnClick="() => OpenProjectChat(project.ProjectId)">
+                        var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView) ? " unapproved-message" : "");
+                        <MudListItem Class="@classText" OnClick="() => OpenProjectChat(project.ProjectId)">
                             <div class="project-content">
                             <MudText Typo="Typo.body1">@project.ProjectName</MudText>
+                            @if (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView))
+                            {
+                                <MudBadge Content="@project.MessageRequireApprovalCount" Color="Color.Secondary" Class="unread-badge"/>
+                            }
                             @if (project.countUnreadMessages > 0)
                             {
-                                <MudBadge 
-                                    Content="@project.countUnreadMessages" 
-                                    Color="Color.Secondary" 
-                                    Class="unread-badge"
-                                />
+                                <MudBadge Content="@project.countUnreadMessages" Color="Color.Secondary" Class="unread-badge"/>
                             }
-                        </div>
+                            <MudText Typo="Typo.caption" Class="message-timestamp">@ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
+                            </MudText>
+                            
+                            </div>
                         </MudListItem>
                     }
                 </MudList>
@@ -44,14 +48,15 @@
 
 
 @code {
-    private List<Project> projects = new List<Project>();  // Initialize as an empty list
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
     [Parameter] public string userId { get; set; }
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
-
+    [Parameter] public int timezoneOffsetMinutes { get; set; }
+    private List<Project> projects = new List<Project>(); 
+    private string MessageRequireApproval = "";
     protected override async Task OnInitializedAsync()
     {
         try
@@ -76,11 +81,24 @@
             {
                 foreach (var project in projects)
                 {
-                    project.countUnreadMessages = await GetUnreadMessageCount(project.ProjectId);
+                    var unreadMessageData = await ChatService.GetUnreadMessageCount(project.ProjectId, userId);
+                    project.countUnreadMessages = unreadMessageData.Item1;
+                    project.LastSentMessage = unreadMessageData.Item2;
+                    project.MessageRequireApprovalCount = unreadMessageData.Item3;
                 }
-                projects = projects.OrderByDescending(p => p.countUnreadMessages).ToList();
-            }
+
+                // If there are any unread messages, order by unread messages
+                if (projects.Any(p => p.countUnreadMessages > 0))
+                {
+                    projects = projects.OrderByDescending(p => p.countUnreadMessages).ToList();
+                }
+                else
+                {
+                    // If all unread messages count are 0, order by the last sent message timestamp
+                    projects = projects.OrderByDescending(p => p.LastSentMessage).ToList();
+                }
         }
+    }
         catch (Exception ex)
         {
             projects = new List<Project>();  // Ensures projects are never null
@@ -99,7 +117,9 @@
             { "UserId", userId },
             { "isAdminView" , isAdminView },
             { "isEditorView" , isEditorView },
-            { "isClientView" , isClientView }
+            { "isClientView" , isClientView },
+            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
+
         };
 
         var options = new DialogOptions
@@ -110,11 +130,6 @@
             };
         MudDialog.Close();
         DialogService.Show<ProjectChatDialog>("", parameters, options);
-    }
-
-    private async Task<int> GetUnreadMessageCount(int projectId)
-    {
-        return await ChatService.GetUnreadMessageCountAsync(projectId,userId);
     }
      private async Task CloseChat()
     {

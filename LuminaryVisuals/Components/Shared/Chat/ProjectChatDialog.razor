@@ -8,6 +8,7 @@
 <MudContainer Class="chat-container">
         <MudPaper Elevation="4" Class="chat-panel">
             <MudPaper Elevation="3" Class="chat-header" Outlined="true">
+                    <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
                 <MudText Typo="Typo.h6" Class="chat-title">
                     <MudIcon Icon="@Icons.Material.Filled.Chat" Class="mr-3" />
                     Chat
@@ -21,8 +22,8 @@
                         <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
                             @group.Key
                         </MudText>
-                        @foreach (var message in group)
-                            {
+                                @foreach (var (message, index) in group.Select((m, i) => (m, i)))
+                                {
                                 if(lastUserId != message.UserId){
                                     <MudText Typo="Typo.caption" Class="message-username">@(message.UserId != UserId && !isClientView
                                         ? message.User.UserName
@@ -30,7 +31,8 @@
                                     </MudText> 
                                     lastUserId = message.UserId; 
                                 }
-                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="ToggleClick">
+                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="ToggleClick"
+                            style="--total-messages:@messages.Count; --message-index:@index;">
 
 
                                 <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
@@ -47,7 +49,7 @@
                                         }
                                     }
                                 <MudText Typo="Typo.caption" Class="message-timestamp">
-                                    @ConvertToLocalTime(message.Timestamp)
+                                    @ConvertLocal.ConvertToLocalTime(message.Timestamp,timezoneOffsetMinutes)
                                     <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
                                 </MudText>
                                 </div>
@@ -91,17 +93,17 @@
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
+    [Parameter] public int timezoneOffsetMinutes { get; set; }
+
     private bool isClicked = false;
     private string newMessage;
     private List<Message> messages = new List<Message>();
-    private int timezoneOffsetMinutes;
     private string lastUserId = null;
     private int? HighlightedMessageId;
     protected override async Task OnInitializedAsync()
     {
         await LoadMessages();
         await MarkMessagesAsRead();
-        timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
     }
     private void ToggleClick()
     {
@@ -138,24 +140,15 @@
         {
             await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, isEditorView);
             await MarkMessagesAsRead();
-            // Reload messages to show the new message
             await LoadMessages();
             newMessage = string.Empty;
-
-
         }
         catch (Exception ex)
         {
             Snackbar.Add("Failed to send message", Severity.Error);
         }
     }
-    // Get the user local time to display the message in his own time.
-    private string ConvertToLocalTime(DateTime utcTime)
-    {
-        // Convert UTC time to user's local time based on the offset
-        var localTime = utcTime.AddMinutes(timezoneOffsetMinutes);
-        return localTime.ToString("h:mm tt"); // Format for display
-    }
+
     // Display date of each chat messages grouped by their date.
     string GetDisplayDate(DateTime timestamp)
     {
@@ -258,6 +251,26 @@
         {
             await SendMessage();
         }
+    }
+    private async Task NavigateBack()
+    {
+        await CloseChat();
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                Position = DialogPosition.BottomRight,
+                NoHeader = true
+            };
+        var parameters = new DialogParameters<ChatProjectListDialog>
+        {
+            { "userId" , UserId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , isEditorView },
+            { "isClientView" , isClientView },
+            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
+
+        };
+        DialogService.Show<ChatProjectListDialog>("", parameters, options);    
     }
 
 

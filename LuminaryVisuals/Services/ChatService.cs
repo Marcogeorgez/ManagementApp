@@ -127,34 +127,45 @@ public class ChatService
     }
 
     // Get unread message count
-    public async Task<int> GetUnreadMessageCountAsync(int projectId, string userId)
+    public async Task<Tuple<int, DateTime?, int>> GetUnreadMessageCount(int projectId, string userId)
     {
         try
         {
             using var context = _contextFactory.CreateDbContext();
+
             var readMessageIds = await context.ChatReadStatus
                 .Where(crs => crs.UserId == userId)
                 .Select(crs => crs.MessageId)
                 .ToListAsync();
 
-            var unreadMessageCount = await context.Messages
-                .Where(message =>
-                    message.Chat.ProjectId == projectId &&
-                    !readMessageIds.Contains(message.MessageId))
+            var query = context.Messages
+                .Where(message => message.Chat.ProjectId == projectId);
+
+            // Get unread message count
+            var unreadMessageCount = await query
+                .Where(message => !readMessageIds.Contains(message.MessageId))
                 .CountAsync();
 
-            return unreadMessageCount;
+            // Get unapproved message count
+            var unapprovedMessageCount = await query
+                .Where(message => message.IsApproved == false)
+                .CountAsync();
+
+            // Get the last sent message timestamp (the most recent one)
+            var lastSentMessageTimestamp = await query
+                .OrderByDescending(message => message.Timestamp)
+                .Select(message => message.Timestamp)
+                .FirstOrDefaultAsync();
+
+            return new Tuple<int, DateTime?, int>(unreadMessageCount, lastSentMessageTimestamp, unapprovedMessageCount);
         }
         catch (Exception ex)
         {
-            // Log the exception
-            Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}",
-                projectId, userId);
-
-            // Optionally rethrow or return a default value
+            Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}: {ex.Message}");
             throw;
         }
     }
+
 
     // Unsend message (logical delete)
     public async Task UnsendMessageAsync(int messageId)
