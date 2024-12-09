@@ -124,4 +124,8 @@ public class Project
     public string? SecondaryEditorName { get; set; }
     [NotMapped]
     public int countUnreadMessages { get; set; } = 0;
+    [NotMapped]
+    public DateTime? LastSentMessage { get; set; }
+    [NotMapped]
+    public int MessageRequireApprovalCount { get; set; } = 0;
 }

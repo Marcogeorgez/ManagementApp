@@ -70,4 +70,18 @@ namespace LuminaryVisuals.Services.Helpers
             return url;
         }
     }
+    public static class ConvertLocal
+    {
+        // Get the user local time to display the message in his own time.
+        public static string ConvertToLocalTime(DateTime? utcTime, int timezoneOffsetMinutes)
+        {
+            if (utcTime == DateTime.MinValue || utcTime == null)
+            {
+                return string.Empty; 
+            }
+            // Convert UTC time to user's local time based on the offset
+            var localTime = utcTime.Value.AddMinutes(timezoneOffsetMinutes);
+            return localTime.ToString("h:mm tt"); // Format for display
+        }
+    }
 }

@@ -11,7 +11,7 @@
 @implements IDisposable
 
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
-<Chat userId="@_currentUserId" isAdminView="@isAdminView" isClientView="@_isClientView" isEditorView="@_isEditorView" />
+
 @if (_loading)
 {
     <SplashScreen />
@@ -705,6 +705,9 @@ else
         </MudButton>
     }
     </MudContainer>
+    <CascadingValue Value="@timezoneOffsetMinutes" IsFixed="false">
+        <Chat userId="@_currentUserId" isAdminView="@isAdminView" isClientView="@_isClientView" isEditorView="@_isEditorView" />
+    </CascadingValue>
 }
 @code {
     bool _loading = true;
@@ -722,6 +725,7 @@ else
     private bool _isEditorView;
     private bool _isClientView;
     private bool _groupByClientName;
+    private int timezoneOffsetMinutes; // Gets User local time to change timing according to his own.
     private string _searchString = "";
     private string _currentUserId = "";
     private string _currentRole = "";
@@ -770,6 +774,7 @@ else
         CircuitId = Guid.NewGuid().ToString(); 
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
         await LoadProjects();
+        timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         _loading = false;
     }    
     private async Task HandleProjectsUpdated()
@@ -1508,5 +1513,8 @@ else
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+    window.getTimezoneOffset = function () {
+        return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
     };
 </script>

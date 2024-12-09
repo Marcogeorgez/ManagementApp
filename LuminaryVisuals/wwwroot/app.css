@@ -319,12 +319,24 @@
     border: 1px solid #3A3A3A;
 }
 
-    .project-item:hover {
-        transform: translateX(10px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-        background-color: #333333;
-    }
+.project-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    background-color: #333333;
+}
+.unapproved-message {
+    background-color: #4A2828; /* Deep dark red undertone */
+    border: 2px solid #721414; /* More visible border */
+    opacity: 0.8;
+    position: relative;
+}
 
+.unapproved-message:hover {
+    background-color: #4A2828; /* Deep dark red undertone */
+    border: 2px solid #721414; /* More visible border */
+    opacity: 0.8;
+    position: relative;
+}
 .project-content {
     display: flex;
     justify-content: space-between;
@@ -435,6 +447,9 @@
     display: flex;
     align-items: center;
 }
+back-button {
+    color: #4DB6AC !important; 
+} 
 
 .chat-content {
     flex-grow: 1;
@@ -482,7 +497,7 @@
     flex-direction: column;
     opacity: 0;
     animation: slideIn 0.4s ease-out forwards;
-    animation-delay: calc(var(--delay) * 0.1s);
+    animation-delay: calc((var(--total-messages) - var(--message-index)) * 0.1s);
 }
 .message-hover-options {
     position: relative;
@@ -586,6 +601,7 @@
     opacity: 0.8;
     position: relative;
 }
+
 .not-approved-message::before {
     content: "Pending Approval";
     position: relative;
@@ -607,205 +623,7 @@
 
 
 /* SaaS to CSS online */
-.message-container:nth-child(50) {
-  --delay: -20;
-}
 
-.message-container:nth-child(49) {
-  --delay: -19;
-}
-
-.message-container:nth-child(48) {
-  --delay: -18;
-}
-
-.message-container:nth-child(47) {
-  --delay: -17;
-}
-
-.message-container:nth-child(46) {
-  --delay: -16;
-}
-
-.message-container:nth-child(45) {
-  --delay: -15;
-}
-
-.message-container:nth-child(44) {
-  --delay: -14;
-}
-
-.message-container:nth-child(43) {
-  --delay: -13;
-}
-
-.message-container:nth-child(42) {
-  --delay: -12;
-}
-
-.message-container:nth-child(41) {
-  --delay: -11;
-}
-
-.message-container:nth-child(40) {
-  --delay: -10;
-}
-
-.message-container:nth-child(39) {
-  --delay: -9;
-}
-
-.message-container:nth-child(38) {
-  --delay: -8;
-}
-
-.message-container:nth-child(37) {
-  --delay: -7;
-}
-
-.message-container:nth-child(36) {
-  --delay: -6;
-}
-
-.message-container:nth-child(35) {
-  --delay: -5;
-}
-
-.message-container:nth-child(34) {
-  --delay: -4;
-}
-
-.message-container:nth-child(33) {
-  --delay: -3;
-}
-
-.message-container:nth-child(32) {
-  --delay: -2;
-}
-
-.message-container:nth-child(31) {
-  --delay: -1;
-}
-
-.message-container:nth-child(30) {
-  --delay: 0;
-}
-
-.message-container:nth-child(29) {
-  --delay: 1;
-}
-
-.message-container:nth-child(28) {
-  --delay: 2;
-}
-
-.message-container:nth-child(27) {
-  --delay: 3;
-}
-
-.message-container:nth-child(26) {
-  --delay: 4;
-}
-
-.message-container:nth-child(25) {
-  --delay: 5;
-}
-
-.message-container:nth-child(24) {
-  --delay: 6;
-}
-
-.message-container:nth-child(23) {
-  --delay: 7;
-}
-
-.message-container:nth-child(22) {
-  --delay: 8;
-}
-
-.message-container:nth-child(21) {
-  --delay: 9;
-}
-
-.message-container:nth-child(20) {
-  --delay: 10;
-}
-
-.message-container:nth-child(19) {
-  --delay: 11;
-}
-
-.message-container:nth-child(18) {
-  --delay: 12;
-}
-
-.message-container:nth-child(17) {
-  --delay: 13;
-}
-
-.message-container:nth-child(16) {
-  --delay: 14;
-}
-
-.message-container:nth-child(15) {
-  --delay: 15;
-}
-
-.message-container:nth-child(14) {
-  --delay: 16;
-}
-
-.message-container:nth-child(13) {
-  --delay: 17;
-}
-
-.message-container:nth-child(12) {
-  --delay: 18;
-}
-
-.message-container:nth-child(11) {
-  --delay: 19;
-}
-
-.message-container:nth-child(10) {
-  --delay: 20;
-}
-
-.message-container:nth-child(9) {
-  --delay: 21;
-}
-
-.message-container:nth-child(8) {
-  --delay: 22;
-}
-
-.message-container:nth-child(7) {
-  --delay: 23;
-}
-
-.message-container:nth-child(6) {
-  --delay: 24;
-}
-
-.message-container:nth-child(5) {
-  --delay: 25;
-}
-
-.message-container:nth-child(4) {
-  --delay: 26;
-}
-
-.message-container:nth-child(3) {
-  --delay: 27;
-}
-
-.message-container:nth-child(2) {
-  --delay: 28;
-}
-
-.message-container:nth-child(1) {
-  --delay: 29;
-}
 /*@media(max-width: 960px) {
 
 }
