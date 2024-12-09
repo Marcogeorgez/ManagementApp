@@ -2,33 +2,39 @@
 @inject ChatService ChatService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-<MudDialog>
-    <DialogContent>
-        <MudContainer>
-            <MudText Typo="Typo.h6" Class="mb-4">Your Projects</MudText>
-
+<MudPaper Elevation="4" Class="projects-panel">
+        <MudText Typo="Typo.h5" Class="projects-title">
+                        <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
+            Projects Chats
+        </MudText>
             @if (projects.Any())
             {
-                <MudList T="Project">
+                <MudList T="Project" Class="projects-list">
                     @foreach (var project in projects)
                     {
-                        <MudListItem OnClick="() => OpenProjectChat(project.ProjectId)">
-                            <div class="d-flex justify-space-between align-center">
-                                <MudText>@project.ProjectName</MudText>
-                                <MudBadge Content="project.countUnreadMessages"
-                                          Color="Color.Secondary" />
-                            </div>
+                        <MudListItem Class="project-item" OnClick="() => OpenProjectChat(project.ProjectId)">
+                            <div class="project-content">
+                            <MudText Typo="Typo.body1">@project.ProjectName</MudText>
+                            @if (project.countUnreadMessages > 0)
+                            {
+                                <MudBadge 
+                                    Content="@project.countUnreadMessages" 
+                                    Color="Color.Secondary" 
+                                    Class="unread-badge"
+                                />
+                            }
+                        </div>
                         </MudListItem>
                     }
                 </MudList>
             }
             else
             {
-                <MudAlert Severity="Severity.Info">No projects found.</MudAlert>
+                <MudAlert Severity="Severity.Normal" Class="no-projects-alert">>No projects found.</MudAlert>
             }
-        </MudContainer>
-    </DialogContent>
-</MudDialog>
+            </MudPaper>
+        
+
 
 @code {
     private List<Project> projects = new List<Project>();  // Initialize as an empty list
