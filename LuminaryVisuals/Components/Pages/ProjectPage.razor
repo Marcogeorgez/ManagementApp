@@ -139,11 +139,11 @@ else
             </EditTemplate>
         </PropertyColumn>
         }
-        @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
+        @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView == true)
         {
-                    <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" 
-                        Hideable="true" Groupable="true" CellStyle="text-align:center;" 
-                        Editable=false Required=false >
+            <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" 
+                Hideable="true" Groupable="true" CellStyle="text-align:center;" 
+                Editable=false Required=false >
                 <CellTemplate>
                     <MudTextField T="string"
                                   HelperText="Click to expand"
