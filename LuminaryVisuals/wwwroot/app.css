@@ -24,6 +24,9 @@
     color: var(--mud-palette-secondary)
 }
 
+.outlined-dialog-max-content {
+   min-width: max-content;
+}
 
 
 
@@ -251,6 +254,10 @@
         background-image: linear-gradient(275deg, #FFC700 0%, #FFFFFF 59%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+    }
+
+    .outlined-dialog-max-content {
+        min-width: auto !important;
     }
 }
 
