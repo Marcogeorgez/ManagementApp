@@ -51,16 +51,16 @@ else
                 <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                                 <div style="height:100px;"
-                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "")"
+                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center  "
                                 draggable="true"
                          @ondragstart="@(() => HandleDragStart(context.Item))"
                          @ondragover:preventDefault
                          @ondragover="@(() => HandleDragOver(context.Item))"
                          @ondrop:preventDefault
-                             @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
+                         @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
                          @ondragenter="@(() => HandleDragEnter(context.Item))"
                          @ondragleave="@(() => HandleDragLeave(context.Item))">
-                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="mr-2" />
+                                <MudIcon Icon="@Icons.Material.Filled.Menu" Class="mr-2" />
                         @context.Item.InternalOrder
                     </div>
                     </MudHidden>
@@ -76,7 +76,7 @@ else
                             DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
                 <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                                <div class="drag-handle" style="height:100px;" draggable="true"
+                            <div class="drag-handle flex-row  justify-center align-center " style="height:100px;" draggable="true"
                          @ondragstart="@(() => HandleDragStart(context.Item))"
                          @ondragover:preventDefault
                          @ondragover="@(() => HandleDragOver(context.Item))"
@@ -84,7 +84,7 @@ else
                          @ondrop="@(() => HandleDropForExternalOrder(context.Item))"
                          @ondragenter="@(() => HandleDragEnter(context.Item))"
                          @ondragleave="@(() => HandleDragLeave(context.Item))">
-                        <MudIcon Icon="@Icons.Material.Filled.DragIndicator" Class="mr-2" />
+                        <MudIcon Icon="@Icons.Material.Filled.Menu" Class="mr-2" />
                         @context.Item.ExternalOrder
                     </div>
                     </MudHidden>
@@ -97,38 +97,38 @@ else
         @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
         {
         <PropertyColumn Property="x => x.Description" Title="Project"
-            Hideable="true" CellStyle="text-align:center; min-width:20vw;"
+                                Hideable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
                         Groupable="false" Editable=false Required=false>
             <CellTemplate>
-                    @if (context.Item.Status != ProjectStatus.Upcoming && ( string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
-                            string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Size) ||
-                            string.IsNullOrEmpty(context.Item.ProjectSpecifications?.CameraNumber) ||
-                            string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
-                {
-                    <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                        @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
+                      string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Size) ||
+                      string.IsNullOrEmpty(context.Item.ProjectSpecifications?.CameraNumber) ||
+                      string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
+                        {
+                            <div class="d-flex gap-2 flex-row  justify-center align-center">
                     <MudTextField T="string" 
-                                  HelperText="Click to expand"
                                   Value="context.Item.ProjectName"
-                                  ReadOnly="true"
+                                  ReadOnly="true" Variant="Variant.Outlined"
                                   Immediate="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull"Variant=Variant.Text
+                                              AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                         <MudTooltip Text="Expand">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
                         </MudTooltip>
                     </MudTextField>
+                            <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                            </div>
                 }
                 else
                 {
                     <MudTextField T="string"
-                                  HelperText="Click to expand"
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true"
-                                  Immediate="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInFull" Variant=Variant.Text
+                                  Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                         <MudTooltip Text="Expand">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
                         </MudTooltip>
                     </MudTextField>
                 }
@@ -141,17 +141,16 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView == true)
         {
-            <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" 
-                Hideable="true" Groupable="true" CellStyle="text-align:center;" 
-                Editable=false Required=false >
+            <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName"
+                                Hideable="true" Groupable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
+                                Editable=false Required=false >
                 <CellTemplate>
                     <MudTextField T="string"
-                                  HelperText="Click to expand"
                                   Value="context.Item.Client.UserName"
                                   ReadOnly="true"
                                   Immediate="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
-                                  AutoGrow=true
+                                  AutoGrow=true Variant="Variant.Outlined"
                                   MaxLines="4"
                                   OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
                         <MudTooltip Text="See Client preferences and notes">
@@ -386,12 +385,12 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
         {
-            <PropertyColumn Property="x => x.NotesForProject" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
+                <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-max-content" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
                             Editable=false Required=false>
                 <CellTemplate>
                     <MudTextField T="string"
-                                  HelperText="Click to expand"
-                                  Text="Private notes for Project"
+                                  Class="outlined-dialog-max-content"
+                                  Text="Notes" Variant="Variant.Outlined"
                                   ReadOnly="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                                   AutoGrow=false

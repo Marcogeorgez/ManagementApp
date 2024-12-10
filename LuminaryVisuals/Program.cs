@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
@@ -188,6 +189,17 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
+builder.WebHost.UseSentry(o => 
+{
+    o.Dsn = "https://3d017756cd2623df347b8da6db1a0359@o4508443362197504.ingest.de.sentry.io/4508443370717264";
+    // This option is recommended. It enables Sentry's "Release Health" feature.
+    o.AutoSessionTracking = true;
+    o.StackTraceMode = StackTraceMode.Enhanced;
+    // Set TracesSampleRate to 1.0 to capture 100%
+    // of transactions for tracing.
+    o.TracesSampleRate = 1.0;
+    o.ProfilesSampleRate = 1.0f;
+});
 
 var app = builder.Build();
 
@@ -240,5 +252,4 @@ using (var scope = app.Services.CreateScope())
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
-
 app.Run();
