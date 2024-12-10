@@ -171,7 +171,7 @@ public class ChatService
     public async Task UnsendMessageAsync(int messageId)
     {
         using var context = _contextFactory.CreateDbContext();
-        var message = await context.Messages.FindAsync(messageId);
+        var message = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == messageId);
         if (message == null)
         {
             throw new Exception("Message not found.");

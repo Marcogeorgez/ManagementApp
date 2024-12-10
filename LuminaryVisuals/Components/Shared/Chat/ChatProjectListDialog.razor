@@ -2,15 +2,15 @@
 @inject ChatService ChatService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-<MudPaper Elevation="4" Class="projects-panel" Style="border-radius:0px !important; padding:0px!important; overflow-x:hidden;">
-      <MudPaper Elevation="3" Class="chat-header mb-3" Outlined="true">
-        <MudText Typo="Typo.h5" Class="projects-title">
-                        <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
-            Projects Chats
 
-        </MudText>
-       <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
-        </MudPaper>
+    <MudPaper Elevation="3" Class="chat-header" Outlined="true">
+    <MudText Typo="Typo.h5" Class="projects-title">
+                <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
+    Projects Chats
+
+    </MudText>
+    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
+    </MudPaper>
             @if (projects.Any())
             {
                 <div class="chat-panel" style="border:0px; height:inherit!important;padding: 1vw 2vw 0px 2vw;">
@@ -24,7 +24,7 @@
                             <MudText Typo="Typo.body1">@project.ProjectName</MudText>
                             @if (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView))
                             {
-                                <MudBadge Content="@project.MessageRequireApprovalCount" Color="Color.Secondary" Class="unread-badge"/>
+                                <MudBadge Content="@project.MessageRequireApprovalCount" Color="Color.Secondary" Class="badge"/>
                             }
                             @if (project.countUnreadMessages > 0)
                             {
@@ -43,9 +43,7 @@
             {
                 <MudAlert Severity="Severity.Normal" Class="no-projects-alert">>No projects found.</MudAlert>
             }
-            </MudPaper>
         
-
 
 @code {
     [CascadingParameter]
@@ -124,7 +122,6 @@
 
         var options = new DialogOptions
             {
-                CloseButton = true,
                 Position = DialogPosition.BottomRight,
                 NoHeader = true
             };

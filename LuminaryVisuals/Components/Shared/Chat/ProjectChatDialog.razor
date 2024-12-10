@@ -13,7 +13,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.Chat" Class="mr-3" />
                     Chat
                 </MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
             </MudPaper>
             <MudContainer Class="chat-content" Gutters="false" >
                 <div class="chat-messages">
@@ -62,10 +62,11 @@
                                     Color="Color.Error"
                                     Size="Size.Small"
                                     OnClick="() => DeleteMessage(message)"/>
-                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline"
-                                    Color="Color.Success"
-                                    Size="Size.Small"
-                                    OnClick="() => ApproveMessage(message)"/>
+                                    if (message.IsApproved == false)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
+                                        Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
+                                    }
                                     }
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
                                     OnClick="() => EditMessage(message)"  />
@@ -203,7 +204,10 @@
     }
     private async Task DeleteMessage(Message message)
     {
+
         await ChatService.UnsendMessageAsync(message.MessageId);
+        await LoadMessages();
+
     }
     private async Task ApproveMessage(Message message)
     {
@@ -251,30 +255,46 @@
         {
             await SendMessage();
         }
+        if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
+        {
+            await NavigateBack();
+        }
     }
     private async Task NavigateBack()
     {
-        await CloseChat();
-        var options = new DialogOptions
+        var result = await ShowConfirmationDialog();
+        if (!result.Canceled)
+        {
+            var options = new DialogOptions
             {
                 CloseButton = true,
                 Position = DialogPosition.BottomRight,
-                NoHeader = true
+                NoHeader = true,
             };
-        var parameters = new DialogParameters<ChatProjectListDialog>
-        {
-            { "userId" , UserId },
-            { "isAdminView" , isAdminView },
-            { "isEditorView" , isEditorView },
-            { "isClientView" , isClientView },
-            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
 
-        };
-        DialogService.Show<ChatProjectListDialog>("", parameters, options);    
+            var parameters = new DialogParameters
+            {
+                { "userId", UserId },
+                { "isAdminView", isAdminView },
+                { "isEditorView", isEditorView },
+                { "isClientView", isClientView },
+                { "timezoneOffsetMinutes", timezoneOffsetMinutes },
+            };
+            MudDialog.Close();
+            DialogService.Show<ChatProjectListDialog>("", parameters, options);
+
+        }
+    }
+    private async Task Close()
+    {
+        var result = await ShowConfirmationDialog();
+        if (!result.Canceled)
+        {
+            MudDialog.Close();
+        }
     }
 
-
-    private async Task CloseChat()
+    private async Task<DialogResult> ShowConfirmationDialog()
     {
         if (!string.IsNullOrEmpty(newMessage))
         {
@@ -282,22 +302,15 @@
             {
                 { "Message", "There is an unsent message. Are you sure you want to close?" }
             };
+
             var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
-            var result = await dialog.Result;
-            if (!result.Canceled)
-            {
-                MudDialog.Close();
-            }
-            else
-            {
-                return;
-            }
+
+            return await dialog.Result;
         }
-        else
-        {
-            MudDialog.Close();
-        }
+
+        return DialogResult.Ok(true); 
     }
+
 }
 
 <script>
