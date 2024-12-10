@@ -199,6 +199,7 @@ builder.WebHost.UseSentry(o =>
     // of transactions for tracing.
     o.TracesSampleRate = 1.0;
     o.ProfilesSampleRate = 1.0f;
+    
 });
 
 var app = builder.Build();

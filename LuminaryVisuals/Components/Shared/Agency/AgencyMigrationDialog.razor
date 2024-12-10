@@ -11,29 +11,62 @@
     <DialogContent>
         <MudContainer Style="max-height: 500px; overflow-y: auto">
             <MudForm @ref="form" @bind-IsValid="@isFormValid" @bind-Errors="@formErrors" ValidationDelay="0">
-                <MudTextField T="string"
-                              @bind-Value="agencyName"
-                              Label="Agency Name"
-                              Required="true"
-                              RequiredError="Agency name is required!"
-                              Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
+                <MudGrid Spacing="2" Justify="Justify.SpaceBetween">
+                    
+                    <MudItem xs="12">
+                    <MudList T=UserRoleViewModel Dense="true">
+                    <MudText Class="mb-4 mt-4">Selected Users:</MudText>
+                        @foreach (var user in SelectedUsers)
+                        {
+                            <MudListItem>
+                                <MudText>@user.UserName (@user.UserEmail) - ID: @user.UserId</MudText>
+                            </MudListItem>
+                        }
+                    </MudList>
+                    </MudItem>
 
-                <MudTextField T="string"
-                              @bind-Value="agencyEmail"
-                              Label="Agency Email"
-                              Required="true"
-                              RequiredError="Agency email is required!"
-                              Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
-
-                <MudText Class="mb-4 mt-4">Selected Users:</MudText>
-                <MudList T=UserRoleViewModel Dense="true" DisablePadding="true">
-                    @foreach (var user in SelectedUsers)
+                    <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
+                        <MudToggleItem Value="@("New")" Text="Create New Agency" />
+                        <MudToggleItem Value="@("Existing")" Text="Add to Existing Agency" />
+                    </MudToggleGroup>
+                    @if (_value1 == "New")
                     {
-                        <MudListItem>
-                            <MudText>@user.UserName (@user.UserEmail) - ID: @user.UserId</MudText>
-                        </MudListItem>
+                        <MudItem xs="6">
+                            <MudTextField T="string"
+                            @bind-Value="agencyName"
+                            Label="Agency Name"
+                            Required="true"
+                            RequiredError="Agency name is required!"
+                            Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField T="string"
+                            @bind-Value="agencyEmail"
+                            Label="Agency Email"
+                            Required="true"
+                            RequiredError="Agency email is required!"
+                            Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
+                        </MudItem>
                     }
-                </MudList>
+                    else
+                    {
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Select The Agency"
+                                   @bind-Value="selectedAgency">
+                            @foreach (var user in SelectedUsers)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@user.UserId" Ripple=true>
+                                    @user.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </MudGrid>
+
+
             </MudForm>
         </MudContainer>
     </DialogContent>
@@ -57,7 +90,8 @@
 
     private string agencyName = string.Empty;
     private string agencyEmail = string.Empty;
-
+    private string _value1 = String.Empty;
+    private string selectedAgency = string.Empty;
     private void Cancel() => MudDialog.Cancel();
 
     private bool CanSubmit() =>
@@ -131,32 +165,54 @@
 
         try
         {
-
             var userIds = SelectedUsers.Select(u => u.UserId).ToList();
 
-            var googleLogins = await FetchAndRemoveGoogleLogins(context, userIds);
+            if(_value1 == "Existing")
+            {
+                userIds.Remove(selectedAgency);
+                var googleLogins = await FetchAndRemoveGoogleLogins(context, userIds);
+                var users = await context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
 
-            var users = await context.Users
-            .Where(u => userIds.Contains(u.Id))
-            .ToListAsync();
+                await SaveMigratedUsers(context, googleLogins, users);
+                var newLogins = CreateNewLogins(googleLogins,selectedAgency);
 
-            await SaveMigratedUsers(context, googleLogins, users);
+                await context.UserLogins.AddRangeAsync(newLogins);
+                await context.SaveChangesAsync();
 
-            var newAgencyId = Guid.NewGuid();
-            var newAgency = CreateNewAgency(newAgencyId);
-
-            var newLogins = CreateNewLogins(googleLogins, newAgencyId);
-
-            await SaveNewAgencyAndLogins(context, newAgency, newLogins);
-            await UpdateProjectOwnership(context, userIds, newAgencyId);
-            await DeleteOldUsers(context, userIds);
-            await transaction.CommitAsync();
-
-            await AssignRoleToUser(newAgency, "Client");
+                await UpdateProjectOwnership(context, userIds, selectedAgency);
+                await MigrateMessagesToNewUserAsync(context, userIds, selectedAgency);
+                await DeleteOldUsers(context, userIds);
+                await transaction.CommitAsync();
+                Snackbar.Add($"Added users to Agency successfully!", Severity.Success);
 
 
+            }
+            else if(_value1 == "New")
+            {
+                var googleLogins = await FetchAndRemoveGoogleLogins(context, userIds);
 
-            Snackbar.Add("Agency created successfully!", Severity.Success);
+                var users = await context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+                await SaveMigratedUsers(context, googleLogins, users);
+
+                var newAgencyId = Guid.NewGuid();
+                var newAgency = CreateNewAgency(newAgencyId);
+                var newLogins = CreateNewLogins(googleLogins, newAgencyId.ToString());
+
+                await SaveNewAgencyAndLogins(context, newAgency, newLogins);
+                await UpdateProjectOwnership(context, userIds, newAgencyId.ToString());
+                await DeleteOldUsers(context, userIds);
+                await transaction.CommitAsync();
+
+                await AssignRoleToUser(newAgency, "Client");
+                Snackbar.Add("Agency created successfully!", Severity.Success);
+
+            }
+            
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch
@@ -211,13 +267,13 @@
     }
 
 
-    private List<IdentityUserLogin<string>> CreateNewLogins(List<IdentityUserLogin<string>> googleLogins, Guid newAgencyId) =>
+    private List<IdentityUserLogin<string>> CreateNewLogins(List<IdentityUserLogin<string>> googleLogins, string AgencyId) =>
         googleLogins.Select(login => new IdentityUserLogin<string>
             {
                 LoginProvider = login.LoginProvider,
                 ProviderKey = login.ProviderKey,
                 ProviderDisplayName = login.ProviderDisplayName,
-                UserId = newAgencyId.ToString()
+                UserId = AgencyId
             }).ToList();
 
     private async Task SaveNewAgencyAndLogins(ApplicationDbContext context, ApplicationUser newAgency, List<IdentityUserLogin<string>> newLogins)
@@ -261,7 +317,7 @@
             await context.SaveChangesAsync();
     }
 
-    private async Task UpdateProjectOwnership(ApplicationDbContext context, List<string> userIds, Guid newAgencyId)
+    private async Task UpdateProjectOwnership(ApplicationDbContext context, List<string> userIds, string newAgencyId)
     {
         var projectsToUpdate = await context.Projects
             .AsTracking()
@@ -279,7 +335,25 @@
 
         await context.SaveChangesAsync();
     }
+    public async Task MigrateMessagesToNewUserAsync(ApplicationDbContext context,List<string> userIds, string newUserId)
+    {
+        if (userIds == null || !userIds.Any())
+            throw new ArgumentException("User IDs list cannot be empty.");
 
+        // Validate new user exists in a single database query
+        var newUserExists = await context.Users
+            .AnyAsync(u => u.Id == newUserId);
+
+        if (!newUserExists)
+            throw new ArgumentException("The specified user does not exist.");
+
+        // Performs bulk update in a single database operation
+        await context.Messages
+            .Where(m => userIds.Contains(m.UserId))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(m => m.UserId, newUserId)
+            );
+    }
     private async Task DeleteOldUsers(ApplicationDbContext context, List<string> userIds)
     {
         var usersToDelete = await context.Users

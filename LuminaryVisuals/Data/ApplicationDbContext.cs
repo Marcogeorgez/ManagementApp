@@ -196,11 +196,11 @@ namespace LuminaryVisuals.Data
                 entity.HasOne(crs => crs.User)
                       .WithMany()  // Each user can have many read statuses
                       .HasForeignKey(crs => crs.UserId)
-                      .OnDelete(DeleteBehavior.Restrict); // Prevent user deletion from removing read statuses
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 // Indexes for better performance on queries (unique read status per user and message)
                 entity.HasIndex(crs => new { crs.MessageId, crs.UserId })
-                      .IsUnique(); // Ensure a unique read status per user per message
+                      .IsUnique(); 
 
                 // Required properties
                 entity.Property(crs => crs.IsRead)

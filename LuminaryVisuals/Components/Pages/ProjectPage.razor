@@ -109,14 +109,14 @@ else
                     <MudTextField T="string" 
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true" Variant="Variant.Outlined"
-                                  Immediate="true" Adornment="Adornment.End"
+                                  Immediate="true" Adornment="Adornment.End" 
                                               AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
-                        <MudTooltip Text="Expand">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
-                        </MudTooltip>
                     </MudTextField>
+                                <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
                             <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                        </MudTooltip>
+
                             </div>
                 }
                 else
@@ -127,9 +127,6 @@ else
                                   Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
-                        <MudTooltip Text="Expand">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
-                        </MudTooltip>
                     </MudTextField>
                 }
 
@@ -153,9 +150,6 @@ else
                                   AutoGrow=true Variant="Variant.Outlined"
                                   MaxLines="4"
                                   OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
-                        <MudTooltip Text="See Client preferences and notes">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
-                        </MudTooltip>
                     </MudTextField>
                 </CellTemplate>
                         <GroupTemplate>
@@ -419,7 +413,7 @@ else
                 }
                 else
                 {
-                    <MudField>Not Assigned</MudField>
+                    <span>Unassigned</span>
                 }
             </CellTemplate>
             <EditTemplate>

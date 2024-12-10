@@ -83,7 +83,8 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name" CellStyle="text-align: center" Editable=false>
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name" 
+                CellClass="outlined-dialog-max-content" CellStyle="text-align: center" Editable=false>
             <CellTemplate>
             <MudTextField T="string"
                           HelperText="Click to expand"
@@ -153,7 +154,7 @@ else
                             ShowFilterIcon="false" ShowColumnOptions="false">
 
             </PropertyColumn>
-            <PropertyColumn Property="x => x.Note" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
+            <PropertyColumn Property="x => x.Note" CellClass="outlined-dialog-max-content" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
                 <CellTemplate>
                     <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
                                   Immediate="true"
