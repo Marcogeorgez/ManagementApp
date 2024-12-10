@@ -569,7 +569,7 @@ else
                 <CellTemplate>
                     <MudItem Align="center">
                     <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                   Color="@(context.Item.IsPaymentVisible ? Color.Primary : Color.Default)"
+                                   Color="@(context.Item.IsPaymentVisible ? Color.Success : Color.Error)"
                                    OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
                                    Size="Size.Small" />
                         </MudItem>
