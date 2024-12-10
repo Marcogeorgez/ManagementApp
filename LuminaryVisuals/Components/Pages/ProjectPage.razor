@@ -774,9 +774,16 @@ else
         CircuitId = Guid.NewGuid().ToString(); 
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
         await LoadProjects();
-        timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         _loading = false;
     }    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+            if (firstRender)
+            {
+                var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
+            }
+        }
+
     private async Task HandleProjectsUpdated()
     {
         await InvokeAsync(async () =>
