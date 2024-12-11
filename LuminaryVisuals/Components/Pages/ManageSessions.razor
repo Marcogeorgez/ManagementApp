@@ -1,0 +1,123 @@
+﻿@page "/manage-sessions"
+@using System.Text.RegularExpressions
+@using System.Text.Json
+@inject DeviceSessionService DeviceSessionService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Active Sessions</h3>
+        @foreach (var deviceId in ActiveDevices)
+        {
+            <div>
+                Device Version Browser is : @deviceId.BrowserVersion , device type : @deviceId.DeviceType, operating system: @deviceId.OperatingSystem, last active at :@deviceId.LastActive
+            </div>
+        }
+
+        <button @onclick="TerminateAllOtherSessions">Logout All Other Sessions</button>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private List<DeviceSessionService.DeviceSession> ActiveDevices = new();
+    private DeviceSessionService.DeviceSession CurrentDevice;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId != null)
+        {
+            var browserInfoJson = await JSRuntime.InvokeAsync<string>("getBrowserInfo");
+            var browserInfo = JsonSerializer.Deserialize<BrowserInfo>(browserInfoJson);
+
+            var userAgent = browserInfo.userAgent;
+
+            var deviceType = GetBrowserType(userAgent);
+            var browserVersion = GetBrowserVersion(userAgent);
+            var operatingSystem = GetOperatingSystem(userAgent);
+
+            ActiveDevices = DeviceSessionService.GetUserDeviceSessions(userId);
+
+            CurrentDevice = ActiveDevices.FirstOrDefault(d =>
+                d.DeviceType == deviceType &&
+                d.BrowserVersion == browserVersion &&
+                d.OperatingSystem == operatingSystem);
+        }
+    }
+
+    private async Task TerminateAllOtherSessions()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId != null && CurrentDevice != null)
+        {
+            // Keep only current device session
+            var currentDevices = new List<DeviceSessionService.DeviceSession> { CurrentDevice };
+            DeviceSessionService.ReplaceUserSessions(userId, currentDevices);
+
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    public class BrowserInfo
+    {
+        public string userAgent { get; set; }
+        public string browserName { get; set; }
+        public string browserVersion { get; set; }
+        public string platform { get; set; }
+        public string operatingSystem { get; set; }
+        public string language { get; set; }
+        public string deviceMemory { get; set; }
+        public string cpuClass { get; set; }
+        public string screenResolution { get; set; }
+        public bool isTouchSupported { get; set; }
+    }
+    private string GetBrowserType(string userAgent)
+    {
+        userAgent = userAgent.ToLower();
+        if (userAgent.Contains("edg/"))
+            return "Edge";
+        if (userAgent.Contains("chrome/"))
+            return "Chrome";
+        if (userAgent.Contains("firefox/"))
+            return "Firefox";
+        if (userAgent.Contains("safari/") && !userAgent.Contains("chrome/"))
+            return "Safari";
+        if (userAgent.Contains("trident/") || userAgent.Contains("msie"))
+            return "Internet Explorer";
+        return "Unknown";
+    }
+
+    private string GetBrowserVersion(string userAgent)
+    {
+        // Implement version extraction logic
+        // This is a simplified example
+        var browserType = GetBrowserType(userAgent);
+        var versionRegex = new Regex($@"{browserType.ToLower()}/(\d+)");
+        var match = versionRegex.Match(userAgent.ToLower());
+        return match.Success ? match.Groups[1].Value : "Unknown";
+    }
+
+    private string GetOperatingSystem(string userAgent)
+    {
+        userAgent = userAgent.ToLower();
+        if (userAgent.Contains("windows"))
+            return "Windows";
+        if (userAgent.Contains("mac os x"))
+            return "macOS";
+        if (userAgent.Contains("linux"))
+            return "Linux";
+        if (userAgent.Contains("android"))
+            return "Android";
+        if (userAgent.Contains("ios"))
+            return "iOS";
+        return "Unknown";
+    }
+}

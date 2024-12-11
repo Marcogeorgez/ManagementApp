@@ -65,6 +65,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
+builder.Services.AddSingleton<DeviceSessionService>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<IConfirmationService, ConfirmationService>();
 // Custom Implementation of SignInManager to let new users.role Guest by default
@@ -236,11 +237,13 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAntiforgery();
+app.UseDeviceSessionTracking();
 
 
 // Initialize roles
