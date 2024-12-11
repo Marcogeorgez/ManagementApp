@@ -12,6 +12,7 @@
                    Position="DialogPosition.Center"
                    CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
+<AppUserProvider>
 <CascadingValue Value="_drawerOpen">
     <MudLayout Style="position:absolute;">
         @if (_showSplashScreen && !IsStaticSSR)
@@ -46,6 +47,8 @@
 
     </MudLayout>
 </CascadingValue>
+</AppUserProvider>
+
 @code {
     private bool _drawerOpen = false;
     private bool _showSplashScreen = true; // Splash screen visibility state

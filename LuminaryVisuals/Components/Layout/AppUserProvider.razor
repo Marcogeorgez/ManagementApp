@@ -1,0 +1,25 @@
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject LoginState loginState;
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<CascadingValue Value="currentUser">
+    @if (currentUser != null)
+    {
+        @ChildContent
+    }
+    </CascadingValue>
+
+    @code {
+    private ClaimsPrincipal? currentUser;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    private string browserPlatform;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUser = authState.User;
+
+        await base.OnInitializedAsync();
+    }
+
+}
