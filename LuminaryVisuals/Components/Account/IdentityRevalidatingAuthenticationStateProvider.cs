@@ -8,14 +8,14 @@ using System.Security.Claims;
 namespace LuminaryVisuals.Components.Account
 {
     // This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user
-    // every 30 minutes an interactive circuit is connected.
+    // every 5 seconds an interactive circuit is connected.
     internal sealed class IdentityRevalidatingAuthenticationStateProvider(
             ILoggerFactory loggerFactory,
             IServiceScopeFactory scopeFactory,
             IOptions<IdentityOptions> options)
         : RevalidatingServerAuthenticationStateProvider(loggerFactory)
     {
-        protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);
+        protected override TimeSpan RevalidationInterval => TimeSpan.FromSeconds(5);
 
         protected override async Task<bool> ValidateAuthenticationStateAsync(
             AuthenticationState authenticationState, CancellationToken cancellationToken)
