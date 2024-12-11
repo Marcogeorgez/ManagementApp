@@ -1,8 +1,10 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@using LuminaryVisuals.Components.Pages
+@using Microsoft.AspNetCore.Identity
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inherits LayoutComponentBase
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 @inject IBrowserViewportService ViewportService
 
 
@@ -40,10 +42,8 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
 
         <MudSpacer />
 
-
-
         <AuthorizeView Roles="Admin,Client,Editor">
-        <MudNavLink Href="profile" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
+        <MudNavLink OnClick="@profileDialog" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
         </AuthorizeView>
         <AuthorizeView Roles="Admin">
         <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Admin Dashboard</MudNavLink>
@@ -81,6 +81,9 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
 </MudDrawer>
 
 @code {
+    [CascadingParameter]
+    public ClaimsPrincipal? currentUser { get; set; }
+
     bool isLargeScreen = false;
     bool _drawerOpen = false;
     private Anchor _anchor = Anchor.Start;
@@ -108,6 +111,22 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+    private async Task profileDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            {"currentUser",currentUser }
+        };
+
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            };
+
+        var dialog = await DialogService.ShowAsync<ProfileDialog>("", parameters, options);
     }
     MudTheme _theme = new MudTheme()
         {

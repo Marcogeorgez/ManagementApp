@@ -183,9 +183,13 @@
 
                 await UpdateProjectOwnership(context, userIds, selectedAgency);
                 await MigrateMessagesToNewUserAsync(context, userIds, selectedAgency);
+
                 await DeleteOldUsers(context, userIds);
+
                 await transaction.CommitAsync();
                 Snackbar.Add($"Added users to Agency successfully!", Severity.Success);
+                var selectedAgencyUser = await context.Users.FirstOrDefaultAsync(u => u.Id == selectedAgency);
+                await UserManager.UpdateSecurityStampAsync(selectedAgencyUser);
 
 
             }
@@ -264,6 +268,8 @@
             await UserManager.AddToRoleAsync(userFromDb, roleName);
             
         }
+        await UserManager.UpdateSecurityStampAsync(user);
+
     }
 
 

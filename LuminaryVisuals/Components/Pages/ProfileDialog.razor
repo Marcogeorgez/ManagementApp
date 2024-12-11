@@ -1,0 +1,178 @@
+﻿@using LuminaryVisuals.Components.Shared.ProfileComponents
+@using Microsoft.AspNetCore.Authorization
+@inject UserManager<ApplicationUser> UserManager
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> _userManager;
+
+<MudDialog>
+    <DialogContent>
+
+        <MudText Typo="Typo.h3" Class="mt-2">Hello, @userName</MudText>
+                        <MudForm @ref="form" @bind-IsValid="@success">
+                <MudItem xs="12" Class="mt-8 pl-5">
+                    <MudText Typo="Typo.h5">Profile Settings</MudText>
+                                        </MudItem>
+        <MudGrid Class="d-flex flex-row px-10 my-1" Justify="Justify.Center" Spacing="6">
+                <MudItem xs="6">
+                    <MudTextField T="string" Label="Current Username" @bind-Value="@userName"
+                        ReadOnly="true" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField T="string" Label="New Username" @bind-Value="model.NewUsername"
+                        Required="true" RequiredError="New username is required!" 
+                        Validation="@(new Func<string, IEnumerable<string>>(ValidateUsername))"
+                            Variant="Variant.Outlined"  />
+                </MudItem>
+        </MudGrid>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto mt-5" 
+                Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
+                @if (processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Processing</MudText>
+                }
+                else
+                {
+                    <MudText>Update Username</MudText>
+                }
+        </MudButton>
+        </MudForm>
+
+        <MudGrid Class="d-flex flex-row px-10 my-5" Justify="Justify.Center" Spacing="6">
+            <MudItem xs=12>
+                <MudText Typo="Typo.h5" Class="mt-8 pl-5">Revoke Login From All Devices</MudText>
+            </MudItem>
+            <MudItem xs="12" Class="flex-row-reverse d-flex ">
+                <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Outlined"
+                Class="ml-auto">Revoke</MudButton></MudItem>
+        </MudGrid>
+        @if (userRole == "Client")
+        {
+            <MudText Class="mt-2">Please fill the following form to know more about your preferences</MudText>
+            <MudButton Class="mt-3 mb-4 ml-3 mr-3" Color=Color.Info  
+            StartIcon="@Icons.Material.Filled.EditNote" Variant="Variant.Filled" 
+            OnClick="buttonCLicked"> Projects Preferences </MudButton>
+            if(isClicked)
+            {
+                <ClientEditingGuidelinesComponent userId="@userId"/>
+            }
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Class="mr-5 px-5" OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public ClaimsPrincipal? currentUser { get; set; }
+    private ApplicationUser? user;
+    private string userRole;
+    private string userId;
+    private bool isChangeInfo;
+    private bool isClicked;
+    string? userName;
+    private MudForm form;
+    private bool success;
+    private bool processing;
+    private UsernameChangeModel model = new();
+    private void buttonCLicked()
+    {
+        isClicked = !isClicked;
+    }
+    private void isChangingInfo()
+    {
+        isChangeInfo = !isChangeInfo;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await UserManager.GetUserAsync(currentUser!);
+            userName = user?.UserName;
+            userRole = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value!;
+            userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+
+    private IEnumerable<string> ValidateUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            yield return "Username is required!";
+        if (username?.Length < 3)
+            yield return "Username must be at least 3 characters!";
+        if (username?.Length > 100)
+            yield return "Username must not exceed 100 characters!";
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username ?? "", @"^[a-zA-Z _]*$"))
+            yield return "Username can only contain letters, spaces, and underscores!";
+    }
+
+    private async Task ChangeUsernameAsync()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            processing = true;
+            var user = await UserManager.GetUserAsync(currentUser);
+
+            if (user != null)
+            {
+                // Check if new username is already taken
+                var userWithNewUsername = await UserManager.FindByNameAsync(model.NewUsername);
+                if (userWithNewUsername != null && userWithNewUsername.Id != user.Id)
+                {
+                    Snackbar.Add("Username is already taken!", Severity.Error);
+                    processing = false;
+                    return;
+                }
+
+                // Update username
+                var result = await UserManager.SetUserNameAsync(user, model.NewUsername);
+
+                if (result.Succeeded)
+                {
+                    userName = model.NewUsername;
+                    // Update normalized username
+                    await UserManager.UpdateNormalizedUserNameAsync(user);
+                    Snackbar.Add("Username updated successfully!", Severity.Success);
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        Snackbar.Add(error.Description, Severity.Error);
+                    }
+                }
+            }
+
+            processing = false;
+        }
+    }
+
+    public class UsernameChangeModel
+    {
+        public string NewUsername { get; set; }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+
+    private void RevokeLogin()
+    {
+        _userManager.UpdateSecurityStampAsync(user);
+    }
+}

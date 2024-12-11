@@ -704,10 +704,8 @@ else
 }
 @code {
     bool _loading = true;
-    [Inject]
-    private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-    [Inject]
-    private IAuthorizationService AuthorizationService { get; set; }
+    [CascadingParameter]
+    public ClaimsPrincipal? currentUser { get; set; }
     private MudDataGrid<Project> _dataGrid;
     private IEnumerable<Project> projects = new List<Project>();
     private Project projectToDelete;
@@ -741,10 +739,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         // Get the current user ID
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var currentUser = authState.User;
-        _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
         if (currentUser.IsInRole("Admin"))
         {
             _currentRole = "Admin";

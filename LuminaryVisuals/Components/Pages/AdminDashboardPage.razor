@@ -1,7 +1,6 @@
 ﻿@page "/admin-dashboard"
 @inject UserServices UserManagementService
 @inject HttpClient httpClient
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject RoleManager<IdentityRole> RoleManager
 @inject UserNoteService UserNoteService
 @inject ISnackbar Snackbar
@@ -243,7 +242,8 @@ else
     private List<string> _allAvailableRoles = new();
     private List<UserRoleViewModel> _users;
     private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
-    private ClaimsPrincipal? currentUser;
+    [CascadingParameter]
+    public ClaimsPrincipal? currentUser { get; set; }
     // For Agency Creation
     private bool dialogVisible;
     private string agencyName = "";
@@ -286,8 +286,6 @@ else
     {
         try
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            currentUser = authState.User;
             var _storedValue = await SettingService.GetSettingByNameAsync("CurrencyRate");
             if (_storedValue.ConversionRateUSToLek != null)
             {
