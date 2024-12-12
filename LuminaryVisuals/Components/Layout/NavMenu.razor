@@ -51,18 +51,7 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         <AuthorizeView Roles="Admin,Client,Editor">
         <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
         </AuthorizeView>
-                <AuthorizeView>
-                    <NotAuthorized>
-                <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="project" />
-                    <input type="hidden" name="provider" value="Google" />
-                    <MudNavLink OnClick="@LoginClick" IconColor="Color.Tertiary" Icon="@googleLogo">
-                        @label
-                    </MudNavLink>
-                    </form>
-                    </NotAuthorized>
-                </AuthorizeView>
+
                 <MudSpacer />
         <MudNavLink Href="https://docs.google.com/forms/d/e/1FAIpQLSdm_2jk_RSHriEazL4vxlWwcGkKFqQzqlxrrBT6N686pHhydA"
                     Icon="@Icons.Material.Filled.BugReport" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Report bug</MudNavLink>
@@ -86,7 +75,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     private string ColorThemeIcon => Icons.Material.Filled.DarkMode;
     private string? currentUrl;
     private string GetLinkClass => _drawerOpen ? "max-w-[200px] flex items-center" : "justify-center";
-    private string label => _drawerOpen ? "Login with Google" : "";
     private string GetArrowIcon()
     {
         return _drawerOpen ? Icons.Material.Filled.ArrowCircleLeft : Icons.Material.Filled.ArrowCircleRight;
@@ -177,13 +165,5 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
-
-    private async Task LoginClick()
-    {
-        await JSRuntime.InvokeVoidAsync("submitForm", "GoogleLoginForm");
-    }
-
-
-
 }
 
