@@ -296,7 +296,7 @@ else
             {
             <TemplateColumn T="Project" Title="Add Warning" Sortable="false" Filterable="false" Groupable=false Hideable="true">
                 <CellTemplate>
-                    <MudItem>
+                    <MudItem Class="d-flex justify-center">
                     <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                                    Color="@(context.Item.IsUrgent ? Color.Warning : Color.Error)"
                                    OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
@@ -778,9 +778,9 @@ else
     bool _loading = true;
     [CascadingParameter]
     public ClaimsPrincipal? currentUser { get; set; }
-    private MudDataGrid<Project> _dataGrid;
-    private IEnumerable<Project> projects = new List<Project>();
-    private Project projectToDelete;
+    private MudDataGrid<Project> _dataGrid = new();
+    private IEnumerable<Project?> projects = new List<Project?>();
+    private Project? projectToDelete;
     private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = false };
     private bool _isArchived;
     private bool _isAdminView;
@@ -916,7 +916,7 @@ else
         }
         // for client view which will fetch his own projects only)
         else if (_isClientView && isAdminView == false)
-            LoadProjectsForClient();
+            await LoadProjectsForClient();
         // this is for the admin to see all the projects but from the client view
         else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
         {
@@ -925,7 +925,7 @@ else
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
         }
         else if (_isEditorView && isAdminView == false)
-            LoadProjectsForEditors();
+            await LoadProjectsForEditors();
         StateHasChanged();
     }
     // Loading Projects for Editors View
@@ -955,9 +955,9 @@ else
 
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", dialogParameters,options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var newProject = (Project) result.Data;
+            var newProject = (Project) result.Data!;
             newProject.ClientId = _currentUserId;
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
@@ -975,9 +975,9 @@ else
         };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Create New Project", dialogParameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var newProject = (Project) result.Data;
+            var newProject = (Project) result.Data!;
             newProject.WorkingMonth = DateTime.Today;
             newProject.ClientId = _currentUserId;
             await projectServices.AddProjectAsync(newProject);
@@ -1004,14 +1004,14 @@ else
         var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
         var dialog = await DialogService.ShowAsync<ArchivingDialog>("Archive Project", dialogParameters);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var archivedProject = (string)result.Data;
+            var archivedProject = (string) result.Data!;
             if(archivedProject != null)
             {
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null, false);
-                LoadProjects();
+                await LoadProjects();
             }
         }
     }
@@ -1066,7 +1066,7 @@ else
 
     }
     // Opens Description Dialog
-    private async void OpenDescriptionDialog(Project context)
+    private void OpenDescriptionDialog(Project context)
     {
         var parameters = new DialogParameters
         {
@@ -1090,7 +1090,7 @@ else
             await projectServices.UpdateProjectAsync(project);
         }
     }
-    private async void OpenViewClientEditingGuidelinesComponent(Project context)
+    private void OpenViewClientEditingGuidelinesComponent(Project context)
     {
         var parameters = new DialogParameters
         {
@@ -1110,10 +1110,10 @@ else
         var options = new DialogOptions { FullScreen = true };
         var dialog = await DialogService.ShowAsync<PrivateNoteForProjectComponent>("Private Notes", parameters, options);
         var result = await dialog.Result;
-        if(!result.Canceled)
+        if(!result!.Canceled)
         {
-            var project = (Project) result.Data;
-            await projectServices.UpdateProjectAsync(project);
+            var project = (Project) result.Data!;
+            await projectServices.UpdateProjectAsync(project!);
             Snackbar.Add($"Successfully updated the project notes", Severity.Info);
             await LoadProjects();
         }
@@ -1129,9 +1129,9 @@ else
         };
         var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var _project = (Project) result.Data;
+            var _project = (Project) result.Data!;
             if (_project != null)
             {
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
@@ -1176,7 +1176,7 @@ else
         return true;
     }
 
-    Project beforeModification;
+    Project beforeModification = new Project();
     void StartedEditingItem(Project project)
     {
         beforeModification = JsonSerializer.Deserialize<Project>(
@@ -1217,7 +1217,7 @@ else
                 await projectServices.UpdateProjectAsync(project);
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
-                    await LoadProjects();
+                await LoadProjects();
                 StateHasChanged();
             }
             else
@@ -1309,9 +1309,13 @@ else
         {
             if (await ConfirmationService.Confirm("Do you want to download the All Projects as CSV file?"))
             {
-                var csvContent = ConvertProjectsToCsv(projects.ToList());
-                var filename = $"All_Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
-                await DownloadFile(filename, csvContent);
+                if (projects.Any())
+                {
+                    var nonNullProjects = projects.Where(p => p != null).Cast<Project>().ToList(); // Remove null warning
+                    var csvContent = ConvertProjectsToCsv(nonNullProjects);
+                    var filename = $"All_Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
+                    await DownloadFile(filename, csvContent);
+                }
             }
         }
         catch (Exception ex)
@@ -1349,7 +1353,7 @@ else
             var primaryEditorName = project.PrimaryEditor?.UserName ?? "N/A";
             var secondaryEditorName = project.SecondaryEditor?.UserName ?? "N/A";
             // Remove HTML tags from the Description
-            var descriptionWithoutHtml = System.Text.RegularExpressions.Regex.Replace(project.Description, "<.*?>", String.Empty); // Removes HTML tags
+            var descriptionWithoutHtml = project.Description != null ? System.Text.RegularExpressions.Regex.Replace(project.Description, "<.*?>", String.Empty) : String.Empty; // Removes HTML tags
             descriptionWithoutHtml = FormatStringToCsv(descriptionWithoutHtml);
 
             // Retrieve the Billable Hours and Payment Amounts for Client and Editors
@@ -1438,8 +1442,8 @@ else
 
     // DRAGGING FUNCTIONALITIES 
     private List<Project> _Projects { get; set; } = new();
-    private Project draggedProject;
-    private Project dropTarget;
+    private Project? draggedProject;
+    private Project? dropTarget;
     private bool isDragging;
 
 
@@ -1481,7 +1485,7 @@ else
 
     private void HandleDragLeave(Project target)
     {
-        if (dropTarget?.ProjectId == target.ProjectId)
+        if (target != null && dropTarget?.ProjectId == target.ProjectId)
         {
             dropTarget = null;
             StateHasChanged();
