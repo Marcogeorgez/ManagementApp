@@ -24,18 +24,19 @@
                         }
                     </MudList>
                     </MudItem>
-
-                    <MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
-                        <MudToggleItem Value="@("New")" Text="Create New Agency" />
-                        <MudToggleItem Value="@("Existing")" Text="Add to Existing Agency" />
+                    <MudDivider Style="border-width: 0px;" />
+                    <MudToggleGroup Class="d-flex flex-auto mx-20" T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
+                        <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("New")" Text="Create New Agency" />
+                        <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("Existing")" Text="Add to Existing Agency" />
                     </MudToggleGroup>
+                    <MudDivider Style="border-width: 0px;" />
                     @if (_value1 == "New")
                     {
                         <MudItem xs="6">
                             <MudTextField T="string"
                             @bind-Value="agencyName"
                             Label="Agency Name"
-                            Required="true"
+                            Required="true" Variant="Variant.Outlined"
                             RequiredError="Agency name is required!"
                             Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
                         </MudItem>
@@ -43,12 +44,12 @@
                             <MudTextField T="string"
                             @bind-Value="agencyEmail"
                             Label="Agency Email"
-                            Required="true"
+                            Required="true" Variant="Variant.Outlined"
                             RequiredError="Agency email is required!"
                             Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
                         </MudItem>
                     }
-                    else
+                    else if(_value1 == "Existing")
                     {
                         <MudSelect T="string"
                                    AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
@@ -132,10 +133,32 @@
                 Snackbar.Add("Please correct the form errors and ensure users are selected", Severity.Warning);
                 return;
             }
-            var confirmationResult = await ShowConfirmationDialog();
+            if (_value1 == "New"){
+                bool? result = await DialogService.ShowMessageBox(
+                "Warning",
+                "Are you sure you want to combine these users into a single agency? All of their current projects will be assigned to the new agency with the chats combined!",
+                yesText: "Confirm", cancelText: "Cancel");
+                var state = result == null ? "Canceled" : "Confirm";
+                if (state == "Canceled")
+                    return;
 
-            if (!confirmationResult)
-                return;
+            }
+            if (_value1 == "Existing")
+            {
+                if(SelectedUsers.Count() <= 1)
+                {
+                    Snackbar.Add("You can't assign to an existing agency if you have selected less than 2 users!", Severity.Error);
+                    return;
+                }
+                bool? result = await DialogService.ShowMessageBox(
+                "Warning",
+                "Are you sure you want to add these users into this agency? All of the new users current projects will be assigned to the current agency with the chats combined !",
+                yesText: "Confirm", cancelText: "Cancel");
+                var state = result == null ? "Canceled" : "Confirm";
+                if (state == "Canceled")
+                    return;
+
+            }
 
             await MigrateUsersToNewAgency();
         }
