@@ -72,6 +72,8 @@ public class Project
     public decimal? ClientBillableHours { get; set; }
     public decimal? ClientBillableAmount { get; set; }
     public bool IsPaymentVisible { get; set; } = false;
+    public bool IsUrgent { get; set; } = false;
+
     public bool IsUrgentDueDate { get; set; } = false;
 
 

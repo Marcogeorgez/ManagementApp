@@ -291,8 +291,70 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
         {
-            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center;"
-                Groupable="true" Editable=false >
+            
+            if(_isAdminView)
+            {
+            <TemplateColumn T="Project" Title="Add Warning" Sortable="false" Filterable="false" Groupable=false Hideable="true">
+                <CellTemplate>
+                    <MudItem>
+                    <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                   Color="@(context.Item.IsUrgent ? Color.Warning : Color.Error)"
+                                   OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
+                                   Size="Size.Small" />
+                        </MudItem>
+                </CellTemplate>
+            </TemplateColumn>
+        }
+                <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center;"
+                    CellClass="outlined-dialog-max-content" Groupable="true" Editable=false >
+                    <CellTemplate>
+                        @if (context.Item.IsUrgent == true)
+                        {
+                            <div class="d-flex gap-2 flex-row  justify-center align-center">
+                                @if(isAdminView)
+                                {
+                                <MudTextField T="string"
+                                              Value="context.Item.FormattedDueDate"
+                                              ReadOnly="true" Variant="Variant.Outlined"
+                                              Immediate="true" Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                              OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                </MudTextField>
+                                }
+                                else{
+                                    <MudTextField T="string"
+                                                  Value="context.Item.FormattedDueDate"
+                                                  ReadOnly="true" Variant="Variant.Outlined">
+                                    </MudTextField>
+                                }
+                                <MudTooltip Text="This is urgent." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
+                                    <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                                </MudTooltip>
+
+                            </div>
+                        }
+                        else
+                        {
+                                @if (isAdminView)
+                                {
+                                    <MudTextField T="string"
+                                                  Value="context.Item.FormattedDueDate"
+                                                  ReadOnly="true" Variant="Variant.Outlined"
+                                                  Immediate="true" Adornment="Adornment.End"
+                                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                    </MudTextField>
+                                }
+                                else
+                                {
+                                    <MudTextField T="string"
+                                                  Value="context.Item.FormattedDueDate"
+                                                  ReadOnly="true" Variant="Variant.Outlined">
+                                    </MudTextField>
+                                }
+                        }
+
+                    </CellTemplate>
                         <EditTemplate>
                             @if(@_isAdminView){
                             <MudDatePicker Label="Due Date"
@@ -424,7 +486,7 @@ else
             </EditTemplate>
             </PropertyColumn>
         @* Editors Info*@
-        @if (RoleBasedColumns[_currentRole].Contains("AdminBillableHoursView"))
+        @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
         {
             <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
@@ -975,7 +1037,6 @@ else
 
             };
             newProject.NotesForProject = project.NotesForProject;
-            newProject.Link = project.Link;
             newProject.ShootDate = project.ShootDate;
             newProject.DueDate = project.DueDate;
             newProject.ProgressBar = project.ProgressBar;
@@ -1489,6 +1550,26 @@ else
         StateHasChanged();
     }
 
+    private async Task ToggleUrgentVisibility(Project project)
+    {
+        try
+        {
+            var newValue = !project.IsUrgent;
+            project.IsUrgent = newValue;
+            await projectServices.UpdateProjectAsync(project);
+            if (newValue == true)
+            { Snackbar.Add($"Warning is visible now.", Severity.Success); }
+            else
+            {
+                Snackbar.Add($"Warning is hidden now.", Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to add warning!", Severity.Error);
+            Console.WriteLine($"Error updating warning urgent visibility: {ex.Message}");
+        }
+    }
     private async Task TogglePaymentVisibility(Project project)
     {
         try
