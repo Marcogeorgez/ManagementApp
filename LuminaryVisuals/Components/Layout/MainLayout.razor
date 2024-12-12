@@ -40,7 +40,10 @@
                 </MudHidden>
             }
 
-
+            <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+                <AntiforgeryToken />
+                <input type="hidden" name="ReturnUrl" value="" />
+            </form>
         <script>
             function submitForm(formId) {
                 document.getElementById(formId).submit();
