@@ -5,6 +5,11 @@
 @attribute [Authorize(Policy = "RequireGuestRole")]
 <PageTitle>Guest</PageTitle>
 
+@if (_loading)
+{
+    <SplashScreen />
+}
+
 <div class="d-flex justify-content-center align-items-center" style="width:inherit; height:inherit;justify-content:center;position: relative; overflow: hidden; color: white;">
     <video autoplay muted loop id="synchron" style="position: absolute; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -1;">
         <source src="synchron.mp4" type="video/mp4">
@@ -22,5 +27,18 @@
         <div class="mb-5">
             <a style="" href="mailto:management@luminaryvisuals.net" class="special-link">Contact Management: management@luminaryvisuals.net</a>
         </div>
+        <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="" />
+        </form>
     </div>
 </div>
+}
+@code
+{
+    private bool _loading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = false;
+    }
+}

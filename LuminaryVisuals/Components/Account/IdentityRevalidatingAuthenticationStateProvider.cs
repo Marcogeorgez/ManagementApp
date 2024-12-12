@@ -20,8 +20,7 @@ namespace LuminaryVisuals.Components.Account
             ILoggerFactory loggerFactory,
             SignInManager<ApplicationUser> _signInManager,
             IServiceScopeFactory scopeFactory,
-            NavigationManager navigationManager,
-            IHttpContextAccessor _httpContextAccessor,
+            IJSRuntime jsRuntime,
             IOptions<IdentityOptions> options)
 
         : RevalidatingServerAuthenticationStateProvider(loggerFactory)
@@ -55,7 +54,7 @@ namespace LuminaryVisuals.Components.Account
                 var userStamp = await userManager.GetSecurityStampAsync(user);
                 if (principalStamp != userStamp)
                 {
-                    await LogoutUser(principal);
+                    await LogoutUser();
                     return false;
 
                 }
@@ -63,13 +62,12 @@ namespace LuminaryVisuals.Components.Account
                 return principalStamp == userStamp;
             }
         }
-        private async Task LogoutUser(ClaimsPrincipal principal)
+        private async Task LogoutUser()
         {
             try
             {
 
-                // Optional: Redirect to login page
-                navigationManager.NavigateTo("/Logout", true);
+                await jsRuntime.InvokeVoidAsync("submitForm", "logoutForm");
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿using LuminaryVisuals.Data;
+﻿/*using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -15,4 +15,4 @@ public static class StartupExtensions
             })
             .RequireAuthorization();
     }
-}
+}*/
