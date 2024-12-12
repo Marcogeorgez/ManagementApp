@@ -562,14 +562,14 @@ public class ProjectService
                 // Billable hours are total logged hours for an editor
                 // Overtime is Billable hours (logged) - Project (Client) Total Billable hours
                 // FinalBillable hours = total project hours - overtime + adjusted hours
-                if (project.PrimaryEditor !=  null && project.PrimaryEditorDetails.BillableHours != null)
+                if (project.PrimaryEditor !=  null && project.PrimaryEditorDetails.BillableHours != null && project.ClientBillableHours != null)
                 {
                     project.PrimaryEditorDetails.Overtime = ( project.ClientBillableHours ?? 0 ) - ( project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
                     project.PrimaryEditorDetails.FinalBillableHours = project.PrimaryEditorDetails.BillableHours - (project.PrimaryEditorDetails.Overtime ?? 0) + (project.PrimaryEditorDetails.AdjustmentHours ?? 0);
                     project.PrimaryEditorDetails.PaymentAmount = ( project.PrimaryEditor.HourlyRate ?? 0 ) * ( project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
                     context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;
                 }
-                if (project.SecondaryEditor != null && project.SecondaryEditorDetails.BillableHours != null)
+                if (project.SecondaryEditor != null && project.SecondaryEditorDetails.BillableHours != null && project.ClientBillableHours != null)
                 {
                     project.SecondaryEditorDetails.Overtime = ( project.SecondaryEditorDetails.BillableHours ?? 0 ) -( project.ClientBillableHours ?? 0 ) ;
                     project.SecondaryEditorDetails.FinalBillableHours = project.SecondaryEditorDetails.BillableHours - ( project.SecondaryEditorDetails.Overtime ?? 0 ) + ( project.SecondaryEditorDetails.AdjustmentHours ?? 0 );

@@ -322,7 +322,6 @@
             newProject.CalculationDetails.Resolution = selectedMultipliers[2];
             newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
             newProject.ClientBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
-            newProject.CalculationDetails.CameraNumber = _cameraNum.ToString();
             MudDialog.Close(DialogResult.Ok(newProject)); 
         }
         else
