@@ -266,12 +266,12 @@ app.UseAuthorization();
 
 app.UseAntiforgery();
 
-app.UseEndpoints(
+/*app.UseEndpoints(
     endpoints =>
     {
         endpoints.MapAccountServices();
     }
-);
+);*/
 // Initialize roles
 using (var scope = app.Services.CreateScope())
 {

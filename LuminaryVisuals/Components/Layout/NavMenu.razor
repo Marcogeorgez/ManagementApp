@@ -52,16 +52,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
         </AuthorizeView>
                 <AuthorizeView>
-                    <Authorized>
-                
-                <MudNavLink OnClick="@LogoutClick" Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)" >
-                        Logout
-                    </MudNavLink>
-                    <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                    </form>
-                    </Authorized>
                     <NotAuthorized>
                 <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
                     <AntiforgeryToken />
@@ -187,10 +177,7 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
-    private async Task LogoutClick()
-    {
-        await JSRuntime.InvokeVoidAsync("submitForm", "logoutForm");
-    }
+
     private async Task LoginClick()
     {
         await JSRuntime.InvokeVoidAsync("submitForm", "GoogleLoginForm");

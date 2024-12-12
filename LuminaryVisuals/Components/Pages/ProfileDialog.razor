@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject UserManager<ApplicationUser> UserManager
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject UserManager<ApplicationUser> _userManager;
@@ -15,11 +16,11 @@
                     <MudText Typo="Typo.h5">Profile Settings</MudText>
                                         </MudItem>
         <MudGrid Class="d-flex flex-row px-10 my-1" Justify="Justify.Center" Spacing="6">
-                <MudItem xs="6">
+                <MudItem xs="12" sm="6">
                     <MudTextField T="string" Label="Current Username" @bind-Value="@userName"
                         ReadOnly="true" Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="6">
+                <MudItem xs="12" sm="6">
                     <MudTextField T="string" Label="New Username" @bind-Value="model.NewUsername"
                         Required="true" RequiredError="New username is required!" 
                         Validation="@(new Func<string, IEnumerable<string>>(ValidateUsername))"
@@ -40,13 +41,13 @@
         </MudButton>
         </MudForm>
 
-        <MudGrid Class="d-flex flex-row px-10 my-5" Justify="Justify.Center" Spacing="6">
+        <MudGrid Class="d-flex flex-row px-10 my-3" Justify="Justify.Center" Spacing="6">
             <MudItem xs=12>
                 <MudText Typo="Typo.h5" Class="mt-8 pl-5">Revoke Login From All Devices</MudText>
             </MudItem>
             <MudItem xs="12" Class="flex-row-reverse d-flex ">
-                <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Outlined"
-                Class="ml-auto">Revoke</MudButton></MudItem>
+                <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Filled"
+                Class="ml-auto px-10 py-2">Revoke</MudButton></MudItem>
         </MudGrid>
         @if (userRole == "Client")
         {
@@ -59,10 +60,20 @@
                 <ClientEditingGuidelinesComponent userId="@userId"/>
             }
         }
+        <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="" />
+        </form>
     </DialogContent>
 
     <DialogActions>
-        <MudButton Class="mr-5 px-5" OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
+        <div class="d-flex mb-5 flex-auto" style="max-width:100%;">
+        <MudButton StartIcon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Tertiary" 
+        Class="ml-5 px-5" OnClick="@LogoutClick" Color="Color.Warning" Variant="Variant.Filled" 
+        Size="Size.Medium">Log out</MudButton>
+        <MudSpacer/>
+        <MudButton Class="mr-5 px-10" OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Medium">Close</MudButton>
+        </div>
     </DialogActions>
 
 </MudDialog>
@@ -174,5 +185,10 @@
     private void RevokeLogin()
     {
         _userManager.UpdateSecurityStampAsync(user);
+    }
+
+    private async Task LogoutClick()
+    {
+        await JSRuntime.InvokeVoidAsync("submitForm", "logoutForm");
     }
 }
