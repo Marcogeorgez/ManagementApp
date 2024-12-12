@@ -1,8 +1,15 @@
 using LuminaryVisuals.Data.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
+using System.Net.Http;
 using System.Security.Claims;
 
 namespace LuminaryVisuals.Components.Account
@@ -11,8 +18,12 @@ namespace LuminaryVisuals.Components.Account
     // every 5 seconds an interactive circuit is connected.
     internal sealed class IdentityRevalidatingAuthenticationStateProvider(
             ILoggerFactory loggerFactory,
+            SignInManager<ApplicationUser> _signInManager,
             IServiceScopeFactory scopeFactory,
+            NavigationManager navigationManager,
+            IHttpContextAccessor _httpContextAccessor,
             IOptions<IdentityOptions> options)
+
         : RevalidatingServerAuthenticationStateProvider(loggerFactory)
     {
         protected override TimeSpan RevalidationInterval => TimeSpan.FromSeconds(5);
@@ -35,13 +46,34 @@ namespace LuminaryVisuals.Components.Account
             }
             else if (!userManager.SupportsUserSecurityStamp)
             {
+
                 return true;
             }
             else
             {
                 var principalStamp = principal.FindFirstValue(options.Value.ClaimsIdentity.SecurityStampClaimType);
                 var userStamp = await userManager.GetSecurityStampAsync(user);
+                if (principalStamp != userStamp)
+                {
+                    await LogoutUser(principal);
+                    return false;
+
+                }
+
                 return principalStamp == userStamp;
+            }
+        }
+        private async Task LogoutUser(ClaimsPrincipal principal)
+        {
+            try
+            {
+
+                // Optional: Redirect to login page
+                navigationManager.NavigateTo("/Logout", true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Logout error: {ex.Message}");
             }
         }
     }
