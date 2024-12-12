@@ -78,9 +78,19 @@ public class Project
 
 
     // Billable hours, overtime, and payment details for both editors
-    public EditorDetails PrimaryEditorDetails { get; set; } = new EditorDetails();
-    public EditorDetails SecondaryEditorDetails { get; set; } = new EditorDetails();
+    private EditorDetails _primaryEditorDetails;
+    public EditorDetails PrimaryEditorDetails
+    {
+        get => _primaryEditorDetails ??= new EditorDetails();
+        set => _primaryEditorDetails = value;
+    }
 
+    private EditorDetails _secondaryEditorDetails;
+    public EditorDetails SecondaryEditorDetails
+    {
+        get => _secondaryEditorDetails ??= new EditorDetails();
+        set => _secondaryEditorDetails = value;
+    }
     [Required]
     public bool IsArchived { get; set; } = false;
 
