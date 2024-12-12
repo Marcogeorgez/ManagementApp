@@ -5,6 +5,7 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -52,8 +53,6 @@ builder.Services.AddMudServices(config =>
         config.SnackbarConfiguration.PreventDuplicates = false;
         config.SnackbarConfiguration.NewestOnTop = false;
         config.SnackbarConfiguration.ShowCloseIcon = true;
-
-        config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
         config.SnackbarConfiguration.VisibleStateDuration = 10000;
         config.SnackbarConfiguration.HideTransitionDuration = 500;
         config.SnackbarConfiguration.ShowTransitionDuration = 500;
@@ -79,7 +78,6 @@ builder.Services.AddScoped<SettingService>();
 builder.Services.AddScoped<ChatService>();
 
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
-
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
@@ -103,9 +101,33 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 })
 .AddCookie(options =>
 {
-    options.LoginPath = "/";
+    options.LogoutPath = "/";
     options.LogoutPath = "/Account/Logout";
-    options.SlidingExpiration = true; 
+    options.AccessDeniedPath = "/AccessDenied";
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            context.Response.Redirect("/");
+            return Task.CompletedTask;
+        },
+        // Add an explicit sign-out event
+        OnSigningOut = context =>
+        {
+            // Explicitly delete the authentication cookie
+            context.CookieOptions.Expires = DateTime.UtcNow.AddDays(-1);
+            context.HttpContext.Response.Cookies.Delete(CookieAuthenticationDefaults.AuthenticationScheme);
+            context.HttpContext.Response.Cookies.Delete(".AspNetCore.Identity.Application"); // Explicit cookie name
+            context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Task.CompletedTask;
+        }
+    };
+
 });
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
@@ -161,14 +183,15 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireEditorRole", policy => policy.RequireRole("Editor"));
     options.AddPolicy("RequireClientRole", policy => policy.RequireRole("Client"));
     options.AddPolicy("RequireGuestRole", policy => policy.RequireRole("Guest"));
+    options.AddPolicy("AuthenticatedAccess", policy => policy.RequireAuthenticatedUser());
 });
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery(options =>
-    {
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    });
+{
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = "/AccessDenied";
@@ -237,12 +260,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAntiforgery();
 
-
+app.UseEndpoints(
+    endpoints =>
+    {
+        endpoints.MapAccountServices();
+    }
+);
 // Initialize roles
 using (var scope = app.Services.CreateScope())
 {
@@ -253,4 +282,5 @@ using (var scope = app.Services.CreateScope())
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
+
 app.Run();
