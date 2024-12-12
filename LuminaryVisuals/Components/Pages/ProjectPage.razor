@@ -606,7 +606,15 @@ else
                                 Archive
                             </MudButton>
                         }
-                    </MudStack>
+                        <MudButton Color="Color.Info"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="@(() => Duplicate(context.Item))"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   Class="mb-1">
+                            Duplicate
+                        </MudButton>
+                        </MudStack>
 
                         @if(_isAdminView || _isEditorView)
                         {
@@ -628,6 +636,7 @@ else
                             Logging
                         </MudButton>
                         </MudStack>
+
                         }
 
                 </CellTemplate>
@@ -768,11 +777,11 @@ else
     }    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-            if (firstRender)
-            {
-                var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
-            }
+        if (firstRender)
+        {
+            var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         }
+    }
 
     private async Task HandleProjectsUpdated()
     {
@@ -944,6 +953,48 @@ else
             }
         }
     }
+    public async Task Duplicate(Project project)
+    {
+        try
+        {
+            var newProject = new Project();
+            newProject.ClientId = project.ClientId;
+            newProject.PrimaryEditorId = project.PrimaryEditorId;
+            newProject.SecondaryEditorId = project.SecondaryEditorId;
+            newProject.ProjectName = project.ProjectName + "- Copy ";
+            newProject.FootageLink = project.FootageLink;
+            newProject.Deliverables = project.Deliverables;
+            newProject.Description = project.Description;
+            newProject.MusicPreference = project.MusicPreference;
+            newProject.ProjectSpecifications = project.ProjectSpecifications;
+            {
+                newProject.ProjectSpecifications.ColorProfile = project.ProjectSpecifications.ColorProfile;
+                newProject.ProjectSpecifications.CameraNumber = project.ProjectSpecifications.CameraNumber;
+                newProject.ProjectSpecifications.Resolution = project.ProjectSpecifications.Resolution;
+                newProject.ProjectSpecifications.Size = project.ProjectSpecifications.Size;
+
+            };
+            newProject.NotesForProject = project.NotesForProject;
+            newProject.Link = project.Link;
+            newProject.ShootDate = project.ShootDate;
+            newProject.DueDate = project.DueDate;
+            newProject.ProgressBar = project.ProgressBar;
+            await projectServices.AddProjectAsync(newProject);
+            await LoadProjects();
+            Snackbar.Add("Successfully duplicated this project!", Severity.Success);
+
+
+        }
+        catch (Exception ex)
+        {
+
+            Snackbar.Add("Failed to duplicate this project !", Severity.Error);
+            throw ex;
+
+        }
+
+    }
+
     private async Task UnarchiveProject(Project project)
     {
         if (await ConfirmationService.Confirm($"Are you sure you'd like to unarchive this project {project.ProjectName}?"))
