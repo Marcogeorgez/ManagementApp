@@ -82,24 +82,35 @@ public class ProjectService
             .ToListAsync();
         }
     }
-    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string UserId)
+    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var project = await context.Projects
-            .Where(p => p.IsArchived == isArchived && (p.PrimaryEditorId == UserId || p.SecondaryEditorId == UserId))
+            var projects = await context.Projects
+                .Where(p => p.IsArchived == isArchived &&
+                            ( p.PrimaryEditorId == userId || p.SecondaryEditorId == userId ))
                 .Include(p => p.Archive)
                 .Include(p => p.Client)
-                .Include(p => p.PrimaryEditor)
-                .Include(p => p.SecondaryEditor)
                 .Include(p => p.Revisions)
-            .ToListAsync();
-            if (project == null)
-                return null;
+                .ToListAsync();
 
-            return project;
+            // Include PrimaryEditor only if the user is the primary editor
+            foreach (var project in projects)
+            {
+                if (project.PrimaryEditorId != userId)
+                {
+                    project.PrimaryEditorDetails = null;
+                }
+
+                if (project.SecondaryEditorId != userId)
+                {
+                    project.SecondaryEditorDetails = null;
+                }
+            }
+            return projects;
         }
     }
+
     public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId)
     {
         using (var context = _contextFactory.CreateDbContext())
