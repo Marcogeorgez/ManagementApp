@@ -60,14 +60,6 @@ public class ProjectService
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                     ? userNames[project.SecondaryEditorId]!
                     : "No Editor Assigned";
-                if (project.ClientBillableHours != null && project.Client.HourlyRate != null && project.PrimaryEditor != null)
-                {
-                    project.PrimaryEditorDetails.FinalBillableHours = project.PrimaryEditorDetails.BillableHours + project.PrimaryEditorDetails.AdjustmentHours;
-                    project.PrimaryEditorDetails.Overtime = (project.ClientBillableHours ?? 0)- (project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
-                    project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
-                    project.PrimaryEditorDetails.PaymentAmount = (project.PrimaryEditor.HourlyRate ?? 0) * (project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
-                }
-
             }
             await context.SaveChangesAsync();
             return projects;
@@ -333,7 +325,7 @@ public class ProjectService
                 }
                 context.Projects.Update(_project);
                 await context.SaveChangesAsync();
-        await _broadcaster.NotifyAllAsync();
+                await _broadcaster.NotifyAllAsync();
             }
             else
             {
@@ -543,6 +535,59 @@ public class ProjectService
         // Check if new order is within valid range
         if (newOrder < 1 || newOrder > projects.Count)
             throw new InvalidProjectOrderException($"Invalid order. Must be between 1 and {projects.Count}.");
+    }
+    public async Task CalculateProjectFinalPrice(Project _project)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+
+                var project = await context.Projects
+                    .AsTracking()
+                    .Where(p => p.ProjectId == _project.ProjectId)
+                    .Include(p => p.Client)
+                    .Include(p => p.PrimaryEditor) 
+                    .Include(p => p.SecondaryEditor)
+                    .Include(p => p.PrimaryEditorDetails)  // Explicitly include related entities
+                    .Include(p => p.SecondaryEditorDetails)
+                    .FirstOrDefaultAsync(p => p.ProjectId == _project.ProjectId);
+
+                if (project.ClientBillableHours != null && project.Client.HourlyRate != null)
+                {
+
+                project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
+                }
+                // Billable hours are total logged hours for an editor
+                // Overtime is Billable hours (logged) - Project (Client) Total Billable hours
+                // FinalBillable hours = total project hours - overtime + adjusted hours
+                if (project.PrimaryEditor !=  null && project.PrimaryEditorDetails.BillableHours != null)
+                {
+                    project.PrimaryEditorDetails.Overtime = ( project.ClientBillableHours ?? 0 ) - ( project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
+                    project.PrimaryEditorDetails.FinalBillableHours = project.PrimaryEditorDetails.BillableHours - (project.PrimaryEditorDetails.Overtime ?? 0) + (project.PrimaryEditorDetails.AdjustmentHours ?? 0);
+                    project.PrimaryEditorDetails.PaymentAmount = ( project.PrimaryEditor.HourlyRate ?? 0 ) * ( project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
+                    context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;
+                }
+                if (project.SecondaryEditor != null && project.SecondaryEditorDetails.BillableHours != null)
+                {
+                    project.SecondaryEditorDetails.Overtime = ( project.SecondaryEditorDetails.BillableHours ?? 0 ) -( project.ClientBillableHours ?? 0 ) ;
+                    project.SecondaryEditorDetails.FinalBillableHours = project.SecondaryEditorDetails.BillableHours - ( project.SecondaryEditorDetails.Overtime ?? 0 ) + ( project.SecondaryEditorDetails.AdjustmentHours ?? 0 );
+                    project.SecondaryEditorDetails.PaymentAmount = ( project.SecondaryEditor.HourlyRate ?? 0 ) * ( project.SecondaryEditorDetails.FinalBillableHours ?? 0 );
+                    context.Entry(project.SecondaryEditorDetails).State = EntityState.Modified;
+                }
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                await _broadcaster.NotifyAllAsync();
+
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Bug in calculating total project price in {nameof(CalculateProjectFinalPrice)}: \n\n {ex} ");
+            }
+        }
     }
 
 }

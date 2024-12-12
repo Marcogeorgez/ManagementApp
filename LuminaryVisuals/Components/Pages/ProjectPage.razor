@@ -1131,11 +1131,14 @@ else
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
-            var _project = (Project) result.Data!;
+            var _project = result.Data! as Project;
             if (_project != null)
             {
+
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
-                Snackbar.Add($"Successfully updated the billable hours to {_project.ClientBillableHours} of project", Severity.Info);
+                await projectServices.CalculateProjectFinalPrice(_project);
+
+                Snackbar.Add("Successfully updated calculations of project", Severity.Info);
                 await LoadProjects();
             }
         }
