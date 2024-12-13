@@ -1,8 +1,15 @@
 using LuminaryVisuals.Data.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 
@@ -10,10 +17,10 @@ namespace LuminaryVisuals.Components.Account
 {
     internal sealed class IdentityRevalidatingAuthenticationStateProvider(
             ILoggerFactory loggerFactory,
+            SignInManager<ApplicationUser> _signInManager,
             IServiceScopeFactory scopeFactory,
-            IOptions<IdentityOptions> options,
-            DeviceSessionService deviceSessionService,
-            IHttpContextAccessor httpContextAccessor)
+            IJSRuntime jsRuntime,
+            IOptions<IdentityOptions> options)
         : RevalidatingServerAuthenticationStateProvider(loggerFactory)
     {
         private readonly DeviceSessionService _deviceSessionService = deviceSessionService;
@@ -39,12 +46,20 @@ namespace LuminaryVisuals.Components.Account
             }
             else if (!userManager.SupportsUserSecurityStamp)
             {
+
                 return true;
             }
             else
             {
                 var principalStamp = principal.FindFirstValue(options.Value.ClaimsIdentity.SecurityStampClaimType);
                 var userStamp = await userManager.GetSecurityStampAsync(user);
+                if (principalStamp != userStamp)
+                {
+                    await LogoutUser();
+                    return false;
+
+                }
+
                 return principalStamp == userStamp;
             }
         }
@@ -136,6 +151,18 @@ namespace LuminaryVisuals.Components.Account
             if (userAgent.Contains("ios"))
                 return "iOS";
             return "Unknown";
+        }
+        private async Task LogoutUser()
+        {
+            try
+            {
+
+                await jsRuntime.InvokeVoidAsync("submitForm", "logoutForm");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Logout error: {ex.Message}");
+            }
         }
     }
 }

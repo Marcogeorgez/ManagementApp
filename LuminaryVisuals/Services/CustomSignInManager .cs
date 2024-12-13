@@ -112,7 +112,7 @@ namespace LuminaryVisuals.Services
                             {
                                 // Assign Guest role only for new users
                                 await UserManager.AddToRoleAsync(user, "Guest");
-
+                                
                                 // Sign in the new user
                                 await SignInAsync(user, isPersistent);
                                 return SignInResult.Success;

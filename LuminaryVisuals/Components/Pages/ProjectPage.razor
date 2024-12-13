@@ -11,6 +11,7 @@
 @implements IDisposable
 
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
+<PageTitle>Projects</PageTitle>
 
 @if (_loading)
 {
@@ -106,21 +107,24 @@ else
                       string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
                         {
                             <div class="d-flex gap-2 flex-row  justify-center align-center">
+                                <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
+                                    <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                                </MudTooltip>
                     <MudTextField T="string" 
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true" Variant="Variant.Outlined"
-                                  Immediate="true" Adornment="Adornment.End" 
-                                              AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                  Immediate="true" Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                     </MudTextField>
-                                <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
-                            <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
-                        </MudTooltip>
+                              
+                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item.ProjectId))" StartIcon="@Icons.Material.Filled.Chat" Size="Size.Small"/>
 
                             </div>
                 }
                 else
-                {
+                {                            <div class="d-flex gap-2 flex-row  justify-center align-center">
+
                     <MudTextField T="string"
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true"
@@ -128,6 +132,10 @@ else
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                     </MudTextField>
+                    <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item.ProjectId))" StartIcon="@Icons.Material.Filled.Chat"  Size="Size.Small"/>
+
+                            </div>
+
                 }
 
             </CellTemplate>
@@ -290,8 +298,70 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
         {
-            <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center;"
-                Groupable="true" Editable=false >
+            
+            if(_isAdminView)
+            {
+            <TemplateColumn T="Project" Title="Add Warning" Sortable="false" Filterable="false" Groupable=false Hideable="true">
+                <CellTemplate>
+                    <MudItem Class="d-flex justify-center">
+                    <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                   Color="@(context.Item.IsUrgent ? Color.Warning : Color.Tertiary)"
+                                   OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
+                                   Size="Size.Small" />
+                        </MudItem>
+                </CellTemplate>
+            </TemplateColumn>
+        }
+                <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center;"
+                    CellClass="outlined-dialog-max-content" Groupable="true" Editable=false >
+                    <CellTemplate>
+                        @if (context.Item.IsUrgent == true)
+                        {
+                            <div class="d-flex gap-2 flex-row  justify-center align-center">
+                                @if(isAdminView)
+                                {
+                                <MudTextField T="string"
+                                              Value="context.Item.FormattedDueDate"
+                                              ReadOnly="true" Variant="Variant.Outlined"
+                                              Immediate="true" Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                              OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                </MudTextField>
+                                }
+                                else{
+                                    <MudTextField T="string"
+                                                  Value="context.Item.FormattedDueDate"
+                                                  ReadOnly="true" Variant="Variant.Outlined">
+                                    </MudTextField>
+                                }
+                                <MudTooltip Text="This is urgent." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
+                                    <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                                </MudTooltip>
+
+                            </div>
+                        }
+                        else
+                        {
+                                @if (isAdminView)
+                                {
+                                    <MudTextField T="string"
+                                                  Value="context.Item.FormattedDueDate"
+                                                  ReadOnly="true" Variant="Variant.Outlined"
+                                                  Immediate="true" Adornment="Adornment.End"
+                                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                    </MudTextField>
+                                }
+                                else
+                                {
+                                    <MudTextField T="string"
+                                                  Value="context.Item.FormattedDueDate"
+                                                  ReadOnly="true" Variant="Variant.Outlined">
+                                    </MudTextField>
+                                }
+                        }
+
+                    </CellTemplate>
                         <EditTemplate>
                             @if(@_isAdminView){
                             <MudDatePicker Label="Due Date"
@@ -423,7 +493,7 @@ else
             </EditTemplate>
             </PropertyColumn>
         @* Editors Info*@
-        @if (RoleBasedColumns[_currentRole].Contains("AdminBillableHoursView"))
+        @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
         {
             <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
@@ -605,7 +675,15 @@ else
                                 Archive
                             </MudButton>
                         }
-                    </MudStack>
+                        <MudButton Color="Color.Info"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="@(() => Duplicate(context.Item))"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   Class="mb-1">
+                            Duplicate
+                        </MudButton>
+                        </MudStack>
 
                         @if(_isAdminView || _isEditorView)
                         {
@@ -627,6 +705,7 @@ else
                             Logging
                         </MudButton>
                         </MudStack>
+
                         }
 
                 </CellTemplate>
@@ -706,9 +785,9 @@ else
     bool _loading = true;
     [CascadingParameter]
     public ClaimsPrincipal? currentUser { get; set; }
-    private MudDataGrid<Project> _dataGrid;
-    private IEnumerable<Project> projects = new List<Project>();
-    private Project projectToDelete;
+    private MudDataGrid<Project> _dataGrid = new();
+    private IEnumerable<Project?> projects = new List<Project?>();
+    private Project? projectToDelete;
     private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = false };
     private bool _isArchived;
     private bool _isAdminView;
@@ -767,11 +846,11 @@ else
     }    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-            if (firstRender)
-            {
-                var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
-            }
+        if (firstRender)
+        {
+            var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         }
+    }
 
     private async Task HandleProjectsUpdated()
     {
@@ -833,6 +912,27 @@ else
         _isArchived = !_isArchived;
         await LoadProjects();
     }
+    private async Task OpenProjectChat(int projectId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ProjectId", projectId },
+            { "UserId", _currentUserId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , _isEditorView },
+            { "isClientView" , _isClientView },
+            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
+
+        };
+
+        var options = new DialogOptions
+            {
+                Position = DialogPosition.BottomRight,
+                NoHeader = true
+            };
+        await DialogService.ShowAsync<Chats.ProjectChatDialog>("", parameters, options);
+    }
+
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
@@ -844,7 +944,7 @@ else
         }
         // for client view which will fetch his own projects only)
         else if (_isClientView && isAdminView == false)
-            LoadProjectsForClient();
+            await LoadProjectsForClient();
         // this is for the admin to see all the projects but from the client view
         else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
         {
@@ -853,7 +953,7 @@ else
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
         }
         else if (_isEditorView && isAdminView == false)
-            LoadProjectsForEditors();
+            await LoadProjectsForEditors();
         StateHasChanged();
     }
     // Loading Projects for Editors View
@@ -883,9 +983,9 @@ else
 
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", dialogParameters,options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var newProject = (Project) result.Data;
+            var newProject = (Project) result.Data!;
             newProject.ClientId = _currentUserId;
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
@@ -903,9 +1003,9 @@ else
         };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Create New Project", dialogParameters, options);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var newProject = (Project) result.Data;
+            var newProject = (Project) result.Data!;
             newProject.WorkingMonth = DateTime.Today;
             newProject.ClientId = _currentUserId;
             await projectServices.AddProjectAsync(newProject);
@@ -932,17 +1032,58 @@ else
         var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
         var dialog = await DialogService.ShowAsync<ArchivingDialog>("Archive Project", dialogParameters);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var archivedProject = (string)result.Data;
+            var archivedProject = (string) result.Data!;
             if(archivedProject != null)
             {
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null, false);
-                LoadProjects();
+                await LoadProjects();
             }
         }
     }
+    public async Task Duplicate(Project project)
+    {
+        try
+        {
+            var newProject = new Project();
+            newProject.ClientId = project.ClientId;
+            newProject.PrimaryEditorId = project.PrimaryEditorId;
+            newProject.SecondaryEditorId = project.SecondaryEditorId;
+            newProject.ProjectName = project.ProjectName + "- Copy ";
+            newProject.FootageLink = project.FootageLink;
+            newProject.Deliverables = project.Deliverables;
+            newProject.Description = project.Description;
+            newProject.MusicPreference = project.MusicPreference;
+            newProject.ProjectSpecifications = project.ProjectSpecifications;
+            {
+                newProject.ProjectSpecifications.ColorProfile = project.ProjectSpecifications.ColorProfile;
+                newProject.ProjectSpecifications.CameraNumber = project.ProjectSpecifications.CameraNumber;
+                newProject.ProjectSpecifications.Resolution = project.ProjectSpecifications.Resolution;
+                newProject.ProjectSpecifications.Size = project.ProjectSpecifications.Size;
+
+            };
+            newProject.NotesForProject = project.NotesForProject;
+            newProject.ShootDate = project.ShootDate;
+            newProject.DueDate = project.DueDate;
+            newProject.ProgressBar = project.ProgressBar;
+            await projectServices.AddProjectAsync(newProject);
+            await LoadProjects();
+            Snackbar.Add("Successfully duplicated this project!", Severity.Success);
+
+
+        }
+        catch (Exception ex)
+        {
+
+            Snackbar.Add("Failed to duplicate this project !", Severity.Error);
+            throw ex;
+
+        }
+
+    }
+
     private async Task UnarchiveProject(Project project)
     {
         if (await ConfirmationService.Confirm($"Are you sure you'd like to unarchive this project {project.ProjectName}?"))
@@ -953,7 +1094,7 @@ else
 
     }
     // Opens Description Dialog
-    private async void OpenDescriptionDialog(Project context)
+    private void OpenDescriptionDialog(Project context)
     {
         var parameters = new DialogParameters
         {
@@ -977,7 +1118,7 @@ else
             await projectServices.UpdateProjectAsync(project);
         }
     }
-    private async void OpenViewClientEditingGuidelinesComponent(Project context)
+    private void OpenViewClientEditingGuidelinesComponent(Project context)
     {
         var parameters = new DialogParameters
         {
@@ -997,10 +1138,10 @@ else
         var options = new DialogOptions { FullScreen = true };
         var dialog = await DialogService.ShowAsync<PrivateNoteForProjectComponent>("Private Notes", parameters, options);
         var result = await dialog.Result;
-        if(!result.Canceled)
+        if(!result!.Canceled)
         {
-            var project = (Project) result.Data;
-            await projectServices.UpdateProjectAsync(project);
+            var project = (Project) result.Data!;
+            await projectServices.UpdateProjectAsync(project!);
             Snackbar.Add($"Successfully updated the project notes", Severity.Info);
             await LoadProjects();
         }
@@ -1016,13 +1157,16 @@ else
         };
         var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters);
         var result = await dialog.Result;
-        if (!result.Canceled)
+        if (!result!.Canceled)
         {
-            var _project = (Project) result.Data;
+            var _project = result.Data! as Project;
             if (_project != null)
             {
+
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
-                Snackbar.Add($"Successfully updated the billable hours to {_project.ClientBillableHours} of project", Severity.Info);
+                await projectServices.CalculateProjectFinalPrice(_project);
+
+                Snackbar.Add("Successfully updated calculations of project", Severity.Info);
                 await LoadProjects();
             }
         }
@@ -1032,7 +1176,8 @@ else
     {
         var dialogParameters = new DialogParameters<LoggingDialog> {
             { nameof(LoggingDialog.currentProject), project },
-            { "CurrentUserId", currentUserId}
+            { "CurrentUserId", currentUserId},
+            { "isAdmin", isAdminView}
         };
         var dialog = await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
         var result = await dialog.Result;
@@ -1063,7 +1208,7 @@ else
         return true;
     }
 
-    Project beforeModification;
+    Project beforeModification = new Project();
     void StartedEditingItem(Project project)
     {
         beforeModification = JsonSerializer.Deserialize<Project>(
@@ -1104,7 +1249,7 @@ else
                 await projectServices.UpdateProjectAsync(project);
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
-                    await LoadProjects();
+                await LoadProjects();
                 StateHasChanged();
             }
             else
@@ -1196,9 +1341,13 @@ else
         {
             if (await ConfirmationService.Confirm("Do you want to download the All Projects as CSV file?"))
             {
-                var csvContent = ConvertProjectsToCsv(projects.ToList());
-                var filename = $"All_Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
-                await DownloadFile(filename, csvContent);
+                if (projects.Any())
+                {
+                    var nonNullProjects = projects.Where(p => p != null).Cast<Project>().ToList(); // Remove null warning
+                    var csvContent = ConvertProjectsToCsv(nonNullProjects);
+                    var filename = $"All_Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
+                    await DownloadFile(filename, csvContent);
+                }
             }
         }
         catch (Exception ex)
@@ -1236,7 +1385,7 @@ else
             var primaryEditorName = project.PrimaryEditor?.UserName ?? "N/A";
             var secondaryEditorName = project.SecondaryEditor?.UserName ?? "N/A";
             // Remove HTML tags from the Description
-            var descriptionWithoutHtml = System.Text.RegularExpressions.Regex.Replace(project.Description, "<.*?>", String.Empty); // Removes HTML tags
+            var descriptionWithoutHtml = project.Description != null ? System.Text.RegularExpressions.Regex.Replace(project.Description, "<.*?>", String.Empty) : String.Empty; // Removes HTML tags
             descriptionWithoutHtml = FormatStringToCsv(descriptionWithoutHtml);
 
             // Retrieve the Billable Hours and Payment Amounts for Client and Editors
@@ -1325,8 +1474,8 @@ else
 
     // DRAGGING FUNCTIONALITIES 
     private List<Project> _Projects { get; set; } = new();
-    private Project draggedProject;
-    private Project dropTarget;
+    private Project? draggedProject;
+    private Project? dropTarget;
     private bool isDragging;
 
 
@@ -1368,7 +1517,7 @@ else
 
     private void HandleDragLeave(Project target)
     {
-        if (dropTarget?.ProjectId == target.ProjectId)
+        if (target != null && dropTarget?.ProjectId == target.ProjectId)
         {
             dropTarget = null;
             StateHasChanged();
@@ -1437,6 +1586,26 @@ else
         StateHasChanged();
     }
 
+    private async Task ToggleUrgentVisibility(Project project)
+    {
+        try
+        {
+            var newValue = !project.IsUrgent;
+            project.IsUrgent = newValue;
+            await projectServices.UpdateProjectAsync(project);
+            if (newValue == true)
+            { Snackbar.Add($"Warning is visible now.", Severity.Success); }
+            else
+            {
+                Snackbar.Add($"Warning is hidden now.", Severity.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to add warning!", Severity.Error);
+            Console.WriteLine($"Error updating warning urgent visibility: {ex.Message}");
+        }
+    }
     private async Task TogglePaymentVisibility(Project project)
     {
         try
