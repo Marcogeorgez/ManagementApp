@@ -128,8 +128,9 @@
     </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" Class="py-2" OnClick="@Submit">Save Total Hours</MudButton>
+        <MudSpacer />
+        <MudButton Class="d-flex flex-auto" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Submit">Save Total Hours</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -147,6 +148,8 @@
     private decimal Misc;
     private decimal clientDiscount;
     private decimal _total;
+
+    private Project _originalProject;
 
     protected override async Task OnInitializedAsync()
     {
@@ -174,6 +177,8 @@
             newProject.CalculationDetails?.FootageQuality
                 ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 4)?.Options.FirstOrDefault()?.Multiplier
             };
+
+            _originalProject = CloneProject(newProject);
 
         }
     }
@@ -330,8 +335,66 @@
         }
     }
 
+    private Project CloneProject(Project project)
+    {
+        return new Project
+            {
+                CalculationDetails = new Models.ProjectCalculationDetails
+                {
+                    HighlightsDifficulty = project.CalculationDetails?.HighlightsDifficulty,
+                    PrePartsPrecentage = project.CalculationDetails?.PrePartsPrecentage,
+                    Resolution = project.CalculationDetails?.Resolution,
+                    FootageQuality = project.CalculationDetails?.FootageQuality,
+                    CameraNumber = project.CalculationDetails?.CameraNumber,
+                    FootageSize = project.CalculationDetails?.FootageSize,
+                    Misc = project.CalculationDetails?.Misc,
+                    PrePartsDuration = project.CalculationDetails?.PrePartsDuration,
+                    DocumentaryMulticameraDuration = project.CalculationDetails?.DocumentaryMulticameraDuration,
+                    DocumentaryMulticameraDurationHours = project.CalculationDetails?.DocumentaryMulticameraDurationHours,
+                    HighlightsDuration = project.CalculationDetails?.HighlightsDuration,
+                    SocialMediaDuration = project.CalculationDetails?.SocialMediaDuration,
+                    FinalProjectBillableHours = project.CalculationDetails?.FinalProjectBillableHours
+                },
+                ClientBillableHours = project.ClientBillableHours
+            };
+    }
+    private bool HasChanges()
+    {
+        return !Equals(_originalProject.CalculationDetails.HighlightsDifficulty, selectedMultipliers[0]) ||
+               !Equals(_originalProject.CalculationDetails.PrePartsPrecentage, selectedMultipliers[1]) ||
+               !Equals(_originalProject.CalculationDetails.Resolution, selectedMultipliers[2]) ||
+               !Equals(_originalProject.CalculationDetails.FootageQuality, selectedMultipliers[3]) ||
+               !Equals(_originalProject.CalculationDetails.CameraNumber, newProject.CalculationDetails.CameraNumber) ||
+               !Equals(_originalProject.CalculationDetails.FootageSize, newProject.CalculationDetails.FootageSize) ||
+               !Equals(_originalProject.CalculationDetails.Misc, newProject.CalculationDetails.Misc) ||
+               !Equals(_originalProject.CalculationDetails.PrePartsDuration, newProject.CalculationDetails.PrePartsDuration) ||
+               !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDuration, newProject.CalculationDetails.DocumentaryMulticameraDuration) ||
+               !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDurationHours, newProject.CalculationDetails.DocumentaryMulticameraDurationHours) ||
+               !Equals(_originalProject.CalculationDetails.HighlightsDuration, newProject.CalculationDetails.HighlightsDuration) ||
+               !Equals(_originalProject.CalculationDetails.SocialMediaDuration, newProject.CalculationDetails.SocialMediaDuration) ||
+               !Equals(_originalProject.CalculationDetails.FinalProjectBillableHours, newProject.CalculationDetails.FinalProjectBillableHours) ||
+               !Equals(_originalProject.ClientBillableHours, newProject.ClientBillableHours);
+    }
+    [Inject] private IDialogService DialogService { get; set; }
     private void Cancel()
     {
-        MudDialog.Cancel();
+        if (HasChanges() == true)
+        {
+            DialogService.ShowMessageBox(
+                "Unsaved Changes",
+                "You have unsaved changes. Are you sure you want to close?",
+                yesText: "Discard", cancelText: "Cancel")
+                .ContinueWith(t =>
+                        {
+            if (t.Result == true)
+            {
+                MudDialog.Cancel();
+            }
+            });
+        }
+        else
+        {
+            MudDialog.Cancel();
+        }
     }
 }
