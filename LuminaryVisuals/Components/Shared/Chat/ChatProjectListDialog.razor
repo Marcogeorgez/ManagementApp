@@ -13,7 +13,7 @@
     </MudPaper>
             @if (projects.Any())
             {
-                <div class="chat-panel" style="border:0px; height:inherit!important;padding: 1vw 2vw 0px 2vw;">
+                <div class="chat-panel" style="border:0px; min-height:60vw!important;padding: 1vw 2vw 0px 2vw;">
 
                 <MudList T="Project" Class="projects-list">
                     @foreach (var project in projects)
