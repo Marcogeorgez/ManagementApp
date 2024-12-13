@@ -1494,6 +1494,7 @@ else
 
     private void HandleDragStart(Project project)
     {
+        if (project == null) return;
         draggedProject = project;
         isDragging = true;
         StateHasChanged();
@@ -1501,12 +1502,16 @@ else
 
     private void HandleDragOver(Project target)
     {
+        if (draggedProject == null || target == null)
+            return;
         if (draggedProject?.ProjectId == target.ProjectId)
             return;
     }
 
     private void HandleDragEnter(Project target)
     {
+        if (draggedProject == null || target == null)
+            return;
         if (draggedProject?.ProjectId != target.ProjectId)
         {
             dropTarget = target;
@@ -1516,6 +1521,8 @@ else
 
     private void HandleDragLeave(Project target)
     {
+        if (draggedProject == null || target == null)
+            return;
         if (target != null && dropTarget?.ProjectId == target.ProjectId)
         {
             dropTarget = null;
@@ -1527,7 +1534,10 @@ else
     {
         try
         {
-            if (draggedProject == null || draggedProject.ProjectId == targetProject.ProjectId)
+            if (draggedProject == null || targetProject == null)
+                return;
+
+            if (draggedProject.ProjectId == targetProject.ProjectId)
                 return;
 
             int? newOrder = targetProject.InternalOrder;
@@ -1546,7 +1556,7 @@ else
             isDragging = false;
             draggedProject = null;
             dropTarget = null;
-
+            ResetDragState();
             await RefreshGridData();
         }
     }
@@ -1554,7 +1564,10 @@ else
     {
         try
         {
-            if (draggedProject == null || draggedProject.ProjectId == targetProject.ProjectId)
+            if (draggedProject == null || targetProject == null)
+                return;
+
+            if (draggedProject.ProjectId == targetProject.ProjectId)
                 return;
 
             int? newOrder = targetProject.ExternalOrder;
@@ -1573,11 +1586,16 @@ else
             isDragging = false;
             draggedProject = null;
             dropTarget = null;
-
+            ResetDragState();
             await RefreshGridData();
         }
     }
-
+    private void ResetDragState()
+    {
+        isDragging = false;
+        draggedProject = null;
+        dropTarget = null;
+    }
     private async Task RefreshGridData()
     {
         projects = ( await projectServices.GetProjectsAsync() ).ToList();
