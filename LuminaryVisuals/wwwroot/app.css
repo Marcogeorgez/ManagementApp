@@ -282,7 +282,7 @@
 
 .projects-panel {
     width: 40vw;
-    height: 60vh;
+    min-height: 60vh;
     border-radius: 12px;
     padding: 20px;
     background-color: #1E1E1E;
@@ -473,7 +473,7 @@
 
 .chat-panel {
     width: 40vw;
-    height: 60vh;
+    min-height: 60vh;
     border-radius: 12px;
     background-color: #1E1E1E;
     color: #E0E0E0;
