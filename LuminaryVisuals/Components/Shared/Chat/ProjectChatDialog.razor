@@ -89,7 +89,7 @@
                 </div>
             </MudContainer>
             <MudPaper Class="chat-input-area" Elevation="0">
-                <MudTextField @bind-Value="newMessage" Placeholder="Type a message..." Variant="Variant.Outlined" Clearable=true
+                <MudTextField @bind-Value="newMessage" Placeholder="Type a message..." Variant="Variant.Outlined" Clearable=true DebounceInterval="5"
                 Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" TextUpdateSuppression="false" OnAdornmentClick="SendMessage"
                 AutoFocus="true" OnKeyDown="HandleKeyPress" /> 
             </MudPaper>
