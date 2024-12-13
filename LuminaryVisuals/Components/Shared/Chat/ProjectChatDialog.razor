@@ -89,9 +89,16 @@
                 </div>
             </MudContainer>
             <MudPaper Class="chat-input-area" Elevation="0">
-                <MudTextField @bind-Value="newMessage" Placeholder="Type a message..." Variant="Variant.Outlined" Clearable=true DebounceInterval="5"
-                Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Send" TextUpdateSuppression="false" OnAdornmentClick="SendMessage"
-                AutoFocus="true" OnKeyDown="HandleKeyPress" /> 
+
+            <MudTextField @bind-Value="newMessage"
+                          Placeholder="Type a message..."
+                          Variant="Variant.Outlined"
+                          Clearable="true" @ref="messageField"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@Icons.Material.Filled.Send"
+                          OnAdornmentClick="( () => SendMessage(newMessage) )" TextUpdateSuppression=false
+                          AutoFocus="true"
+                          OnKeyUp="HandleKeyPress" />
             </MudPaper>
     </MudPaper>
 </MudContainer>
@@ -110,6 +117,7 @@
     private string newMessage;
     private List<Message> messages = new List<Message>();
     private string lastUserId = null;
+    private MudTextField<string> messageField = default!;
     private int? HighlightedMessageId;
     private IDisposable _subscription;
     private const int PAGE_SIZE = 50; 
@@ -215,12 +223,12 @@
     {
         await ChatService.MarkMessagesAsReadAsync(ProjectId, UserId);
     }
-    private async Task SendMessage()
+    private async Task<bool> SendMessage(string newMessage)
     {
         if (string.IsNullOrWhiteSpace(newMessage))
         {
             Snackbar.Add("Message cannot be empty", Severity.Warning);
-            return;
+            return false;
         }
         try 
         {
@@ -228,10 +236,13 @@
             await MarkMessagesAsRead();
             await LoadMessages(initial: true);
             newMessage = string.Empty;
+            return true;
         }
         catch (Exception ex)
         {
             Snackbar.Add("Failed to send message", Severity.Error);
+            Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
+            return false;
         }
     }
 
@@ -256,7 +267,6 @@
         if (int.TryParse(messageIndexInView, out int messageIndex))
         {
             // Log the index for debugging purposes
-            Console.WriteLine($"Message index in view: {messageIndex}");
 
             // Check if the message index is below a threshold to load more messages
             if (messageIndex <= 10)
@@ -374,7 +384,15 @@
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage))
         {
-            await SendMessage();
+            var result = await SendMessage(newMessage);
+            if (result)
+            {
+                await messageField.BlurAsync();
+                await messageField.Clear();
+                // Should not be needed to call StateHasChanged from my testing
+                // StateHasChanged();
+                await messageField.FocusAsync();
+            }
         }
         if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
         {
