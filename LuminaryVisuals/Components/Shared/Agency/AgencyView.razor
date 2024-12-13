@@ -8,6 +8,14 @@
 <MudDialog>
     <DialogContent>
         <MudContainer Style="max-height: 500px; overflow-y: auto">
+            @if(AgencyUsers.Count() < 1)
+            {
+                <MudText Typo="Typo.h4" Class="mb-3">There are no users associated with this agency!</MudText>
+
+            }
+            else
+            {
+                
             <MudText Class="mb-3">Users Associated with the Agency:</MudText>
 
             <MudList T="ApplicationUser" Dense="true">
@@ -21,6 +29,8 @@
                     </MudListItem>
                 }
             </MudList>
+            }
+
         </MudContainer>
     </DialogContent>
     <DialogActions>
