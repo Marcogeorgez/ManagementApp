@@ -151,8 +151,9 @@
                 </MudItem>
 
                 <MudItem xs="12" Class="mb-3 pl-5 pr-5 ">
+                    
                     <MudText Typo="Typo.body1" Class="mb-2">Description:</MudText>
-                    <div class="border-solid border-2 @(_hasError ? "mud-input-error" : "")">
+                    <div class="border-solid border-2 @(_hasError ? "description-error" : "")">
                     <MudHtmlEditor Outlined="true"
                                    Text="Description" 
                                    Html="@newProject.Description"
