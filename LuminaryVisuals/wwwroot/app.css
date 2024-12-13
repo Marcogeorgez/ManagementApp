@@ -24,7 +24,7 @@
     color: var(--mud-palette-secondary)
 }
 
-.outlined-dialog-max-content , .mud-input-control {
+.outlined-dialog-max-content {
    min-width: max-content;
 }
 

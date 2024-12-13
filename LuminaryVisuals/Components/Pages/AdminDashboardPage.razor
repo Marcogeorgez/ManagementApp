@@ -82,11 +82,11 @@ else
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name" 
+            <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name"
                 CellClass="outlined-dialog-max-content" CellStyle="text-align: center" Editable=false>
             <CellTemplate>
             <MudTextField T="string"
-                          HelperText="Click to expand"
+                          HelperText="Click to expand" Class="outlined-dialog-max-content"
                           Value="context.Item.UserName"
                           ReadOnly="true"
                           Immediate="true" Adornment="Adornment.End"
