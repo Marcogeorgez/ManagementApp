@@ -384,15 +384,13 @@
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage))
         {
-            var result = await SendMessage(newMessage);
-            if (result)
-            {
                 await messageField.BlurAsync();
+                var result = await SendMessage(newMessage);
+
                 await messageField.Clear();
                 // Should not be needed to call StateHasChanged from my testing
                 // StateHasChanged();
                 await messageField.FocusAsync();
-            }
         }
         if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
         {
