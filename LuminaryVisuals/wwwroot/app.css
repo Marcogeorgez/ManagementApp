@@ -527,6 +527,7 @@ back-button {
     padding: 15px;
     flex-grow: 1;
     overflow-y: auto; /* This enables vertical scrolling */
+    overflow-x:hidden;
     padding: 15px;
     scrollbar-width: thin; /* For Firefox */
     scrollbar-color: #4DB6AC #2A2A2A; /* Thumb and track colors */
@@ -651,10 +652,10 @@ back-button {
     transition: all 0.3s ease;
 }
 
-    .special-link:hover {
-        color: #80CBC4;
-        text-decoration: underline;
-    }
+.special-link:hover {
+color: #80CBC4 !important;
+text-decoration: underline;
+}
 
 .approval-warning {
     color: #FFC107;
@@ -662,7 +663,7 @@ back-button {
 }
 
 .special-link {
-    color: #4DB6AC;
+    color: #4DB6AC !important;
 }
 
 .not-approved-message {
