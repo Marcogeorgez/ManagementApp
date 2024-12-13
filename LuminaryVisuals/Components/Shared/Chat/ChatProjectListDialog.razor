@@ -2,20 +2,23 @@
 @inject ChatService ChatService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+<MudContainer Class="chat-container">
+        <MudPaper Elevation="0" Class="chat-panel" style="border:0px; min-height:40vw;">
 
-    <MudPaper Elevation="3" Class="chat-header" Outlined="true">
-    <MudText Typo="Typo.h5" Class="projects-title">
-                <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
-    Projects Chats
+        <MudPaper Elevation="3" Class="chat-header" Outlined="true">
+        <MudText Typo="Typo.h5" Class="projects-title">
+            <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
+            Projects Chats
 
-    </MudText>
-    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
-    </MudPaper>
+        </MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
+        </MudPaper>
+
             @if (projects.Any())
             {
-                <div class="chat-panel" style="border:0px; min-height:60vw!important;padding: 1vw 2vw 0px 2vw;">
 
-                <MudList T="Project" Class="projects-list">
+
+                <MudList T="Project" Class="projects-list" Padding=true Gutters=true >
                     @foreach (var project in projects)
                     {
                         var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView) ? " unapproved-message" : "");
@@ -37,13 +40,16 @@
                         </MudListItem>
                     }
                 </MudList>
-                </div>
             }
             else
             {
                 <MudAlert Severity="Severity.Normal" Class="no-projects-alert">>No projects found.</MudAlert>
             }
-        
+
+    </MudPaper>
+
+</MudContainer>
+
 
 @code {
     [CascadingParameter]
