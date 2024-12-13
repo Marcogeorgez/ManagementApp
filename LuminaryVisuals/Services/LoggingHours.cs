@@ -81,7 +81,7 @@ namespace LuminaryVisuals.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating LoggingHours entry.");
-                return false;
+                throw;
             }
         }
 

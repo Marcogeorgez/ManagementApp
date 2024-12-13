@@ -1,5 +1,6 @@
 ﻿@inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ILogger<ViewTotalLogged> _logger
 @inject LoggingHours loggingHours
 
 <MudDialog>
@@ -17,6 +18,11 @@
                              CanceledEditingItem="@CanceledEditingItem"
                              CommittedItemChanges="@CommittedItemChanges">
                     <Columns>
+                        @if (isAdmin)
+                        {
+                            <PropertyColumn Property="x => x.User.UserName" Title="Editor Name" DragAndDropEnabled="false"
+                                Groupable="false" CellStyle="text-align:center;" />
+                        }
                         <PropertyColumn Property="x => x.FormattedDate" Title="Worked Date" DragAndDropEnabled="false" Groupable="false"  CellStyle="text-align:center;">
                             <EditTemplate>
                                 <MudDatePicker Label="Date"
@@ -53,12 +59,20 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project { get; set; } = new Project();
+    [Parameter] public bool isAdmin { get; set; } 
     [Parameter] public string currentUserId { get; set; }
     List<EditorLoggingHours> loggedHours = new();
     protected override async Task OnInitializedAsync()
     {
-        // Fetch the logged hours when the dialog is initialized.
-        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId,currentUserId);
+        if(!isAdmin)
+        {
+            // Fetch the logged hours when the dialog is initialized.
+            loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId,currentUserId);
+        }
+        else
+        {
+            loggedHours = await loggingHours.GetAllAsync(Project.ProjectId);
+        }
 
     }
     void StartedEditingItem(EditorLoggingHours editorLoggingHours)
@@ -70,9 +84,24 @@
     }
     private async Task CommittedItemChanges(EditorLoggingHours editorLoggingHours)
     {
-        await loggingHours.UpdateAsync(editorLoggingHours);
-        Snackbar.Add("It have been updated successfully.", Severity.Success);
-        loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId, currentUserId);
+        try
+        {            
+            await loggingHours.UpdateAsync(editorLoggingHours);
+            Snackbar.Add("It have been updated successfully.", Severity.Success);
+            loggedHours = await loggingHours.GetByIdAsync(Project.ProjectId, editorLoggingHours.UserId);
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message.Contains("10"))
+            {
+                Snackbar.Add("You can't register a value higher than 999, if this is an error please contact owner!", Severity.Warning);
+            }
+            else
+            {
+                Snackbar.Add("Sorry, We have failed to save it! There is an error.", Severity.Error);
+                _logger.LogCritical($"There is a bug in saving the logged hours to database, the bug is: {ex}");
+            }
+        }
     }
     private void Save()
     {

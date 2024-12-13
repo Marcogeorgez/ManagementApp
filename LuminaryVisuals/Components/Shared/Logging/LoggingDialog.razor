@@ -2,14 +2,17 @@
 
 <MudDialog>
     <DialogContent>
+         
             <MudStack Row="true" Spacing="4" Class="mb-4 ">
+            @if (!isAdmin)
+            {
                 <MudButton Style="min-width: 120px;" Class="rounded-pill"
                            Variant="Variant.Outlined"
                            Color="Color.Success"
                            OnClick="AddHours">
                     ADD HOURS
                 </MudButton>
-
+            }
                 <MudButton Style="min-width: 120px;" Class="rounded-pill"
                            Variant="Variant.Outlined"
                            Color="Color.Info"
@@ -28,13 +31,15 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project currentProject { get; set; } = new Project();
     [Parameter] public string currentUserId { get; set; }
+    [Parameter] public bool isAdmin { get; set; } 
 
     private void AddHours()
     {
         var parameters = new DialogParameters<Add>
         {
             { x => x.Project, currentProject },
-            { "currentUserId", currentUserId }
+            { "currentUserId", currentUserId },
+            { "isAdmin", isAdmin}
         };
 
         var options = new DialogOptions
@@ -53,7 +58,8 @@
         var parameters = new DialogParameters<ViewTotalLogged>
         {
             { x => x.Project, currentProject },
-            { "currentUserId", currentUserId }
+            { "currentUserId", currentUserId },
+            { "isAdmin" , isAdmin}
         };
 
         var options = new DialogOptions
