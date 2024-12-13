@@ -111,7 +111,7 @@ else
                                     <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
                                 </MudTooltip>
                     <MudTextField T="string" 
-                                  Value="context.Item.ProjectName"
+                                  Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
                                   ReadOnly="true" Variant="Variant.Outlined"
                                   Immediate="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
@@ -126,7 +126,7 @@ else
                 {                            <div class="d-flex gap-2 flex-row  justify-center align-center">
 
                     <MudTextField T="string"
-                                  Value="context.Item.ProjectName"
+                                              Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
                                   ReadOnly="true"
                                   Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
@@ -151,8 +151,8 @@ else
                                 Editable=false Required=false >
                 <CellTemplate>
                     <MudTextField T="string"
-                                  Value="context.Item.Client.UserName"
-                                  ReadOnly="true"
+                                  Value="context.Item.Client.UserName"  Class="outlined-dialog-max-content"
+                                  ReadOnly="true" 
                                   Immediate="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                                   AutoGrow=true Variant="Variant.Outlined"
@@ -167,9 +167,8 @@ else
 
                     @if (Clients != null && Clients.Any() && _isAdminView)
                     {
-                        <MudSelect T="string"
-                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                   Class="d-flex justify-center mud-width-full py-2"
+                        <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                    Class="d-flex justify-center mud-width-full py-2 outlined-dialog-max-content"
                                    Variant="Variant.Outlined"
                                    Label="Client Name"
                                    @bind-Value="context.Item.ClientId">
@@ -320,8 +319,8 @@ else
                             <div class="d-flex gap-2 flex-row  justify-center align-center">
                                 @if(isAdminView)
                                 {
-                                <MudTextField T="string"
-                                              Value="context.Item.FormattedDueDate"
+                                <MudTextField T="string" 
+                                              Value="context.Item.FormattedDueDate" Class="outlined-dialog-max-content"
                                               ReadOnly="true" Variant="Variant.Outlined"
                                               Immediate="true" Adornment="Adornment.End"
                                               AdornmentIcon="@Icons.Material.Filled.OpenInNew"
@@ -329,7 +328,7 @@ else
                                 </MudTextField>
                                 }
                                 else{
-                                    <MudTextField T="string"
+                                    <MudTextField T="string" Class="outlined-dialog-max-content"
                                                   Value="context.Item.FormattedDueDate"
                                                   ReadOnly="true" Variant="Variant.Outlined">
                                     </MudTextField>
@@ -344,7 +343,7 @@ else
                         {
                                 @if (isAdminView)
                                 {
-                                    <MudTextField T="string"
+                                    <MudTextField T="string" Class="outlined-dialog-max-content"
                                                   Value="context.Item.FormattedDueDate"
                                                   ReadOnly="true" Variant="Variant.Outlined"
                                                   Immediate="true" Adornment="Adornment.End"
@@ -354,7 +353,7 @@ else
                                 }
                                 else
                                 {
-                                    <MudTextField T="string"
+                                <MudTextField T="string" Class="outlined-dialog-max-content"
                                                   Value="context.Item.FormattedDueDate"
                                                   ReadOnly="true" Variant="Variant.Outlined">
                                     </MudTextField>
@@ -453,7 +452,7 @@ else
                             Editable=false Required=false>
                 <CellTemplate>
                     <MudTextField T="string"
-                                  Class="outlined-dialog-max-content"
+                                  Class="outlined-dialog-max-content" 
                                   Text="Notes" Variant="Variant.Outlined"
                                   ReadOnly="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
