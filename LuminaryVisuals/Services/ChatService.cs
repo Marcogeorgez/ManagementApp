@@ -1,17 +1,20 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Services.Events;
 using Microsoft.EntityFrameworkCore;
 
 public class ChatService
 {
     private readonly ApplicationDbContext context;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+    private readonly IMessageNotificationService _messageNotificationService;
 
 
-    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory)
+    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService)
     {
         this.context = context;
         _contextFactory = contextFactory;
+        _messageNotificationService = messageNotificationService;
     }
 
     // Initialize chat for a project
@@ -55,10 +58,11 @@ public class ChatService
 
         context.Messages.Add(newMessage);
         await context.SaveChangesAsync();
+        await _messageNotificationService.NotifyNewMessage(projectId);
     }
 
     // Approve a message
-    public async Task ApproveMessageAsync(int messageId)
+    public async Task ApproveMessageAsync(int projectId, int messageId)
     {
         using var context = _contextFactory.CreateDbContext();
         var message = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == messageId);
@@ -70,6 +74,8 @@ public class ChatService
         message.IsApproved = true;
         message.Timestamp = DateTime.UtcNow;
         await context.SaveChangesAsync();
+        await _messageNotificationService.NotifyNewMessage(projectId);
+
     }
 
     // Get chat messages for a project
@@ -168,7 +174,7 @@ public class ChatService
 
 
     // Unsend message (logical delete)
-    public async Task UnsendMessageAsync(int messageId)
+    public async Task UnsendMessageAsync(int projectId, int messageId)
     {
         using var context = _contextFactory.CreateDbContext();
         var message = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == messageId);
@@ -179,9 +185,11 @@ public class ChatService
 
         message.IsDeleted = true;  // Mark the message as deleted (logical deletion)
         await context.SaveChangesAsync();
+        await _messageNotificationService.NotifyNewMessage(projectId);
+
     }
 
-    public async Task EditMessageAsync(Message message,string content,bool isEditorView)
+    public async Task EditMessageAsync(Message message,int projectId,string content,bool isEditorView)
     {
         using var context = _contextFactory.CreateDbContext();
         var newMessage = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == message.MessageId);
@@ -197,5 +205,7 @@ public class ChatService
         }
 
         await context.SaveChangesAsync();
+        await _messageNotificationService.NotifyNewMessage(projectId);
+
     }
 }

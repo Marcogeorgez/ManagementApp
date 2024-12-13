@@ -4,6 +4,9 @@
 @inject IScrollManager ScrollManager
 @inject IJSRuntime JSRuntime
 @inject ILogger<ProjectChatDialog> Logger
+@implements IDisposable
+@inject IMessageNotificationService MessageNotificationService
+
 
 <MudContainer Class="chat-container">
         <MudPaper Elevation="4" Class="chat-panel">
@@ -101,10 +104,27 @@
     private List<Message> messages = new List<Message>();
     private string lastUserId = null;
     private int? HighlightedMessageId;
+    private IDisposable _subscription;
+
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+    }
     protected override async Task OnInitializedAsync()
     {
         await LoadMessages();
         await MarkMessagesAsRead();
+        _subscription = MessageNotificationService.Subscribe(ProjectId, async (newMessage) =>
+        {
+            // Check if the message is for this project
+            if (ProjectId == ProjectId)
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadMessages();
+                });
+            }
+        });
     }
     private void ToggleClick()
     {
@@ -129,7 +149,6 @@
     {
         await ChatService.MarkMessagesAsReadAsync(ProjectId, UserId);
     }
-
     private async Task SendMessage()
     {
         if (string.IsNullOrWhiteSpace(newMessage))
@@ -205,13 +224,13 @@
     private async Task DeleteMessage(Message message)
     {
 
-        await ChatService.UnsendMessageAsync(message.MessageId);
+        await ChatService.UnsendMessageAsync(ProjectId ,message.MessageId);
         await LoadMessages();
 
     }
     private async Task ApproveMessage(Message message)
     {
-        await ChatService.ApproveMessageAsync(message.MessageId);
+        await ChatService.ApproveMessageAsync(ProjectId, message.MessageId);
         await LoadMessages();
     }
 
@@ -234,7 +253,7 @@
             if (!result.Canceled)
             {
                 var editedContent = (string) result.Data;
-                await ChatService.EditMessageAsync(message,editedContent,isEditorView);
+                await ChatService.EditMessageAsync(message, ProjectId, editedContent, isEditorView);
                 await LoadMessages();
             }        
             else
