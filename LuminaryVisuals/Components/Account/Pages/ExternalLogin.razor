@@ -112,7 +112,19 @@
                 "{Name} logged in with {LoginProvider} provider.",
                 externalLoginInfo.Principal.Identity?.Name,
                 externalLoginInfo.LoginProvider);
-            RedirectManager.RedirectTo(ReturnUrl);
+
+            // Get the current user
+            var user = await SignInManager.UserManager.FindByLoginAsync(
+                externalLoginInfo.LoginProvider,
+                externalLoginInfo.ProviderKey);
+
+            // Check if user is in Guest role
+            var isGuest = await SignInManager.UserManager.IsInRoleAsync(user, "Guest");
+
+            // Determine redirect URL
+            string redirectUrl = isGuest ? "/guest" : ( ReturnUrl ?? "/" );
+
+            RedirectManager.RedirectTo(redirectUrl);
         }
         else if (result.IsLockedOut)
         {

@@ -1,22 +1,54 @@
 ﻿@using LuminaryVisuals.Components.Account.Shared
 @using LuminaryVisuals.Components.Pages
+@using LuminaryVisuals.Components.Redirects
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
 
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData"
+                            DefaultLayout="@typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToHome />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not Found</PageTitle>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
 
+@code {
+    [Inject] private ILogger<Routes> Logger { get; set; }
 
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <AuthorizeRouteView RouteData="routeData" DefaultLayout="@typeof(Layout.MainLayout)">
-                <NotAuthorized>
-                    <AccessDeniedPage />
-                </NotAuthorized>
-            </AuthorizeRouteView>
-            <FocusOnNavigate RouteData="routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Not Found</PageTitle>
-            <LayoutView Layout="@typeof(Layout.MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
+    protected override async Task OnInitializedAsync()
+    {
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var currentPath = NavManager.Uri.Replace(NavManager.BaseUri, "/");
+
+                if (user.IsInRole("Guest") && currentPath != "/guest")
+                {
+                    NavManager.NavigateTo("/guest", replace: true);
+                    return;
+                }
+
+                if (!user.IsInRole("Guest") && currentPath != "/project")
+                {
+                    NavManager.NavigateTo("/project", replace: true);
+                    return;
+                }
+            }
+        
+
+    }
+}

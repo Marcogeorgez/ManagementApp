@@ -1,9 +1,14 @@
-﻿@inject ChatService ChatService
+﻿@namespace Chats
+@using LuminaryVisuals.Components.Shared.Chat
+@inject ChatService ChatService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IScrollManager ScrollManager
 @inject IJSRuntime JSRuntime
 @inject ILogger<ProjectChatDialog> Logger
+@implements IDisposable
+@inject IMessageNotificationService MessageNotificationService
+
 
 <MudContainer Class="chat-container">
         <MudPaper Elevation="4" Class="chat-panel">
@@ -15,7 +20,12 @@
                 </MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
             </MudPaper>
-            <MudContainer Class="chat-content" Gutters="false" >
+            <MudContainer Class="chat-content" Gutters="false"  @onscroll="OnScroll">
+                @if (hasMoreMessages)
+                {
+                    <div class="load-more-indicator">Loading more messages...</div>
+                }
+
                 <div class="chat-messages">
                     @foreach (var group in messages.GroupBy(m => GetDisplayDate(m.Timestamp)))
                     {
@@ -101,35 +111,110 @@
     private List<Message> messages = new List<Message>();
     private string lastUserId = null;
     private int? HighlightedMessageId;
+    private IDisposable _subscription;
+    private const int PAGE_SIZE = 50; 
+    private int currentPage = 1;
+    private bool hasMoreMessages = true;
+    private bool finishedLoading = false;
+    private bool _isInitialScrollComplete = false;
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+    }
     protected override async Task OnInitializedAsync()
     {
-        await LoadMessages();
+        await LoadMessages(true);
         await MarkMessagesAsRead();
+        _subscription = MessageNotificationService.Subscribe(ProjectId, async (newMessage) =>
+        {
+            // Check if the message is for this project
+            if (ProjectId == ProjectId)
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadMessages(true);
+                });
+            }
+        });
+        await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+        await JSRuntime.InvokeVoidAsync("setupInitialScrollListener", DotNetObjectReference.Create(this));
     }
     private void ToggleClick()
     {
         isClicked = !isClicked;
     }
-    private async Task LoadMessages()
+    private async Task LoadMessages(bool initial = true)
     {
-        if (isClientView)
+        try
         {
-            messages = await ChatService.GetMessagesAsync(ProjectId, true);
-        }
-        else if (isEditorView || isAdminView)
-        {
-            messages = await ChatService.GetMessagesAsync(ProjectId, false);
-        }
-        StateHasChanged();
-        await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+            finishedLoading = false;
+            int pageToLoad = initial ? 1 : currentPage;
+            var loadedMessages = await ChatService.GetMessagesAsync(ProjectId, isClientView, pageNumber: currentPage, pageSize: PAGE_SIZE);
 
+            if (initial)
+            {
+
+                // First load - clear existing messages
+                messages.Clear();
+                await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+            }
+            else
+            {
+                // Append messages to the beginning of the list
+                messages.InsertRange(0, loadedMessages);
+            }
+            if (initial)
+            {
+                messages.AddRange(loadedMessages);
+            }
+            else
+            {
+                var currentScrollPosition = await JSRuntime.InvokeAsync<int>("getCurrentScrollPositionFromBottom", ".chat-content");
+
+                // Prepend new messages to the beginning of the list
+                messages.InsertRange(0, loadedMessages);
+
+                // Restore scroll position
+                await JSRuntime.InvokeVoidAsync("restoreScrollPositionFromBottom", ".chat-content", currentScrollPosition + loadedMessages.Count);
+            }
+
+            // Determine if there are more messages to load
+            hasMoreMessages = loadedMessages.Count == PAGE_SIZE;
+
+        }
+        catch (Exception ex)
+        {
+            // Handle or log error
+            Snackbar.Add($"Error loading messages",Severity.Error);
+            Console.WriteLine($"Error loading messages: {ex.Message}");
+
+        }
+
+        finally{
+            if (initial)
+            {
+                await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+            }
+            StateHasChanged();
+            finishedLoading = true;
+
+        }
+    }
+    [JSInvokable]
+    public async Task OnInitialScrollComplete()
+    {
+        await InvokeAsync(() =>
+        {
+            _isInitialScrollComplete = true;
+            finishedLoading = true;
+            StateHasChanged();
+        });
     }
 
     private async Task MarkMessagesAsRead()
     {
         await ChatService.MarkMessagesAsReadAsync(ProjectId, UserId);
     }
-
     private async Task SendMessage()
     {
         if (string.IsNullOrWhiteSpace(newMessage))
@@ -141,7 +226,7 @@
         {
             await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, isEditorView);
             await MarkMessagesAsRead();
-            await LoadMessages();
+            await LoadMessages(initial: true);
             newMessage = string.Empty;
         }
         catch (Exception ex)
@@ -150,6 +235,42 @@
         }
     }
 
+    private async Task OnScroll(EventArgs e)
+    {
+        // Skip processing if loading is finished or no more messages are available
+        if (!_isInitialScrollComplete || !( finishedLoading && hasMoreMessages ))
+        {
+            return;
+        }
+
+        // Get the message index that is currently in view
+        var messageIndexInView = await JSRuntime.InvokeAsync<string>("getElementWithMessageIndexInView", ".chat-content");
+
+        // If no valid message index is in view, return early
+        if (string.IsNullOrEmpty(messageIndexInView))
+        {
+            return;
+        }
+
+        // Try to parse the message index
+        if (int.TryParse(messageIndexInView, out int messageIndex))
+        {
+            // Log the index for debugging purposes
+            Console.WriteLine($"Message index in view: {messageIndex}");
+
+            // Check if the message index is below a threshold to load more messages
+            if (messageIndex <= 10)
+            {
+                currentPage++;
+                await LoadMessages(initial: false);
+            }
+        }
+        else
+        {
+            // Log error if message index parsing fails
+            Logger.LogError($"Failed to parse message index: {messageIndexInView}");
+        }
+    }
     // Display date of each chat messages grouped by their date.
     string GetDisplayDate(DateTime timestamp)
     {
@@ -205,14 +326,14 @@
     private async Task DeleteMessage(Message message)
     {
 
-        await ChatService.UnsendMessageAsync(message.MessageId);
-        await LoadMessages();
+        await ChatService.UnsendMessageAsync(ProjectId ,message.MessageId);
+        await LoadMessages(initial: true);
 
     }
     private async Task ApproveMessage(Message message)
     {
-        await ChatService.ApproveMessageAsync(message.MessageId);
-        await LoadMessages();
+        await ChatService.ApproveMessageAsync(ProjectId, message.MessageId);
+        await LoadMessages(initial: true);
     }
 
     private async Task EditMessage(Message message)
@@ -234,8 +355,8 @@
             if (!result.Canceled)
             {
                 var editedContent = (string) result.Data;
-                await ChatService.EditMessageAsync(message,editedContent,isEditorView);
-                await LoadMessages();
+                await ChatService.EditMessageAsync(message, ProjectId, editedContent, isEditorView);
+                await LoadMessages(initial: true);
             }        
             else
             {
@@ -317,4 +438,57 @@
     window.getTimezoneOffset = function () {
         return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
     };
+    window.getScrollTop = function (selector) {
+        const element = document.querySelector(selector);
+        return element ? element.scrollTop : 0;
+    };
+    window.setupInitialScrollListener = function (dotNetHelper) {
+        const element = document.querySelector('.chat-content');
+        if (!element) return;
+
+        let hasUserScrolled = false;
+
+        const scrollHandler = () => {
+            if (!hasUserScrolled) {
+                hasUserScrolled = true;
+                // Invoke the .NET method
+                dotNetHelper.invokeMethodAsync('OnInitialScrollComplete');
+                element.removeEventListener('scroll', scrollHandler);
+            }
+        };
+
+        element.addEventListener('scroll', scrollHandler);
+    };
+    window.getCurrentScrollPositionFromBottom = function (selector) {
+        const element = document.querySelector(selector);
+        if (!element) return 0;
+        return element.scrollHeight - element.scrollTop - element.clientHeight;
+    };
+
+    window.restoreScrollPositionFromBottom = function (selector, additionalHeight) {
+        const element = document.querySelector(selector);
+        if (!element) return;
+        element.scrollTop = element.scrollHeight - element.clientHeight - additionalHeight;
+    };
+    window.getElementWithMessageIndexInView = function (selector) {
+        // Adjust selector to match chat-messages and message-container within it
+        const elements = document.querySelectorAll(`${selector} .message-container`);
+        let inView = null;
+
+        elements.forEach(element => {
+            const rect = element.getBoundingClientRect();
+
+            // Check if the element is partially visible in the viewport
+            if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+                inView = element;
+            }
+        });
+
+        // Get the value of --message-index from the element in view
+        const messageIndex = inView ? inView.style.getPropertyValue('--message-index') : null;
+        return messageIndex;
+    };
+
+
+
 </script>

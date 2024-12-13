@@ -5,6 +5,7 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -52,8 +53,6 @@ builder.Services.AddMudServices(config =>
         config.SnackbarConfiguration.PreventDuplicates = false;
         config.SnackbarConfiguration.NewestOnTop = false;
         config.SnackbarConfiguration.ShowCloseIcon = true;
-
-        config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
         config.SnackbarConfiguration.VisibleStateDuration = 10000;
         config.SnackbarConfiguration.HideTransitionDuration = 500;
         config.SnackbarConfiguration.ShowTransitionDuration = 500;
@@ -68,6 +67,7 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddSingleton<DeviceSessionService>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<IConfirmationService, ConfirmationService>();
+builder.Services.AddSingleton<IMessageNotificationService,MessageNotificationService>();
 // Custom Implementation of SignInManager to let new users.role Guest by default
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
 // Our Services
@@ -80,7 +80,6 @@ builder.Services.AddScoped<SettingService>();
 builder.Services.AddScoped<ChatService>();
 
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
-
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
@@ -104,9 +103,33 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 })
 .AddCookie(options =>
 {
-    options.LoginPath = "/";
+    options.LogoutPath = "/";
     options.LogoutPath = "/Account/Logout";
-    options.SlidingExpiration = true; 
+    options.AccessDeniedPath = "/AccessDenied";
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            context.Response.Redirect("/");
+            return Task.CompletedTask;
+        },
+        // Add an explicit sign-out event
+        OnSigningOut = context =>
+        {
+            // Explicitly delete the authentication cookie
+            context.CookieOptions.Expires = DateTime.UtcNow.AddDays(-1);
+            context.HttpContext.Response.Cookies.Delete(CookieAuthenticationDefaults.AuthenticationScheme);
+            context.HttpContext.Response.Cookies.Delete(".AspNetCore.Identity.Application"); // Explicit cookie name
+            context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Task.CompletedTask;
+        }
+    };
+
 });
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
@@ -162,14 +185,15 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("RequireEditorRole", policy => policy.RequireRole("Editor"));
     options.AddPolicy("RequireClientRole", policy => policy.RequireRole("Client"));
     options.AddPolicy("RequireGuestRole", policy => policy.RequireRole("Guest"));
+    options.AddPolicy("AuthenticatedAccess", policy => policy.RequireAuthenticatedUser());
 });
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery(options =>
-    {
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    });
+{
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = "/AccessDenied";
@@ -190,19 +214,22 @@ builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMe
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
-builder.WebHost.UseSentry(o => 
+var environment = builder.Environment;
+if (environment.IsProduction())
 {
-    o.Dsn = "https://3d017756cd2623df347b8da6db1a0359@o4508443362197504.ingest.de.sentry.io/4508443370717264";
-    // This option is recommended. It enables Sentry's "Release Health" feature.
-    o.AutoSessionTracking = true;
-    o.StackTraceMode = StackTraceMode.Enhanced;
-    // Set TracesSampleRate to 1.0 to capture 100%
-    // of transactions for tracing.
-    o.TracesSampleRate = 1.0;
-    o.ProfilesSampleRate = 1.0f;
-    
-});
+    // Get the Sentry DSN from environment variables or configuration
+    var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN");
 
+    // Configure Sentry
+    builder.WebHost.UseSentry(options =>
+    {
+        options.Dsn = sentryDSN;
+        options.AutoSessionTracking = true;
+        options.StackTraceMode = StackTraceMode.Enhanced;
+        options.TracesSampleRate = 1.0;
+        options.ProfilesSampleRate = 1.0f;
+    });
+}
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -239,13 +266,19 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAntiforgery();
 app.UseDeviceSessionTracking();
 
-
+/*app.UseEndpoints(
+    endpoints =>
+    {
+        endpoints.MapAccountServices();
+    }
+);*/
 // Initialize roles
 using (var scope = app.Services.CreateScope())
 {
@@ -256,4 +289,5 @@ using (var scope = app.Services.CreateScope())
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
+
 app.Run();
