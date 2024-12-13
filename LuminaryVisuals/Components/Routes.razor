@@ -29,21 +29,23 @@
     protected override async Task OnInitializedAsync()
     {
 
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-            if (user.Identity?.IsAuthenticated == true)
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var currentPath = NavManager.Uri.Replace(NavManager.BaseUri, "/");
+
+            if (user.IsInRole("Guest") && currentPath != "/guest")
             {
-                var currentPath = NavManager.Uri.Replace(NavManager.BaseUri, "/");
+                NavManager.NavigateTo("/guest", replace: true);
+                return;
+            }
 
-                if (user.IsInRole("Guest") && currentPath != "/guest")
-                {
-                    NavManager.NavigateTo("/guest", replace: true);
+            if (!user.IsInRole("Guest") && currentPath != "/project")
+            {
+                if (user.IsInRole("Admin"))
                     return;
-                }
-
-                if (!user.IsInRole("Guest") && currentPath != "/project")
-                {
                     NavManager.NavigateTo("/project", replace: true);
                     return;
                 }

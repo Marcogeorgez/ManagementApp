@@ -129,7 +129,7 @@ namespace LuminaryVisuals.Services
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error during Google authentication: {ex.Message}, Date: {DateTime.UtcNow}, User: {user}");
+                Logger.LogError($"Error during Google authentication: {ex.InnerException}, Date: {DateTime.UtcNow}, User: {user}");
                 return SignInResult.Failed;
             }
         }
