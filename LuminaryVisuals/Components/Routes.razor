@@ -44,8 +44,6 @@
 
             if (!user.IsInRole("Guest") && currentPath != "/project")
             {
-                if (user.IsInRole("Admin"))
-                    return;
                     NavManager.NavigateTo("/project", replace: true);
                     return;
                 }
