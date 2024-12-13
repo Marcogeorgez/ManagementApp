@@ -476,7 +476,7 @@
 }
 .chat-panel {
     width: 40vw;
-    min-height: 60vh;
+    height: 60vh;
     border-radius: 12px;
     background-color: #1E1E1E;
     color: #E0E0E0;
