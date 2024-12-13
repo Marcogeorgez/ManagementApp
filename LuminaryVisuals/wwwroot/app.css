@@ -575,7 +575,7 @@ back-button {
     flex-direction: column;
     opacity: 0;
     animation: slideIn 0.4s ease-out forwards;
-    animation-delay: calc((var(--total-messages) - var(--message-index)) * 0.1s);
+    animation-delay: calc(((var(--total-messages)*0.1) - var(--message-index)) * 0.1s);
 }
 .message-hover-options {
     position: relative;
