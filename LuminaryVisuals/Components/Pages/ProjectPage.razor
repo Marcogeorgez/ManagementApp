@@ -189,7 +189,7 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
         {
-                    <PropertyColumn Property="x => x.PrimaryEditor.UserName" Title="Primary Editor" Hideable="true" 
+                    <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" 
                         Groupable="true" Editable=false Required=false  CellStyle="text-align:center;" >
                     <GroupTemplate> 
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
@@ -219,7 +219,7 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
         {
-            <PropertyColumn Property="x => x.SecondaryEditor.UserName" Title="2nd Editor" Hideable="true" 
+            <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" 
                 Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                 <EditTemplate>
                     @if (Editors != null && Editors.Any() && _isAdminView)
