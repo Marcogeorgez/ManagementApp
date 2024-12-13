@@ -298,7 +298,7 @@ else
                 <CellTemplate>
                     <MudItem Class="d-flex justify-center">
                     <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                   Color="@(context.Item.IsUrgent ? Color.Warning : Color.Error)"
+                                   Color="@(context.Item.IsUrgent ? Color.Warning : Color.Tertiary)"
                                    OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
                                    Size="Size.Small" />
                         </MudItem>
@@ -1148,7 +1148,8 @@ else
     {
         var dialogParameters = new DialogParameters<LoggingDialog> {
             { nameof(LoggingDialog.currentProject), project },
-            { "CurrentUserId", currentUserId}
+            { "CurrentUserId", currentUserId},
+            { "isAdmin", isAdminView}
         };
         var dialog = await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
         var result = await dialog.Result;
