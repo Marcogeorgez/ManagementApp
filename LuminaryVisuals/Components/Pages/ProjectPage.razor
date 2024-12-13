@@ -107,21 +107,24 @@ else
                       string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
                         {
                             <div class="d-flex gap-2 flex-row  justify-center align-center">
+                                <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
+                                    <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                                </MudTooltip>
                     <MudTextField T="string" 
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true" Variant="Variant.Outlined"
-                                  Immediate="true" Adornment="Adornment.End" 
-                                              AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                  Immediate="true" Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                     </MudTextField>
-                                <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
-                            <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
-                        </MudTooltip>
+                              
+                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item.ProjectId))" StartIcon="@Icons.Material.Filled.Chat" Size="Size.Small"/>
 
                             </div>
                 }
                 else
-                {
+                {                            <div class="d-flex gap-2 flex-row  justify-center align-center">
+
                     <MudTextField T="string"
                                   Value="context.Item.ProjectName"
                                   ReadOnly="true"
@@ -129,6 +132,10 @@ else
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                     </MudTextField>
+                    <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item.ProjectId))" StartIcon="@Icons.Material.Filled.Chat"  Size="Size.Small"/>
+
+                            </div>
+
                 }
 
             </CellTemplate>
@@ -905,6 +912,27 @@ else
         _isArchived = !_isArchived;
         await LoadProjects();
     }
+    private async Task OpenProjectChat(int projectId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ProjectId", projectId },
+            { "UserId", _currentUserId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , _isEditorView },
+            { "isClientView" , _isClientView },
+            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
+
+        };
+
+        var options = new DialogOptions
+            {
+                Position = DialogPosition.BottomRight,
+                NoHeader = true
+            };
+        await DialogService.ShowAsync<Shared.Chat.ProjectChatDialog>("", parameters, options);
+    }
+
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
