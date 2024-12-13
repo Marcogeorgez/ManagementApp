@@ -95,8 +95,8 @@
                     // If all unread messages count are 0, order by the last sent message timestamp
                     projects = projects.OrderByDescending(p => p.LastSentMessage).ToList();
                 }
+            }
         }
-    }
         catch (Exception ex)
         {
             projects = new List<Project>();  // Ensures projects are never null
@@ -126,7 +126,7 @@
                 NoHeader = true
             };
         MudDialog.Close();
-        DialogService.Show<ProjectChatDialog>("", parameters, options);
+        DialogService.Show<Chats.ProjectChatDialog>("", parameters, options);
     }
      private async Task CloseChat()
     {

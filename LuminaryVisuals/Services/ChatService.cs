@@ -2,6 +2,7 @@
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services.Events;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 public class ChatService
 {
@@ -79,33 +80,46 @@ public class ChatService
     }
 
     // Get chat messages for a project
-    public async Task<List<Message>> GetMessagesAsync(int projectId, bool isClient)
+
+
+    public async Task<List<Message>> GetMessagesAsync(int projectId, bool isClient, int pageNumber = 1, int pageSize = 50)
+    {
+        var chat = await GetOrCreateChatAsync(projectId);
+
+        using var context = _contextFactory.CreateDbContext();
+        
+        // Return messages based on approval status and whether the user is a client
+        var messages = await context.Messages
+            .Where(m => m.ChatId == chat.ChatId &&
+                        !m.IsDeleted &&
+                        ( isClient ? m.IsApproved : true ))
+            .OrderByDescending(m => m.Timestamp)
+            .Include(m => m.User)
+            .Skip(( pageNumber - 1 ) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        messages.Reverse();
+        return messages;
+    }
+    // Creates Chat if it is empty 
+    private async Task<Chat> GetOrCreateChatAsync(int projectId)
     {
         using var context = _contextFactory.CreateDbContext();
-        var chat = await context.Chats
-            .Include(c => c.Messages)
-                .ThenInclude(m => m.User)
-            .FirstOrDefaultAsync(c => c.ProjectId == projectId);
+        var chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
 
         if (chat == null)
         {
             chat = new Chat
             {
                 ProjectId = projectId,
-                Messages = new List<Message>() // Initialize an empty list of messages
+                Messages = new List<Message>()
             };
 
             context.Chats.Add(chat);
             await context.SaveChangesAsync();
         }
 
-        // Return messages based on approval status and whether the user is a client
-        return chat.Messages
-            // Only show approved messages for clients and show non deleted messages for rest.
-            .Where(message => isClient ? message.IsApproved && !message.IsDeleted 
-                : !message.IsDeleted) 
-            .OrderBy(message => message.Timestamp)
-            .ToList();
+        return chat;
     }
 
     // Track message read status

@@ -930,7 +930,7 @@ else
                 Position = DialogPosition.BottomRight,
                 NoHeader = true
             };
-        await DialogService.ShowAsync<Shared.Chat.ProjectChatDialog>("", parameters, options);
+        await DialogService.ShowAsync<Chats.ProjectChatDialog>("", parameters, options);
     }
 
     //  Load project for admin/editor view only (will later be split )
