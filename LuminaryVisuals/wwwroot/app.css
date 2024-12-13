@@ -470,7 +470,10 @@
         transform: scale(1);
     }
 }
-
+.mud-dialog-container.mud-dialog-bottomright
+{
+    overflow-x:hidden;
+}
 .chat-panel {
     width: 40vw;
     min-height: 60vh;
