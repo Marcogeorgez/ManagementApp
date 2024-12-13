@@ -83,6 +83,8 @@ public class ProjectService
                             ( p.PrimaryEditorId == userId || p.SecondaryEditorId == userId ))
                 .Include(p => p.Archive)
                 .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
                 .Include(p => p.Revisions)
                 .ToListAsync();
 
@@ -564,7 +566,7 @@ public class ProjectService
                 // FinalBillable hours = total project hours - overtime + adjusted hours
                 if (project.PrimaryEditor !=  null && project.PrimaryEditorDetails.BillableHours != null && project.ClientBillableHours != null)
                 {
-                    project.PrimaryEditorDetails.Overtime = ( project.ClientBillableHours ?? 0 ) - ( project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
+                    project.PrimaryEditorDetails.Overtime = ( project.PrimaryEditorDetails.BillableHours ?? 0 ) - ( project.ClientBillableHours ?? 0 );
                     project.PrimaryEditorDetails.FinalBillableHours = project.PrimaryEditorDetails.BillableHours - (project.PrimaryEditorDetails.Overtime ?? 0) + (project.PrimaryEditorDetails.AdjustmentHours ?? 0);
                     project.PrimaryEditorDetails.PaymentAmount = ( project.PrimaryEditor.HourlyRate ?? 0 ) * ( project.PrimaryEditorDetails.FinalBillableHours ?? 0 );
                     context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;

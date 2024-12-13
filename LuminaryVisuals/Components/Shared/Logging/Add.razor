@@ -28,6 +28,8 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project { get; set; } = new Project();
     [Parameter] public string currentUserId { get; set; }
+    [Parameter] public bool isAdmin { get; set; }
+
 
     private decimal LoggedHours; 
     private DateTime? SelectedDate;
