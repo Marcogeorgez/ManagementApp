@@ -118,7 +118,7 @@ else
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                     </MudTextField>
                               
-                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item.ProjectId))" StartIcon="@Icons.Material.Filled.Chat" Size="Size.Small"/>
+                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item))" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small"/>
 
                             </div>
                 }
@@ -132,7 +132,7 @@ else
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                   OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                     </MudTextField>
-                    <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item.ProjectId))" StartIcon="@Icons.Material.Filled.Chat"  Size="Size.Small"/>
+                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item))" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" />
 
                             </div>
 
