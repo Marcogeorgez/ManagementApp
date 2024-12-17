@@ -253,8 +253,11 @@ if (app.Environment.IsDevelopment())
 // Replace your existing HTTP pipeline configuration with this:
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-
+    app.UseExceptionHandler(new ExceptionHandlerOptions
+    {
+        ExceptionHandlingPath = "/Error", // Path to handle exceptions.
+        AllowStatusCode404Response = true // allows 404 responses.
+    });
     // Only use HTTPS redirection if not running in a container
     if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
     {
