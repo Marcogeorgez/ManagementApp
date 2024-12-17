@@ -407,12 +407,19 @@ else
                                        Label="Status"
                                        @bind-Value="context.Item.Status"
                                        Required="true">
-                                @if(!_isClientView){
+                                @if(_isAdminView)
+                                {
                                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                                 {
                                 <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                                 }
                                 }
+                            else if(_isEditorView)
+                            {
+                                <MudSelectItem Value="ProjectStatus.Working">Working</MudSelectItem>
+                                <MudSelectItem Value="ProjectStatus.Delivered">Delivered</MudSelectItem>
+
+                            }
                                 else{
                                     <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
                                     <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
@@ -682,7 +689,9 @@ else
                                    Class="mb-1">
                             Duplicate
                         </MudButton>
+                        }
                         </MudStack>
+
 
                         @if(_isAdminView || _isEditorView)
                         {
@@ -693,7 +702,7 @@ else
                                        OnClick="@(() => TimeCalculator(context.Item))"
                                        StartIcon="@Icons.Material.Filled.Edit"
                                        Class="mb-1">
-                                Billable
+                                Calculator
                         </MudButton>
                         <MudButton Color="Color.Success"
                                    Variant="Variant.Filled"
@@ -869,7 +878,7 @@ else
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
         { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
-        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "rogressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable", "Actions"} },
+        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable", "Actions"} },
         { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status" } }
     };
     private Guid _gridKey = Guid.NewGuid();
