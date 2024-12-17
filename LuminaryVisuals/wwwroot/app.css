@@ -40,8 +40,6 @@
 
 
 
-
-
 .ql-editor li > .ql-ui {
     position: relative;
     display: inline-block;
@@ -694,4 +692,12 @@ text-decoration: underline;
 
 .description-error {
     border: rgb(244,47,70)
+}
+[id^="popovercontent-"] [role="group"].d-flex.flex-row.gap-3 {
+    position: sticky;
+    bottom: 0%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    background-color: #fff;
+    background-color: var(--mud-palette-surface);
 }
