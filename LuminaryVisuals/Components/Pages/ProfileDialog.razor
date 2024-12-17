@@ -6,7 +6,8 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject UserManager<ApplicationUser> _userManager;
-
+@inject IDialogService DialogService
+<MudContainer>
 <MudDialog>
     <DialogContent>
 
@@ -27,7 +28,7 @@
                             Variant="Variant.Outlined"  />
                 </MudItem>
         </MudGrid>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto mt-5" 
+        <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-auto mt-5 mr-9" 
                 Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
                 @if (processing)
                 {
@@ -41,13 +42,16 @@
         </MudButton>
         </MudForm>
 
-        <MudGrid Class="d-flex flex-row px-10 my-3" Justify="Justify.Center" Spacing="6">
-            <MudItem xs=12>
-                <MudText Typo="Typo.h5" Class="mt-8 pl-5">Revoke Login From All Devices</MudText>
-            </MudItem>
-            <MudItem xs="12" Class="flex-row-reverse d-flex ">
-                <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Filled"
-                Class="ml-auto px-10 py-2">Revoke</MudButton></MudItem>
+        <MudGrid Class="px-10 my-3 d-flex flex-auto align-center" Justify="Justify.Center" Spacing="6">
+            <MudItem xs="6">
+            <MudText Typo="Typo.h5" Class="pl-5">Revoke Login From All Devices</MudText>
+                </MudItem>
+                <MudItem xs="6">
+
+                    <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Filled"
+                    Class="ml-auto px-10 d-flex">Revoke</MudButton>
+                    </MudItem>
+
         </MudGrid>
         @if (userRole == "Client")
         {
@@ -67,18 +71,21 @@
     </DialogContent>
 
     <DialogActions>
+                        <MudItem xs="12" Class="mt-8 px-11">
+
         <div class="d-flex mb-5 flex-auto" style="max-width:100%;">
         <MudButton StartIcon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Tertiary" 
-        Class="ml-5 px-5" OnClick="@LogoutClick" Color="Color.Warning" Variant="Variant.Filled" 
+        Class="ml-5  px-14" OnClick="@LogoutClick" Color="Color.Default" Variant="Variant.Filled" 
         Size="Size.Medium">Log out</MudButton>
         <MudSpacer/>
-        <MudButton Class="mr-5 px-10" OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Medium">Close</MudButton>
+        <MudButton Class="mr-5 px-14" OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Medium">Close</MudButton>
         </div>
+        </MudItem>
     </DialogActions>
 
 </MudDialog>
 
-
+</MudContainer>
 @code
 {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
@@ -135,40 +142,56 @@
 
         if (form.IsValid)
         {
-            processing = true;
-            var user = await UserManager.GetUserAsync(currentUser);
-
-            if (user != null)
+            var parameters = new DialogParameters
             {
-                // Check if new username is already taken
-                var userWithNewUsername = await UserManager.FindByNameAsync(model.NewUsername);
-                if (userWithNewUsername != null && userWithNewUsername.Id != user.Id)
+                { "Message", $"Are you sure you want to change your name? This will result in you logging-out." }
+            };
+
+            var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+            var dialogResult = await dialog.Result;
+            if (!dialogResult.Canceled)
+            {
+                processing = true;
+                var user = await UserManager.GetUserAsync(currentUser);
+
+                if (user != null)
                 {
-                    Snackbar.Add("Username is already taken!", Severity.Error);
+                    // Check if new username is already taken
+                    var userWithNewUsername = await UserManager.FindByNameAsync(model.NewUsername);
+                    if (userWithNewUsername != null && userWithNewUsername.Id != user.Id)
+                    {
+                        Snackbar.Add("Username is already taken!", Severity.Error);
+                        processing = false;
+                        return;
+                    }
+
+                    // Update username
+                    var result = await UserManager.SetUserNameAsync(user, model.NewUsername);
+
+                    if (result.Succeeded)
+                    {
+                        userName = model.NewUsername;
+                        // Update normalized username
+                        await UserManager.UpdateNormalizedUserNameAsync(user);
+                        Snackbar.Add("Username updated successfully!", Severity.Success);
+                    }
+
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            Snackbar.Add(error.Description, Severity.Error);
+                        }
+                    }
                     processing = false;
-                    return;
-                }
 
-                // Update username
-                var result = await UserManager.SetUserNameAsync(user, model.NewUsername);
-
-                if (result.Succeeded)
-                {
-                    userName = model.NewUsername;
-                    // Update normalized username
-                    await UserManager.UpdateNormalizedUserNameAsync(user);
-                    Snackbar.Add("Username updated successfully!", Severity.Success);
                 }
                 else
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        Snackbar.Add(error.Description, Severity.Error);
-                    }
+                    return;
                 }
             }
 
-            processing = false;
         }
     }
 

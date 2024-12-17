@@ -6,7 +6,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 @inject IDialogService DialogService
 
-
+<MudContainer Gutters=true>
 <MudDialog>
     <DialogContent>
         <MudContainer Style="max-height: 500px; overflow-y: auto">
@@ -25,35 +25,34 @@
                     </MudList>
                     </MudItem>
                     <MudDivider Style="border-width: 0px;" />
-                    <MudToggleGroup Class="d-flex flex-auto mx-20" T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
+                    <MudToggleGroup Class="d-flex flex-auto mx-10" T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
                         <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("New")" Text="Create New Agency" />
                         <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("Existing")" Text="Add to Existing Agency" />
                     </MudToggleGroup>
                     <MudDivider Style="border-width: 0px;" />
                     @if (_value1 == "New")
                     {
-                        <MudItem xs="6">
+                        <MudGrid Spacing="3" Class="mx-20 mt-5">
                             <MudTextField T="string"
                             @bind-Value="agencyName"
                             Label="Agency Name"
                             Required="true" Variant="Variant.Outlined"
                             RequiredError="Agency name is required!"
                             Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
-                        </MudItem>
-                        <MudItem xs="6">
                             <MudTextField T="string"
                             @bind-Value="agencyEmail"
                             Label="Agency Email"
                             Required="true" Variant="Variant.Outlined"
                             RequiredError="Agency email is required!"
                             Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
-                        </MudItem>
+                            </MudGrid>
+
                     }
                     else if(_value1 == "Existing")
                     {
-                        <MudSelect T="string"
+                        <MudSelect T="string" 
                                    AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Class="d-flex justify-center mud-width-full mx-20 mt-5"
                                    Variant="Variant.Outlined"
                                    Label="Select The Agency"
                                    @bind-Value="selectedAgency">
@@ -80,7 +79,7 @@
         </MudButton>
     </DialogActions>
 </MudDialog>
-
+</MudContainer>
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public IEnumerable<UserRoleViewModel> SelectedUsers { get; set; }
@@ -232,6 +231,8 @@
 
                 await SaveNewAgencyAndLogins(context, newAgency, newLogins);
                 await UpdateProjectOwnership(context, userIds, newAgencyId.ToString());
+                await MigrateMessagesToNewUserAsync(context, userIds, newAgencyId.ToString());
+
                 await DeleteOldUsers(context, userIds);
                 await transaction.CommitAsync();
 
