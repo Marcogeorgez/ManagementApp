@@ -75,6 +75,8 @@ public class Project
     public bool IsUrgent { get; set; } = false;
 
     public bool IsUrgentDueDate { get; set; } = false;
+    public SubmissionStatus SubmissionStatus { get; set; } = SubmissionStatus.Pending;
+
 
 
     // Billable hours, overtime, and payment details for both editors
