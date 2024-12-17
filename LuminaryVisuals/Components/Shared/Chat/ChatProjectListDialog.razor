@@ -8,7 +8,7 @@
         <MudPaper Elevation="3" Class="chat-header" Outlined="true">
         <MudText Typo="Typo.h5" Class="projects-title">
             <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
-            Projects Chats
+            Your Projects
 
         </MudText>
         <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
@@ -22,7 +22,7 @@
                     @foreach (var project in projects)
                     {
                         var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView) ? " unapproved-message" : "");
-                        <MudListItem Class="@classText" OnClick="() => OpenProjectChat(project.ProjectId)">
+                        <MudListItem Class="@classText" OnClick="() => OpenProjectChat(project)">
                             <div class="project-content">
                             <MudText Typo="Typo.body1">@project.ProjectName</MudText>
                             @if (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView))
@@ -113,11 +113,11 @@
         }
     }
 
-    private void OpenProjectChat(int projectId)
+    private void OpenProjectChat(Project Project)
     {
         var parameters = new DialogParameters
         {
-            { "ProjectId", projectId },
+            { "Project", Project},
             { "UserId", userId },
             { "isAdminView" , isAdminView },
             { "isEditorView" , isEditorView },
