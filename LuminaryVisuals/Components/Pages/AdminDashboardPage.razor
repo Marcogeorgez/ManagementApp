@@ -91,7 +91,6 @@ else
                           ReadOnly="true"
                           Immediate="true" Adornment="Adornment.End"
                           AdornmentIcon="@Icons.Material.Filled.OpenInFull" Variant=Variant.Outlined 
-                          AutoGrow=true
                           MaxLines="4"
                           OnAdornmentClick="@(() => OpenAgencyList(context.Item.UserId))">
                 <MudTooltip Text="Expand">
@@ -158,7 +157,6 @@ else
                     <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
                                   Immediate="true"
                                   Value="@(UserRoleViewModel.StripHtmlTags(context.Item.Note))"
-                                  AutoGrow="false"
                                   Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInFull"
                                   OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
@@ -317,7 +315,7 @@ else
                 "Text", noteValue
             }    
         };
-        var options = new DialogOptions{ FullScreen = true};
+        var options = new DialogOptions{ };
         var dialog = DialogService.Show<FullNoteDialog>("Edit Note",parameters,options);
         dialog.Result.ContinueWith(async task =>
         {
