@@ -1,4 +1,5 @@
 ﻿@using LuminaryVisuals.Components.Pages
+@using LuminaryVisuals.Components.Shared.Chat
 @using Microsoft.AspNetCore.Identity
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -50,6 +51,7 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         </AuthorizeView>
         <AuthorizeView Roles="Admin,Client,Editor">
         <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
+        <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Email</MudNavLink>
         </AuthorizeView>
 
                 <MudSpacer />
@@ -140,6 +142,23 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        if (currentUser.IsInRole("Admin"))
+        {
+            _currentRole = "Admin";
+            isAdminView = true;
+        }
+        else if (currentUser.IsInRole("Editor"))
+        {
+            _currentRole = "Editor";
+            isEditorView = true;
+
+        }
+        else if (currentUser.IsInRole("Client"))
+        {
+            _currentRole = "Client";
+            isClientView = true;
+        }
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -159,11 +178,37 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         }
     }
 
+    private void OpenChatPopup()
+    {
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                Position = DialogPosition.BottomRight,
+                NoHeader = true
+            };
+        var parameters = new DialogParameters<ChatProjectListDialog>
+        {
+            { "userId" , _currentUserId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , isEditorView },
+            { "isClientView" , isClientView },
+            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
 
+        };
+        DialogService.Show<ChatProjectListDialog>("", parameters, options);
+    }
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
+    private bool isAdminView;
+    private bool isEditorView;
+    private bool isClientView;
+    private int timezoneOffsetMinutes;
+    private string _currentUserId;
+    private string _currentRole;
+
+
 }
 

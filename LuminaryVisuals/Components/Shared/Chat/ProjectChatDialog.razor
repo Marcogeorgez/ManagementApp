@@ -15,26 +15,30 @@
             <MudPaper Elevation="3" Class="chat-header" Outlined="true">
                     <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
                 <MudText Typo="Typo.h6" Class="chat-title">
-                    <MudIcon Icon="@Icons.Material.Filled.Chat" Class="mr-3" />
-                    Chat
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
+                @Project.ProjectName
                 </MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
             </MudPaper>
             <MudContainer Class="chat-content" Gutters="false"  @onscroll="OnScroll">
-                @if (hasMoreMessages)
-                {
-                    <div class="load-more-indicator">Loading more messages...</div>
-                }
 
                 <div class="chat-messages">
+                @if (hasMoreMessages)
+                {
+                    <MudProgressCircular Color="Color.Info" Indeterminate="true" Style="margin-top:0px!important;align-self:center;position:relative;   "/>
+                }
+
                     @foreach (var group in messages.GroupBy(m => GetDisplayDate(m.Timestamp)))
                     {
                         <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
                             @group.Key
                         </MudText>
-                                @foreach (var (message, index) in group.Select((m, i) => (m, i)))
-                                {
-                                if(lastUserId != message.UserId){
+                        DateTime? lastTimestamp = null;
+                        string lastUserId = null;
+                        @foreach (var (message, index) in group.Select((m, i) => (m, i)))
+                        {
+                        if (lastUserId != message.UserId || ( lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null ))
+                        {
                                     <MudText Typo="Typo.caption" Class="message-username">@(message.UserId != UserId && !isClientView
                                         ? message.User.UserName
                                         : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
@@ -72,12 +76,16 @@
                                     Color="Color.Error"
                                     Size="Size.Small"
                                     OnClick="() => DeleteMessage(message)"/>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                                       Color="Color.Info"
+                                                       Size="Size.Small"
+                                                       OnClick="() => MessageInformation(message)" />
                                     if (message.IsApproved == false)
                                     {
                                         <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
                                         Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
                                     }
-                                    }
+                                }
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
                                     OnClick="() => EditMessage(message)"  />
                                 </div>
@@ -88,35 +96,49 @@
                     }
                 </div>
             </MudContainer>
-            <MudPaper Class="chat-input-area" Elevation="0">
-
+            <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0">
+            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex">
+                <ActivatorContent>
+                    <MudIconButton Color="Color.Success"
+                                   Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
+                </ActivatorContent>
+            </MudFileUpload>
             <MudTextField @bind-Value="newMessage"
+                          Class="flex-grow-1"
                           Placeholder="Type a message..."
                           Variant="Variant.Outlined"
-                          Clearable="true" @ref="messageField"
+                          Clearable="true"
+                          @ref="messageField"
                           Adornment="Adornment.End"
                           AdornmentIcon="@Icons.Material.Filled.Send"
-                          OnAdornmentClick="( () => SendMessage(newMessage) )" TextUpdateSuppression=false
+                          OnAdornmentClick="( () => SendMessage(newMessage) )"
+                          TextUpdateSuppression=false
                           AutoFocus="true"
-                          OnKeyUp="HandleKeyPress" />
-            </MudPaper>
+                          OnKeyUp="HandleKeyPress">
+            </MudTextField>
+
+        </MudPaper>
     </MudPaper>
 </MudContainer>
 
 @code {
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
-    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public Project Project{ get; set; }
     [Parameter] public string UserId { get; set; }
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
     [Parameter] public int timezoneOffsetMinutes { get; set; }
-
+    IList<IBrowserFile> _files = new List<IBrowserFile>();
+    private void UploadFiles(IBrowserFile file)
+    {
+        _files.Add(file);
+        //TODO upload the files to the server
+    }
     private bool isClicked = false;
     private string newMessage;
     private List<Message> messages = new List<Message>();
-    private string lastUserId = null;
     private MudTextField<string> messageField = default!;
     private int? HighlightedMessageId;
     private IDisposable _subscription;
@@ -133,10 +155,10 @@
     {
         await LoadMessages(true);
         await MarkMessagesAsRead();
-        _subscription = MessageNotificationService.Subscribe(ProjectId, async (newMessage) =>
+        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (newMessage) =>
         {
             // Check if the message is for this project
-            if (ProjectId == ProjectId)
+            if (Project.ProjectId == Project.ProjectId)
             {
                 await InvokeAsync(async () =>
                 {
@@ -157,7 +179,7 @@
         {
             finishedLoading = false;
             int pageToLoad = initial ? 1 : currentPage;
-            var loadedMessages = await ChatService.GetMessagesAsync(ProjectId, isClientView, pageNumber: currentPage, pageSize: PAGE_SIZE);
+            var loadedMessages = await ChatService.GetMessagesAsync(Project.ProjectId, isClientView, pageNumber: currentPage, pageSize: PAGE_SIZE);
 
             if (initial)
             {
@@ -221,10 +243,11 @@
 
     private async Task MarkMessagesAsRead()
     {
-        await ChatService.MarkMessagesAsReadAsync(ProjectId, UserId);
+        await ChatService.MarkMessagesAsReadAsync(Project.ProjectId, UserId);
     }
     private async Task<bool> SendMessage(string newMessage)
     {
+        await messageField.BlurAsync();
         if (string.IsNullOrWhiteSpace(newMessage))
         {
             Snackbar.Add("Message cannot be empty", Severity.Warning);
@@ -232,10 +255,14 @@
         }
         try 
         {
-            await ChatService.AddMessageAsync(ProjectId, UserId, newMessage, isEditorView);
+            await messageField.Clear();
+
+            await ChatService.AddMessageAsync(Project.ProjectId, UserId, newMessage, isEditorView);
             await MarkMessagesAsRead();
             await LoadMessages(initial: true);
             newMessage = string.Empty;
+            await messageField.FocusAsync();
+
             return true;
         }
         catch (Exception ex)
@@ -335,17 +362,33 @@
     }
     private async Task DeleteMessage(Message message)
     {
+        var parameters = new DialogParameters
+            {
+                { "Message", "Are you sure you want to delete this message?" }
+            };
 
-        await ChatService.UnsendMessageAsync(ProjectId ,message.MessageId);
-        await LoadMessages(initial: true);
+        var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            StateHasChanged();
+            await ChatService.UnsendMessageAsync(Project.ProjectId, message.MessageId);
+            await LoadMessages(initial: true);
+        }
 
     }
     private async Task ApproveMessage(Message message)
     {
-        await ChatService.ApproveMessageAsync(ProjectId, message.MessageId);
+        await ChatService.ApproveMessageAsync(Project.ProjectId, message.MessageId);
         await LoadMessages(initial: true);
     }
 
+    private async Task MessageInformation(Message message)
+    {
+        await DialogService.ShowMessageBox("Info",$"message sent at {message.Timestamp}", yesText: "Close");
+        StateHasChanged();
+
+    }
     private async Task EditMessage(Message message)
     {
         try
@@ -365,7 +408,7 @@
             if (!result.Canceled)
             {
                 var editedContent = (string) result.Data;
-                await ChatService.EditMessageAsync(message, ProjectId, editedContent, isEditorView);
+                await ChatService.EditMessageAsync(message, Project.ProjectId, editedContent, isEditorView);
                 await LoadMessages(initial: true);
             }        
             else
@@ -388,7 +431,6 @@
                 var result = await SendMessage(newMessage);
 
                 await messageField.Clear();
-                // Should not be needed to call StateHasChanged from my testing
                 // StateHasChanged();
                 await messageField.FocusAsync();
         }
