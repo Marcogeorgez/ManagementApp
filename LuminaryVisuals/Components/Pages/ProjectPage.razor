@@ -408,18 +408,18 @@ else
                                        Required="true">
                                 @if(_isAdminView)
                                 {
-                                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
-                                {
-                                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                                    @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                                    {
+                                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                                 }
-                                }
+                            }
                             else if(_isEditorView)
                             {
                                 <MudSelectItem Value="ProjectStatus.Working">Working</MudSelectItem>
                                 <MudSelectItem Value="ProjectStatus.Delivered">Delivered</MudSelectItem>
 
                             }
-                                else{
+                            else{
                                     <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
                                     <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
                                 }
@@ -462,7 +462,6 @@ else
                                   Text="Notes" Variant="Variant.Outlined"
                                   ReadOnly="true" Adornment="Adornment.End"
                                   AdornmentIcon="@Icons.Material.Filled.OpenInNew"
-                                  AutoGrow=false
                                   MaxLines="1"
                                   OnAdornmentClick="@(() => OpensPrivateNoteForProject(context.Item))">
                         <MudTooltip Text="Click to view/change private note">
@@ -679,8 +678,7 @@ else
                                         Class="mb-1">
                                 Archive
                             </MudButton>
-                        }
-                        <MudButton Color="Color.Info"
+                                                    <MudButton Color="Color.Info"
                                    Variant="Variant.Filled"
                                    Size="Size.Small"
                                    OnClick="@(() => Duplicate(context.Item))"
@@ -712,7 +710,6 @@ else
                             Logging
                         </MudButton>
                         </MudStack>
-
                         }
 
                 </CellTemplate>

@@ -12,7 +12,7 @@
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.ProjectName"
                                   Required="true"
-                                  AutoGrow="true" />
+                                   />
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
@@ -50,7 +50,7 @@
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.FootageLink"
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
-                                  AutoGrow="true" />
+                                   />
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
@@ -59,7 +59,7 @@
                                   Placeholder="Add Details of Footage Resolution"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.ProjectSpecifications.Resolution"
-                                  AutoGrow="true"
+                                  
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
@@ -70,7 +70,7 @@
                                   Placeholder="Add Details of Footage size"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.ProjectSpecifications.Size"
-                                  AutoGrow="true"
+                                  
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
@@ -81,7 +81,7 @@
                                   Placeholder="Add Details of Number of cameras"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.ProjectSpecifications.CameraNumber"
-                                  AutoGrow="true"
+                                  
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
@@ -92,7 +92,7 @@
                                   Placeholder="Add Details of Color profile for each camera"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.ProjectSpecifications.ColorProfile"
-                                  AutoGrow="true"
+                                  
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
@@ -147,7 +147,7 @@
                                   @bind-Value="newProject.Deliverables"
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="Please write down what the deliverables for this project will be"
-                                  AutoGrow="true" />
+                                   />
                 </MudItem>
 
                 <MudItem xs="12" Class="mb-3 pl-5 pr-5 ">
@@ -213,7 +213,7 @@ The Bride was married like I said before, so this wedding was quite special beca
                                   Placeholder="Place link to music here and any comments"
                                   Variant="Variant.Outlined"
                                   @bind-Value="newProject.MusicPreference"
-                                  AutoGrow="true" />
+                                   />
                 </MudItem>
 
 

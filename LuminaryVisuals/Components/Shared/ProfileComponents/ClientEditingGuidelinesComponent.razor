@@ -2,7 +2,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ISnackbar Snackbar
 
-
+<MudContainer>
 <MudExpansionPanels MultiExpansion="true">
 <MudText Typo="Typo.h5">Preferences Checklist:</MudText>
     <MudForm @ref="form" Model="@preferences">
@@ -16,7 +16,7 @@
             <MudText Typo="Typo.h6">
                 How you like to structure the videos:
             </MudText>
-            <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+            <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Row=true>
             @foreach (var structure in VideoStructureOptions)
             {
                 <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
@@ -25,112 +25,126 @@
         </MudRadioGroup>
 
         <!-- Transitions Checklist -->
-        <MudText Typo="Typo.h6" Class="mt-3">
-            Transitions VFX to use/avoid:
-        </MudText>
+                <MudText Typo="Typo.h6" Class="mt-3">
+                    Transitions VFX to use/avoid:
+                </MudText>
+                <MudGrid Spacing=4 Class="px-10 py-2">
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Cross Fades:
+                        </MudText>
+                        <MudRadioGroup T="string" @bind-Value="preferences.CrossFades">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
 
-        <MudText Typo="Typo.body1">
-            Cross Fades:
-        </MudText>
-        <MudRadioGroup T="string" @bind-Value="preferences.CrossFades">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Fades to Black:
+                        </MudText>
+                        <MudRadioGroup T="string" @bind-Value="preferences.FadeToBlack">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
 
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
-        </MudRadioGroup>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Black and White:
+                        </MudText>
+                        <MudRadioGroup T="string" @bind-Value="preferences.BlackAndWhite">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
 
-        <MudText Typo="Typo.body1">
-            Fades to Black:
-        </MudText>
-        <MudRadioGroup T="string" @bind-Value="preferences.FadeToBlack">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
- 
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
-        </MudRadioGroup>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Double exposure:
+                        </MudText>
+                        <MudRadioGroup T="string" @bind-Value="preferences.DoubleExposure">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
 
-        <MudText Typo="Typo.body1">
-            Black and White:
-        </MudText>
-        <MudRadioGroup T="string" @bind-Value="preferences.BlackAndWhite">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
-  
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
-        </MudRadioGroup>
-        <MudText Typo="Typo.body1">
-            Double exposure:
-        </MudText>
-        <MudRadioGroup T="string" @bind-Value="preferences.DoubleExposure">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
-   
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
-        </MudRadioGroup>
-        <MudText Typo="Typo.body1">
-            Masking transitions:
-        </MudText>
-        <MudRadioGroup T="string" @bind-Value="preferences.MaskingTransitions">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
-        </MudRadioGroup>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Masking transitions:
+                        </MudText>
+                        <MudRadioGroup T="string" @bind-Value="preferences.MaskingTransitions">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Lens flares:
+                        </MudText>
+                        <MudRadioGroup T="string" Name="Lens flares" @bind-Value="preferences.LensFlares">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
 
-        <MudText Typo="Typo.body1">
-            Lens flares:
-        </MudText>
-        <MudRadioGroup T="string" Name="Lens flares" @bind-Value="preferences.LensFlares">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Old Film look:
+                        </MudText>
+                        <MudRadioGroup T="string" Name="Old Film look" @bind-Value="preferences.OldFilmLook">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
+                        </MudRadioGroup>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body1">
+                            Picture in picture:
+                        </MudText>
+                        <MudRadioGroup T="string" Name="Picture in picture" @bind-Value="preferences.PictureInPicture">
+                            <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start" Row=true>
+                                @foreach (var structure in Options)
+                                {
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                }
+                            </MudStack>
 
-        </MudRadioGroup>
-        <MudText Typo="Typo.body1">
-            Old Film look:
-        </MudText>
-        <MudRadioGroup T="string" Name="Old Film look" @bind-Value="preferences.OldFilmLook">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-                }
-            </MudStack>
-        </MudRadioGroup>
-        <MudText Typo="Typo.body1">
-            Picture in picture:
-        </MudText>
-        <MudRadioGroup T="string" Name="Picture in picture" @bind-Value="preferences.PictureInPicture">
-            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
-            @foreach (var structure in Options)
-            {
-                <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-            }
-            </MudStack>
-
-        </MudRadioGroup>
+                        </MudRadioGroup>
+                    </MudItem>
+                </MudGrid>
             <!-- Other Transitions comments -->
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Transitions Comments:
             </MudText>
-            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.OtherTransitions" Variant="Variant.Filled" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
+            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.OtherTransitions" Variant="Variant.Filled" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
             </MudTextField>
 
             <!-- speeches from the day in the highlights film -->
@@ -138,7 +152,7 @@
                 <MudText Typo="Typo.h6" Class="mt-3 mb-3">
                 Do you like to use speeches from the day in the highlights film:
                 </MudText>
-                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=true>
                 @foreach (var speech in speeches)
                     {
                     <MudRadio Color="Color.Info" Value="@speech">@speech.ToString()</MudRadio>
@@ -148,14 +162,14 @@
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Comments on the use of speeches:                :
         </MudText>
-            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SpeechComments" Variant="Variant.Filled" Placeholder="">
+            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SpeechComments" Variant="Variant.Filled" Placeholder="">
         </MudTextField>
             <!-- Emphasis on sound design:-->
             <MudRadioGroup T="string" @bind-Value="preferences.SoundDesignEmphasis">
                 <MudText Typo="Typo.h6" Class="mt-3 mb-3">
                     Emphasis on sound design:
                 </MudText>
-                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Justify="Justify.SpaceAround">
+                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=true>
                     @foreach (var _soundDesign in soundDesign)
                     {
                         <MudRadio Color="Color.Info" Value="@_soundDesign">@_soundDesign.ToString()</MudRadio>
@@ -165,30 +179,30 @@
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Comments on the use of sound deign:
             </MudText>
-            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SoundDesignComments" Variant="Variant.Filled" Placeholder="">
+            <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SoundDesignComments" Variant="Variant.Filled" Placeholder="">
             </MudTextField>
 
             <MudText Typo="Typo.h6" Class="mt-5">
                 Music genres or favorite artist + music licensing sites to use:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.musicLicensingSites" Variant="Variant.Filled" Placeholder="">
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.musicLicensingSites" Variant="Variant.Filled" Placeholder="">
             </MudTextField>
             <MudText Typo="Typo.h6" Class="mt-5">
                 Samples of songs/films with songs you like:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.SongSamples" Variant="Variant.Filled" Placeholder="">
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SongSamples" Variant="Variant.Filled" Placeholder="">
             </MudTextField>
 
             <MudText Typo="Typo.h6" Class="mt-5">
                 Please provide us with your LUTs and references of how you like the color to look like:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.ColorReferences" Variant="Variant.Filled" Placeholder="">
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.ColorReferences" Variant="Variant.Filled" Placeholder="">
             </MudTextField>
 
             <MudText Typo="Typo.h6" Class="mt-5">
                 Links to films you like or previous edits:
             </MudText>
-            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.FilmReferences" Variant="Variant.Filled"
+            <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.FilmReferences" Variant="Variant.Filled"
                           Placeholder="Please include the links and a few comments on what makes these films appeal to you.">
             </MudTextField>
         </MudExpansionPanel>
@@ -249,7 +263,7 @@
             <MudText Typo="Typo.h6" Class="mt-5">
                 Client Samples:
             </MudText>
-            <MudTextField T="string" Clearable=true MaxLines=6 AutoGrow=true @bind-Value="preferences.ClientSamples" Variant="Variant.Filled"
+            <MudTextField T="string" Clearable=true MaxLines=6  @bind-Value="preferences.ClientSamples" Variant="Variant.Filled"
                           Placeholder="Write if you have any samples on what you prefer">
             </MudTextField>
         </MudExpansionPanel>
@@ -259,6 +273,7 @@
         </MudItem>
     </MudForm>
 </MudExpansionPanels>
+</MudContainer>
 @code {
     private MudForm form;
     private ClientEditingGuidelines preferences = new();
