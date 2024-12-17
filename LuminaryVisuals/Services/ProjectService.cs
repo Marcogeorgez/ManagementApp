@@ -33,6 +33,7 @@ public class ProjectService
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
                 .Include(p => p.Revisions)
+                .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
             var userIds = projects
                     .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
@@ -86,6 +87,7 @@ public class ProjectService
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
                 .Include(p => p.Revisions)
+                .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
 
             // Include PrimaryEditor only if the user is the primary editor
@@ -113,6 +115,7 @@ public class ProjectService
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.Archive)
             .Include(p => p.Revisions)
+            .OrderBy(p => p.ExternalOrder)
             .ToListAsync();
             if (project == null)
                 return null;
