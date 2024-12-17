@@ -5,23 +5,20 @@
 @inject IJSRuntime JSRuntime
 <PageTitle>Synchron</PageTitle>
 
-@if (_loading)
-{
-    <SplashScreen />
-}
-
 <div class="d-flex justify-content-center align-items-center" style="width:inherit; height:inherit;justify-content:center;position: relative; overflow: hidden; color: white;">
-    <video autoplay muted loop id="synchron" tabindex="-1"  style="position: absolute; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -1;">
+    <video autoplay muted loop id="synchron"  style="position: absolute; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -1;">
+        <source src="synchronHVEC.mp4" type="video/mp4; codecs=hevc">
         <source src="synchron.mp4" type="video/mp4">
-    </video>
+      Your browser does not support video.
+  </video>
     <div class="text-center" style="width: inherit;height: inherit;justify-content: center;display: flex;flex-direction: column;flex-basis: inherit;
         align-content: space-between;align-items: center;">
 
         <img src="Logo.png" alt="Logo" class="mb-15 mt-20" style="width: 150px;" />
-        <h3 class="mb-1" style="font-size:4vw;">Welcome to</h3>
-        <h1 class="mb-1"style="font-size: 8vw;">SYNCHRON</h1>
-        <h4 class="" style="font-size:3vw;">by Luminary Visuals.</h4>
-        <MudNavLink OnClick="@LoginClick" Class="my-10" Style="width:auto !important;">
+        <h4  style="font-size:3vw; ">Welcome to</h4>
+        <h2 style="font-size: 5vw;">SYNCHRON</h2>
+        <h5  style="font-size:2vw;">by Luminary Visuals.</h5>
+        <MudNavLink  OnClick="@LoginClick" Class="my-10" Style="width:auto !important;">
 
         <form id="GoogleLoginForm" action="Account/PerformExternalLogin" method="post">
             <AntiforgeryToken />
@@ -38,14 +35,16 @@
 
 @code
 {
-    private bool _loading = true;
-    protected override async Task OnInitializedAsync()
-    {
-        _loading = false;
-    }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+        }
+    }
     private async Task LoginClick()
     {
         await JSRuntime.InvokeVoidAsync("submitForm", "GoogleLoginForm");
     }
+
 }
