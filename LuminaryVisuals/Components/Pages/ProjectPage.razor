@@ -909,11 +909,11 @@ else
         _isArchived = !_isArchived;
         await LoadProjects();
     }
-    private async Task OpenProjectChat(int projectId)
+    private async Task OpenProjectChat(Project Project)
     {
         var parameters = new DialogParameters
         {
-            { "ProjectId", projectId },
+            { "Project", Project},
             { "UserId", _currentUserId },
             { "isAdminView" , isAdminView },
             { "isEditorView" , _isEditorView },
