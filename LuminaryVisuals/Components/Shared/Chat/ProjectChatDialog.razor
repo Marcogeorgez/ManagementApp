@@ -10,7 +10,7 @@
 @inject IMessageNotificationService MessageNotificationService
 
 
-<MudContainer Class="chat-container">
+<MudContainer Class="chat-container" Gutters=false>
         <MudPaper Elevation="4" Class="chat-panel">
             <MudPaper Elevation="3" Class="chat-header" Outlined="true">
                     <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
@@ -96,7 +96,7 @@
                     }
                 </div>
             </MudContainer>
-            <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0">
+            <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
             <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex">
                 <ActivatorContent>
                     <MudIconButton Color="Color.Success"
@@ -491,7 +491,11 @@
     }
 
 }
-
+<style>
+    .mud-dialog-width-md {
+        padding: 0% !important;
+    }
+</style>
 <script>
     window.getTimezoneOffset = function () {
         return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
