@@ -4,7 +4,7 @@
     {
         Pending,
         Submitted,
-        Reviewed
+        Approved
     }
 
 }
