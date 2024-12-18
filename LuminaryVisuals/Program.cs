@@ -1,4 +1,5 @@
-﻿using Blazr.RenderState.Server;
+﻿using Amazon.S3;
+using Blazr.RenderState.Server;
 using LuminaryVisuals.Components;
 using LuminaryVisuals.Components.Account;
 using LuminaryVisuals.Data;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
@@ -232,6 +234,36 @@ if (environment.IsProduction())
         options.ProfilesSampleRate = 1.0f;
     });
 }
+
+
+builder.Services.Configure<CloudflareR2Settings>(configuration =>
+{
+    configuration.AccountId = Environment.GetEnvironmentVariable("CLOUDFLARE_ACCOUNT_ID");
+    configuration.AccessKeyId = Environment.GetEnvironmentVariable("CLOUDFLARE_ACCESS_KEY_ID");
+    configuration.SecretAccessKey = Environment.GetEnvironmentVariable("CLOUDFLARE_SECRET_ACCESS_KEY");
+    configuration.publicURL = Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_URL");
+    configuration.BucketName = Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_NAME");
+});
+
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var r2Settings = sp.GetRequiredService<IOptions<CloudflareR2Settings>>().Value;
+
+    var config = new AmazonS3Config
+    {
+        ServiceURL = $"https://{r2Settings.AccountId}.r2.cloudflarestorage.com/",
+        ForcePathStyle = true,
+    };
+
+    return new AmazonS3Client(
+        r2Settings.AccessKeyId,
+        r2Settings.SecretAccessKey,
+        config
+    );
+});
+
+
+builder.Services.AddSingleton<CloudflareR2Service>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
