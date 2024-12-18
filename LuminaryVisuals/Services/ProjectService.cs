@@ -253,6 +253,7 @@ public class ProjectService
                 .FirstOrDefaultAsync(p => p.ProjectId ==  project.ProjectId);
             if (_project != null)
             {
+                var isChanged = false;
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
                 {
                     await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value,false);
@@ -268,7 +269,16 @@ public class ProjectService
                         project.Client.WeeksToDueDateDefault = 4;
                     }
                 }
+                if(_project.PrimaryEditorId != project.PrimaryEditorId && _project.PrimaryEditorId == null)
+                {
+                    _project.PrimaryEditorId = project.PrimaryEditorId;
+                    isChanged = true;
+                }
                 context.Entry(_project).CurrentValues.SetValues(project);
+                if(isChanged)
+                {
+                    _project.Status = ProjectStatus.Scheduled;
+                }
                 if (project.PrimaryEditorDetails != null)
                 {
                     context.Entry(_project.PrimaryEditorDetails).CurrentValues.SetValues(project.PrimaryEditorDetails);
@@ -304,6 +314,7 @@ public class ProjectService
                     }
                 }
                 }
+
                 await context.SaveChangesAsync();
 
                 await _broadcaster.NotifyAllAsync();
