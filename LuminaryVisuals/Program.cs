@@ -65,7 +65,6 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddSingleton<DeviceSessionService>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<IConfirmationService, ConfirmationService>();
 builder.Services.AddSingleton<IMessageNotificationService, MessageNotificationService>();
@@ -106,13 +105,19 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 })
 .AddCookie(options =>
 {
-    options.LogoutPath = "/";
     options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(90);
+    options.Cookie.MaxAge = TimeSpan.FromDays(90);
+
+    // Ensure persistent cookies
+    options.Cookie.Expiration = TimeSpan.FromDays(90);
+    options.ExpireTimeSpan = TimeSpan.FromDays(90);
     options.SlidingExpiration = true;
+    options.Cookie.IsEssential = true;
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 
     options.Events = new CookieAuthenticationEvents
     {
@@ -126,8 +131,6 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
         {
             // Explicitly delete the authentication cookie
             context.CookieOptions.Expires = DateTime.UtcNow.AddDays(-1);
-            context.HttpContext.Response.Cookies.Delete(CookieAuthenticationDefaults.AuthenticationScheme);
-            context.HttpContext.Response.Cookies.Delete(".AspNetCore.Identity.Application"); // Explicit cookie name
             context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Task.CompletedTask;
         }
@@ -168,14 +171,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure security headers and cookie policy
-builder.Services.Configure<CookiePolicyOptions>(options =>
-{
-    options.MinimumSameSitePolicy = SameSiteMode.Strict;
-    options.HttpOnly = HttpOnlyPolicy.Always;
-    options.Secure = CookieSecurePolicy.Always;
-});
-
 
 // Configure authorization policies
 builder.Services.AddAuthorization(options =>
@@ -190,31 +185,18 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAntiforgery(options =>
-{
-    options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-});
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.AccessDeniedPath = "/AccessDenied";
-    options.Events = new CookieAuthenticationEvents
-    {
-        OnRedirectToLogin = context =>
-        {
-            context.Response.Redirect("/");
-            return Task.CompletedTask;
-        }
-    };
-});
+
 
 builder.Services.AddSingleton<IMessageCleanupService, MessageCleanupService>();
 builder.Services.AddHostedService<MessageCleanupBackgroundService>();
 
 
-// IMPORTANT THIS BELOW REMOVE THE LIMIT OF 16k character of SignalR on how big a message can be.
 builder.Services.AddServerSideBlazor()
-    .AddHubOptions(opt => opt.MaximumReceiveMessageSize = null)
+    .AddHubOptions(opt => {
+        opt.MaximumReceiveMessageSize = null;
+        opt.ClientTimeoutInterval = null;
+        }
+    )
     .AddCircuitOptions(options =>
     {
         options.DisconnectedCircuitMaxRetained = 100; // Optional: Limit the number of disconnected circuits retained.
@@ -270,6 +252,14 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 
 
 builder.Services.AddSingleton<CloudflareR2Service>();
+
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(90);
+    options.Cookie.MaxAge = TimeSpan.FromDays(90);
+});
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -314,7 +304,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseAntiforgery();
-app.UseDeviceSessionTracking();
 
 /*app.UseEndpoints(
     endpoints =>
