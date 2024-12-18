@@ -501,6 +501,8 @@ else
         @* Editors Info*@
         @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
         {
+                @if (_isAdminView)
+                {
             <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
@@ -511,40 +513,29 @@ else
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
-            @if (_isAdminView)
-            {
-                <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
-            </PropertyColumn>                
-            }
-            else
-            {
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
-            }
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true"
+                            Editable="false" CellStyle="text-align:center;">
+                <CellTemplate>
+                    @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
+                    {
+                        <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
+                    }
+                    else
+                    {
+                        <MudText>N/A</MudText>
+                    }
+                </CellTemplate>
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
-        <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" 
-            Editable="false" CellStyle="text-align:center;">
-                    <CellTemplate>
-                        @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
-                        {
-                            <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
-                        }
-                        else
-                        {
-                            <MudText>N/A</MudText>
-                        }
-                    </CellTemplate>
-            <EditTemplate>
-                <MudText Style="display:none;" />
-            </EditTemplate>
-        </PropertyColumn>
             <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
@@ -555,20 +546,11 @@ else
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
-            @if (_isAdminView)
-            {
                 <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
                 </PropertyColumn>
-            }
-            else
-            {
-                <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                    <EditTemplate>
-                        <MudText Style="display:none;" />
-                    </EditTemplate>
-                </PropertyColumn>
-            }
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    
+                   
+            <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
@@ -588,6 +570,67 @@ else
                     <MudText Style="display:none;" />
                 </EditTemplate>
             </PropertyColumn>
+                    // ... (rest of the existing admin view columns)
+                }
+                else if (_isEditorView)
+                {
+                    <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false">
+                            <CellTemplate>
+                            @(
+                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
+                        : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours
+                        :   "N/A")
+                            )
+                        </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false">
+                            <CellTemplate>
+                                @context.Item.PrimaryEditorDetails.Overtime
+                            @(
+                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime
+                    : "N/A" )
+                    )
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false">
+                            <CellTemplate>
+                                                            @(
+                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
+                        : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours
+                        :   "N/A")
+                            )
+                                @context.Item.PrimaryEditorDetails.AdjustmentHours
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false">
+                            <CellTemplate>
+                            @(
+                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours
+                    : "N/A" )
+                    )
+                                @context.Item.PrimaryEditorDetails.FinalBillableHours
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false">
+                            <CellTemplate>
+                            @{
+
+                                var paymentAmount = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.PaymentAmount
+                                : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.PaymentAmount : null);
+                                }
+                                @if (paymentAmount >= 0)
+                                {
+                                    <MudText>$@paymentAmount</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>N/A</MudText>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                }
 
         }
         @if (RoleBasedColumns[_currentRole].Contains("BillableHours")){
@@ -894,7 +937,7 @@ else
     {
         if (firstRender)
         {
-            var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
+            timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         }
     }
 
@@ -1715,26 +1758,3 @@ else
     cursor: grabbing;
 }
 </style>
-<script>
-    window.saveAsFile = (filename, base64Content) => {
-        const byteCharacters = atob(base64Content);
-        const byteNumbers = new Array(byteCharacters.length);
-
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'text/csv' });
-
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-    window.getTimezoneOffset = function () {
-        return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
-    };
-</script>
