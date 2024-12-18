@@ -89,7 +89,7 @@
             {
                 foreach (var project in projects)
                 {
-                    var unreadMessageData = await ChatService.GetUnreadMessageCount(project.ProjectId, userId);
+                    var unreadMessageData = await ChatService.GetUnreadMessageCountAndLastMessageTimeAsync(project.ProjectId, userId);
                     project.countUnreadMessages = unreadMessageData.Item1;
                     project.LastSentMessage = unreadMessageData.Item2;
                     project.MessageRequireApprovalCount = unreadMessageData.Item3;

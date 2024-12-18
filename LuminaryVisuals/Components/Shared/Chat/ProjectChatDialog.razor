@@ -29,7 +29,7 @@
                     <MudProgressCircular Color="Color.Info" Indeterminate="true" Style="margin-top:0px!important;align-self:center;position:relative;   "/>
                 }
 
-                    @foreach (var group in messages.GroupBy(m => GetDisplayDate(m.Timestamp)))
+                @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
                     {
                         <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
                             @group.Key

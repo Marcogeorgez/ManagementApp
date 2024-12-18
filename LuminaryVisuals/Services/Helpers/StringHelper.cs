@@ -83,5 +83,15 @@ namespace LuminaryVisuals.Services.Helpers
             var localTime = utcTime.Value.AddMinutes(timezoneOffsetMinutes);
             return localTime.ToString("h:mm tt"); // Format for display
         }
+        public static DateTime ConvertToLocalTimeDateTime(DateTime? utcTime, int timezoneOffsetMinutes)
+        {
+            if (utcTime == DateTime.MinValue || utcTime == null)
+            {
+                return DateTime.MinValue;
+            }
+            // Convert UTC time to user's local time based on the offset
+            var localTime = utcTime.Value.AddMinutes(timezoneOffsetMinutes);
+            return localTime; // Format for display
+        }
     }
 }
