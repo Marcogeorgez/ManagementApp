@@ -129,14 +129,21 @@
     </DialogContent>
     <DialogActions>
         <MudSpacer />
+        @if(_isAdminView && newProject.SubmissionStatus == Models.SubmissionStatus.Approved)
+        {
+            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" OnClick="@Unapprove">Unapprove</MudButton>
+
+        }
         <MudButton Class="d-flex flex-auto" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
-        <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Submit">Save Total Hours</MudButton>
+        <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Approve">@textRoleBased</MudButton>
+
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public bool _isAdminView { get; set; } 
+    [Parameter] public bool _isEditorView { get; set; }
     [Parameter] public Project newProject { get; set; } = new Project();
     private bool success;
     private bool _isOverriden;
@@ -148,9 +155,8 @@
     private decimal Misc;
     private decimal clientDiscount;
     private decimal _total;
-
     private Project _originalProject;
-
+    private string textRoleBased;
     protected override async Task OnInitializedAsync()
     {
         using (var context = DbFactory.CreateDbContext())
@@ -179,7 +185,7 @@
             };
 
             _originalProject = CloneProject(newProject);
-
+            textRoleBased = _isAdminView == true ? "Approve" : "Submit For Review";
         }
     }
 
@@ -317,22 +323,32 @@
         public decimal? Multiplier { get; set; }
     }
 
-    private async Task Submit()
+    private void Approve()
     {
-        await form.Validate();
-        if (form.IsValid)
+
+        newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+        newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+        newProject.CalculationDetails.Resolution = selectedMultipliers[2];
+        newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
+        newProject.ClientBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
+        if (_isAdminView)
         {
-            newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
-            newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
-            newProject.CalculationDetails.Resolution = selectedMultipliers[2];
-            newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
-            newProject.ClientBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
-            MudDialog.Close(DialogResult.Ok(newProject)); 
+            newProject.SubmissionStatus = Models.SubmissionStatus.Approved;
         }
-        else
+        if (_isEditorView && newProject.SubmissionStatus != Models.SubmissionStatus.Approved)
+            newProject.SubmissionStatus = Models.SubmissionStatus.Submitted;
+
+        MudDialog.Close(DialogResult.Ok(newProject));
+
+    }
+    private void Unapprove()
+    {
+        if (_isAdminView)
         {
-            var errorMessage = "Please fill in all required fields correctly before submitting.";
+            newProject.SubmissionStatus = Models.SubmissionStatus.Submitted;
         }
+        MudDialog.Close(DialogResult.Ok(newProject));
+
     }
 
     private Project CloneProject(Project project)
@@ -360,38 +376,43 @@
     }
     private bool HasChanges()
     {
-        return !Equals(_originalProject.CalculationDetails.HighlightsDifficulty, selectedMultipliers[0]) ||
-               !Equals(_originalProject.CalculationDetails.PrePartsPrecentage, selectedMultipliers[1]) ||
-               !Equals(_originalProject.CalculationDetails.Resolution, selectedMultipliers[2]) ||
-               !Equals(_originalProject.CalculationDetails.FootageQuality, selectedMultipliers[3]) ||
-               !Equals(_originalProject.CalculationDetails.CameraNumber, newProject.CalculationDetails.CameraNumber) ||
-               !Equals(_originalProject.CalculationDetails.FootageSize, newProject.CalculationDetails.FootageSize) ||
-               !Equals(_originalProject.CalculationDetails.Misc, newProject.CalculationDetails.Misc) ||
-               !Equals(_originalProject.CalculationDetails.PrePartsDuration, newProject.CalculationDetails.PrePartsDuration) ||
-               !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDuration, newProject.CalculationDetails.DocumentaryMulticameraDuration) ||
-               !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDurationHours, newProject.CalculationDetails.DocumentaryMulticameraDurationHours) ||
-               !Equals(_originalProject.CalculationDetails.HighlightsDuration, newProject.CalculationDetails.HighlightsDuration) ||
-               !Equals(_originalProject.CalculationDetails.SocialMediaDuration, newProject.CalculationDetails.SocialMediaDuration) ||
-               !Equals(_originalProject.CalculationDetails.FinalProjectBillableHours, newProject.CalculationDetails.FinalProjectBillableHours) ||
-               !Equals(_originalProject.ClientBillableHours, newProject.ClientBillableHours);
+        bool isDifficultyDifferent = !Equals(_originalProject.CalculationDetails.HighlightsDifficulty, newProject.CalculationDetails.HighlightsDifficulty);
+        bool isPrePartsPercentageDifferent = !Equals(_originalProject.CalculationDetails.PrePartsPrecentage, newProject.CalculationDetails.PrePartsPrecentage);
+        bool isResolutionDifferent = !Equals(_originalProject.CalculationDetails.Resolution, newProject.CalculationDetails.Resolution);
+        bool isFootageQualityDifferent = !Equals(_originalProject.CalculationDetails.FootageQuality, newProject.CalculationDetails.FootageQuality);
+        bool isCameraNumberDifferent = !Equals(_originalProject.CalculationDetails.CameraNumber, newProject.CalculationDetails.CameraNumber);
+        bool isFootageSizeDifferent = !Equals(_originalProject.CalculationDetails.FootageSize, newProject.CalculationDetails.FootageSize);
+        bool isMiscDifferent = !Equals(_originalProject.CalculationDetails.Misc, newProject.CalculationDetails.Misc);
+        bool isPrePartsDurationDifferent = !Equals(_originalProject.CalculationDetails.PrePartsDuration, newProject.CalculationDetails.PrePartsDuration);
+        bool isDocMulticameraDurationDifferent = !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDuration, newProject.CalculationDetails.DocumentaryMulticameraDuration);
+        bool isDocMulticameraDurationHoursDifferent = !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDurationHours, newProject.CalculationDetails.DocumentaryMulticameraDurationHours);
+        bool isHighlightsDurationDifferent = !Equals(_originalProject.CalculationDetails.HighlightsDuration, newProject.CalculationDetails.HighlightsDuration);
+        bool isSocialMediaDurationDifferent = !Equals(_originalProject.CalculationDetails.SocialMediaDuration, newProject.CalculationDetails.SocialMediaDuration);
+        bool isFinalBillableHoursDifferent = !Equals(_originalProject.CalculationDetails.FinalProjectBillableHours, newProject.CalculationDetails.FinalProjectBillableHours);
+        bool isClientBillableHoursDifferent = !Equals(_originalProject.ClientBillableHours, newProject.ClientBillableHours);
+
+        return isDifficultyDifferent || isPrePartsPercentageDifferent || isResolutionDifferent ||
+               isFootageQualityDifferent || isCameraNumberDifferent || isFootageSizeDifferent ||
+               isMiscDifferent || isPrePartsDurationDifferent || isDocMulticameraDurationDifferent ||
+               isDocMulticameraDurationHoursDifferent || isHighlightsDurationDifferent ||
+               isSocialMediaDurationDifferent || isFinalBillableHoursDifferent ||
+               isClientBillableHoursDifferent;
+
     }
     [Inject] private IDialogService DialogService { get; set; }
-    private void Cancel()
+    private async Task Cancel()
     {
         if (HasChanges() == true)
         {
-            DialogService.ShowMessageBox(
-                "Unsaved Changes",
-                "You have unsaved changes. Are you sure you want to close?",
-                yesText: "Discard", cancelText: "Cancel")
-                .ContinueWith(t =>
-                        {
-            if (t.Result == true)
+            bool? resultte = await DialogService.ShowMessageBox("Unsaved Changes", "You have unsaved changes. Are you sure you want to close?",
+                   yesText: "Discard", cancelText: "Cancel");
+            if (resultte == true)
             {
                 MudDialog.Cancel();
             }
-            });
+
         }
+
         else
         {
             MudDialog.Cancel();
