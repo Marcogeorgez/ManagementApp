@@ -283,12 +283,8 @@ else
                         <EditTemplate Context="context">
                             @* If changed from here I will later need of a way to change due date*@
                             @if(_isAdminView || _isClientView){
-                            <MudDatePicker Label="Shoot Date"
-                                           Variant="Variant.Outlined"
-                                           Date="@context.Item.ShootDate"
-                                           DateChanged="@(date => context.Item.ShootDate = date)"
-                                           Class="mt-3"
-                                           Required="true" />
+                            <MudDatePicker Label="Shoot Date" Variant="Variant.Outlined" Date="@context.Item.ShootDate"
+                            DateChanged="@(date => context.Item.ShootDate = date)" Class="mt-3" Required="false" />
                             }
                         </EditTemplate>
                 <GroupTemplate>
@@ -312,7 +308,7 @@ else
                 </CellTemplate>
             </TemplateColumn>
         }
-                <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center;"
+                <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false"
                     CellClass="outlined-dialog-max-content" Groupable="true" Editable=false >
                     <CellTemplate>
                         @if (context.Item.IsUrgent == true)
@@ -369,7 +365,7 @@ else
                                            Class="mt-3"
                                            Date="@context.Item.DueDate"
                                            DateChanged="@(date => context.Item.DueDate = date)"
-                                           Required="true" />
+                                           Required="false" />
                             }
                         </EditTemplate>
                 <GroupTemplate>
@@ -380,18 +376,12 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
         {
-            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true"
+            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false
                 CellStyle="text-align:center;" Groupable="true" Editable=false>
                 <EditTemplate Context="context">
                     @if(@_isAdminView){
-                    <MudDatePicker Required="true"
-                        Label="Working Month"
-                        Variant="Variant.Outlined"
-                        Class="mt-3"
-                        FixDay="1"
-                        DateFormat="MM/yyyy"
-                        Date="@context.Item.WorkingMonth"
-                        DateChanged="@(date => context.Item.WorkingMonth = date)" />
+                    <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
+                        DateFormat="MM/yyyy" Date="@context.Item.WorkingMonth" DateChanged="@(date => context.Item.WorkingMonth = date)" />
                     }
                 </EditTemplate>
                 <GroupTemplate>
@@ -401,7 +391,10 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("Status"))
         {           
-            <PropertyColumn Property="x => x.FormatStatus" Title="Status" CellStyleFunc="@_cellStyleFunc" Hideable="true" Groupable="true">
+            <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true">
+                <CellTemplate>
+                        <MudText Class="px-3 py-1 rounded-lg font-weight-bold text-center status-badge " Style="@GetStatusStyle(context.Item)">@context.Item.FormatStatus</MudText>
+                </CellTemplate>
                 <EditTemplate Context="context">
                             <MudSelect T="ProjectStatus" Class="mt-3"
                                        Variant="Variant.Outlined"
@@ -435,7 +428,8 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
         {
-            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
+
                 <EditTemplate Context="context">
                     <MudSelect T="AdminProjectStatus" Class="mt-3"
                                Variant="Variant.Outlined"
@@ -1354,49 +1348,22 @@ else
             await LoadProjects();
         }        
     }
-    private Func<Project, string> _cellStyleFunc => x =>
+
+    private string GetStatusStyle(Project project)
     {
-        string style = string.Empty;
-
-        switch (x.Status)
+        return project.Status switch
         {
-            case ProjectStatus.Upcoming:
-                style += "background-color: #9999FF;";
-                break;
-
-            case ProjectStatus.Scheduled:
-                style += "background-color: var(--mud-palette-info-lighten);";
-                break;
-            case ProjectStatus.Ready_To_Edit:
-                style += "background-color: var(--mud-palette-error);";
-                break;
-            case ProjectStatus.Working:
-                style += "background-color: #6732cf;";
-                break;
-
-            case ProjectStatus.Delivered:
-                style += "background-color:  var(--mud-palette-success);";
-                break;
-            case ProjectStatus.Review:
-                style += "background-color: var(--mud-palette-warning-lighten);";
-                break;
-
-            case ProjectStatus.Revision:
-                style += "background-color: var(--mud-palette-error-lighten);";
-                break;
-            case ProjectStatus.Finished:
-                style += "background-color: var(--mud-palette-success-darken);";
-                break;
-
-            default:
-                style += "background-color: transparent;";
-                break;
-        }
-        style += "color: rgba(255,255,255,1); text-align: center; ";
-
-        return style;
-    };
-
+            ProjectStatus.Upcoming => "background-color: #6E7AD4; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #5A66B3; text-align:center;",
+            ProjectStatus.Scheduled => "background-color: #4A90E2; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #3A7AC5; text-align:center;",
+            ProjectStatus.Ready_To_Edit => "background-color: #E55F7E; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #C74A6A; text-align:center;",
+            ProjectStatus.Working => "background-color: #8E6ECE; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #7558B0; text-align:center;",
+            ProjectStatus.Delivered => "background-color: #4CAF50; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #3A8C3E; text-align:center;",
+            ProjectStatus.Review => "background-color: #FFA726; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #E69325; text-align:center;",
+            ProjectStatus.Revision => "background-color: #EF5350; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #D32F2F; text-align:center;",
+            ProjectStatus.Finished => "background-color: #26A69A; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #00897B; text-align:center;",
+            _ => "background-color: #757575; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #616161; text-align:center;"
+        };
+    }
     // Downloading Filtered as CSV
     private async Task DownloadFilteredAsCsv()
     {
