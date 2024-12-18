@@ -328,6 +328,7 @@ public class ProjectService
                     var newValue = property.GetValue(project.CalculationDetails);
                     property.SetValue(_project.CalculationDetails, newValue);
                 }
+                _project.SubmissionStatus = project.SubmissionStatus;
                 context.Projects.Update(_project);
                 await context.SaveChangesAsync();
                 await _broadcaster.NotifyAllAsync();

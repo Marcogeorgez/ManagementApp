@@ -635,7 +635,7 @@ else
         {
             <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true">
                 <CellTemplate>
-                    <MudItem Align="center">
+                    <MudItem >
                     <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                                    Color="@(context.Item.IsPaymentVisible ? Color.Success : Color.Error)"
                                    OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
@@ -644,6 +644,40 @@ else
                 </CellTemplate>
             </TemplateColumn>
         }
+        @if (RoleBasedColumns[_currentRole].Contains("SubmittedStatus"))
+        {           
+                <PropertyColumn Property="x => x.SubmissionStatus" Title="Deliverables Details" CellStyle="text-align:center;">
+                    <CellTemplate>
+                        @{
+                            var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
+                                Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
+                           
+                        }
+                    @if(_isAdminView)
+                    {
+                            <MudButton Color="@submissionStatus"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Small"
+                                   OnClick="@(() => TimeCalculator(context.Item))" Style="min-width:5vw">
+                                @context.Item.SubmissionStatus.ToString()
+                            </MudButton>
+                    }
+                    else if(_isEditorView){
+                            <MudButton Color="@submissionStatus"
+                                       Variant="Variant.Filled"
+                                       Size="Size.Small"
+                                       Disabled="(_isEditorView && context.Item.SubmissionStatus == Models.SubmissionStatus.Approved)"
+                                       OnClick="@(() => TimeCalculator(context.Item))" FullWidth=true
+                                       Style="min-width:5vw"
+                                       Class="">
+                                @context.Item.SubmissionStatus.ToString()
+                            </MudButton>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+        }
+
+
         @if (RoleBasedColumns[_currentRole].Contains("Actions"))
         {
             <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
@@ -693,14 +727,6 @@ else
                         @if(_isAdminView || _isEditorView)
                         {
                         <MudStack Spacing="0">
-                        <MudButton Color="Color.Success"
-                                       Variant="Variant.Filled"
-                                       Size="Size.Small"
-                                       OnClick="@(() => TimeCalculator(context.Item))"
-                                       StartIcon="@Icons.Material.Filled.Edit"
-                                       Class="mb-1">
-                                Calculator
-                        </MudButton>
                         <MudButton Color="Color.Success"
                                    Variant="Variant.Filled"
                                    Size="Size.Small"
@@ -873,8 +899,8 @@ else
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","Actions","Archive" } },
-        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable", "Actions"} },
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","SubmittedStatus","Actions","Archive" } },
+        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable","SubmittedStatus", "Actions"} },
         { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status" } }
     };
     private Guid _gridKey = Guid.NewGuid();
@@ -1153,9 +1179,15 @@ else
     // Calculates Total Client Billable hours based on a formula.
     private async Task TimeCalculator( Project project)
     {
+        if (_isEditorView && project.SubmissionStatus == Models.SubmissionStatus.Approved)
+        {
+            Snackbar.Add($"As an Editor you aren't allowed to modify projects which status is {project.SubmissionStatus.ToString()}",Severity.Error);
+            return;
+        }
         var dialogParameters = new DialogParameters<ProjectTotalHoursCalculatorDialog> {
             { nameof(ProjectTotalHoursCalculatorDialog.newProject), project },
-            { "_isAdminView", _isAdminView}
+            { "_isAdminView", _isAdminView},
+            { "_isEditorView", _isEditorView}
         };
         var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters);
         var result = await dialog.Result;
@@ -1168,7 +1200,7 @@ else
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
                 await projectServices.CalculateProjectFinalPrice(_project);
 
-                Snackbar.Add("Successfully updated calculations of project", Severity.Info);
+                Snackbar.Add($"Successfully updated deliverable details of the project: {_project.ProjectName}", Severity.Success);
                 await LoadProjects();
             }
         }
