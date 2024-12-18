@@ -5,6 +5,7 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Scheduled;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -173,8 +174,6 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.Secure = CookieSecurePolicy.Always;
 });
 
-// Configure email sender (not currently used for anything, just leaving it incase we need it)
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 // Configure authorization policies
 builder.Services.AddAuthorization(options =>
@@ -206,6 +205,9 @@ builder.Services.ConfigureApplicationCookie(options =>
         }
     };
 });
+
+builder.Services.AddSingleton<IMessageCleanupService, MessageCleanupService>();
+builder.Services.AddHostedService<MessageCleanupBackgroundService>();
 
 
 // IMPORTANT THIS BELOW REMOVE THE LIMIT OF 16k character of SignalR on how big a message can be.
