@@ -147,7 +147,7 @@ public class ChatService
     }
 
     // Get unread message count
-    public async Task<Tuple<int, DateTime?, int>> GetUnreadMessageCount(int projectId, string userId)
+    public async Task<Tuple<int, DateTime?, int>> GetUnreadMessageCountAndLastMessageTimeAsync(int projectId, string userId)
     {
         try
         {
@@ -182,6 +182,30 @@ public class ChatService
         catch (Exception ex)
         {
             Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}: {ex.Message}");
+            throw;
+        }
+    }
+    public async Task<int> GetUnreadMessageCount(string userId)
+    {
+        try
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var readMessageIds = await context.ChatReadStatus
+                .Where(crs => crs.UserId == userId)
+                .Select(crs => crs.MessageId)
+                .ToListAsync();
+
+
+            // Get unread message count
+            var unreadMessageCount = await context.Messages
+                .Where(message => !readMessageIds.Contains(message.MessageId))
+                .CountAsync();
+            return unreadMessageCount;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting unread message count for user {userId}: {ex.Message}");
             throw;
         }
     }

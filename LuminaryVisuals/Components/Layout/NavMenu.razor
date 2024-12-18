@@ -8,6 +8,7 @@
 @inject IDialogService DialogService
 @inject IBrowserViewportService ViewportService
 @inject ProjectState ProjectState
+@inject ChatService ChatService
 
 
 @* Main Top Bar *@
@@ -51,7 +52,11 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         </AuthorizeView>
         <AuthorizeView Roles="Admin,Client,Editor">
         <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
-        <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
+            <MudBadge Content="@totalUnreadMessages" Color="Color.Error" Origin="Origin.TopRight" Overlap="true" 
+                Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
+                <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email"IconColor="Color.Tertiary"
+                    Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
+            </MudBadge>
         </AuthorizeView>
 
                 <MudSpacer />
@@ -94,6 +99,9 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     private int timezoneOffsetMinutes;
     private string _currentUserId;
     private string _currentRole;
+    private int totalUnreadMessages;
+    private System.Timers.Timer _refreshTimer;
+
     protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
@@ -115,6 +123,8 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
             _currentRole = "Client";
             isClientView = true;
         }
+        totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
+        SetupPeriodicRefresh();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -175,7 +185,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
             {
                 CloseButton = true,
                 MaxWidth = MaxWidth.Medium,
-                FullWidth = true
             };
 
         var dialog = await DialogService.ShowAsync<ProfileDialog>("", parameters, options);
@@ -209,5 +218,51 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
                 DrawerWidthLeft = "200px",
             }
         };
+    private void SetupPeriodicRefresh()
+    {
+        // Create timer that fires every 1 hour
+        _refreshTimer = new System.Timers.Timer(TimeSpan.FromMinutes(2).TotalMilliseconds);
+
+        // Add event handler for the Elapsed event
+        _refreshTimer.Elapsed += async (sender, e) =>
+        {
+            // Use InvokeAsync to run on UI thread
+            await InvokeAsync(async () =>
+            {
+                await LoadUnreadMessageCount();
+            });
+            Console.WriteLine($"Successfully run the periodic refresh for fetching unread message count.");
+
+        };
+
+        // Enable the timer
+        _refreshTimer.Start();
+    }
+
+    private async Task LoadUnreadMessageCount()
+    {
+        try
+        {
+            totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Optional: Log the error
+            Console.WriteLine($"Error refreshing unread message count: {ex.Message}");
+        }
+    }
+
+    // Implements IAsyncDisposable to properly clean up the timer
+    public async ValueTask DisposeAsync()
+    {
+        if (_refreshTimer != null)
+        {
+            _refreshTimer.Stop();
+            _refreshTimer.Dispose();
+        }
+    }
+
+
 }
 
