@@ -9,6 +9,7 @@
 @implements IDisposable
 @inject IMessageNotificationService MessageNotificationService
 @inject CloudflareR2Service CloudflareR2Service
+@inject ProjectState ProjectState
 
 <MudContainer Class="chat-container" Gutters=false>
         <MudPaper Elevation="4" Class="chat-panel">
@@ -61,8 +62,9 @@
                                         part.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
                                         {
                                             // Display the image
-                                            <img src="@part" alt="Image" style="max-width:100%; height:auto; cursor:pointer;"
-                                            @onclick="() => OpenModal(part)" />
+                                            <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
+                                            <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
+                                            </div>
                                         }
                                         else
                                         {
@@ -101,6 +103,7 @@
                                         Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
                                     }
                                 }
+
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
                                     OnClick="() => EditMessage(message)"  />
                                 </div>
@@ -443,12 +446,12 @@
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage))
         {
-                await messageField.BlurAsync();
-                var result = await SendMessage(newMessage);
+            await messageField.BlurAsync();
+            var result = await SendMessage(newMessage);
 
-                await messageField.Clear();
-                // StateHasChanged();
-                await messageField.FocusAsync();
+            await messageField.Clear();
+            // StateHasChanged();
+            await messageField.FocusAsync();
         }
         if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
         {
@@ -475,7 +478,7 @@
                 { "isClientView", isClientView },
                 { "timezoneOffsetMinutes", timezoneOffsetMinutes },
             };
-            MudDialog.Close();
+            ProjectState.SetProject(null);
             DialogService.Show<ChatProjectListDialog>("", parameters, options);
 
         }
@@ -485,7 +488,7 @@
         var result = await ShowConfirmationDialog();
         if (!result.Canceled)
         {
-            MudDialog.Close();
+            ProjectState.SetProject(null);
         }
     }
 

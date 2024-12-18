@@ -1,9 +1,15 @@
-﻿<MudDialog>
+﻿<style>
+    .mud-dialog {
+        background-color: #1E1E1E;
+    }
+
+</style>
+<MudDialog>
     <DialogContent>
-        <MudContainer>
+        <MudContainer Gutters=true >
             <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4">Edit Message</MudText>
 
-            <MudPaper Class="original-message-container pa-4 mb-4" Elevation="0">
+            <MudPaper Class="original-message-container pa-4 mb-4" Elevation="0" Style="background-color:#4F491947;">
                 <MudText Typo="Typo.body2" Color="Color.Secondary">
                     Original Message:
                 </MudText>
@@ -20,6 +26,7 @@
                               Immediate="true"
                               Lines="3"
                               AutoFocus="true" />
+
             </MudPaper>
         </MudContainer>
     </DialogContent>
