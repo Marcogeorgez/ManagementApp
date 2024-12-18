@@ -81,6 +81,8 @@ builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<LoggingHours>();
 builder.Services.AddScoped<SettingService>();
 builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<ProjectState>();
+
 
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
 builder.Services.AddHttpClient();

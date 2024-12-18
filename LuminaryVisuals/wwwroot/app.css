@@ -6,7 +6,6 @@
     border-radius: 20px !important;
 }
 
-
 .mud-button {
     border-radius: 20px !important;
 }
@@ -310,6 +309,19 @@
         bottom: 65% !important;
         right: 8% !important;
     }
+    .floating-chat-container {
+        width: 100vw !important;
+        height: 90vh !important;
+    }
+    .chat-panel {
+        width: inherit !important;
+        height: inherit !important;
+    }
+
+    .chat-message:active + .message-hover-options,
+    .message-hover-options:active {
+        display: flex !important;
+    }
 }
 
 .projects-title {
@@ -430,6 +442,14 @@
     transition: all 0.3s ease;
 }
 
+.floating-chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 10px;
+    z-index: 1000;
+    width: 50vw;
+    max-height: 80vh;
+}
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -486,16 +506,6 @@
     scrollbar-color: #4DB6AC #2A2A2A; /* Thumb and track colors */
 }
 
-@media (max-width: 960px) {
-    .chat-panel {
-        width: 80vw;
-    }
-    .chat-message:active + .message-hover-options,
-    .message-hover-options:active {
-        display: flex !important;
-    }
-
-}
 
 .chat-header {
     background-color: #2A2A2A;

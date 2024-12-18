@@ -8,7 +8,9 @@
 @inject UserServices UserServices
 @inject ProjectService projectServices
 @inject CircuitUpdateBroadcaster Broadcaster
+@inject ProjectState ProjectState
 @implements IDisposable
+
 
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
 <PageTitle>Projects</PageTitle>
@@ -807,7 +809,16 @@ else
         </MudButton>
     }
     </MudContainer>
-
+    <div class="floating-chat-container">
+        @if (ProjectState.CurrentProject != null)
+        {
+            <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
+                                     UserId="@_currentUserId"
+                                     IsAdminView="@isAdminView"
+                                     IsClientView="@_isClientView" isEditorView="@_isEditorView"
+                                     TimezoneOffsetMinutes="@timezoneOffsetMinutes" />
+        }
+    </div>
 }
 @code {
     bool _loading = true;
@@ -843,9 +854,15 @@ else
         Eighty = 80,
         Hundred = 100
     }
+    private void HandleProjectStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         // Get the current user ID
+        ProjectState.OnChange += HandleProjectStateChange;
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
         _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
         if (currentUser.IsInRole("Admin"))
@@ -895,6 +912,7 @@ else
         {
             Broadcaster.Unsubscribe(CircuitId);
         }
+        ProjectState.OnChange -= HandleProjectStateChange;
     }
 
     private Dictionary<string, List<string>> RoleBasedColumns => new()

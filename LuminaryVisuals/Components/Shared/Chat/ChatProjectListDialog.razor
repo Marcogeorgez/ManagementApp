@@ -2,6 +2,7 @@
 @inject ChatService ChatService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ProjectState ProjectState
 <MudContainer Class="chat-container" Gutters=false >
         <MudPaper Elevation="0" Class="chat-panel" style="border:0px; min-height:40vw;">
 
@@ -59,12 +60,15 @@
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
     [Parameter] public int timezoneOffsetMinutes { get; set; }
+    [Parameter] public Project SelectedProject { get; set; }
+
     private List<Project> projects = new List<Project>(); 
     private string MessageRequireApproval = "";
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            ProjectState.OnChange += StateHasChanged;
             if (isAdminView)
             {
                 projects = await ProjectService.GetProjectsAsync();
@@ -115,24 +119,11 @@
 
     private void OpenProjectChat(Project Project)
     {
-        var parameters = new DialogParameters
-        {
-            { "Project", Project},
-            { "UserId", userId },
-            { "isAdminView" , isAdminView },
-            { "isEditorView" , isEditorView },
-            { "isClientView" , isClientView },
-            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
 
-        };
-
-        var options = new DialogOptions
-            {
-                Position = DialogPosition.BottomRight,
-                NoHeader = true
-            };
+        ProjectState.SetProject(Project);
+        StateHasChanged();
         MudDialog.Close();
-        DialogService.Show<Chats.ProjectChatDialog>("", parameters, options);
+
     }
      private async Task CloseChat()
     {

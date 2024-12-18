@@ -8,6 +8,7 @@
 @inject IDialogService DialogService
 @inject SettingService SettingService
 @inject NavigationManager NavigationManager
+@inject ProjectState ProjectState
 
 @attribute [Authorize(Policy = "RequireAdminRole")]
 
@@ -207,6 +208,18 @@ else
     Migrate Selected Users
 </MudButton>
     </MudContainer>
+
+    <div class="floating-chat-container">
+        @if (ProjectState.CurrentProject != null)
+        {
+            <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
+                                     UserId="@_currentUserId"
+                                     IsAdminView="@isAdminView"
+                                     IsClientView="@_isClientView" isEditorView="@_isEditorView"
+                                     TimezoneOffsetMinutes="@timezoneOffsetMinutes" />
+        }
+    </div>
+   
 }
 
 @code {
@@ -278,12 +291,18 @@ else
             AllUsers = await UserManagementService.GetAllUsersAsync(storedValue); // Refresh the grid after update
         }
     }
-    // done
-
+    
+    private bool isAdminView;
+    private bool _isEditorView;
+    private bool _isClientView;
+    private int timezoneOffsetMinutes;
+    private string _currentUserId;
+    private string _currentRole;
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            ProjectState.OnChange += HandleProjectStateChange;
             var _storedValue = await SettingService.GetSettingByNameAsync("CurrencyRate");
             if (_storedValue.ConversionRateUSToLek != null)
             {
@@ -294,6 +313,23 @@ else
             AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
             _users = AllUsers.ToList();
             await LoadUserNotes();
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            if (currentUser.IsInRole("Admin"))
+            {
+                _currentRole = "Admin";
+                isAdminView = true;
+            }
+            else if (currentUser.IsInRole("Editor"))
+            {
+                _currentRole = "Editor";
+                _isEditorView = true;
+
+            }
+            else if (currentUser.IsInRole("Client"))
+            {
+                _currentRole = "Client";
+                _isClientView = true;
+            }
             _loading = false;
             _timer = new System.Timers.Timer(Delay);
             _timer.Elapsed += OnTimedEvent;
@@ -306,7 +342,15 @@ else
             _loading = false;
         }
     }
+    private void HandleProjectStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
+    public void Dispose()
+    {
+        ProjectState.OnChange -= HandleProjectStateChange;
+    }
     private void OpenNoteDialog(string noteValue,CellContext<UserRoleViewModel> context)
     {
         var parameters = new DialogParameters
