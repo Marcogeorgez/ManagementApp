@@ -8,7 +8,7 @@
 @inject ILogger<ProjectChatDialog> Logger
 @implements IDisposable
 @inject IMessageNotificationService MessageNotificationService
-
+@inject CloudflareR2Service CloudflareR2Service
 
 <MudContainer Class="chat-container" Gutters=false>
         <MudPaper Elevation="4" Class="chat-panel">
@@ -52,15 +52,30 @@
                                 <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
                                 @foreach (var part in GetMessageWithLinks(message.Content))
                                     {
-                                        if (StringHelper.IsLink(part))
+                                    if (StringHelper.IsLink(part))
+                                    {
+                                        // Check if the URL is an image based on the file extension
+                                        if (part.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                        part.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                        part.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                                        part.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
                                         {
-                                            <strong><MudLink Typo="Typo.body1" Class="special-link" Href="@part" 
-                                                Underline="Underline.Always">@part </MudLink></strong>
+                                            // Display the image
+                                            <img src="@part" alt="Image" style="max-width:100%; height:auto; cursor:pointer;"
+                                            @onclick="() => OpenModal(part)" />
                                         }
                                         else
                                         {
-                                            <MudText Typo="Typo.body1">@part</MudText>
+                                            <strong>
+                                                <MudLink Typo="Typo.body1" Class="special-link" Href="@part"
+                                                         Underline="Underline.Always">@part </MudLink>
+                                            </strong>
                                         }
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.body1">@part</MudText>
+                                    }
                                     }
                                 <MudText Typo="Typo.caption" Class="message-timestamp">
                                     @ConvertLocal.ConvertToLocalTime(message.Timestamp,timezoneOffsetMinutes)
@@ -131,11 +146,7 @@
     [Parameter] public bool isClientView { get; set; }
     [Parameter] public int timezoneOffsetMinutes { get; set; }
     IList<IBrowserFile> _files = new List<IBrowserFile>();
-    private void UploadFiles(IBrowserFile file)
-    {
-        _files.Add(file);
-        //TODO upload the files to the server
-    }
+    private string? UploadedFileUrl;
     private bool isClicked = false;
     private string newMessage;
     private List<Message> messages = new List<Message>();
@@ -168,6 +179,11 @@
         });
         await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
         await JSRuntime.InvokeVoidAsync("setupInitialScrollListener", DotNetObjectReference.Create(this));
+    }
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
+        await SendMessage(UploadedFileUrl);
     }
     private void ToggleClick()
     {
