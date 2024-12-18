@@ -33,7 +33,7 @@ else
     ReadOnly=false
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
-    CommittedItemChanges="@CommittedItemChanges"
+    CommittedItemChanges="@CommittedItemChanges" Virtualize="true" FixedHeader="true" Height="100%"
     RowClassFunc="@GetRowClass">
     
 
@@ -809,16 +809,17 @@ else
         </MudButton>
     }
     </MudContainer>
-    <div class="floating-chat-container">
         @if (ProjectState.CurrentProject != null)
         {
+        <div class="floating-chat-container">
+
             <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
                                      UserId="@_currentUserId"
                                      IsAdminView="@isAdminView"
                                      IsClientView="@_isClientView" isEditorView="@_isEditorView"
-                                     TimezoneOffsetMinutes="@timezoneOffsetMinutes" />
+                                     TimezoneOffsetMinutes="@timezoneOffsetMinutes" /> </div>
         }
-    </div>
+   
 }
 @code {
     bool _loading = true;
@@ -958,25 +959,9 @@ else
         _isArchived = !_isArchived;
         await LoadProjects();
     }
-    private async Task OpenProjectChat(Project Project)
+    private void OpenProjectChat(Project Project)
     {
-        var parameters = new DialogParameters
-        {
-            { "Project", Project},
-            { "UserId", _currentUserId },
-            { "isAdminView" , isAdminView },
-            { "isEditorView" , _isEditorView },
-            { "isClientView" , _isClientView },
-            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
-
-        };
-
-        var options = new DialogOptions
-            {
-                Position = DialogPosition.BottomRight,
-                NoHeader = true
-            };
-        await DialogService.ShowAsync<Chats.ProjectChatDialog>("", parameters, options);
+        ProjectState.SetProject(Project);
     }
 
     //  Load project for admin/editor view only (will later be split )

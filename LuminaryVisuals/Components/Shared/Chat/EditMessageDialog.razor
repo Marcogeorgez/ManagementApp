@@ -3,6 +3,10 @@
         background-color: #1E1E1E;
     }
 
+    .mud-dialog-width-md    
+    {
+        padding: 1% !important;
+    }
 </style>
 <MudDialog>
     <DialogContent>
@@ -32,7 +36,7 @@
     </DialogContent>
 
     <DialogActions>
-        <MudButton Color="Color.Primary"
+        <MudButton Color="Color.Success"
                    Disabled="@string.IsNullOrWhiteSpace(EditedMessage)"
                    OnClick="SaveEdit">Save</MudButton>
     </DialogActions>

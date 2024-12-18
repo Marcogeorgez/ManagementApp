@@ -16,9 +16,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
@@ -70,7 +68,7 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddSingleton<DeviceSessionService>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<IConfirmationService, ConfirmationService>();
-builder.Services.AddSingleton<IMessageNotificationService,MessageNotificationService>();
+builder.Services.AddSingleton<IMessageNotificationService, MessageNotificationService>();
 // Custom Implementation of SignInManager to let new users.role Guest by default
 builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>();
 // Our Services
@@ -215,7 +213,13 @@ builder.Services.AddHostedService<MessageCleanupBackgroundService>();
 
 
 // IMPORTANT THIS BELOW REMOVE THE LIMIT OF 16k character of SignalR on how big a message can be.
-builder.Services.AddServerSideBlazor().AddHubOptions(opt => opt.MaximumReceiveMessageSize = null);
+builder.Services.AddServerSideBlazor()
+    .AddHubOptions(opt => opt.MaximumReceiveMessageSize = null)
+    .AddCircuitOptions(options =>
+    {
+        options.DisconnectedCircuitMaxRetained = 100; // Optional: Limit the number of disconnected circuits retained.
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(120);
+    });
 // So now it can be unlimited
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
