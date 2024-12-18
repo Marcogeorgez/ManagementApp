@@ -6,6 +6,7 @@
 @inject ISnackbar Snackbar
 @inject ILogger<AdminDashboardPage> Logger
 @inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 @inject SettingService SettingService
 @inject NavigationManager NavigationManager
 @inject ProjectState ProjectState
@@ -342,6 +343,13 @@ else
             Logger.LogError(ex, "Error loading users");
             _error = true;
             _loading = false;
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         }
     }
     private void HandleProjectStateChange()
