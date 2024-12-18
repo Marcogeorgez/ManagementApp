@@ -43,10 +43,10 @@
         </MudForm>
 
         <MudGrid Class="px-10 my-3 d-flex flex-auto align-center" Justify="Justify.Center" Spacing="6">
-            <MudItem xs="6">
+            <MudItem xs="12" sm="6">
             <MudText Typo="Typo.h5" Class="pl-5">Revoke Login From All Devices</MudText>
                 </MudItem>
-                <MudItem xs="6">
+                <MudItem xs="12" sm="6">
 
                     <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Filled"
                     Class="ml-auto px-10 d-flex">Revoke</MudButton>
@@ -71,16 +71,26 @@
     </DialogContent>
 
     <DialogActions>
-                        <MudItem xs="12" Class="mt-8 px-11">
-
-        <div class="d-flex mb-5 flex-auto" style="max-width:100%;">
-        <MudButton StartIcon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Tertiary" 
-        Class="ml-5  px-14" OnClick="@LogoutClick" Color="Color.Default" Variant="Variant.Filled" 
-        Size="Size.Medium">Log out</MudButton>
-        <MudSpacer/>
-        <MudButton Class="mr-5 px-14" OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Medium">Close</MudButton>
-        </div>
-        </MudItem>
+            <MudItem xs="12" sm="12" md="12" Class="mt-8 px-4 px-md-11">
+                <div class="d-flex justify-space-between align-center mb-5">
+                    <MudButton StartIcon="@Icons.Material.Filled.ExitToApp"
+                               IconColor="Color.Tertiary"
+                               Class="px-6 px-md-14"
+                               OnClick="@LogoutClick"
+                               Color="Color.Default"
+                               Variant="Variant.Filled"
+                               Size="Size.Medium">
+                        Log out
+                    </MudButton>
+                    <MudButton Class=" px-md-14"
+                               OnClick="@Cancel"
+                               Color="Color.Error"
+                               Variant="Variant.Filled"
+                               Size="Size.Medium">
+                        Close
+                    </MudButton>
+                </div>
+            </MudItem>
     </DialogActions>
 
 </MudDialog>

@@ -56,10 +56,7 @@
                                     if (StringHelper.IsLink(part))
                                     {
                                         // Check if the URL is an image based on the file extension
-                                        if (part.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                                        part.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                                        part.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                                        part.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+                                        if (ImageExtensions.Contains(Path.GetExtension(part)))
                                         {
                                             // Display the image
                                             <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
@@ -115,7 +112,7 @@
                 </div>
             </MudContainer>
             <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
-            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex">
+            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex" Accept=".png, .jpg" >
                 <ActivatorContent>
                     <MudIconButton Color="Color.Success"
                                    Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
@@ -161,6 +158,12 @@
     private bool hasMoreMessages = true;
     private bool finishedLoading = false;
     private bool _isInitialScrollComplete = false;
+    private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+    ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
+    ".svg", ".webp", ".ico", ".heic", ".heif", ".raw", ".psd",
+    ".dds", ".jp2", ".j2k", ".jpf", ".eps", ".ai"
+    };
     public void Dispose()
     {
         _subscription?.Dispose();
@@ -185,8 +188,17 @@
     }
     private async Task UploadFiles(IBrowserFile file)
     {
-        UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
-        await SendMessage(UploadedFileUrl);
+        try
+        {
+            UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
+            await SendMessage(UploadedFileUrl);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Unsupported Format or file is larger than 10MB. Please attach the file using a link hosted on another cloud storage", Severity.Warning);
+            Console.WriteLine(ex);
+        }
+
     }
     private void ToggleClick()
     {

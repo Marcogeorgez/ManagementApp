@@ -209,16 +209,18 @@ else
 </MudButton>
     </MudContainer>
 
-    <div class="floating-chat-container">
         @if (ProjectState.CurrentProject != null)
         {
+        <div class="floating-chat-container">
+
             <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
                                      UserId="@_currentUserId"
                                      IsAdminView="@isAdminView"
                                      IsClientView="@_isClientView" isEditorView="@_isEditorView"
                                      TimezoneOffsetMinutes="@timezoneOffsetMinutes" />
+        </div>
+
         }
-    </div>
    
 }
 
