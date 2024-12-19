@@ -6,15 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="icon" type="image/png" href="Logo.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    <link href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" rel="stylesheet">
-    <link href="_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.css" rel="stylesheet" />
-    <link rel="stylesheet" href="app.css" />
-    <link href="LuminaryVisuals.styles.css" rel="stylesheet" />
-    <script src="https://rawcdn.githack.com/nextapps-de/spotlight/0.7.8/dist/spotlight.bundle.js"></script>
+    <link rel="preconnect" href="@Assets["https://fonts.googleapis.com"]">
+    <link rel="preconnect" href="@Assets["https://fonts.gstatic.com"]" crossorigin>
+    <link href="@Assets["https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"]" rel="stylesheet">
+    <link href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" rel="stylesheet" />
+    <link href="@Assets["https://use.fontawesome.com/releases/v5.14.0/css/all.css"]" rel="stylesheet">
+    <link href="@Assets["_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.css"]" rel="stylesheet" />
+    <link href="@Assets["app.css"]" rel="stylesheet" />
+    <link href="@Assets[" LuminaryVisuals.styles.css"]" rel="stylesheet" />
+
+    <ImportMap />
     <HeadOutlet @rendermode="RenderModeForPage" />
     <PageTitle>Luminary Visuals Management</PageTitle>
 </head>
@@ -27,6 +28,7 @@
     <script src="_content/Tizzani.MudBlazor.HtmlEditor/quill-blot-formatter.min.js"></script> <!-- optional; for image resize -->
     <script src="https://js-de.sentry-cdn.com/3d017756cd2623df347b8da6db1a0359.min.js" crossorigin="anonymous"></script>
     <script src="functions.js"></script>
+    <script src="https://rawcdn.githack.com/nextapps-de/spotlight/0.7.8/dist/spotlight.bundle.js"></script>
 
 </body>
 
