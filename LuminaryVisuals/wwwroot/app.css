@@ -266,12 +266,17 @@
     .outlined-dialog-max-content {
         min-width: auto !important;
     }
+    .chat-container {
+        width: 95% !important;
+        height:100% !important;
+    }
 }
 
 
 /* Chats Icon */
 .floating-chat-icon {
     background: rgba(112,160,255,0.8) !important;
+    min-width: 35px;
 }
 
 /* Chats Dialog */
