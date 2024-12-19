@@ -12,5 +12,10 @@
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Log in</PageTitle>
-<h1>Log in</h1>
 
+@code {
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
