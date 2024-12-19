@@ -1,7 +1,17 @@
 ﻿* {
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Inter', sans-serif ;
 }
 
+.mud-collapse-wrapper-inner {
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex: auto;
+}
+#components-reconnect-modal {
+    color: red !important; /* Changes the text color */
+}
 :root .mud-dialog.mud-dialog-width-sm {
     border-radius: 20px !important;
 }

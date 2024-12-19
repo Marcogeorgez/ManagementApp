@@ -57,7 +57,7 @@ builder.Services.AddMudServices(config =>
         config.SnackbarConfiguration.VisibleStateDuration = 10000;
         config.SnackbarConfiguration.HideTransitionDuration = 500;
         config.SnackbarConfiguration.ShowTransitionDuration = 500;
-        config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+        config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Filled;
     });
 
 builder.Services.AddRazorComponents()
@@ -226,11 +226,11 @@ if (environment.IsProduction())
 
 builder.Services.Configure<CloudflareR2Settings>(configuration =>
 {
-    configuration.AccountId = Environment.GetEnvironmentVariable("CLOUDFLARE_ACCOUNT_ID");
-    configuration.AccessKeyId = Environment.GetEnvironmentVariable("CLOUDFLARE_ACCESS_KEY_ID");
-    configuration.SecretAccessKey = Environment.GetEnvironmentVariable("CLOUDFLARE_SECRET_ACCESS_KEY");
-    configuration.publicURL = Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_URL");
-    configuration.BucketName = Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_NAME");
+    configuration.AccountId = Environment.GetEnvironmentVariable("CLOUDFLARE_ACCOUNT_ID")!;
+    configuration.AccessKeyId = Environment.GetEnvironmentVariable("CLOUDFLARE_ACCESS_KEY_ID")!;
+    configuration.SecretAccessKey = Environment.GetEnvironmentVariable("CLOUDFLARE_SECRET_ACCESS_KEY")!;
+    configuration.publicURL = Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_URL")!;
+    configuration.BucketName = Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_NAME")!;
 });
 
 builder.Services.AddSingleton<IAmazonS3>(sp =>
@@ -260,6 +260,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(90);
     options.Cookie.MaxAge = TimeSpan.FromDays(90);
 });
+
+
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -298,7 +301,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.MapStaticAssets();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -321,5 +324,4 @@ using (var scope = app.Services.CreateScope())
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapAdditionalIdentityEndpoints();
-
 app.Run();
