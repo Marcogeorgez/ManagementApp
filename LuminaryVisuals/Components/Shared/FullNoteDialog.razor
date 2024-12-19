@@ -1,6 +1,10 @@
 ﻿<MudDialog>
     <DialogContent>
         <MudHtmlEditor Html="@Text" HtmlChanged="OnNoteTextChanged">
+                                <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
+                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
+                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
+
             <select class="ql-font">
                 <option value="sans-serif"></option>
                 <option value="serif"></option>
@@ -15,7 +19,11 @@
             <MudHtmlToolbarOptions />
             <button class="ql-list" value="check"></button>
             <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
+                </MudCollapse>
+            </div>
+
         </MudHtmlEditor>
+
     </DialogContent>
     <DialogActions>
         <MudButton  OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
@@ -49,5 +57,11 @@
     private void Cancel()
     {
         MudDialog.Cancel();
+    }
+    bool _expanded = true;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
     }
 }

@@ -7,125 +7,125 @@
 <MudDialog>
     <DialogContent >
         <MudForm @ref="form" @bind-IsValid="@success" >
-        <MudGrid Spacing="2" Justify="Justify.Center">
-        <MudItem xs="12" sm="12">
-            <MudText Typo=Typo.body1
-                             Class="d-flex justify-center mud-width-full mb-2"> @newProject.ProjectName </MudText>
-        </MudItem>
-        <MudItem xs="12" sm="12">
-            <MudNumericField T="decimal?" Required=true
-                            @bind-Value="newProject.CalculationDetails.ClientDiscount"
-                            Label="Client Discount"
-                            Variant=Variant.Outlined
-                            HelperTextOnFocus=true
-                            AdornmentText="%"   
-                            Adornment="Adornment.Start"
-                            Class="d-flex justify-center mud-width-full" />
-        </MudItem>
-            @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
-            {
-                <MudItem xs="12" sm="6">
-
-                <MudSelect T="decimal?"
-                           AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                           Class="d-flex justify-center mud-width-full"
-                           Variant="Variant.Outlined"
-                           @bind-Value="selectedMultipliers[index]"
-                           Label="@GetParameterLabel(group.CalculationParameterId)">                
-                        @foreach (var option in group.Options)
-                        {
-                            <MudSelectItem Class="" T="decimal?" Value="@option.Multiplier" Ripple=true>
-                                @option.OptionName</MudSelectItem>
-                        }
-                    </MudSelect>
+            <MudGrid Spacing="2" Justify="Justify.Center">
+                <MudItem xs="12" sm="12">
+                    <MudText Typo=Typo.body1
+                    Class="d-flex justify-center mud-width-full mb-2"> @newProject.ProjectName </MudText>
                 </MudItem>
+                <MudItem xs="12" sm="12">
+                    <MudNumericField T="decimal?" Required=true
+                    @bind-Value="newProject.CalculationDetails.ClientDiscount"
+                    Label="Client Discount"
+                    Variant=Variant.Outlined
+                    HelperTextOnFocus=true
+                    AdornmentText="%"   
+                    Adornment="Adornment.Start"
+                    Class="d-flex justify-center mud-width-full" />
+                </MudItem>
+                @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
+                {
+                    <MudItem xs="12" sm="6">
+
+                        <MudSelect T="decimal?"
+                        AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                        Class="d-flex justify-center mud-width-full"
+                        Variant="Variant.Outlined"
+                        @bind-Value="selectedMultipliers[index]"
+                        Label="@GetParameterLabel(group.CalculationParameterId)">                
+                            @foreach (var option in group.Options)
+                            {
+                                <MudSelectItem Class="" T="decimal?" Value="@option.Multiplier" Ripple=true>
+                                    @option.OptionName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
 
                 }
                 <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                          @bind-Value="newProject.CalculationDetails.CameraNumber"
-                          Label="Number of Cameras"
-                          Variant=Variant.Outlined
-                          Class="d-flex justify-center mud-width-full" />
-        </MudItem>
+                    @bind-Value="newProject.CalculationDetails.CameraNumber"
+                    Label="Number of Cameras"
+                    Variant=Variant.Outlined
+                    Class="d-flex justify-center mud-width-full" />
+                </MudItem>
                 <MudItem xs="12" sm="3">
                     <MudTextField T="decimal?" Required=true
-                          @bind-Value="newProject.CalculationDetails.FootageSize"
-                          Label="Raw footage size"
-                          Variant=Variant.Outlined
-                          Adornment="Adornment.End"
-                          AdornmentText="GB"
-                          Class="d-flex justify-center mud-width-full"  />
-        </MudItem>
+                    @bind-Value="newProject.CalculationDetails.FootageSize"
+                    Label="Raw footage size"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="GB"
+                    Class="d-flex justify-center mud-width-full"  />
+                </MudItem>
                 <MudItem xs="12" sm="3">
                     <MudTextField T="decimal?" Required=true
-                          @bind-Value="newProject.CalculationDetails.Misc"
-                          Label="Misc (managmenet, footage handeling, feedback)"
-                          Adornment="Adornment.End"
-                          AdornmentText="hour"
-                          Variant=Variant.Outlined
-                          Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
+                    @bind-Value="newProject.CalculationDetails.Misc"
+                    Label="Misc (managmenet, footage handeling, feedback)"
+                    Adornment="Adornment.End"
+                    AdornmentText="hour"
+                    Variant=Variant.Outlined
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
                 <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                        @bind-Value="newProject.CalculationDetails.PrePartsDuration"
-                        Label="Pre parts Duration Minutes"
-                        Variant=Variant.Outlined
-                        Adornment="Adornment.End"
-                        AdornmentText="min"
-                        Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
-                <MudItem xs="6" sm="3">
-                    <MudTextField T="string" Required=true
-                          @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDurationHours"
-                          Label="Documentary Multicamera Duration"
-                          Variant=Variant.Outlined
-                          Adornment="Adornment.End"
-                          AdornmentText="hour"
-                          Class="d-flex flex-column  mud-width-full" />
+                    @bind-Value="newProject.CalculationDetails.PrePartsDuration"
+                    Label="Pre parts Duration Minutes"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    Class="d-flex flex-column  mud-width-full" />
                 </MudItem>
                 <MudItem xs="6" sm="3">
                     <MudTextField T="string" Required=true
-                                  @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDuration"
-                              Variant=Variant.Outlined
-                              Adornment="Adornment.End"
-                              AdornmentText="min"
-                              Class="d-flex flex-column  mud-width-full py-2" />
-        </MudItem>
+                    @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDurationHours"
+                    Label="Documentary Multicamera Duration"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="hour"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDuration"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    Class="d-flex flex-column  mud-width-full py-2" />
+                </MudItem>
                 <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                              @bind-Value="newProject.CalculationDetails.HighlightsDuration"
-                              Label="Highlights Duration Minutes"
-                              Variant=Variant.Outlined
-                              Adornment="Adornment.End"
-                              AdornmentText="min"
-                              Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
+                    @bind-Value="newProject.CalculationDetails.HighlightsDuration"
+                    Label="Highlights Duration Minutes"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
                 <MudItem xs="12" sm="3">
                     <MudTextField T="string" Required=true
-                              @bind-Value="newProject.CalculationDetails.SocialMediaDuration"
-                              Label="Social Media Duration Minutes"
-                              Variant=Variant.Outlined
-                              Adornment="Adornment.End"
-                              AdornmentText="min"
-                              AdornmentColor="Color.Default"
-                              Class="d-flex flex-column  mud-width-full" />
-        </MudItem>
+                    @bind-Value="newProject.CalculationDetails.SocialMediaDuration"
+                    Label="Social Media Duration Minutes"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    AdornmentColor="Color.Default"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
 
                 @if (_isAdminView)
                 {
                     <MudItem xs="12">
                         <MudNumericField T="decimal?" Min="0.0M"
-                                         @bind-Value="@newProject.CalculationDetails.FinalProjectBillableHours"
-                                         Label="Total Hours"
-                                         Variant=Variant.Filled Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                        @bind-Value="@newProject.CalculationDetails.FinalProjectBillableHours"
+                        Label="Total Hours"
+                        Variant=Variant.Filled Class="d-flex justify-center mud-width-full mt-3 mb-3" />
                     </MudItem>
                     <MudButton OnClick="CalculateBillableHours" FullWidth=false  Color="Color.Success" 
-                        Variant=Variant.Outlined>Calculate Total </MudButton>
+                    Variant=Variant.Outlined>Calculate Total </MudButton>
                 }
-        </MudGrid>
+            </MudGrid>
 
-    </MudForm>
+        </MudForm>
     </DialogContent>
     <DialogActions>
         <MudSpacer />
@@ -192,6 +192,11 @@
 
     private void CalculateBillableHours()
     {
+        if(!form.IsValid)
+        {
+            Snackbar.Add("Please fill the entire form", Severity.Error);
+            return;
+        }
         decimal? _cameraValue;
         newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
         newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];

@@ -1204,7 +1204,7 @@ else
             { "project", context },
         };
         var options = new DialogOptions { FullScreen = false };
-        var dialog = await DialogService.ShowAsync<PrivateNoteForProjectComponent>("Private Notes", parameters, options);
+        var dialog = await DialogService.ShowAsync<PrivateNoteForProjectComponent>("", parameters, options);
         var result = await dialog.Result;
         if(!result!.Canceled)
         {

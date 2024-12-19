@@ -164,7 +164,10 @@
 This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
 This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
 The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
-                        
+                                            <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
+                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
+                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
+
                         <select class="ql-font">
                             <option value="sans-serif"></option>
                             <option value="serif"></option>
@@ -179,6 +182,9 @@ The Bride was married like I said before, so this wedding was quite special beca
                         <MudHtmlToolbarOptions />
                         <button class="ql-list" value="check"></button>
                         <button class="ql-clean">Remove Formatting</button>
+                                </MudCollapse>
+                            </div>
+
                     </MudHtmlEditor>
 
 
@@ -274,7 +280,12 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
         newProject.Description = text;
     }
+    bool _expanded = true;
 
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
     private async void Submit()
     {
 

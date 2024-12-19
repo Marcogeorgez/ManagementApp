@@ -4,6 +4,10 @@
     <DialogContent>
         <MudText Class="mt-5 mb-3" Typo="Typo.h5">Private Notes For This Project:</MudText>
         <MudHtmlEditor Html="@Text" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
+                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
+                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
+
             <select class="ql-font">
                 <option value="sans-serif"></option>
                 <option value="serif"></option>
@@ -18,6 +22,9 @@
             <MudHtmlToolbarOptions />
             <button class="ql-list" value="check"></button>
             <button class="ql-clean">Remove Formatting</button>
+                </MudCollapse>
+            </div>
+
         </MudHtmlEditor>
 
 
@@ -45,7 +52,12 @@
             Text = project.NotesForProject;
         }
     }
+    bool _expanded = true;
 
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
     private void OnNoteTextChanged(string text)
     {
         project.NotesForProject = text;

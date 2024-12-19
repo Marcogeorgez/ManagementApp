@@ -27,6 +27,7 @@ else if (_error)
 }
 else
 {
+
     @if (!string.IsNullOrEmpty(_updateMessage))
     {
         <MudAlert Severity="@(_updateMessageClass == "alert-success" ? Severity.Success : Severity.Error)"
