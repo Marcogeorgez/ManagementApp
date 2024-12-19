@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-LuminaryVisuals-fdc65854-d677-4a8c-9bc0-3dd9d76ed7d1</UserSecretsId>
     <InvariantGlobalization>true</InvariantGlobalization>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-  </PropertyGroup>
+    <DisableBrowserLinkCss>true</DisableBrowserLinkCss>
 
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Documentation\**" />
     <Compile Remove="Middleware\**" />
@@ -26,22 +27,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.410.7" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.410.8" />
     <PackageReference Include="Blazr.RenderState.Server" Version="1.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="MudBlazor" Version="7.15.0" />
-    <PackageReference Include="ncalc" Version="1.3.8" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
-    <PackageReference Include="Sentry.AspNetCore" Version="4.13.0" />
-    <PackageReference Include="Sentry.Profiling" Version="4.13.0" />
+    <PackageReference Include="NCalcSync" Version="5.3.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
+    <PackageReference Include="Sentry.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Sentry.Profiling" Version="5.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
     <PackageReference Include="Tizzani.MudBlazor.HtmlEditor" Version="2.2.1" />
   </ItemGroup>
 
