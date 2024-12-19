@@ -322,6 +322,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode().WithStaticAssets();
 app.MapAdditionalIdentityEndpoints();
 app.Run();
