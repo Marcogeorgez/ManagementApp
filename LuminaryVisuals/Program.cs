@@ -145,6 +145,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();
+
     }
 });
 
