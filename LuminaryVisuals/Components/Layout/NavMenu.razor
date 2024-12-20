@@ -220,18 +220,16 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         };
     private void SetupPeriodicRefresh()
     {
-        // Create timer that fires every 1 hour
         _refreshTimer = new System.Timers.Timer(TimeSpan.FromMinutes(2).TotalMilliseconds);
 
-        // Add event handler for the Elapsed event
         _refreshTimer.Elapsed += async (sender, e) =>
         {
-            // Use InvokeAsync to run on UI thread
             await InvokeAsync(async () =>
             {
                 await LoadUnreadMessageCount();
+                Console.WriteLine($"Successfully run the periodic refresh for fetching unread message count.");
+
             });
-            Console.WriteLine($"Successfully run the periodic refresh for fetching unread message count.");
 
         };
 

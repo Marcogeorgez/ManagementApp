@@ -36,12 +36,7 @@
 @code
 {
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-        }
-    }
+
     private async Task LoginClick()
     {
         await JSRuntime.InvokeVoidAsync("submitForm", "GoogleLoginForm");

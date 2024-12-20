@@ -195,13 +195,15 @@ public class ChatService
                 .Where(crs => crs.UserId == userId)
                 .Select(crs => crs.MessageId)
                 .ToListAsync();
+            if(readMessageIds.Count > 0)
+            {
+                var unreadMessageCount = await context.Messages
+                    .Where(message => !readMessageIds.Contains(message.MessageId))
+                    .CountAsync();
+                return unreadMessageCount;
 
-
-            // Get unread message count
-            var unreadMessageCount = await context.Messages
-                .Where(message => !readMessageIds.Contains(message.MessageId))
-                .CountAsync();
-            return unreadMessageCount;
+            }
+            return 0;
         }
         catch (Exception ex)
         {
