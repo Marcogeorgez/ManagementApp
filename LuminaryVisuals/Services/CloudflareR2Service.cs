@@ -38,7 +38,7 @@ public class CloudflareR2Service
             var response = await _s3Client.PutObjectAsync(request);
 
             // Construct public URL
-            string publicUrl = $"https://pub-{_settings.publicURL}.r2.dev/{fileName}";
+            string publicUrl = $"https://{_settings.publicURL}.r2.dev/{fileName}";
             return publicUrl;
         }
         catch (Exception ex)
