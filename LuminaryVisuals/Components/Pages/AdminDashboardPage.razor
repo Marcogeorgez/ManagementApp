@@ -10,6 +10,7 @@
 @inject SettingService SettingService
 @inject NavigationManager NavigationManager
 @inject ProjectState ProjectState
+@implements IDisposable
 
 @attribute [Authorize(Policy = "RequireAdminRole")]
 
@@ -361,6 +362,12 @@ else
     public void Dispose()
     {
         ProjectState.OnChange -= HandleProjectStateChange;
+        if (_timer != null)
+        {
+            _timer.Stop();
+            _timer.Dispose();
+            Console.WriteLine("Timer disposed for admindashboard"); // Add logging
+        }
     }
     private void OpenNoteDialog(string noteValue,CellContext<UserRoleViewModel> context)
     {

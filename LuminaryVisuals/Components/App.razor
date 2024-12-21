@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
+    <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="icon" type="image/png" href="Logo.png" />
@@ -17,7 +18,7 @@
 
     <ImportMap />
     <HeadOutlet @rendermode="RenderModeForPage" />
-    <PageTitle>Luminary Visuals Management</PageTitle>
+    <PageTitle>Synchron</PageTitle>
 </head>
 
 <body>
@@ -41,5 +42,5 @@
     private IComponentRenderMode? RenderModeForPage =>
         HttpContext.Request.Path.StartsWithSegments("/Account")
             ? null
-            : RenderMode.InteractiveServer;
+            : new InteractiveServerRenderMode(prerender: false);
 }

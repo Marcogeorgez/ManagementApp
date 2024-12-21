@@ -9,19 +9,19 @@
 @inject IBrowserViewportService ViewportService
 @inject ProjectState ProjectState
 @inject ChatService ChatService
-
+@implements IAsyncDisposable
 
 @* Main Top Bar *@
 <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true ;">
     <MudAppBar Elevation="2" Dense="true" Style="margin-left: 0px !important; position:relative; margin-bottom:10px;">
-    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
-        <MudTooltip Text="Expand Sidebar">
-            <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        </MudTooltip>
-        <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " Style="margin-left:35vw" />
-     </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+            <MudTooltip Text="Expand Sidebar">
+                <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            </MudTooltip>
+            <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " Style="margin-left:35vw" />
+        </MudHidden>
 
-    <MudSpacer />
+        <MudSpacer />
     </MudAppBar>
 </MudHidden>
 
@@ -29,14 +29,14 @@
 <MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="@_anchor" Fixed="@isFixed" Variant="@drawer" ClipMode="@_clipMode"
 OpenMiniOnHover="@_isMinihover" Elevation="0" >
     <MudThemeProvider IsDarkMode=true Theme="_theme" />
-    
+
     <MudNavMenu Style="display: flex; flex-direction: column; height:100vh; ">
-            <div class="mud-nav-item" style="justify-content:center !important;" >
+        <div class="mud-nav-item" style="justify-content:center !important;" >
             <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
                 <MudIconButton style="margin-left:5px;" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
                 <div aria-hidden="true" style="flex-grow:.42 !important"></div>
-                </MudHidden>
-                <MudImage Style="margin:8px 9px 2px 14px;" Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-2" />
+            </MudHidden>
+            <MudImage Style="margin:8px 9px 2px 14px;" Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-2" />
             <MudSpacer />
 
             <div class="mud-nav-link-text" style="margin:13px -10px 1px 1px;padding-left:4px; display:none;"></div>
@@ -45,25 +45,25 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         <MudSpacer />
 
         <AuthorizeView Roles="Admin,Client,Editor">
-        <MudNavLink OnClick="@profileDialog" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
+            <MudNavLink OnClick="@profileDialog" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
         </AuthorizeView>
         <AuthorizeView Roles="Admin">
-        <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Admin Dashboard</MudNavLink>
+            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Admin Dashboard</MudNavLink>
         </AuthorizeView>
         <AuthorizeView Roles="Admin,Client,Editor">
-        <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
+            <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
             <MudBadge Content="@totalUnreadMessages" Color="Color.Error" Origin="Origin.TopRight" Overlap="true" 
-                Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
+            Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
                 <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email"IconColor="Color.Tertiary"
-                    Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
+                Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
             </MudBadge>
         </AuthorizeView>
 
-                <MudSpacer />
+        <MudSpacer />
         <MudNavLink Href="https://docs.google.com/forms/d/e/1FAIpQLSdm_2jk_RSHriEazL4vxlWwcGkKFqQzqlxrrBT6N686pHhydA"
-                    Icon="@Icons.Material.Filled.BugReport" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Report bug</MudNavLink>
+        Icon="@Icons.Material.Filled.BugReport" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Report bug</MudNavLink>
 
-        </MudNavMenu>
+    </MudNavMenu>
 </MudDrawer>
 
 @code {
@@ -125,6 +125,8 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         }
         totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
         SetupPeriodicRefresh();
+        Console.WriteLine($"User opened a tab {currentUser!.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!}");
+
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -227,7 +229,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
             await InvokeAsync(async () =>
             {
                 await LoadUnreadMessageCount();
-                Console.WriteLine($"Successfully run the periodic refresh for fetching unread message count.");
 
             });
 
@@ -241,6 +242,7 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     {
         try
         {
+            Console.WriteLine($"Successfully run the periodic refresh for fetching unread message count.");
             totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
             StateHasChanged();
         }
@@ -254,13 +256,15 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     // Implements IAsyncDisposable to properly clean up the timer
     public async ValueTask DisposeAsync()
     {
+        Console.WriteLine("Component disposal started"); // Add logging
         if (_refreshTimer != null)
         {
             _refreshTimer.Stop();
             _refreshTimer.Dispose();
+            Console.WriteLine("Timer disposed"); // Add logging
+            Console.WriteLine($"User Closed Tab {currentUser!.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!}");
         }
     }
-
 
 }
 
