@@ -73,7 +73,6 @@ public class Project
     public decimal? ClientBillableAmount { get; set; }
     public bool IsPaymentVisible { get; set; } = false;
     public bool IsUrgent { get; set; } = false;
-
     public bool IsUrgentDueDate { get; set; } = false;
     public SubmissionStatus SubmissionStatus { get; set; } = SubmissionStatus.Pending;
 
