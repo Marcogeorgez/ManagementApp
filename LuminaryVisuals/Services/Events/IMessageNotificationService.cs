@@ -8,7 +8,6 @@ namespace LuminaryVisuals.Services.Events
         Task NotifyNewMessage(int ProjectId);
     }
 
-    // Example implementation (could be in a separate class)
     public class MessageNotificationService : IMessageNotificationService
     {
         private readonly Dictionary<int, List<Func<int, Task>>> _subscribers = new();
