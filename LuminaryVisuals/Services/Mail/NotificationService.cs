@@ -35,7 +35,7 @@ public class NotificationService : BackgroundService, INotificationService
                 {
                     UserId = user.Id,
                     Subject = "New Chat Message",
-                    Message = $"New message in project {project.ProjectName}: {message}",
+                    Message = $"New message in project {project.ProjectName}",
                     CreatedAt = DateTime.UtcNow,
                     MessageId = message.MessageId,
                     ProjectId = project.ProjectId
@@ -52,7 +52,7 @@ public class NotificationService : BackgroundService, INotificationService
                 {
                     UserId = user.Id,
                     Subject = "New Chat Message",
-                    Message = $"New message in project {project.ProjectName}: {message}",
+                    Message = $"New message in project {project.ProjectName}",
                     CreatedAt = DateTime.UtcNow,
                     MessageId = message.MessageId,
                     ProjectId = project.ProjectId

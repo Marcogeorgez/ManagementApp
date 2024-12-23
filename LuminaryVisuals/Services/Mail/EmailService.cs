@@ -29,8 +29,8 @@ public class EmailService : IEmailService
     public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress("Sender Name", _emailConfig.FromEmail));
-        message.To.Add(new MailboxAddress("Recipient Name", to));
+        message.From.Add(new MailboxAddress("Luminary Visuals", _emailConfig.FromEmail));
+        message.To.Add(new MailboxAddress($"{to}", to));
         message.Subject = subject;
 
         var bodyPart = new TextPart(isHtml ? "html" : "plain")
