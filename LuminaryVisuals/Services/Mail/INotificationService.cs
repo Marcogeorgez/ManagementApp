@@ -7,6 +7,6 @@ namespace LuminaryVisuals.Services.Mail
     {
         Task QueueChatNotification(Project project, Message message);
         Task QueueProjectCreationNotification(Project project);
-        Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus);
+        Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus, string updatedByUserId);
     }
 }

@@ -313,7 +313,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); // For now till Microsoft fix the issue with serving videos with MapStaticAssests
 app.MapStaticAssets();
 app.UseRouting();
 app.UseAuthentication();
@@ -321,12 +321,6 @@ app.UseAuthorization();
 
 app.UseAntiforgery();
 
-/*app.UseEndpoints(
-    endpoints =>
-    {
-        endpoints.MapAccountServices();
-    }
-);*/
 // Initialize roles
 using (var scope = app.Services.CreateScope())
 {
