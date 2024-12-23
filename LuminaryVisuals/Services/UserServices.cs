@@ -252,6 +252,46 @@ public class UserServices
             return result;
         }
     }
+    public async Task<List<ApplicationUser>> GetAllUsersAssociatedWithProjectAsync(Project project)
+    {
+        var AllUsers = await GetAllAdminsAsync();
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var _project = await context.Projects
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
+                .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
+
+            if(_project != null)
+            {
+                if(_project.PrimaryEditorId != null)
+                {
+                    var primaryEditor = await _userManager.FindByIdAsync(_project.PrimaryEditorId);
+                    if (primaryEditor != null)
+                    {
+                        AllUsers.Add(primaryEditor);
+                    }
+                }
+                if(_project.SecondaryEditorId != null)
+                {
+                    var secondaryEditor = await _userManager.FindByIdAsync(_project.SecondaryEditorId);
+                    if (secondaryEditor != null)
+                    {
+                        AllUsers.Add(secondaryEditor);
+                    }
+                }
+                if(_project.ClientId != null)
+                {
+                    var client = await _userManager.FindByIdAsync(_project.ClientId);
+                    if (client != null)
+                    {
+                        AllUsers.Add(client);
+                    }
+                }
+            }
+            return AllUsers;
+        }
+    }
 }
 
 public class UserRoleViewModel
