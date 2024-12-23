@@ -6,6 +6,7 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Scheduled;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 var builder = WebApplication.CreateBuilder(args);
 // Using Data Protection system to be saved which is needed when in production 
 builder.Services.AddDataProtection()
@@ -237,24 +239,25 @@ builder.Services.Configure<CloudflareR2Settings>(configuration =>
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var r2Settings = sp.GetRequiredService<IOptions<CloudflareR2Settings>>().Value;
-
-    var config = new AmazonS3Config
-    {
-        ServiceURL = $"https://{r2Settings.AccountId}.r2.cloudflarestorage.com/",
-        ForcePathStyle = true,
-    };
+    AmazonS3Config config = new AmazonS3Config();
+    
+        config = new AmazonS3Config
+        {
+            ServiceURL = $"https://{r2Settings.AccountId}.r2.cloudflarestorage.com/",
+            ForcePathStyle = true,
+        };
 
     return new AmazonS3Client(
         r2Settings.AccessKeyId,
         r2Settings.SecretAccessKey,
         config
     );
+
 });
 
 
 builder.Services.AddSingleton<CloudflareR2Service>();
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -262,7 +265,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.MaxAge = TimeSpan.FromDays(90);
 });
 
+builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+builder.Services.AddSingleton(sp =>
+    builder.Configuration.GetSection("EmailSettings").Get<EmailConfiguration>());
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddSingleton<NotificationService>();
+builder.Services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<NotificationService>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<NotificationService>());
 
 var app = builder.Build();
 
