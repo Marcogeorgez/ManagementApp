@@ -44,7 +44,7 @@
     [Parameter]
     public Project project { get; set; }
     private string? Text = "";
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         // fetch note if exists
         if (!string.IsNullOrEmpty(project.NotesForProject))
