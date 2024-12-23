@@ -181,6 +181,7 @@
                 await InvokeAsync(async () =>
                 {
                     await LoadMessages(true);
+                    await MarkMessagesAsRead();
                 });
             }
         });
