@@ -2,6 +2,7 @@
 using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 namespace LuminaryVisuals.Services.Mail;
 
@@ -10,12 +11,14 @@ public class NotificationService : BackgroundService, INotificationService
     private readonly IServiceProvider _serviceProvider;
     private readonly ConcurrentDictionary<string, List<NotificationQueueItem>> _notificationQueue;
     private readonly ILogger<NotificationService> _logger;
+    private readonly IConfiguration _configuration;
 
-    public NotificationService(IServiceProvider serviceProvider, ILogger<NotificationService> logger)
+    public NotificationService(IServiceProvider serviceProvider, ILogger<NotificationService> logger, IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _notificationQueue = new ConcurrentDictionary<string, List<NotificationQueueItem>>();
         _logger = logger;
+        _configuration = configuration;
     }
     public async Task QueueChatNotification(Project project, Message message)
     {
@@ -109,7 +112,7 @@ public class NotificationService : BackgroundService, INotificationService
             AddToQueue(notificationItem);
         }
     }
-    public async Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus)
+    public async Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus, string updatedByUserId)
     {
         _logger.LogInformation($"Queueing status change notification for project {project.ProjectName} from {oldStatus} to {newStatus}");
 
@@ -118,7 +121,7 @@ public class NotificationService : BackgroundService, INotificationService
 
         // Always notify admins
         var adminUsers = await userService.GetAllAdminsAsync();
-        foreach (var admin in adminUsers)
+        foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
         {
             var notificationItem = new NotificationQueueItem
             {
@@ -135,7 +138,7 @@ public class NotificationService : BackgroundService, INotificationService
             if (project.PrimaryEditorId != null)
             {
                 var primaryEditor = await userService.GetUserByIdAsync(project.PrimaryEditorId);
-                if (primaryEditor != null)
+                if (primaryEditor != null && project.PrimaryEditorId != updatedByUserId)
                 {
                     var notificationItem = new NotificationQueueItem
                     {
@@ -148,7 +151,7 @@ public class NotificationService : BackgroundService, INotificationService
                 }
             }
 
-            if (project.SecondaryEditorId != null)
+            if (project.SecondaryEditorId != null && project.SecondaryEditorId != updatedByUserId)
             {
                 var secondaryEditor = await userService.GetUserByIdAsync(project.SecondaryEditorId);
                 if (secondaryEditor != null)
@@ -170,7 +173,7 @@ public class NotificationService : BackgroundService, INotificationService
             newStatus == ProjectStatus.Delivered ||
             newStatus == ProjectStatus.Finished)
         {
-            if (project.ClientId != null)
+            if (project.ClientId != null && project.ClientId != updatedByUserId)
             {
                 var client = await userService.GetUserByIdAsync(project.ClientId);
                 if (client != null)
@@ -207,7 +210,10 @@ public class NotificationService : BackgroundService, INotificationService
         {
             _logger.LogInformation("Starting notification processing cycle");
             await ProcessNotificationQueue();
-            await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+            int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 30); // Default to 30 minutes if not set
+            TimeSpan delayTimeSpan = TimeSpan.FromMinutes(delayMinutes);
+            Console.WriteLine(delayMinutes);
+            await Task.Delay(delayTimeSpan, stoppingToken);
         }
     }
 

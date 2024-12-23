@@ -244,7 +244,7 @@ public class ProjectService
         }
     }
 
-    public async Task UpdateProjectAsync(Project project)
+    public async Task UpdateProjectAsync(Project project, string updatedByUserId)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -320,7 +320,7 @@ public class ProjectService
                 }
                 if (oldStatus != _project.Status)
                 {
-                    await _notificationService.QueueStatusChangeNotification(project, oldStatus, _project.Status);
+                    await _notificationService.QueueStatusChangeNotification(project, oldStatus, _project.Status,updatedByUserId);
                 }
 
                 await context.SaveChangesAsync();

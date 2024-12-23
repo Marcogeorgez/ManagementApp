@@ -1,7 +1,5 @@
 ﻿@page "/project"
-@using System.Text.Json
-@using LuminaryVisuals.Components.Shared.Logging
-@using LuminaryVisuals.Components.Shared.ProfileComponents
+
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
@@ -11,18 +9,47 @@
 @inject ProjectState ProjectState
 @implements IDisposable
 @inject IEmailService EmailService
-
-
+@inject INotificationService _notificationService
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
 <PageTitle>Projects</PageTitle>
+@* <MudButton OnClick="HideColumns" Color="Color.Warning" >Hide damn columns</MudButton>
+<MudButton OnClick="ShowColumns" Color="Color.Info" >Show columns</MudButton>
 
+@code{
+
+    private Column<Project> InternalOrder;
+
+    private Column<Project> Description;
+
+    private Column<Project> UserName;
+    private void HideColumns()
+    {
+        InternalOrder.Hidden = true;
+        Description.Hidden = true;
+        UserName.Hidden = true;
+
+        // Force refresh the grid
+        StateHasChanged();
+
+    }
+    private void ShowColumns()
+    {
+        InternalOrder.Hidden = false;
+        Description.Hidden = false;
+        UserName.Hidden = false;
+
+        // Force refresh the grid
+        StateHasChanged();
+
+    }
+} *@
 @if (_loading)
 {
     <SplashScreen />
 }
 else
 {
-<MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
+    <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
     Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.Sm"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ColumnsPanelReordering=true
@@ -36,74 +63,76 @@ else
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges" Virtualize="true" FixedHeader="true" Height="100%"
     RowClassFunc="@GetRowClass">
-    
 
-    <ToolBarContent>
-        <MudText Typo="Typo.h4">Your Projects</MudText>
+
+        <ToolBarContent>
+
+            <MudText Typo="Typo.h4">Your Projects</MudText>
             <MudSpacer />
-    </ToolBarContent>
-    <ColGroup>
-        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
-        </MudHidden>
-    </ColGroup>
-    <Columns>
+        </ToolBarContent>
+        <ColGroup>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
+            </MudHidden>
+        </ColGroup>
 
-        @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
-        {
-                        <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center; "
-                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
-                <CellTemplate>
-                            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                                <div style="height:100px;"
-                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center  "
-                                draggable="true"
-                         @ondragstart="@(() => HandleDragStart(context.Item))"
-                         @ondragover:preventDefault
-                         @ondragover="@(() => HandleDragOver(context.Item))"
-                         @ondrop:preventDefault
-                         @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
-                         @ondragenter="@(() => HandleDragEnter(context.Item))"
-                         @ondragleave="@(() => HandleDragLeave(context.Item))">
+        <Columns>
+
+            @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
+            {
+                <PropertyColumn @ref="InternalOrder" Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center; "
+                DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                    <CellTemplate>
+                        <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
+                            <div style="height:100px;"
+                            class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center  "
+                            draggable="true"
+                            @ondragstart="@(() => HandleDragStart(context.Item))"
+                            @ondragover:preventDefault
+                            @ondragover="@(() => HandleDragOver(context.Item))"
+                            @ondrop:preventDefault
+                            @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
+                            @ondragenter="@(() => HandleDragEnter(context.Item))"
+                            @ondragleave="@(() => HandleDragLeave(context.Item))">
                                 <MudIcon Icon="@Icons.Material.Filled.Menu" Class="mr-2" />
-                        @context.Item.InternalOrder
-                    </div>
-                    </MudHidden>
-                            <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
-                        <MudText>@context.Item.InternalOrder</MudText>
-                            </MudHidden>
-                </CellTemplate>
-                    </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
-        {
-            <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
-                            DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
-                <CellTemplate>
-                            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
+                                @context.Item.InternalOrder
+                            </div>
+                        </MudHidden>
+                        <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
+                            <MudText>@context.Item.InternalOrder</MudText>
+                        </MudHidden>
+                    </CellTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
+            {
+                <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
+                DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                    <CellTemplate>
+                        <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                             <div class="drag-handle flex-row  justify-center align-center " style="height:100px;" draggable="true"
-                         @ondragstart="@(() => HandleDragStart(context.Item))"
-                         @ondragover:preventDefault
-                         @ondragover="@(() => HandleDragOver(context.Item))"
-                         @ondrop:preventDefault
-                         @ondrop="@(() => HandleDropForExternalOrder(context.Item))"
-                         @ondragenter="@(() => HandleDragEnter(context.Item))"
-                         @ondragleave="@(() => HandleDragLeave(context.Item))">
-                        <MudIcon Icon="@Icons.Material.Filled.Menu" Class="mr-2" />
-                        @context.Item.ExternalOrder
-                    </div>
-                    </MudHidden>
-                            <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
+                            @ondragstart="@(() => HandleDragStart(context.Item))"
+                            @ondragover:preventDefault
+                            @ondragover="@(() => HandleDragOver(context.Item))"
+                            @ondrop:preventDefault
+                            @ondrop="@(() => HandleDropForExternalOrder(context.Item))"
+                            @ondragenter="@(() => HandleDragEnter(context.Item))"
+                            @ondragleave="@(() => HandleDragLeave(context.Item))">
+                                <MudIcon Icon="@Icons.Material.Filled.Menu" Class="mr-2" />
+                                @context.Item.ExternalOrder
+                            </div>
+                        </MudHidden>
+                        <MudHidden Breakpoint="Breakpoint.Xs" Invert=true>
                             <MudText>@context.Item.ExternalOrder</MudText>
-                            </MudHidden>
-                </CellTemplate>
-                    </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
-        {
-        <PropertyColumn Property="x => x.Description" Title="Project Brief"
-                                Hideable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
-                        Groupable="false" Editable=false Required=false>
-            <CellTemplate>
+                        </MudHidden>
+                    </CellTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
+            {
+                <PropertyColumn @ref="Description"  Property="x => x.Description" Title="Project Brief"
+                Hideable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
+                Groupable="false" Editable=false Required=false>
+                    <CellTemplate>
                         @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
                       string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Size) ||
                       string.IsNullOrEmpty(context.Item.ProjectSpecifications?.CameraNumber) ||
@@ -113,222 +142,222 @@ else
                                 <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
                                     <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
                                 </MudTooltip>
-                    <MudTextField T="string" 
-                                  Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
-                                  ReadOnly="true" Variant="Variant.Outlined"
-                                  Immediate="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
-                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
-                    </MudTextField>
-                              
+                                <MudTextField T="string" 
+                                Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
+                                ReadOnly="true" Variant="Variant.Outlined"
+                                Immediate="true" Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                </MudTextField>
+
                                 <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item))" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small"/>
 
                             </div>
-                }
-                else
-                {                            <div class="d-flex gap-2 flex-row  justify-center align-center">
+                        }
+                        else
+                        {                            <div class="d-flex gap-2 flex-row  justify-center align-center">
 
-                    <MudTextField T="string"
-                                              Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
-                                  ReadOnly="true"
-                                  Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
-                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
-                    </MudTextField>
+                                <MudTextField T="string"
+                                Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
+                                ReadOnly="true"
+                                Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
+                                OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                </MudTextField>
                                 <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item))" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" />
 
                             </div>
 
-                }
+                        }
 
-            </CellTemplate>
-            <EditTemplate>
-                <MudText Style="display:none;" />
-            </EditTemplate>
-        </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView == true)
-        {
-            <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName"
-                                Hideable="true" Groupable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
-                                Editable=false Required=false >
-                <CellTemplate>
-                    <MudTextField T="string"
-                                  Value="context.Item.Client.UserName"  Class="outlined-dialog-max-content"
-                                  ReadOnly="true" 
-                                  Immediate="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew" Variant="Variant.Outlined"
-                                  MaxLines="4"
-                                  OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
-                    </MudTextField>
-                </CellTemplate>
-                        <GroupTemplate>
-                            <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
-                        </GroupTemplate>
-                <EditTemplate>
-
-                    @if (Clients != null && Clients.Any() && _isAdminView)
-                    {
-                        <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                    Class="d-flex justify-center mud-width-full py-2 outlined-dialog-max-content"
-                                   Variant="Variant.Outlined"
-                                   Label="Client Name"
-                                   @bind-Value="context.Item.ClientId">
-                            @foreach (var client in Clients)
-                            {
-                                <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
-                                    @client.UserName
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                    else
-                    {
+                    </CellTemplate>
+                    <EditTemplate>
                         <MudText Style="display:none;" />
-                    }
-                </EditTemplate>
-                    </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
-        {
-                    <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" 
-                        Groupable="true" Editable=false Required=false  CellStyle="text-align:center;" >
+                    </EditTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView == true)
+            {
+                <PropertyColumn @ref="UserName" Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName"
+                Hideable="true" Groupable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
+                Editable=false Required=false >
+                    <CellTemplate>
+                        <MudTextField T="string"
+                        Value="context.Item.Client.UserName"  Class="outlined-dialog-max-content"
+                        ReadOnly="true" 
+                        Immediate="true" Adornment="Adornment.End"
+                        AdornmentIcon="@Icons.Material.Filled.OpenInNew" Variant="Variant.Outlined"
+                        MaxLines="4"
+                        OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
+                        </MudTextField>
+                    </CellTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
+                    </GroupTemplate>
+                    <EditTemplate>
+
+                        @if (Clients != null && Clients.Any() && _isAdminView)
+                        {
+                            <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                            Class="d-flex justify-center mud-width-full py-2 outlined-dialog-max-content"
+                            Variant="Variant.Outlined"
+                            Label="Client Name"
+                            @bind-Value="context.Item.ClientId">
+                                @foreach (var client in Clients)
+                                {
+                                    <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                                        @client.UserName
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudText Style="display:none;" />
+                        }
+                    </EditTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
+            {
+                <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" 
+                Groupable="true" Editable=false Required=false  CellStyle="text-align:center;" >
                     <GroupTemplate> 
-                            <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Primary Editor" />
                     </GroupTemplate>   
                     <EditTemplate>
-                    @if (Editors != null && Editors.Any() && _isAdminView){
-                    <MudSelect T="string"
-                               AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                               Class="d-flex justify-center mud-width-full py-2"
-                               Variant="Variant.Outlined"
-                               Label="Primary Editor"
-                               @bind-Value="context.Item.PrimaryEditorId">
-                               @foreach (var editor in Editors)
-                               {
+                        @if (Editors != null && Editors.Any() && _isAdminView){
+                            <MudSelect T="string"
+                            AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                            Class="d-flex justify-center mud-width-full py-2"
+                            Variant="Variant.Outlined"
+                            Label="Primary Editor"
+                            @bind-Value="context.Item.PrimaryEditorId">
+                                @foreach (var editor in Editors)
+                                {
                                     <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
                                         @editor.UserName
                                     </MudSelectItem>
-                               }
-                        </MudSelect>
-                    }
-                    else
-                    {
-                        <MudText Style="display:none;" />
-                    }
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudText Style="display:none;" />
+                        }
                     </EditTemplate>
-                    </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
-        {
-            <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" 
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
+            {
+                <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" 
                 Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    @if (Editors != null && Editors.Any() && _isAdminView)
-                    {
-                        <MudSelect T="string"
-                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                   Class="d-flex justify-center mud-width-full py-2"
-                                   Variant="Variant.Outlined"
-                                   Label="Secondary Editor"
-                                   @bind-Value="context.Item.SecondaryEditorId">
-                            @foreach (var editor in Editors)
-                            {
-                                <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
-                                    @editor.UserName
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                    else
-                    {
-                        <MudText Style="display:none;" />
-                    }
+                    <EditTemplate>
+                        @if (Editors != null && Editors.Any() && _isAdminView)
+                        {
+                            <MudSelect T="string"
+                            AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                            Class="d-flex justify-center mud-width-full py-2"
+                            Variant="Variant.Outlined"
+                            Label="Secondary Editor"
+                            @bind-Value="context.Item.SecondaryEditorId">
+                                @foreach (var editor in Editors)
+                                {
+                                    <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                        @editor.UserName
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudText Style="display:none;" />
+                        }
 
-                </EditTemplate>
-            </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
-        {
-            <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle=""> 
-                <CellTemplate>
-                    <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
-                </CellTemplate>
+                    </EditTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
+            {
+                <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle=""> 
+                    <CellTemplate>
+                        <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
+                    </CellTemplate>
 
-                <EditTemplate Context="context">
-                            @if (!_isClientView)
-                            {
-                                <MudSelect T="ProgressBarValue" Label="Progress" Class="mt-3" 
-                                AnchorOrigin="Origin.BottomCenter"
-                                Value="@((ProgressBarValue)context.Item.ProgressBar)"
-                Variant="Variant.Outlined"
-                ValueChanged="@(newValue => context.Item.ProgressBar = (int)newValue)">
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
-                </MudSelect>            
-                }
-                </EditTemplate>
-                <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Progress" />
-                </GroupTemplate>
-            </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
-        {
-            <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" 
+                    <EditTemplate Context="context">
+                        @if (!_isClientView)
+                        {
+                            <MudSelect T="ProgressBarValue" Label="Progress" Class="mt-3" 
+                            AnchorOrigin="Origin.BottomCenter"
+                            Value="@((ProgressBarValue)context.Item.ProgressBar)"
+                            Variant="Variant.Outlined"
+                            ValueChanged="@(newValue => context.Item.ProgressBar = (int)newValue)">
+                                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+                            </MudSelect>            
+                        }
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Progress" />
+                    </GroupTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
+            {
+                <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" 
                 Groupable="true" Editable=false CellStyle="text-align:center;">
-                        <EditTemplate Context="context">
-                            @* If changed from here I will later need of a way to change due date*@
-                            @if(_isAdminView || _isClientView){
+                    <EditTemplate Context="context">
+                        @* If changed from here I will later need of a way to change due date*@
+                        @if(_isAdminView || _isClientView){
                             <MudDatePicker Label="Shoot Date" Variant="Variant.Outlined" Date="@context.Item.ShootDate"
                             DateChanged="@(date => context.Item.ShootDate = date)" Class="mt-3" Required="false" />
-                            }
-                        </EditTemplate>
-                <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Shoot Date" />
-                </GroupTemplate>
-            </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
-        {
-            
-            if(_isAdminView)
+                        }
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Shoot Date" />
+                    </GroupTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
             {
-            <TemplateColumn T="Project" Title="Add Warning" Sortable="false" Filterable="false" Groupable=false Hideable="true">
-                <CellTemplate>
-                    <MudItem Class="d-flex justify-center">
-                    <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                   Color="@(context.Item.IsUrgent ? Color.Warning : Color.Tertiary)"
-                                   OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
-                                   Size="Size.Small" />
-                        </MudItem>
-                </CellTemplate>
-            </TemplateColumn>
-        }
+
+                if(_isAdminView)
+                {
+                    <TemplateColumn T="Project" Title="Add Warning" Sortable="false" Filterable="false" Groupable=false Hideable="true">
+                        <CellTemplate>
+                            <MudItem Class="d-flex justify-center">
+                                <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                Color="@(context.Item.IsUrgent ? Color.Warning : Color.Tertiary)"
+                                OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
+                                Size="Size.Small" />
+                            </MudItem>
+                        </CellTemplate>
+                    </TemplateColumn>
+                }
                 <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false"
-                    CellClass="outlined-dialog-max-content" Groupable="true" Editable=false >
+                CellClass="outlined-dialog-max-content" Groupable="true" Editable=false >
                     <CellTemplate>
                         @if (context.Item.IsUrgent == true)
                         {
                             <div class="d-flex gap-2 flex-row  justify-center align-center">
                                 @if(isAdminView)
                                 {
-                                <MudTextField T="string" 
-                                              Value="context.Item.FormattedDueDate" Class="outlined-dialog-max-content"
-                                              ReadOnly="true" Variant="Variant.Outlined"
-                                              Immediate="true" Adornment="Adornment.End"
-                                              AdornmentIcon="@Icons.Material.Filled.OpenInNew"
-                                              OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
-                                </MudTextField>
+                                    <MudTextField T="string" 
+                                    Value="context.Item.FormattedDueDate" Class="outlined-dialog-max-content"
+                                    ReadOnly="true" Variant="Variant.Outlined"
+                                    Immediate="true" Adornment="Adornment.End"
+                                    AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                    OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                    </MudTextField>
                                 }
                                 else{
                                     <MudTextField T="string" Class="outlined-dialog-max-content"
-                                                  Value="context.Item.FormattedDueDate"
-                                                  ReadOnly="true" Variant="Variant.Outlined">
+                                    Value="context.Item.FormattedDueDate"
+                                    ReadOnly="true" Variant="Variant.Outlined">
                                     </MudTextField>
                                 }
                                 <MudTooltip Text="This is urgent." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
@@ -339,73 +368,73 @@ else
                         }
                         else
                         {
-                                @if (isAdminView)
-                                {
-                                    <MudTextField T="string" Class="outlined-dialog-max-content"
-                                                  Value="context.Item.FormattedDueDate"
-                                                  ReadOnly="true" Variant="Variant.Outlined"
-                                                  Immediate="true" Adornment="Adornment.End"
-                                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
-                                                  OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
-                                    </MudTextField>
-                                }
-                                else
-                                {
+                            @if (isAdminView)
+                            {
                                 <MudTextField T="string" Class="outlined-dialog-max-content"
-                                                  Value="context.Item.FormattedDueDate"
-                                                  ReadOnly="true" Variant="Variant.Outlined">
-                                    </MudTextField>
-                                }
+                                Value="context.Item.FormattedDueDate"
+                                ReadOnly="true" Variant="Variant.Outlined"
+                                Immediate="true" Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                                OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                </MudTextField>
+                            }
+                            else
+                            {
+                                <MudTextField T="string" Class="outlined-dialog-max-content"
+                                Value="context.Item.FormattedDueDate"
+                                ReadOnly="true" Variant="Variant.Outlined">
+                                </MudTextField>
+                            }
                         }
 
                     </CellTemplate>
-                        <EditTemplate>
-                            @if(@_isAdminView){
+                    <EditTemplate>
+                        @if(@_isAdminView){
                             <MudDatePicker Label="Due Date"
-                                           Variant="Variant.Outlined"
-                                           Class="mt-3"
-                                           Date="@context.Item.DueDate"
-                                           DateChanged="@(date => context.Item.DueDate = date)"
-                                           Required="false" />
-                            }
-                        </EditTemplate>
-                <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Due Date" />
-                </GroupTemplate>
-            </PropertyColumn>
+                            Variant="Variant.Outlined"
+                            Class="mt-3"
+                            Date="@context.Item.DueDate"
+                            DateChanged="@(date => context.Item.DueDate = date)"
+                            Required="false" />
+                        }
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Due Date" />
+                    </GroupTemplate>
+                </PropertyColumn>
 
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
-        {
-            <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
+            {
+                <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false
                 CellStyle="text-align:center;" Groupable="true" Editable=false>
-                <EditTemplate Context="context">
-                    @if(@_isAdminView){
-                    <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
-                        DateFormat="MM/yyyy" Date="@context.Item.WorkingMonth" DateChanged="@(date => context.Item.WorkingMonth = date)" />
-                    }
-                </EditTemplate>
-                <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Working Month" />
-                </GroupTemplate>
-            </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("Status"))
-        {           
-            <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true">
-                <CellTemplate>
+                    <EditTemplate Context="context">
+                        @if(@_isAdminView){
+                            <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
+                            DateFormat="MM/yyyy" Date="@context.Item.WorkingMonth" DateChanged="@(date => context.Item.WorkingMonth = date)" />
+                        }
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Working Month" />
+                    </GroupTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("Status"))
+            {           
+                <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true">
+                    <CellTemplate>
                         <MudText Class="px-3 py-1 rounded-lg font-weight-bold text-center status-badge " Style="@GetStatusStyle(context.Item)">@context.Item.FormatStatus</MudText>
-                </CellTemplate>
-                <EditTemplate Context="context">
-                            <MudSelect T="ProjectStatus" Class="mt-3"
-                                       Variant="Variant.Outlined"
-                                       Label="Status"
-                                       @bind-Value="context.Item.Status"
-                                       Required="true">
-                                @if(_isAdminView)
+                    </CellTemplate>
+                    <EditTemplate Context="context">
+                        <MudSelect T="ProjectStatus" Class="mt-3"
+                        Variant="Variant.Outlined"
+                        Label="Status"
+                        @bind-Value="context.Item.Status"
+                        Required="true">
+                            @if(_isAdminView)
+                            {
+                                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                                 {
-                                    @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
-                                    {
                                     <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                                 }
                             }
@@ -416,481 +445,481 @@ else
 
                             }
                             else{
-                                    <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
-                                    <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
-                                }
-                            </MudSelect>
-                </EditTemplate>
-                <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Status" />
-                </GroupTemplate>
-            </PropertyColumn>
-                    
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
-        {
-            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
-
-                <EditTemplate Context="context">
-                    <MudSelect T="AdminProjectStatus" Class="mt-3"
-                               Variant="Variant.Outlined"
-                               Label="Admin Status"
-                               @bind-Value="context.Item.AdminStatus"
-                               Required="true">
-                        @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
-                            {
-                            <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                                <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
+                                <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
                             }
-                    </MudSelect>
-                </EditTemplate>
-                <GroupTemplate>
-                    <GroupTemplateComponent TItem="Project" Context="@context" Label="Payment Status" />
-                </GroupTemplate>
-            </PropertyColumn>
-
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
-        {
-                <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-max-content" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
-                            Editable=false Required=false>
-                <CellTemplate>
-                    <MudTextField T="string"
-                                  Class="outlined-dialog-max-content" 
-                                  Text="Notes" Variant="Variant.Outlined"
-                                  ReadOnly="true" Adornment="Adornment.End"
-                                  AdornmentIcon="@Icons.Material.Filled.OpenInNew"
-                                  MaxLines="1"
-                                  OnAdornmentClick="@(() => OpensPrivateNoteForProject(context.Item))">
-                        <MudTooltip Text="Click to view/change private note">
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
-                        </MudTooltip>
-                    </MudTextField>
-                </CellTemplate>
-                <EditTemplate>
-                        <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-        }
-
-        <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
-            <CellTemplate>
-                @if (!String.IsNullOrEmpty(@context.Item.Link))
-                {
-                <MudTooltip Text="@context.Item.Link" >
-                <MudLink Underline="Underline.Always" Style="color:dodgerblue !important" Href="@context.Item.Link">
-                    Project Link
-                    </MudLink>
-                </MudTooltip>
-                }
-                else
-                {
-                    <span>Unassigned</span>
-                }
-            </CellTemplate>
-            <EditTemplate>
-                <div class="@EditTemplateCss">
-                    <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.Link" />
-                </div>
-            </EditTemplate>
-            </PropertyColumn>
-        @* Editors Info*@
-        @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
-        {
-                @if (_isAdminView)
-                {
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
-                <CellTemplate>
-                        @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
-                        {
-                            <MudTextField Variant="Variant.Outlined">@context.Item.PrimaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
-                        }
-                        else{
-                            <MudText>N/A</MudText>
-                        }
-                </CellTemplate>
-            </PropertyColumn>
-
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true"
-                            Editable="false" CellStyle="text-align:center;">
-                <CellTemplate>
-                    @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
-                    {
-                        <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
-                    }
-                    else
-                    {
-                        <MudText>N/A</MudText>
-                    }
-                </CellTemplate>
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
-                <CellTemplate>
-                        @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
-                        {
-                                <MudTextField Variant="Variant.Outlined">@context.Item.SecondaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
-                        }
-                        else{
-                            <MudText>N/A</MudText>
-                        }
-                </CellTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-                <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                        </MudSelect>
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Status" />
+                    </GroupTemplate>
                 </PropertyColumn>
-                    
-                   
-            <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <CellTemplate>
-                    @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
-                    {
-                        <MudText>$@context.Item.SecondaryEditorDetails.PaymentAmount</MudText>
-                    }
-                    else
-                    {
-                        <MudText>N/A</MudText>
-                    }
-                </CellTemplate>
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-                    // ... (rest of the existing admin view columns)
-                }
-                else if (_isEditorView)
-                {
-                        <TemplateColumn Title="Editor Paid Date" Sortable="true" Filterable="true" Groupable="false" Editable=false>
-                            <CellTemplate>
-                                @context.Item.PrimaryEditorDetails.Overtime
-                            @(
-                                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor
-                                : "N/A" )
-                        )
-                            </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false">
-                            <CellTemplate>
-                            @(
-                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
-                        : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours
-                        :   "N/A")
-                            )
-                        </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false">
-                            <CellTemplate>
-                                @context.Item.PrimaryEditorDetails.Overtime
-                            @(
-                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime
-                    : "N/A" )
-                    )
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false">
-                            <CellTemplate>
-                                                            @(
-                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
-                        : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours
-                        :   "N/A")
-                            )
-                                @context.Item.PrimaryEditorDetails.AdjustmentHours
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false">
-                            <CellTemplate>
-                            @(
-                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours
-                    : "N/A" )
-                    )
-                                @context.Item.PrimaryEditorDetails.FinalBillableHours
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false">
-                            <CellTemplate>
-                            @{
 
-                                var paymentAmount = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.PaymentAmount
-                                : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.PaymentAmount : null);
-                                }
-                                @if (paymentAmount >= 0)
-                                {
-                                    <MudText>$@paymentAmount</MudText>
-                                }
-                                else
-                                {
-                                    <MudText>N/A</MudText>
-                                }
-                            </CellTemplate>
-                        </TemplateColumn>
-                }
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
+            {
+                <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
 
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("BillableHours")){
-            
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
-        {
-            <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ClientBillableAmount"))
-        {
-            if(_isAdminView)
-            {
-            <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
-                <EditTemplate>
-                    <MudText Style="display:none;" />
-                </EditTemplate>
-            </PropertyColumn>
-        }
-        else if(_isClientView)
-            {
-                <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
-                    <CellTemplate Context="context">
-                        @{
-                            var project = context.Item as Project;
-                            @if (project?.IsPaymentVisible == true)
+                    <EditTemplate Context="context">
+                        <MudSelect T="AdminProjectStatus" Class="mt-3"
+                        Variant="Variant.Outlined"
+                        Label="Admin Status"
+                        @bind-Value="context.Item.AdminStatus"
+                        Required="true">
+                            @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
                             {
-                                @project.ClientBillableAmount
+                                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                             }
-                            else
-                            {
-                                <span>Unassigned</span>
-                            }
-                        }
+                        </MudSelect>
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Payment Status" />
+                    </GroupTemplate>
+                </PropertyColumn>
+
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
+            {
+                <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-max-content" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
+                Editable=false Required=false>
+                    <CellTemplate>
+                        <MudTextField T="string"
+                        Class="outlined-dialog-max-content" 
+                        Text="Notes" Variant="Variant.Outlined"
+                        ReadOnly="true" Adornment="Adornment.End"
+                        AdornmentIcon="@Icons.Material.Filled.OpenInNew"
+                        MaxLines="1"
+                        OnAdornmentClick="@(() => OpensPrivateNoteForProject(context.Item))">
+                            <MudTooltip Text="Click to view/change private note">
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
+                            </MudTooltip>
+                        </MudTextField>
                     </CellTemplate>
                     <EditTemplate>
                         <MudText Style="display:none;" />
                     </EditTemplate>
                 </PropertyColumn>
             }
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
-        {
-            <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true">
+
+            <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
                 <CellTemplate>
-                    <MudItem >
-                    <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                   Color="@(context.Item.IsPaymentVisible ? Color.Success : Color.Error)"
-                                   OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
-                                   Size="Size.Small" />
-                        </MudItem>
+                    @if (!String.IsNullOrEmpty(@context.Item.Link))
+                    {
+                        <MudTooltip Text="@context.Item.Link" >
+                            <MudLink Underline="Underline.Always" Style="color:dodgerblue !important" Href="@context.Item.Link">
+                                Project Link
+                            </MudLink>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <span>Unassigned</span>
+                    }
                 </CellTemplate>
-            </TemplateColumn>
-        }
-        @if (RoleBasedColumns[_currentRole].Contains("SubmittedStatus"))
-        {           
+                <EditTemplate>
+                    <div class="@EditTemplateCss">
+                        <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.Link" />
+                    </div>
+                </EditTemplate>
+            </PropertyColumn>
+            @* Editors Info*@
+            @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
+            {
+                @if (_isAdminView)
+                {
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                        <CellTemplate>
+                            @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
+                            {
+                                <MudTextField Variant="Variant.Outlined">@context.Item.PrimaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
+                            }
+                            else{
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true"
+                    Editable="false" CellStyle="text-align:center;">
+                        <CellTemplate>
+                            @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
+                            {
+                                <MudText>$@context.Item.PrimaryEditorDetails.PaymentAmount</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                        <CellTemplate>
+                            @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
+                            {
+                                <MudTextField Variant="Variant.Outlined">@context.Item.SecondaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
+                            }
+                            else{
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                    </PropertyColumn>
+
+
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                        <CellTemplate>
+                            @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
+                            {
+                                <MudText>$@context.Item.SecondaryEditorDetails.PaymentAmount</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                    // ... (rest of the existing admin view columns)
+                }
+                else if (_isEditorView)
+                {
+                    <TemplateColumn Title="Editor Paid Date" Sortable="true" Filterable="true" Groupable="false" Editable=false>
+                        <CellTemplate>
+                            @context.Item.PrimaryEditorDetails.Overtime
+                            @(
+                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor
+                        : "N/A" )
+                )
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false">
+                        <CellTemplate>
+                            @(
+                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
+                : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours
+                :   "N/A")
+                    )
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false">
+                        <CellTemplate>
+                            @context.Item.PrimaryEditorDetails.Overtime
+                            @(
+                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime
+                    : "N/A" )
+                    )
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false">
+                        <CellTemplate>
+                            @(
+                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
+                        : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours
+                        :   "N/A")
+                            )
+                            @context.Item.PrimaryEditorDetails.AdjustmentHours
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false">
+                        <CellTemplate>
+                            @(
+                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours
+                    : "N/A" )
+                    )
+                            @context.Item.PrimaryEditorDetails.FinalBillableHours
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false">
+                        <CellTemplate>
+                            @{
+
+                                var paymentAmount = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.PaymentAmount
+                    : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.PaymentAmount : null);
+                            }
+                            @if (paymentAmount >= 0)
+                            {
+                                <MudText>$@paymentAmount</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                }
+
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("BillableHours")){
+
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
+            {
+                <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <EditTemplate>
+                        <MudText Style="display:none;" />
+                    </EditTemplate>
+                </PropertyColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ClientBillableAmount"))
+            {
+                if(_isAdminView)
+                {
+                    <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                }
+                else if(_isClientView)
+                {
+                    <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
+                        <CellTemplate Context="context">
+                            @{
+                                var project = context.Item as Project;
+                                @if (project?.IsPaymentVisible == true)
+                                {
+                                    @project.ClientBillableAmount
+                                }
+                                else
+                                {
+                                    <span>Unassigned</span>
+                                }
+                            }
+                        </CellTemplate>
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
+                        </EditTemplate>
+                    </PropertyColumn>
+                }
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
+            {
+                <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true">
+                    <CellTemplate>
+                        <MudItem >
+                            <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                            Color="@(context.Item.IsPaymentVisible ? Color.Success : Color.Error)"
+                            OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
+                            Size="Size.Small" />
+                        </MudItem>
+                    </CellTemplate>
+                </TemplateColumn>
+            }
+            @if (RoleBasedColumns[_currentRole].Contains("SubmittedStatus"))
+            {
                 <PropertyColumn Property="x => x.SubmissionStatus" Title="Deliverables Details" CellStyle="text-align:center;" Hideable="true">
                     <CellTemplate>
                         @{
                             var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
-                                Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
-                           
+                        Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
+
                         }
-                    @if(_isAdminView)
-                    {
+                        @if(_isAdminView)
+                        {
                             <MudButton Color="@submissionStatus"
-                                   Variant="Variant.Filled"
-                                   Size="Size.Small"
-                                   OnClick="@(() => TimeCalculator(context.Item))" Style="min-width:5vw">
+                            Variant="Variant.Filled"
+                            Size="Size.Small"
+                            OnClick="@(() => TimeCalculator(context.Item))" Style="min-width:5vw">
                                 @context.Item.SubmissionStatus.ToString()
                             </MudButton>
-                    }
-                    else if(_isEditorView){
+                        }
+                        else if(_isEditorView){
                             <MudButton Color="@submissionStatus"
-                                       Variant="Variant.Filled"
-                                       Size="Size.Small"
-                                       Disabled="(_isEditorView && context.Item.SubmissionStatus == Models.SubmissionStatus.Approved)"
-                                       OnClick="@(() => TimeCalculator(context.Item))" FullWidth=true
-                                       Style="min-width:5vw"
-                                       Class="">
+                            Variant="Variant.Filled"
+                            Size="Size.Small"
+                            Disabled="(_isEditorView && context.Item.SubmissionStatus == Models.SubmissionStatus.Approved)"
+                            OnClick="@(() => TimeCalculator(context.Item))" FullWidth=true
+                            Style="min-width:5vw"
+                            Class="">
                                 @context.Item.SubmissionStatus.ToString()
                             </MudButton>
-                    }
-                </CellTemplate>
-            </PropertyColumn>
-        }
+                        }
+                    </CellTemplate>
+                </PropertyColumn>
+            }
 
 
-        @if (RoleBasedColumns[_currentRole].Contains("Actions"))
-        {
-            <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
-                <CellTemplate>
-                      <MudStack Spacing="0" Class="mb-1">
-                        @if (_isArchived && _isAdminView)
-                        {
-                            <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
-                                        Variant="Variant.Filled"
-                                        Size="Size.Small"
-                                        OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(context.Item))"
-                                        StartIcon="@Icons.Material.Filled.Archive"
-                                        Class="mb-1">
-                                @(context.Item.IsArchived ? "Unarchive" : "Archive")
-                            </MudButton>
-                            <MudButton Color="Color.Error"
-                                       Variant="Variant.Filled"
-                                       Size="Size.Small"
-                                       OnClick="@(() => DeleteDialog(context.Item))"
-                                       StartIcon="@Icons.Material.Filled.Delete"
-                                       Class="mb-1">
-                                Delete
-                            </MudButton>
-                        }
-                        else if(!_isArchived && _isAdminView)
-                        {
-                            <MudButton Color="Color.Warning"
-                                        Variant="Variant.Filled"
-                                        Size="Size.Small"
-                                        OnClick="@(() => ArchiveProject(context.Item))"
-                                        StartIcon="@Icons.Material.Filled.Archive"
-                                        Class="mb-1">
-                                Archive
-                            </MudButton>
-                                                    <MudButton Color="Color.Info"
-                                   Variant="Variant.Filled"
-                                   Size="Size.Small"
-                                   OnClick="@(() => Duplicate(context.Item))"
-                                   StartIcon="@Icons.Material.Filled.Edit"
-                                   Class="mb-1">
-                            Duplicate
-                        </MudButton>
-                        }
+            @if (RoleBasedColumns[_currentRole].Contains("Actions"))
+            {
+                <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" >
+                    <CellTemplate>
+                        <MudStack Spacing="0" Class="mb-1">
+                            @if (_isArchived && _isAdminView)
+                            {
+                                <MudButton Color="@(!context.Item.IsArchived ? Color.Warning : Color.Success)"
+                                Variant="Variant.Filled"
+                                Size="Size.Small"
+                                OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(context.Item))"
+                                StartIcon="@Icons.Material.Filled.Archive"
+                                Class="mb-1">
+                                    @(context.Item.IsArchived ? "Unarchive" : "Archive")
+                                </MudButton>
+                                <MudButton Color="Color.Error"
+                                Variant="Variant.Filled"
+                                Size="Size.Small"
+                                OnClick="@(() => DeleteDialog(context.Item))"
+                                StartIcon="@Icons.Material.Filled.Delete"
+                                Class="mb-1">
+                                    Delete
+                                </MudButton>
+                            }
+                            else if(!_isArchived && _isAdminView)
+                            {
+                                <MudButton Color="Color.Warning"
+                                Variant="Variant.Filled"
+                                Size="Size.Small"
+                                OnClick="@(() => ArchiveProject(context.Item))"
+                                StartIcon="@Icons.Material.Filled.Archive"
+                                Class="mb-1">
+                                    Archive
+                                </MudButton>
+                                <MudButton Color="Color.Info"
+                                Variant="Variant.Filled"
+                                Size="Size.Small"
+                                OnClick="@(() => Duplicate(context.Item))"
+                                StartIcon="@Icons.Material.Filled.Edit"
+                                Class="mb-1">
+                                    Duplicate
+                                </MudButton>
+                            }
                         </MudStack>
 
 
                         @if(_isAdminView || _isEditorView)
                         {
-                        <MudStack Spacing="0">
-                        <MudButton Color="Color.Success"
-                                   Variant="Variant.Filled"
-                                   Size="Size.Small"
-                                   OnClick="@(() => Logging(context.Item,_currentUserId))"
-                                   StartIcon="@Icons.Material.Filled.Edit"
-                                   Class="mb-1">
-                            Logging
-                        </MudButton>
-                        </MudStack>
+                            <MudStack Spacing="0">
+                                <MudButton Color="Color.Success"
+                                Variant="Variant.Filled"
+                                Size="Size.Small"
+                                OnClick="@(() => Logging(context.Item,_currentUserId))"
+                                StartIcon="@Icons.Material.Filled.Edit"
+                                Class="mb-1">
+                                    Logging
+                                </MudButton>
+                            </MudStack>
                         }
 
-                </CellTemplate>
-            </TemplateColumn>
+                    </CellTemplate>
+                </TemplateColumn>
             }
-        @if (RoleBasedColumns[_currentRole].Contains("Archive"))
-        {
-            @if (_isArchived)
+            @if (RoleBasedColumns[_currentRole].Contains("Archive"))
+            {
+                @if (_isArchived)
                 {
-                    <PropertyColumn Property="x => x.Archive.Reason" Title="Archive Reason" />
+                    <PropertyColumn Property="x => x.Archive.Reason" Title="Archive Reason" Hideable="true"/>
                 }
-        }        
-    </Columns>
-    
-    <PagerContent>
-        <MudDataGridPager T="Project"/>
-    </PagerContent>
-</MudDataGrid>
+            }        
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="Project"/>
+        </PagerContent>
+    </MudDataGrid>
     <MudContainer Class="justify-start d-flex flex-grow-1 gap-2 flex-wrap container-for-toggles" Gutters=false>
-    @if(isAdminView)
-    { 
-    <MudStack Spacing="0" Class=" mt-5">
-        <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-        <MudStack Row=true>
-        <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
-        <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
-        <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
-        </MudStack>
-    </MudStack>
+        @if(isAdminView)
+        { 
+            <MudStack Spacing="0" Class=" mt-5">
+                <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+                <MudStack Row=true>
+                    <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
+                    <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
+                    <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
+                </MudStack>
+            </MudStack>
             <MudDivider style="border-width:0px !important;" />
             <div class="flex-none d-flex " style=" flex: none !important; margin-left:80px;" />
 
             <MudButton Color="Color.Success"
-                       Variant="Variant.Filled" Size="Size.Small"
-        StartIcon="@Icons.Material.Filled.AddCircle"
-        OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="">
-        Add Project
-    </MudButton>
+            Variant="Variant.Filled" Size="Size.Small"
+            StartIcon="@Icons.Material.Filled.AddCircle"
+            OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="">
+                Add Project
+            </MudButton>
             <MudSpacer />
 
             <MudDivider style="border-width:0px !important;" />
 
-    <MudTooltip Text="Download Filtered Projects ">
-    <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
-    Color="Color.Primary" Variant="Variant.Filled" 
-    StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
-            Download Filtered
-    </MudButton>
-    </MudTooltip>
-    <MudTooltip Text="Download All Projects">
+            <MudTooltip Text="Download Filtered Projects ">
+                <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
+                Color="Color.Primary" Variant="Variant.Filled" 
+                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                    Download Filtered
+                </MudButton>
+            </MudTooltip>
+            <MudTooltip Text="Download All Projects">
                 <MudButton OnClick="DownloadAllProjects" Class="" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small"
-            StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
-                Backup Projects
-        </MudButton>
-    </MudTooltip>
-    <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
+                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                    Backup Projects
+                </MudButton>
+            </MudTooltip>
+            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
 
-            <MudSpacer />
+                <MudSpacer />
             </MudHidden>
 
-    }
-    else if (_isClientView)
-    {
-        <MudButton Color="Color.Success" Class="mt-10"
-                    Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
-                    OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
-            Create New Project
-        </MudButton>
-    }
-    </MudContainer>
-        @if (ProjectState.CurrentProject != null)
+        }
+        else if (_isClientView)
         {
+            <MudButton Color="Color.Success" Class="mt-10"
+            Variant="Variant.Filled"
+            StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
+            OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
+                Create New Project
+            </MudButton>
+        }
+    </MudContainer>
+    @if (ProjectState.CurrentProject != null)
+    {
         <div class="floating-chat-container">
 
             <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
-                                     UserId="@_currentUserId"
-                                     IsAdminView="@isAdminView"
-                                     IsClientView="@_isClientView" isEditorView="@_isEditorView"
-                                     TimezoneOffsetMinutes="@timezoneOffsetMinutes" /> </div>
-        }
-   
+            UserId="@_currentUserId"
+            IsAdminView="@isAdminView"
+            IsClientView="@_isClientView" isEditorView="@_isEditorView"
+            TimezoneOffsetMinutes="@timezoneOffsetMinutes" /> </div>
+    }
+
 }
 @code {
     bool _loading = true;
@@ -966,6 +995,8 @@ else
         if (firstRender)
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
+
+
         }
     }
 
@@ -1113,6 +1144,10 @@ else
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
             StateHasChanged();
+            if(_isClientView)
+            {
+                await _notificationService.QueueProjectCreationNotification(newProject);
+            }
         }
     }
     // Deleting project in archive
@@ -1212,14 +1247,14 @@ else
         DialogService.Show<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
     }
 
-    // Update description and save it to DB
     private async Task updateProject(Project modifiedProject)
     {
         if (modifiedProject is Project project)
         {
-            await projectServices.UpdateProjectAsync(project);
+            await UpdateProjectAsync(project);
         }
     }
+
     private void OpenViewClientEditingGuidelinesComponent(Project context)
     {
         var parameters = new DialogParameters
@@ -1243,13 +1278,16 @@ else
         if(!result!.Canceled)
         {
             var project = (Project) result.Data!;
-            await projectServices.UpdateProjectAsync(project!);
+            await UpdateProjectAsync(project!);
             Snackbar.Add($"Successfully updated the project notes", Severity.Info);
             await LoadProjects();
         }
     }
 
-
+    private async Task UpdateProjectAsync(Project project)
+    {
+        await projectServices.UpdateProjectAsync(project,_currentUserId);
+    }
     // Calculates Total Client Billable hours based on a formula.
     private async Task TimeCalculator( Project project)
     {
@@ -1342,7 +1380,7 @@ else
                     {
                         throw new Exception("Please Open Project Brief and fill-out all the information before changing status.");
                     }
-                    await projectServices.UpdateProjectAsync(project);
+                    await UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     await LoadProjects();
                     StateHasChanged();
@@ -1354,7 +1392,7 @@ else
             }
             else if(_isAdminView)
             {
-                await projectServices.UpdateProjectAsync(project);
+                await UpdateProjectAsync(project);
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
                 await LoadProjects();
@@ -1364,7 +1402,7 @@ else
             {
                 if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
                 {
-                    await projectServices.UpdateProjectAsync(project);
+                    await UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     await LoadProjects();
                     StateHasChanged();
@@ -1691,7 +1729,7 @@ else
         {
             var newValue = !project.IsUrgent;
             project.IsUrgent = newValue;
-            await projectServices.UpdateProjectAsync(project);
+            await UpdateProjectAsync(project);
             if (newValue == true)
             { Snackbar.Add($"Warning is visible now.", Severity.Success); }
             else
@@ -1711,7 +1749,7 @@ else
         {
             var newValue = !project.IsPaymentVisible;
             project.IsPaymentVisible = newValue;
-            await projectServices.UpdateProjectAsync(project);
+            await UpdateProjectAsync(project);
             if (newValue == true)
             { Snackbar.Add($"Payment is visible to the client now.", Severity.Success); }
             else
