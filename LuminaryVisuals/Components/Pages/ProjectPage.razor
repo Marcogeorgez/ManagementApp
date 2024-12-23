@@ -428,7 +428,7 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
         {
-            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
+            <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
 
                 <EditTemplate Context="context">
                     <MudSelect T="AdminProjectStatus" Class="mt-3"
@@ -497,6 +497,18 @@ else
         {
                 @if (_isAdminView)
                 {
+            <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                <CellTemplate>
+                        @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
+                        {
+                            <MudTextField Variant="Variant.Outlined">@context.Item.PrimaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
+                        }
+                        else{
+                            <MudText>N/A</MudText>
+                        }
+                </CellTemplate>
+            </PropertyColumn>
+
             <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
                     <MudText Style="display:none;" />
@@ -529,6 +541,17 @@ else
                 <EditTemplate>
                     <MudText Style="display:none;" />
                 </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                <CellTemplate>
+                        @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
+                        {
+                                <MudTextField Variant="Variant.Outlined">@context.Item.SecondaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
+                        }
+                        else{
+                            <MudText>N/A</MudText>
+                        }
+                </CellTemplate>
             </PropertyColumn>
             <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                 <EditTemplate>
@@ -568,6 +591,16 @@ else
                 }
                 else if (_isEditorView)
                 {
+                        <TemplateColumn Title="Editor Paid Date" Sortable="true" Filterable="true" Groupable="false" Editable=false>
+                            <CellTemplate>
+                                @context.Item.PrimaryEditorDetails.Overtime
+                            @(
+                                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor
+                                : "N/A" )
+                        )
+                            </CellTemplate>
+                    </TemplateColumn>
                     <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false">
                             <CellTemplate>
                             @(
@@ -685,7 +718,7 @@ else
         }
         @if (RoleBasedColumns[_currentRole].Contains("SubmittedStatus"))
         {           
-                <PropertyColumn Property="x => x.SubmissionStatus" Title="Deliverables Details" CellStyle="text-align:center;">
+                <PropertyColumn Property="x => x.SubmissionStatus" Title="Deliverables Details" CellStyle="text-align:center;" Hideable="true">
                     <CellTemplate>
                         @{
                             var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
