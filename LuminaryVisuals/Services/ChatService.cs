@@ -1,6 +1,7 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Mail;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
@@ -9,13 +10,14 @@ public class ChatService
     private readonly ApplicationDbContext context;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly IMessageNotificationService _messageNotificationService;
+    private readonly INotificationService _notificationService;
 
-
-    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService)
+    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService)
     {
         this.context = context;
         _contextFactory = contextFactory;
         _messageNotificationService = messageNotificationService;
+        _notificationService = notificationService;
     }
 
     // Initialize chat for a project
@@ -60,6 +62,11 @@ public class ChatService
         context.Messages.Add(newMessage);
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
+        var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        if (newMessage.IsApproved == true)
+        {
+            await _notificationService.QueueChatNotification(project!, newMessage);
+        }
     }
 
     // Approve a message
@@ -76,6 +83,11 @@ public class ChatService
         message.Timestamp = DateTime.UtcNow;
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
+        var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+        if (message.IsApproved == true)
+        {
+            await _notificationService.QueueChatNotification(project!, message);
+        }
 
     }
 
@@ -237,7 +249,7 @@ public class ChatService
         {
             throw new Exception("Message not found.");
         }
-        newMessage.Content = content;
+        newMessage!.Content = content;
         newMessage.IsEdited = true;
         if(isEditorView)
         {

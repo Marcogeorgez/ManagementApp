@@ -3,6 +3,7 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Models;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Mail;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,13 +13,14 @@ public class ProjectService
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly ILogger<ProjectService> _logger;
     private readonly CircuitUpdateBroadcaster _broadcaster;
-
+    private readonly INotificationService _notificationService;
     public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger,
-        CircuitUpdateBroadcaster projectUpdateService)
+        CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService)
     {
         _contextFactory = context;
         _logger = logger;
         _broadcaster = projectUpdateService;
+        _notificationService = notificationService;
     }
 
     public async Task<List<Project>> GetProjectsAsync(bool isArchived)
@@ -122,6 +124,7 @@ public class ProjectService
             return project;
         }
     }
+
     // Lock to handle concurrency issue
     private static readonly object _orderLock = new object();
     public async Task AddProjectAsync(Project project)
@@ -254,6 +257,7 @@ public class ProjectService
             if (_project != null)
             {
                 var isChanged = false;
+                var oldStatus = _project.Status;
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
                 {
                     await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value,false);
@@ -313,6 +317,10 @@ public class ProjectService
                         _project.Revisions.Add(revision);
                     }
                 }
+                }
+                if (oldStatus != _project.Status)
+                {
+                    await _notificationService.QueueStatusChangeNotification(project, oldStatus, _project.Status);
                 }
 
                 await context.SaveChangesAsync();

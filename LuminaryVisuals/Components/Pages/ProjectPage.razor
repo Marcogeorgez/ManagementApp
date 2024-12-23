@@ -10,6 +10,7 @@
 @inject CircuitUpdateBroadcaster Broadcaster
 @inject ProjectState ProjectState
 @implements IDisposable
+@inject IEmailService EmailService
 
 
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
