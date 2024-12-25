@@ -95,6 +95,8 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     googleOptions.ClientId = clientId;
     googleOptions.ClientSecret = clientSecret;
     googleOptions.CallbackPath = "/signin-google";
+    googleOptions.CorrelationCookie.SameSite = SameSiteMode.Lax;
+
     googleOptions.Events.OnRedirectToAuthorizationEndpoint = context =>
     {
         var redirectUri = context.RedirectUri;
