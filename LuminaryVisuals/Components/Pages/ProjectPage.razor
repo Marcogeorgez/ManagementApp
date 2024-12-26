@@ -459,7 +459,7 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
             {
-                <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
+                <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
 
                     <EditTemplate Context="context">
                         <MudSelect T="AdminProjectStatus" Class="mt-3"
@@ -528,7 +528,7 @@ else
             {
                 @if (_isAdminView)
                 {
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
                         <CellTemplate>
                             @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
                             {
@@ -540,7 +540,7 @@ else
                         </CellTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Date Paid" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
@@ -573,7 +573,7 @@ else
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="P.Editor Logged Hours" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
                         <CellTemplate>
                             @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
                             {

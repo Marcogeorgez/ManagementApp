@@ -96,7 +96,7 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     googleOptions.ClientSecret = clientSecret;
     googleOptions.CallbackPath = "/signin-google";
     googleOptions.CorrelationCookie.SameSite = SameSiteMode.Lax;
-
+    googleOptions.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     googleOptions.Events.OnRedirectToAuthorizationEndpoint = context =>
     {
         var redirectUri = context.RedirectUri;
@@ -263,6 +263,9 @@ builder.Services.AddSingleton<CloudflareR2Service>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromDays(90);
     options.Cookie.MaxAge = TimeSpan.FromDays(90);
 });
