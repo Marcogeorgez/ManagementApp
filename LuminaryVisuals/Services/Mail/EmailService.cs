@@ -1,6 +1,7 @@
 ﻿using MailKit.Security;
 using MimeKit;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 namespace LuminaryVisuals.Services;
 
 public class EmailConfiguration
@@ -21,29 +22,41 @@ public class EmailService : IEmailService
 {
     private readonly EmailConfiguration _emailConfig;
 
-    public EmailService(EmailConfiguration emailConfig)
+    public EmailService(IOptions<EmailConfiguration> emailConfig)
     {
-        _emailConfig = emailConfig;
+        _emailConfig = emailConfig.Value;
     }
 
     public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
     {
-        var message = new MimeMessage();
-        message.From.Add(new MailboxAddress("Luminary Visuals", _emailConfig.FromEmail));
-        message.To.Add(new MailboxAddress($"{to}", to));
-        message.Subject = subject;
-
-        var bodyPart = new TextPart(isHtml ? "html" : "plain")
+        try
         {
-            Text = body
-        };
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Luminary Visuals", _emailConfig.FromEmail));
+            message.To.Add(new MailboxAddress($"{to}", to));
+            message.Subject = subject;
 
-        message.Body = bodyPart;
+            var bodyPart = new TextPart(isHtml ? "html" : "plain")
+            {
+                Text = body
+            };
+            message.Body = bodyPart;
 
-        using var client = new SmtpClient();
-        await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.SmtpPort, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(_emailConfig.SmtpUsername, _emailConfig.SmtpPassword);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+            using var client = new SmtpClient();
+
+            // Add logging or console output here to debug
+            Console.WriteLine($"Attempting to connect to {_emailConfig.SmtpServer}:{_emailConfig.SmtpPort}");
+
+            await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.SmtpPort, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(_emailConfig.SmtpUsername, _emailConfig.SmtpPassword);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception or handle it appropriately
+            Console.WriteLine($"Failed to send email: {ex.Message}");
+            throw; // Re-throw to maintain the error state
+        }
     }
 }
