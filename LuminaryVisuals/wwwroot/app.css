@@ -3,7 +3,11 @@
 }
 
 
-
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .outlined-dialog-max-content {
+        min-width: 200px !important;
+    }
+}
 
 
 
