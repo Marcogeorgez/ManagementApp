@@ -104,17 +104,7 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
         context.Response.Redirect(redirectUri);
         return Task.CompletedTask;
     };
-    googleOptions.Events.OnRedirectToAuthorizationEndpoint = async context =>
-    {
-        var uri = new Uri(context.RedirectUri);
-        var httpsUri = new UriBuilder(uri)
-        {
-            Scheme = "https",
-            Port = -1  // Remove port number from redirect
-        }.Uri.ToString();
-        context.Response.Redirect(httpsUri);
-        await Task.CompletedTask;
-    };
+
     googleOptions.Scope.Add("email");
     googleOptions.Scope.Add("profile");
 })
@@ -321,11 +311,8 @@ if (!app.Environment.IsDevelopment())
         AllowStatusCode404Response = true // allows 404 responses.
     });
     // Only use HTTPS redirection if not running in a container
-    if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
-    {
         app.UseHsts();
         app.UseHttpsRedirection();
-    }
 }
 
 app.UseHttpsRedirection();
