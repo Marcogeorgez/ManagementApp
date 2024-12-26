@@ -272,14 +272,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-builder.Services.AddSingleton(sp => new EmailConfiguration
-{
-    SmtpServer = builder.Configuration["EmailSettings__SmtpServer"],
-    SmtpPort = int.Parse(builder.Configuration["EmailSettings__SmtpPort"]),
-    SmtpUsername = builder.Configuration["EmailSettings__SmtpUsername"],
-    SmtpPassword = builder.Configuration["EmailSettings__SmtpPassword"],
-    FromEmail = builder.Configuration["EmailSettings__FromEmail"]
-});
+builder.Services.AddSingleton(sp =>
+    builder.Configuration.GetSection("EmailSettings").Get<EmailConfiguration>());
+
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSingleton<NotificationService>();
