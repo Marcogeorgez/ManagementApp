@@ -312,7 +312,6 @@ if (!app.Environment.IsDevelopment())
     });
     // Only use HTTPS redirection if not running in a container
         app.UseHsts();
-        app.UseHttpsRedirection();
 }
 
 app.UseHttpsRedirection();
