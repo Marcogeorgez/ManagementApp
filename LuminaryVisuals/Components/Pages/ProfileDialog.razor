@@ -13,57 +13,80 @@
 
         <MudText Typo="Typo.h3" Class="mt-2">Hello, @userName</MudText>
                         <MudForm @ref="form" @bind-IsValid="@success">
-                <MudItem xs="12" Class="mt-8 pl-5">
-                    <MudText Typo="Typo.h5">Profile Settings</MudText>
+                <MudItem xs="12" Class="mt-8">
+                    <MudText Typo="Typo.h5" Class="mb-2">Profile Settings</MudText>
                                         </MudItem>
-        <MudGrid Class="d-flex flex-row px-10 my-1" Justify="Justify.Center" Spacing="6">
-                <MudItem xs="12" sm="6">
+        <MudGrid Class="d-flex flex-row pr-3" Justify="Justify.Center" Spacing="6">
+                <MudItem xs="12" sm="4">
                     <MudTextField T="string" Label="Current Username" @bind-Value="@userName"
                         ReadOnly="true" Variant="Variant.Outlined" />
                 </MudItem>
-                <MudItem xs="12" sm="6">
+                <MudItem xs="12" sm="4">
                     <MudTextField T="string" Label="New Username" @bind-Value="model.NewUsername"
                         Required="true" RequiredError="New username is required!" 
                         Validation="@(new Func<string, IEnumerable<string>>(ValidateUsername))"
                             Variant="Variant.Outlined"  />
                 </MudItem>
+                <MudItem xs="12" sm="4" Style="align-content:center;">
+            <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-auto px-10 d-flex" Style="width: 150px; "
+                    Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
+                    @if (processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Processing</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Update</MudText>
+                    }
+            </MudButton>
+        </MudItem>
         </MudGrid>
-        <MudButton Variant="Variant.Filled" Color="Color.Info" Class="ml-auto mt-5 mr-9" 
-                Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
-                @if (processing)
-                {
-                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                    <MudText Class="ms-2">Processing</MudText>
-                }
-                else
-                {
-                    <MudText>Update Username</MudText>
-                }
-        </MudButton>
+
         </MudForm>
 
-        <MudGrid Class="px-10 my-3 d-flex flex-auto align-center" Justify="Justify.Center" Spacing="6">
+            @if (userRole == "Client")
+            {
+
+                <MudGrid Class="d-flex flex-auto align-center pr-3 my-2" Justify="Justify.Center" Spacing="6">
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="d-flex flex-auto" Typo="Typo.h5"  Style="align-items: center;">
+                            Edit your preferences
+                        </MudText>
+                        <MudText  Class="d-flex flex-auto" Typo="Typo.body2" Style="align-items: center; color:grey;">
+                            Please fill in the following form so we know more about your personal preferences and brand identity.
+                        </MudText>
+
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudButton Class="ml-auto px-10 d-flex" Variant="Variant.Filled" Color=Color.Info Style="width: 150px;"
+                                   OnClick="buttonCLicked">Preferences</MudButton>
+
+                    </MudItem>
+                </MudGrid>
+                if (isClicked)
+                {
+                    <ClientEditingGuidelinesComponent userId="@userId"/>
+                }
+            }
+        <div style="border: 1px red solid; margin-top:12px; padding:10px; border-radius:10px;">
+        <MudGrid Class="d-flex flex-auto align-center" Justify="Justify.Center" Spacing="6">
             <MudItem xs="12" sm="6">
-            <MudText Typo="Typo.h5" Class="pl-5">Revoke Login From All Devices</MudText>
+            <MudText Class="d-flex flex-auto" Typo="Typo.h5" Color=Color.Error Style="align-items: center;">
+                <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Error"></MudIcon> Revoke Access!</MudText>
+                    <MudText Color=Color.Error Class="d-flex flex-auto ml-1" Typo="Typo.body2" Style="align-items: center;">
+                            This option will log you out of all the devices you are currently using and it is irreversible.
+                            You will be asked to log in again using your Google Account.
+                    </MudText>
+
                 </MudItem>
                 <MudItem xs="12" sm="6">
-
-                    <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Filled"
+                        <MudButton OnClick="RevokeLogin" Color="Color.Error" Variant="Variant.Filled" Style="width: 150px;"
                     Class="ml-auto px-10 d-flex">Revoke</MudButton>
                     </MudItem>
-
         </MudGrid>
-        @if (userRole == "Client")
-        {
-            <MudText Class="mt-2">Please fill the following form to know more about your preferences</MudText>
-            <MudButton Class="mt-3 mb-4 ml-3 mr-3" Color=Color.Info  
-            StartIcon="@Icons.Material.Filled.EditNote" Variant="Variant.Filled" 
-            OnClick="buttonCLicked"> Projects Preferences </MudButton>
-            if(isClicked)
-            {
-                <ClientEditingGuidelinesComponent userId="@userId"/>
-            }
-        }
+            </div>
+
         <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
             <AntiforgeryToken />
             <input type="hidden" name="ReturnUrl" value="" />
@@ -71,8 +94,8 @@
     </DialogContent>
 
     <DialogActions>
-            <MudItem xs="12" sm="12" md="12" Class="mt-8 px-4 px-md-11">
-                <div class="d-flex justify-space-between align-center mb-5">
+            <MudItem xs="12" sm="12" md="12" Class="px-4 px-md-11">
+                <div class="d-flex justify-center align-center my-5">
                     <MudButton StartIcon="@Icons.Material.Filled.ExitToApp"
                                IconColor="Color.Tertiary"
                                Class="px-6 px-md-14"
@@ -81,13 +104,6 @@
                                Variant="Variant.Filled"
                                Size="Size.Medium">
                         Log out
-                    </MudButton>
-                    <MudButton Class=" px-md-14"
-                               OnClick="@Cancel"
-                               Color="Color.Error"
-                               Variant="Variant.Filled"
-                               Size="Size.Medium">
-                        Close
                     </MudButton>
                 </div>
             </MudItem>

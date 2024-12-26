@@ -2,9 +2,9 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ISnackbar Snackbar
 
-<MudContainer>
+<MudContainer Gutters=false>
 <MudExpansionPanels MultiExpansion="true">
-<MudText Typo="Typo.h5">Preferences Checklist:</MudText>
+<MudText Style="margin-top:5px;" Typo="Typo.h5">Preferences Checklist:</MudText>
     <MudForm @ref="form" Model="@preferences">
         <MudExpansionPanel Text="Link To Website">
         <!-- Website Link -->
@@ -16,7 +16,7 @@
             <MudText Typo="Typo.h6">
                 How you like to structure the videos:
             </MudText>
-            <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Row=true>
+            <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Row=true>
             @foreach (var structure in VideoStructureOptions)
             {
                 <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
@@ -269,7 +269,7 @@
         </MudExpansionPanel>
         <!-- Save Button -->
         <MudItem xs="12" Class="d-flex align-self-center">
-            <MudButton Class="mt-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
+            <MudButton Class="my-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
         </MudItem>
     </MudForm>
 </MudExpansionPanels>
