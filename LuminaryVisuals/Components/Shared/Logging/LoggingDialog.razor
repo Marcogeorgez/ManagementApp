@@ -1,9 +1,7 @@
 ﻿@inject IDialogService DialogService
-
 <MudDialog>
     <DialogContent>
-         
-            <MudStack Row="true" Spacing="4" Class="mb-4 ">
+            <MudStack Row="true" Spacing="4" Class="mb-4" Justify="Justify.Center">
             @if (!isAdmin)
             {
                 <MudButton Style="min-width: 120px;" Class="rounded-pill"
@@ -22,10 +20,9 @@
             </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@Close" Class="rounded-pill mt-3 mr-5" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Close" Class="rounded-pill" Style="min-width: 120px;" Color="Color.Error" Variant="Variant.Outlined" >Close</MudButton>
     </DialogActions>
 </MudDialog>
-
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
@@ -77,3 +74,13 @@
         MudDialog.Close();
     }
 }
+<style>
+    .mud-dialog-actions
+    {
+        justify-content: center !important;
+    }
+
+    .mud-dialog-title{
+        width:300px;
+    }
+</style>
