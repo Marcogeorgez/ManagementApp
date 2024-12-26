@@ -1,4 +1,5 @@
 ﻿@page "/project"
+@using Microsoft.Extensions.Options
 
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -11,6 +12,7 @@
 @inject IEmailService EmailService
 @inject INotificationService _notificationService
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
+@inject IOptions<EmailConfiguration> EmailConfig
 <PageTitle>Projects</PageTitle>
 @* <MudButton OnClick="HideColumns" Color="Color.Warning" >Hide damn columns</MudButton>
 <MudButton OnClick="ShowColumns" Color="Color.Info" >Show columns</MudButton>
@@ -1000,6 +1002,12 @@ else
         if (firstRender)
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
+            Console.WriteLine(EmailConfig.Value.SmtpServer);
+
+            Console.WriteLine(EmailConfig.Value.SmtpPort);
+
+            Console.WriteLine(EmailConfig.Value.SmtpUsername);
+
 
 
         }
