@@ -72,9 +72,10 @@
         <div style="border: 1px red solid; margin-top:12px; padding:10px; border-radius:10px;">
         <MudGrid Class="d-flex flex-auto align-center" Justify="Justify.Center" Spacing="6">
             <MudItem xs="12" sm="6">
-            <MudText Class="d-flex flex-auto" Typo="Typo.h5" Color=Color.Error Style="align-items: center;">
-                <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Error"></MudIcon>  Revoke Access!</MudText>
-                    <MudText Color=Color.Error Class="d-flex flex-auto ml-1" Typo="Typo.body2" Style="align-items: center;">
+            <MudText Class="d-flex flex-auto" Typo="Typo.h5" Style="align-items: center; color:#e40730">
+                            <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Style="color:#e40730"></MudIcon>  Revoke Access!
+                        </MudText>
+                    <MudText Class="d-flex flex-auto ml-1" Typo="Typo.body2" Style="align-items: center;color: #f66e79;">
                             This option will log you out of all the devices you are currently using and it is irreversible.
                             You will be asked to log in again using your Google Account.
                     </MudText>
@@ -241,3 +242,15 @@
         await JSRuntime.InvokeVoidAsync("submitForm", "logoutForm");
     }
 }
+<style>
+    :root {
+        --mud-palette-info: #002c55 !important;
+        --mud-palette-error: #7d0100 !important;
+    }
+    .mud-button-filled.mud-button-filled-info{
+        border: 2px #008cff solid;
+    }
+    .mud-button-filled.mud-button-filled-error{
+        border: 2px #b70000 solid;
+    }
+</style>
