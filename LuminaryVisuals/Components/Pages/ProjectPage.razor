@@ -12,6 +12,7 @@
 @inject INotificationService _notificationService
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
 <PageTitle>Projects</PageTitle>
+@inject EmailConfiguration _emailConfig
 @* <MudButton OnClick="HideColumns" Color="Color.Warning" >Hide damn columns</MudButton>
 <MudButton OnClick="ShowColumns" Color="Color.Info" >Show columns</MudButton>
 
@@ -967,6 +968,13 @@ else
     protected override async Task OnInitializedAsync()
     {
         // Get the current user ID
+        Console.WriteLine("EMAIL CONFIGURATION:");
+
+        Console.WriteLine(_emailConfig.SmtpServer);
+        Console.WriteLine(_emailConfig.SmtpUsername);
+
+        Console.WriteLine(_emailConfig.SmtpPort);
+
         ProjectState.OnChange += HandleProjectStateChange;
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
         _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
