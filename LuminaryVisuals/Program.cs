@@ -318,7 +318,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto });
-app.UseHttpsRedirection();
 app.UseStaticFiles(); // For now till Microsoft fix the issue with serving videos with MapStaticAssests
 app.MapStaticAssets();
 app.UseRouting();
