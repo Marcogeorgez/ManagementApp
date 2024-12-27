@@ -620,14 +620,14 @@ back-button {
     position: relative;
     background-color: #3b3b3b;
     display: none;
-    border-radius: 20px;
+    border-radius: 5px;
     padding: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     z-index: 10;
     align-self: inherit;
     transition: all 0.3s ease;
-    left: 10px;
-    height: 35px;
+    height: 40px;
+    top:2px;
 }
 .chat-message:hover + .message-hover-options,
 .message-hover-options:hover {

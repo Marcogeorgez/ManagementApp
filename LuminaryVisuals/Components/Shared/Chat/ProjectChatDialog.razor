@@ -101,7 +101,7 @@
                                         }
                                     }
 
-                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
                                     OnClick="() => EditMessage(message)"  />
                                 </div>
                             }
@@ -169,10 +169,19 @@
     };
     public void Dispose()
     {
+        ProjectState.OnChange -= HandleProjectChange;
         _subscription?.Dispose();
+    }
+    private async void HandleProjectChange()
+    {
+        // Immediately reload messages whenever the project changes
+        await LoadMessages(true);  
+        await MarkMessagesAsRead();
+        StateHasChanged();  // Trigger a re-render after messages are loaded
     }
     protected override async Task OnInitializedAsync()
     {
+        ProjectState.OnChange += HandleProjectChange;
         await LoadMessages(true);
         await MarkMessagesAsRead();
         _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (newMessage) =>
@@ -442,7 +451,7 @@
                 {"isAdminView", isAdminView},
                 {"UserId", UserId}
             };  
-            var dialog = await DialogService.ShowAsync<EditMessageDialog>("Edit Message", parameters);
+            var dialog = await DialogService.ShowAsync<EditMessageDialog>("", parameters);
             var result = await dialog.Result;
             if (!result.Canceled)
             {
@@ -450,10 +459,7 @@
                 await ChatService.EditMessageAsync(message, Project.ProjectId, editedContent, isEditorView);
                 await LoadMessages(initial: true);
             }        
-            else
-            {
-                Snackbar.Add("You have canceled the editing.", Severity.Warning);
-            }
+
         }
         catch(Exception ex)
         {

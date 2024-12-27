@@ -1,34 +1,39 @@
-﻿namespace LuminaryVisuals.Services.Scheduled;
+﻿using LuminaryVisuals.Data;
 
-public class MessageCleanupBackgroundService : BackgroundService
+namespace LuminaryVisuals.Services.Scheduled;
+
+public interface IMessageCleanupService
 {
-    private readonly IMessageCleanupService _messageCleanupService;
-    private readonly ILogger<MessageCleanupBackgroundService> _logger;
+    Task DeleteOldMessagesAsync();
+}
 
-    public MessageCleanupBackgroundService(IMessageCleanupService messageCleanupService, ILogger<MessageCleanupBackgroundService> logger)
+public class MessageCleanupService : IMessageCleanupService
+{
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+
+    public MessageCleanupService(IServiceScopeFactory serviceScopeFactory)
     {
-        _messageCleanupService = messageCleanupService;
-        _logger = logger;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public async Task DeleteOldMessagesAsync()
     {
-        // Run every 7 days
-        while (!stoppingToken.IsCancellationRequested)
+        using (var scope = _serviceScopeFactory.CreateScope())
         {
-            try
-            {
-                _logger.LogInformation("Starting weekly message cleanup...");
-                await _messageCleanupService.DeleteOldMessagesAsync();
-                _logger.LogInformation("Weekly message cleanup completed.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred during message cleanup: {ex.Message}");
-            }
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // Wait for 1 week before running the cleanup again
-            await Task.Delay(TimeSpan.FromDays(7), stoppingToken);
+            var cutoffDate = DateTime.UtcNow.AddMonths(-4);
+            var messagesToDelete = context.Messages
+                .Where(m => m.Timestamp < cutoffDate)
+                .ToList();
+
+            if (messagesToDelete.Any())
+            {
+                context.Messages.RemoveRange(messagesToDelete);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
+
+
