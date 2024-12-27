@@ -278,10 +278,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddScoped<LoadingService>();
 
-/*builder.Services.AddSingleton(sp =>
-    builder.Configuration.GetSection("EmailSettings").Get<EmailConfiguration>());
-*/
 builder.Services.Configure<EmailConfiguration>(
     builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
