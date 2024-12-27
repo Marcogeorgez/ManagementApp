@@ -78,6 +78,13 @@
     font-size: 1.5em;
     animation: checkmark-mega-burst 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
+.ql-editor {
+    color: white !important;
+}
+
+    .ql-editor p {
+        color: white !important;
+    }
 
 @keyframes checkmark-mega-burst {
     0% {
