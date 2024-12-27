@@ -3,7 +3,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject ProjectState ProjectState
-<MudContainer Class="chat-container" Gutters=false >
+<MudContainer Class="chat-container" Gutters=false>
         <MudPaper Elevation="0" Class="chat-panel" style="border:0px;">
 
         <MudPaper Elevation="3" Class="chat-header" Outlined="true">
@@ -136,5 +136,24 @@
     .mud-dialog-width-md
     {
         padding: 0% !important;
+    }
+    .chat-container{
+        width: 100% !important;
+    }
+    @@media (max-width: 960px){
+        .mud-dialog-container.mud-dialog-bottomright .mud-dialog
+        {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 80vw !important;
+        }
+    }
+
+    .mud-dialog-container.mud-dialog-bottomright .mud-dialog
+    {
+        height: 70vh;
+        width: 45vw;
     }
 </style>
