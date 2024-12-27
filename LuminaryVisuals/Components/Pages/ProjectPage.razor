@@ -529,7 +529,7 @@ else
             {
                 @if (_isAdminView)
                 {
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <CellTemplate>
                             @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
                             {
@@ -547,17 +547,17 @@ else
                         </EditTemplate>
                     </PropertyColumn>
 
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <EditTemplate>
                             @if(context.Item.PrimaryEditorId != null)
                             {
@@ -565,12 +565,12 @@ else
                             }
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true"
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" Hidden=@HasAnyPrimaryEditor
                     Editable="false" CellStyle="text-align:center;">
                         <CellTemplate>
                             @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
@@ -586,7 +586,7 @@ else
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="Sec.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="Sec.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <CellTemplate>
                             @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
                             {
@@ -603,32 +603,32 @@ else
                             }
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <EditTemplate>
                             @if(context.Item.SecondaryEditorId != null)
                             {
-                                <MudNumericField Label="P.Adjustment" Variant="Variant.Outlined" @bind-Value="context.Item.PrimaryEditorDetails.AdjustmentHours" />
+                                <MudNumericField Label="Sec.Adjustment" Variant="Variant.Outlined" @bind-Value="context.Item.SecondaryEditorDetails.AdjustmentHours" />
                             }
                         </EditTemplate>
                     </PropertyColumn>
 
 
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <CellTemplate>
                             @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
                             {
@@ -643,7 +643,6 @@ else
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    // ... (rest of the existing admin view columns)
                 }
                 else if (_isEditorView)
                 {
@@ -957,6 +956,8 @@ else
     private MudDataGrid<Project> _dataGrid = new();
     private IEnumerable<Project?> projects = new List<Project?>();
     private Project? projectToDelete;
+    private bool HasAnySecondaryEditor;
+    private bool HasAnyPrimaryEditor;
     private readonly DialogOptions DialogOptions = new() { CloseButton = true, FullScreen = false };
     private bool _isArchived;
     private bool _isAdminView;
@@ -1103,6 +1104,9 @@ else
             projects = await projectServices.GetProjectsAsync(_isArchived);
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+            HasAnyPrimaryEditor = !projects.Any(x => x.PrimaryEditorId != null);
+            HasAnySecondaryEditor = !projects.Any(x => x.SecondaryEditorId != null);
+
         }
         // for client view which will fetch his own projects only)
         else if (_isClientView && isAdminView == false)
