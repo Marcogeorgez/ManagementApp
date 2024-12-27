@@ -24,6 +24,11 @@ using MudBlazor;
 using MudBlazor.Services;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+    options.KnownProxies.Clear(); // Trust all proxies (optional for Railway)
+});
 // Using Data Protection system to be saved which is needed when in production 
 builder.Services.AddDataProtection()
     .UseCryptographicAlgorithms(
@@ -317,7 +322,8 @@ if (!app.Environment.IsDevelopment())
         app.UseHsts();
 }
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto });
+app.UseForwardedHeaders();
+app.UseHttpsRedirection();
 app.UseStaticFiles(); // For now till Microsoft fix the issue with serving videos with MapStaticAssests
 app.MapStaticAssets();
 app.UseRouting();
