@@ -1037,6 +1037,8 @@ else
         StateHasChanged();
         await _dataGrid.SetEditingItemAsync(args.Item);
         _isLoading = false;
+        StateHasChanged();
+
     }
     private async Task HandleProjectsUpdated()
     {
@@ -1240,10 +1242,11 @@ else
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null, false);
                 await LoadProjects();
-                _isLoading = false;
 
             }
         }
+        _isLoading = false;
+
     }
     public async Task Duplicate(Project project)
     {
