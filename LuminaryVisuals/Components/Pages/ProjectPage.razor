@@ -50,7 +50,7 @@
 }
 else
 {
-
+    <LoadingIndicator IsVisible="@_isLoading" />
     <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
     Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.Sm"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -59,7 +59,7 @@ else
     Groupable=true
     ShowMenuIcon=true
     EditMode="DataGridEditMode.Form"
-    EditTrigger="DataGridEditTrigger.OnRowClick"
+    EditTrigger="DataGridEditTrigger.OnRowClick" RowClick="@OnRowClick"
     ReadOnly=false
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
@@ -540,9 +540,9 @@ else
                             }
                         </CellTemplate>
                         <EditTemplate>
-                        @if(context.Item.PrimaryEditorId != null)
+                            @if(context.Item.PrimaryEditorId != null)
                             {
-                            <MudDatePicker Date="@context.Item.PrimaryEditorDetails.DatePaidEditor" Label="P.Date Paid" Variant=Variant.Outlined DateChanged="@(date => context.Item.PrimaryEditorDetails.DatePaidEditor = date)" />
+                                <MudDatePicker Date="@context.Item.PrimaryEditorDetails.DatePaidEditor" Label="P.Date Paid" Variant=Variant.Outlined DateChanged="@(date => context.Item.PrimaryEditorDetails.DatePaidEditor = date)" />
                             }
                         </EditTemplate>
                     </PropertyColumn>
@@ -650,9 +650,9 @@ else
                         <CellTemplate>
                             @context.Item.PrimaryEditorDetails.Overtime
                             @(
-                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
+                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
                     : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor
-                        : "N/A" )
+                : "N/A" )
                 )
                         </CellTemplate>
                     </TemplateColumn>
@@ -678,10 +678,10 @@ else
                     <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false">
                         <CellTemplate>
                             @(
-                        context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
-                        : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours
-                        :   "N/A")
-                            )
+                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
+                : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours
+                :   "N/A")
+                    )
                             @context.Item.PrimaryEditorDetails.AdjustmentHours
                         </CellTemplate>
                     </TemplateColumn>
@@ -951,7 +951,8 @@ else
 
 
 @code {
-    bool _loading = true;
+    private bool _loading = true;
+    private bool _isLoading;
     [CascadingParameter]
     public ClaimsPrincipal? currentUser { get; set; }
     private MudDataGrid<Project> _dataGrid = new();
@@ -1030,7 +1031,13 @@ else
 
         }
     }
-
+    private async Task OnRowClick(DataGridRowClickEventArgs<Project> args)
+    {
+        _isLoading = true;
+        StateHasChanged();
+        await _dataGrid.SetEditingItemAsync(args.Item);
+        _isLoading = false;
+    }
     private async Task HandleProjectsUpdated()
     {
         await InvokeAsync(async () =>
@@ -1039,7 +1046,6 @@ else
             StateHasChanged();
         });
     }
-
     public void Dispose()
     {
         if (CircuitId != null)
@@ -1048,7 +1054,6 @@ else
         }
         ProjectState.OnChange -= HandleProjectStateChange;
     }
-
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
         { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","SubmittedStatus","Actions","Archive" } },
@@ -1056,50 +1061,58 @@ else
         { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status" } }
     };
     private Guid _gridKey = Guid.NewGuid();
-
-
     private async Task AdminToggle()
     {
+        _isLoading = true;
         _gridKey = Guid.NewGuid();
         _isAdminView = !_isAdminView;
         _isClientView = false;
         _isEditorView = false;
         _currentRole = "Admin";
         await LoadProjects();
+        _isLoading = false;
     }
     private async Task EditorToggle()
     {
+        _isLoading = true;
         _gridKey = Guid.NewGuid();
         _isEditorView = !_isEditorView;
         _isClientView = false;
         _isAdminView = false;
         _currentRole = "Editor";
         await LoadProjects();
-        // await LoadProjectsForEditor(context.UserId)
+        _isLoading = false;
     }
     private async Task ClientToggle()
     {
+        _isLoading = true;
         _gridKey = Guid.NewGuid();
         _isClientView = !_isClientView;
         _isAdminView = false;
         _isEditorView = false;
         _currentRole = "Client";
         await LoadProjects();
+        _isLoading = false;
     }
 
     private async Task ArchivedToggle()
     {
+        _isLoading = true;
         _isArchived = !_isArchived;
         await LoadProjects();
+        _isLoading = false;
     }
     private void OpenProjectChat(Project Project)
     {
+        _isLoading = true;
         ProjectState.SetProject(Project);
+        _isLoading = false;
     }
 
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
+        _isLoading = true;
         if (_isAdminView)
         {
             projects = await projectServices.GetProjectsAsync(_isArchived);
@@ -1121,24 +1134,30 @@ else
         }
         else if (_isEditorView && isAdminView == false)
             await LoadProjectsForEditors();
+        _isLoading = false;
         StateHasChanged();
     }
     // Loading Projects for Editors View
     private async Task LoadProjectsForEditors()
     {
+        _isLoading = true;
         projects = await projectServices.GetProjectsForEditors(_isArchived, _currentUserId);
+        _isLoading = false;
         StateHasChanged();
     }
     // Loading Projects for Client View
     private async Task LoadProjectsForClient()
     {
+        _isLoading = true;
         projects = await projectServices.GetProjectsForClients(_isArchived, _currentUserId);
+        _isLoading = false;
         StateHasChanged();
     }
 
     // Add new project dialog
     private async Task AddProjectDialogAsync(DialogOptions options)
     {   
+        _isLoading = true;
         var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
         int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
 
@@ -1147,8 +1166,8 @@ else
             { "WeeksToDueDateDefault", weeksToDueDateDefault },
             { "_isClientView", _isClientView}
         };
-
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", dialogParameters,options);
+        _isLoading = false;
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
@@ -1161,6 +1180,7 @@ else
     }
     private async Task CreateProjectDialogAsync(DialogOptions options)
     {
+        _isLoading = true;
         var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
         int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
         var dialogParameters = new DialogParameters
@@ -1169,6 +1189,7 @@ else
             { "_isClientView", _isClientView}
         };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Create New Project", dialogParameters, options);
+        _isLoading = false;
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
@@ -1192,14 +1213,16 @@ else
         {            
             return;
         }
-
+        _isLoading = true;
         await projectServices.DeleteProjectAsync(projectToDelete.ProjectId);
         await LoadProjects();
+        _isLoading = false;
         StateHasChanged();
     }
     // Archiving and Unarchiving the project
     public async Task ArchiveProject(Project project)
     {
+        _isLoading = true;
         var dialogParameters = new DialogParameters<ArchivingDialog> { { nameof(ArchivingDialog.newProject), project } };
         var dialog = await DialogService.ShowAsync<ArchivingDialog>("Archive Project", dialogParameters);
         var result = await dialog.Result;
@@ -1211,6 +1234,8 @@ else
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null, false);
                 await LoadProjects();
+                _isLoading = false;
+
             }
         }
     }
@@ -1218,6 +1243,8 @@ else
     {
         try
         {
+            _isLoading = true;
+
             var newProject = new Project();
             newProject.ClientId = project.ClientId;
             newProject.PrimaryEditorId = project.PrimaryEditorId;
@@ -1241,6 +1268,7 @@ else
             newProject.ProgressBar = project.ProgressBar;
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
+            _isLoading = false;
             Snackbar.Add("Successfully duplicated this project!", Severity.Success);
 
 
@@ -1257,16 +1285,20 @@ else
 
     private async Task UnarchiveProject(Project project)
     {
+        _isLoading = true;
         if (await ConfirmationService.Confirm($"Are you sure you'd like to unarchive this project {project.ProjectName}?"))
         {
             await projectServices.UnarchiveProjectAsync(project.ProjectId);
             await LoadProjects();
         }
+        _isLoading = false;
+        
 
     }
     // Opens Description Dialog
     private void OpenDescriptionDialog(Project context)
     {
+        _isLoading = true;
         var parameters = new DialogParameters
         {
             { "context", context },
@@ -1279,29 +1311,41 @@ else
         };
         var options = new DialogOptions { };
         DialogService.Show<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
+        _isLoading = false;
+
     }
 
     private async Task updateProject(Project modifiedProject)
     {
+        _isLoading = true;
+
         if (modifiedProject is Project project)
         {
             await UpdateProjectAsync(project);
         }
+        _isLoading = false;
+        
     }
 
     private void OpenViewClientEditingGuidelinesComponent(Project context)
     {
+        _isLoading = true;
+
         var parameters = new DialogParameters
         {
             { "userId", context.ClientId },
         };
         var options = new DialogOptions { FullScreen = false };
         DialogService.Show<ViewClientEditingGuidelinesComponent>("Client Preferences", parameters, options);
+        _isLoading = false;
+
     }
 
     // Opens private note for modification
     private async Task OpensPrivateNoteForProject(Project context)
     {
+        _isLoading = true;
+
         var parameters = new DialogParameters
         {
             { "project", context },
@@ -1316,15 +1360,21 @@ else
             Snackbar.Add($"Successfully updated the project notes", Severity.Info);
             await LoadProjects();
         }
+        _isLoading = false;
+
     }
 
     private async Task UpdateProjectAsync(Project project)
     {
+        _isLoading = true;
         await projectServices.UpdateProjectAsync(project,_currentUserId);
+        _isLoading = false;
+
     }
     // Calculates Total Client Billable hours based on a formula.
     private async Task TimeCalculator( Project project)
     {
+        _isLoading = true;
         if (_isEditorView && project.SubmissionStatus == Models.SubmissionStatus.Approved)
         {
             Snackbar.Add($"As an Editor you aren't allowed to modify projects which status is {project.SubmissionStatus.ToString()}",Severity.Error);
@@ -1350,10 +1400,14 @@ else
                 await LoadProjects();
             }
         }
+        _isLoading = false;
+
     }
 
     private async Task Logging(Project project,string currentUserId)
     {
+        _isLoading = true;
+
         var dialogParameters = new DialogParameters<LoggingDialog> {
             { nameof(LoggingDialog.currentProject), project },
             { "CurrentUserId", currentUserId},
@@ -1363,6 +1417,8 @@ else
         var dialog = await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
         var result = await dialog.Result;
         await LoadProjects();
+        _isLoading = false;
+
 
     }
 
@@ -1403,6 +1459,8 @@ else
     {
         try
         {
+            _isLoading = true;
+
             if (_isClientView)
             {
                 if (HasNoSignificantChanges(beforeModification, project, "ExternalOrder", "Status", "ShootDate") == false)
@@ -1447,6 +1505,7 @@ else
                     Snackbar.Add($"Detected unauthorized changes!", Severity.Error);
                 }
             }
+            _isLoading = false;
 
         }
         catch(Exception ex)
@@ -1689,6 +1748,8 @@ else
     {
         try
         {
+        _isLoading = true;
+
             if (draggedProject == null || targetProject == null)
                 return;
 
@@ -1711,6 +1772,7 @@ else
             isDragging = false;
             draggedProject = null;
             dropTarget = null;
+            _isLoading = false;
             ResetDragState();
             await RefreshGridData();
         }
@@ -1719,6 +1781,8 @@ else
     {
         try
         {
+            _isLoading = true;
+
             if (draggedProject == null || targetProject == null)
                 return;
 
@@ -1741,6 +1805,8 @@ else
             isDragging = false;
             draggedProject = null;
             dropTarget = null;
+            _isLoading = false;
+
             ResetDragState();
             await RefreshGridData();
         }
@@ -1762,6 +1828,8 @@ else
     {
         try
         {
+            _isLoading = true;
+
             var newValue = !project.IsUrgent;
             project.IsUrgent = newValue;
             await UpdateProjectAsync(project);
@@ -1771,6 +1839,8 @@ else
             {
                 Snackbar.Add($"Warning is hidden now.", Severity.Info);
             }
+            _isLoading = false;
+
         }
         catch (Exception ex)
         {
@@ -1782,6 +1852,8 @@ else
     {
         try
         {
+            _isLoading = true;
+
             var newValue = !project.IsPaymentVisible;
             project.IsPaymentVisible = newValue;
             await UpdateProjectAsync(project);
@@ -1791,6 +1863,8 @@ else
             {
                 Snackbar.Add($"Payment is hidden from the client now.", Severity.Info);
             }
+            _isLoading = false;
+
         }
         catch (Exception ex)
         {
