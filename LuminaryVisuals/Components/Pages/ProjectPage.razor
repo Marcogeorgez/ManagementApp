@@ -1164,19 +1164,25 @@ else
         var dialogParameters = new DialogParameters
         {
             { "WeeksToDueDateDefault", weeksToDueDateDefault },
-            { "_isClientView", _isClientView}
+            { "_isClientView", _isClientView},
+            { "Editors", Editors},
+            { "Clients", Clients}
         };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", dialogParameters,options);
-        _isLoading = false;
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
             var newProject = (Project) result.Data!;
-            newProject.ClientId = _currentUserId;
+            if(newProject.ClientId == null)
+            {
+                newProject.ClientId = _currentUserId;
+            }
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
             StateHasChanged();
         }
+        _isLoading = false;
+
     }
     private async Task CreateProjectDialogAsync(DialogOptions options)
     {

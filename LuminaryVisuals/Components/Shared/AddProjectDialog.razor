@@ -30,9 +30,7 @@
                 </MudItem>
                 @if (!_isClientView)
                 {
-                    <MudItem xs
-                    ="12" sm
-                    ="6">
+                    <MudItem xs="12" sm="6">
                         <MudDatePicker Label="Due Date"
                                    Variant="Variant.Outlined"
                                    Class="d-flex flex-column mud-width-full"
@@ -42,7 +40,39 @@
                                    Required="true" />
                 </MudItem>
                 }
-
+                @if (!_isClientView)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Client"
+                                   @bind-Value="newProject.ClientId">
+                            @foreach (var client in Clients)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                                    @client.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Primary Editor"
+                                   @bind-Value="newProject.PrimaryEditorId">
+                                    @foreach (var editor in Editors)
+                                    {
+                                        <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                            @editor.UserName
+                                        </MudSelectItem>
+                                    }
+                        </MudSelect>
+                    </MudItem>
+                }
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
                                   Label="Footage Link"
@@ -243,12 +273,13 @@ The Bride was married like I said before, so this wedding was quite special beca
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public int WeeksToDueDateDefault { get; set; }
     [Parameter] public bool _isClientView { get; set; }
-
+    [Parameter] public List<UserRoleViewModel.UserProjectViewModel> Clients { get; set; }
+    [Parameter] public List<UserRoleViewModel.UserProjectViewModel> Editors { get; set; }
     private Project newProject = new Project();
     private MudForm form;
     private string errorMessage;
     private bool success;
-        private bool _hasError = false;
+    private bool _hasError = false;
     private string _errorText = string.Empty;
     private enum ProgressBarValue
     {
@@ -286,24 +317,27 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
         _expanded = !_expanded;
     }
-    private async void Submit()
+    private async Task Submit()
     {
-
         await form.Validate();
+
         if (string.IsNullOrWhiteSpace(newProject.Description) && newProject.Status != ProjectStatus.Upcoming)
         {
             _hasError = true;
             _errorText = "Description is required";
             success = false;
+            StateHasChanged();
             return;
         }
-        if (form.IsValid)   
+
+        if (form.IsValid)
         {
-            MudDialog.Close(DialogResult.Ok(newProject)); // Return the new project to the main component
+            await InvokeAsync(() => MudDialog.Close(DialogResult.Ok(newProject)));
         }
         else
         {
             errorMessage = "Please fill in all required fields correctly before submitting.";
+            StateHasChanged();
         }
     }
 
