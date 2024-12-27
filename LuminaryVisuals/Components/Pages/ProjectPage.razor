@@ -558,6 +558,12 @@ else
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                        <EditTemplate>
+                            @if(context.Item.PrimaryEditorId != null)
+                            {
+                                <MudNumericField Label="P.Adjustment" Variant="Variant.Outlined" @bind-Value="context.Item.PrimaryEditorDetails.AdjustmentHours" />
+                            }
+                        </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
                         <EditTemplate>
@@ -608,6 +614,12 @@ else
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;">
+                        <EditTemplate>
+                            @if(context.Item.SecondaryEditorId != null)
+                            {
+                                <MudNumericField Label="P.Adjustment" Variant="Variant.Outlined" @bind-Value="context.Item.PrimaryEditorDetails.AdjustmentHours" />
+                            }
+                        </EditTemplate>
                     </PropertyColumn>
 
 
