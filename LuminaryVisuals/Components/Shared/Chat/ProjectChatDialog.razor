@@ -40,7 +40,7 @@
                         {
                         if (lastUserId != message.UserId || ( lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null ))
                         {
-                                    <MudText Typo="Typo.caption" Class="message-username">@(message.UserId != UserId && !isClientView
+                                    <MudText Typo="Typo.body2" Class="message-username">@(message.UserId != UserId && !isClientView
                                         ? message.User.UserName
                                         : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
                                     </MudText> 
@@ -115,7 +115,7 @@
             <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex" Accept=".jpg, .jpeg, .png, .gif, .bmp, .tiff, .tif,
                 .svg, .webp, .ico, .heic, .heif, .raw, .psd,.dds, .jp2, .j2k, .jpf, .eps, .ai">
                 <ActivatorContent>
-                    <MudIconButton Color="Color.Success"
+                    <MudIconButton Style="color:#efefef"
                                    Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
                 </ActivatorContent>
             </MudFileUpload>
