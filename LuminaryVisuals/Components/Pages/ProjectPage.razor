@@ -1118,7 +1118,6 @@ else
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
-        LoadingService.ShowLoading();
         if (_isAdminView)
         {
             projects = await projectServices.GetProjectsAsync(_isArchived);
@@ -1140,7 +1139,6 @@ else
         }
         else if (_isEditorView && isAdminView == false)
             await LoadProjectsForEditors();
-        LoadingService.HideLoading();
         StateHasChanged();
     }
     // Loading Projects for Editors View
@@ -1819,7 +1817,6 @@ else
             draggedProject = null;
             dropTarget = null;
             LoadingService.HideLoading();
-
             ResetDragState();
             await RefreshGridData();
         }

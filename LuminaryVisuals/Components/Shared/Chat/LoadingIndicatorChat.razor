@@ -1,0 +1,21 @@
+﻿<MudOverlay Visible="@IsVisible" DarkBackground="true" ZIndex="9999">
+    <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large" />
+</MudOverlay>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+}
+<style>
+    .mud-overlay{
+        top: inherit;
+        bottom: inherit;
+        left: inherit;
+        right: inherit;
+        margin:inherit;
+        justify-content:center;
+        align-items:center;
+        margin-bottom: 75px !important;
+        position:relative;
+    }
+</style>
