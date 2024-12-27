@@ -829,7 +829,7 @@ else
                                     Delete
                                 </MudButton>
                             }
-                            else if(!_isArchived && _isAdminView)
+                            else if(!_isArchived && _isAdminView || !_isArchived && _isClientView)
                             {
                                 <MudButton Color="Color.Warning"
                                 Variant="Variant.Filled"
