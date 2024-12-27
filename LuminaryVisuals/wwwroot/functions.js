@@ -19,3 +19,18 @@
 window.getTimezoneOffset = function () {
     return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
 };
+
+
+function showLoadingIndicator() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+        overlay.style.display = "block";
+    }
+}
+
+function hideLoadingIndicator() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+        overlay.style.display = "none";
+    }
+}
