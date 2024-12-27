@@ -152,13 +152,13 @@ else
                                 OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                                 </MudTextField>
 
-                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item))" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small"/>
+                                <MudFab Class="d-flex floating-chat-icon " @onclick="async () => await  OpenProjectChat(context.Item)" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small"/>
 
                             </div>
                         }
                         else
-                        {                            <div class="d-flex gap-2 flex-row  justify-center align-center">
-
+                        {      
+                            <div class="d-flex gap-2 flex-row  justify-center align-center">
                                 <MudTextField T="string"
                                 Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
                                 ReadOnly="true"
@@ -166,7 +166,7 @@ else
                                 AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                 OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                                 </MudTextField>
-                                <MudFab Class="d-flex floating-chat-icon " @onclick="@(() => OpenProjectChat(context.Item))" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" />
+                        <MudFab Class="d-flex floating-chat-icon " @onclick="async () => await OpenProjectChat(context.Item)" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" />
 
                             </div>
 
@@ -934,7 +934,7 @@ else
             </MudButton>
         }
     </MudContainer>
-    @if (ProjectState.CurrentProject != null)
+    @if (ProjectState.CurrentProject != null )
     {
         <div class="mud-overlay mud-overlay-dialog" style=""><div class="mud-overlay-scrim mud-overlay-dark"></div></div>
         <div class="floating-chat-container">
@@ -1108,12 +1108,21 @@ else
         await LoadProjects();
         LoadingService.HideLoading();
     }
-    private void OpenProjectChat(Project Project)
+    private async Task OpenProjectChat(Project Project)
     {
-        LoadingService.ShowLoading();
-        ProjectState.SetProject(Project);
-        LoadingService.HideLoading();
+        try
+        {
+            LoadingService.ShowLoading();
+            await Task.Yield(); 
+            ProjectState.SetProject(Project);
+            await Task.Yield(); 
+        }
+        finally
+        {
+            LoadingService.HideLoading();
+        }
     }
+
 
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
