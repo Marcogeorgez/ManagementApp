@@ -277,7 +277,7 @@
         min-width: auto !important;
     }
     .chat-container {
-        width: 95% !important;
+        width: 100% !important;
         height:100% !important;
     }
 }
@@ -307,14 +307,14 @@
     min-height: 60vh;
     border-radius: 12px;
     padding: 20px;
-    background-color: #1E1E1E;
+    background-color: #161621;
     color: #E0E0E0;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     overflow-y: auto;
     transition: all 0.3s ease;
     border: 1px solid #2C2C2C;
     scrollbar-width: thin;
-    scrollbar-color: #4DB6AC #2A2A2A;
+    scrollbar-color: #efefef #012b52;
 }
 
 @media (max-width: 960px) {
@@ -336,7 +336,7 @@
     }
     .floating-chat-container {
         width: 100vw !important;
-        height: 90vh !important;
+        height: 100vh !important;
     }
     .chat-panel {
         width: inherit !important;
@@ -352,7 +352,7 @@
 .projects-title {
     display: flex;
     align-items: center;
-    color: #4DB6AC;
+    color: #efefef;
     margin-bottom: 15px;
     font-weight: 600;
 }
@@ -360,13 +360,13 @@
 
 
 .project-item {
-    background-color: #2A2A2A;
+    border: 1px solid #b5b1b1;
+    background-color: #38383c;
     border-radius: 8px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    border: 1px solid #3A3A3A;
     position: relative;
-    margin:10px 5%;
+    margin: 10px 5%;
     width: 90%;
 }
 
@@ -443,14 +443,13 @@
 
 .unread-badge {
     position: absolute;
-    bottom: 35%;
-    right: 15%;
+    bottom: 68%;
+    right: 15px;    
 }
 .badge {
     position: absolute;
-    bottom: 5px;
-    right: 15px;
-    animation: colorPulse 10s ease-in-out infinite alternate;
+    bottom: 35%;
+    right: 18%;
 }
 
 .no-projects-alert {
@@ -463,20 +462,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 70vh;
-    width: 45vw;
+    height: inherit;
+    width: inherit;
     transition: all 0.3s ease;
-    overflow-y:hidden;
+    overflow-y: hidden;
 }
 
 .floating-chat-container {
     position: fixed;
-    bottom: 20px;
-    right: 10px;
-    z-index: 1000;
+    bottom: 0px;
+    right: 0px;
+    z-index: 1500;
     width: 45vw;
-    max-height: 80vh;
-    height:70vh;
+    max-height: 100vh;
+    height:100vh;
 }
 @keyframes slideIn {
     from {
@@ -521,7 +520,7 @@
     width: inherit;
     height: inherit;
     border-radius: 12px;
-    background-color: #1E1E1E;
+    background-color: #161621;
     color: #E0E0E0;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     display: flex;
@@ -531,12 +530,12 @@
     animation: fadeIn 0.5s ease-out;
     overflow: hidden auto;
     scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: #4DB6AC #2A2A2A; /* Thumb and track colors */
+    scrollbar-color: #efefef #012b52; /* Thumb and track colors */
 }
 
 
 .chat-header {
-    background-color: #2A2A2A;
+    background-color: #012b52;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
     display: flex;
@@ -547,18 +546,18 @@
     transition: all 0.3s ease;
 }
 
-.chat-header:hover {
-    background-color: #333;
-    animation: pulse 2s infinite;
-}
+    .chat-header:hover {
+        background-color: #01315e;
+        animation: pulse 2s infinite;
+    }
 
 .chat-title {
-    color: #4DB6AC;
+    color: #efefef;
     display: flex;
     align-items: center;
 }
 back-button {
-    color: #4DB6AC !important; 
+    color: #efefef !important;
 } 
 
 .chat-content {
@@ -570,7 +569,7 @@ back-button {
     overflow-x:hidden;
     padding: 15px;
     scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: #4DB6AC #2A2A2A; /* Thumb and track colors */
+    scrollbar-color: #efefef #012b52; /* Thumb and track colors */
 }
 
 .chat-content::-webkit-scrollbar {
@@ -578,11 +577,11 @@ back-button {
 }
 
 .chat-content::-webkit-scrollbar-track {
-    background: #2A2A2A; /* Dark track color */
+    background: #012b52; /* Dark track color */
 }
 
 .chat-content::-webkit-scrollbar-thumb {
-    background-color: #4DB6AC; /* Teal-like color for the scrollbar */
+    background-color: #efefef; /* Teal-like color for the scrollbar */
     border-radius: 4px;
 }
 
@@ -592,13 +591,13 @@ back-button {
 }
 
 .date-separator {
-    color: #666;
+    color: #fff4f4;
     margin: 10px 0;
     text-align: center;
 }
 
 .message-username {
-    color: #4DB6AC;
+    color: #efefef;
     margin-bottom: 5px;
 }
 
@@ -612,14 +611,16 @@ back-button {
 }
 .message-hover-options {
     position: relative;
-    background-color: #2A2A2A;
+    background-color: #3b3b3b;
     display: none;
-    border-radius: 8px;
+    border-radius: 20px;
     padding: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     z-index: 10;
     align-self: inherit;
     transition: all 0.3s ease;
+    left: 10px;
+    height: 35px;
 }
 .chat-message:hover + .message-hover-options,
 .message-hover-options:hover {
@@ -647,7 +648,7 @@ back-button {
 }
 
 .chat-message {
-    background-color: #2A2A2A;
+    background-color: #3b3b3b;
     border-radius: 12px;
     padding: 10px 15px;
     max-width: 70%;
@@ -664,7 +665,7 @@ back-button {
     align-items: center;
     justify-content: flex-end;
     margin-top: 5px;
-    color: #888;
+    color: #efefef;
 }
 
 .received-icon {
@@ -673,7 +674,7 @@ back-button {
 }
 
 .chat-input-area {
-    background-color: #2A2A2A;
+    background-color: #012b52;
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
     padding: 10px;
@@ -703,7 +704,7 @@ text-decoration: underline;
 }
 
 .special-link {
-    color: #4DB6AC !important;
+    color: #efefef !important;
 }
 
 .not-approved-message {
@@ -716,8 +717,7 @@ text-decoration: underline;
 .not-approved-message::before {
     content: "Pending Approval";
     position: relative;
-    left: 100%;
-    bottom: -90%;
+    bottom: 25px;
     background-color: #721414;
     color: #fff;
     padding: 2px 5px;

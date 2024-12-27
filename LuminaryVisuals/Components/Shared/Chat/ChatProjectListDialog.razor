@@ -8,8 +8,7 @@
 
         <MudPaper Elevation="3" Class="chat-header" Outlined="true">
         <MudText Typo="Typo.h5" Class="projects-title">
-            <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Class="mr-3" />
-            Your Projects
+            Your Messages
 
         </MudText>
         <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
@@ -28,11 +27,11 @@
                             <MudText Typo="Typo.body1">@project.ProjectName</MudText>
                             @if (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView))
                             {
-                                <MudBadge Content="@project.MessageRequireApprovalCount" Color="Color.Secondary" Class="badge"/>
-                            }
+@*                                 <MudBadge  Content="@project.MessageRequireApprovalCount" Class="badge"/>
+ *@                            }
                             @if (project.countUnreadMessages > 0)
                             {
-                                <MudBadge Content="@project.countUnreadMessages" Color="Color.Secondary" Class="unread-badge"/>
+                                <MudBadge Color="Color.Secondary" Content="@project.countUnreadMessages" Class="unread-badge" />
                             }
                             <MudText Typo="Typo.caption" Class="message-timestamp">@ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
                             </MudText>
@@ -147,13 +146,16 @@
             top: 50% !important;
             left: 50% !important;
             transform: translate(-50%, -50%) !important;
-            width: 80vw !important;
+            width: 100vw !important;
         }
     }
 
     .mud-dialog-container.mud-dialog-bottomright .mud-dialog
     {
-        height: 70vh;
+        height: 100vh;
+        max-height: 100vh;
         width: 45vw;
+        bottom:0px;
+        right:0px;
     }
 </style>

@@ -460,7 +460,7 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
             {
-                <PropertyColumn Property="x => x.FormatAdminStatus" Title="Admin Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
+                <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
 
                     <EditTemplate Context="context">
                         <MudSelect T="AdminProjectStatus" Class="mt-3"
@@ -936,6 +936,7 @@ else
     </MudContainer>
     @if (ProjectState.CurrentProject != null)
     {
+        <div class="mud-overlay mud-overlay-dialog" style=""><div class="mud-overlay-scrim mud-overlay-dark"></div></div>
         <div class="floating-chat-container">
 
             <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
