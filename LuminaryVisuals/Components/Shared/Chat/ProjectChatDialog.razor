@@ -12,47 +12,47 @@
 @inject ProjectState ProjectState
 
 <MudContainer Class="chat-container" Gutters=false>
-        <MudPaper Elevation="4" Class="chat-panel">
-            <MudPaper Elevation="3" Class="chat-header" Outlined="true">
-                    <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
-                <MudText Typo="Typo.h6" Class="chat-title">
-                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
+    <MudPaper Elevation="4" Class="chat-panel">
+        <MudPaper Elevation="3" Class="chat-header" Outlined="true">
+            <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
+            <MudText Typo="Typo.h6" Class="chat-title">
+                <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
                 @Project.ProjectName
-                </MudText>
-                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
-            </MudPaper>
-            <MudContainer Class="chat-content" Gutters="false"  @onscroll="OnScroll">
+            </MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
+        </MudPaper>
+        <MudContainer Class="chat-content" Gutters="false"  @onscroll="OnScroll">
 
-                <div class="chat-messages">
+            <div class="chat-messages">
                 @if (hasMoreMessages)
                 {
                     <MudProgressCircular Color="Color.Info" Indeterminate="true" Style="margin-top:0px!important;align-self:center;position:relative;   "/>
                 }
 
                 @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
+                {
+                    <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
+                        @group.Key
+                    </MudText>
+                    DateTime? lastTimestamp = null;
+                    string lastUserId = null;
+                    @foreach (var (message, index) in group.Select((m, i) => (m, i)))
                     {
-                        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
-                            @group.Key
-                        </MudText>
-                        DateTime? lastTimestamp = null;
-                        string lastUserId = null;
-                        @foreach (var (message, index) in group.Select((m, i) => (m, i)))
-                        {
                         if (lastUserId != message.UserId || ( lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null ))
                         {
-                                    <MudText Typo="Typo.body2" Class="message-username">@(message.UserId != UserId && !isClientView
+                            <MudText Typo="Typo.body2" Class="message-username">@(message.UserId != UserId && !isClientView
                                         ? message.User.UserName
                                         : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
-                                    </MudText> 
-                                    lastUserId = message.UserId; 
-                                }
-                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="ToggleClick"
-                            style="--total-messages:@messages.Count; --message-index:@index;">
+                            </MudText> 
+                            lastUserId = message.UserId; 
+                        }
+                        <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="ToggleClick"
+                        style="--total-messages:@messages.Count; --message-index:@index;">
 
 
-                                <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
+                            <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
                                 @foreach (var part in GetMessageWithLinks(message.Content))
-                                    {
+                                {
                                     if (StringHelper.IsLink(part))
                                     {
                                         // Check if the URL is an image based on the file extension
@@ -60,14 +60,14 @@
                                         {
                                             // Display the image
                                             <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
-                                            <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
+                                                <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
                                             </div>
                                         }
                                         else
                                         {
                                             <strong>
                                                 <MudLink Typo="Typo.body1" Class="special-link" Href="@part"
-                                                         Underline="Underline.Always">@part </MudLink>
+                                                Underline="Underline.Always">@part </MudLink>
                                             </strong>
                                         }
                                     }
@@ -75,62 +75,63 @@
                                     {
                                         <MudText Typo="Typo.body1">@part</MudText>
                                     }
-                                    }
+                                }
                                 <MudText Typo="Typo.caption" Class="message-timestamp">
                                     @ConvertLocal.ConvertToLocalTime(message.Timestamp,timezoneOffsetMinutes)
                                     <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
                                 </MudText>
-                                </div>
-                                @if (message.UserId == UserId || isAdminView == true)   
-                                {
+                            </div>
+                            @if (message.UserId == UserId || isAdminView == true)   
+                            {
                                 <div class="message-hover-options" style="@(isClicked == true ? "display: flex !important;" : "display:none;")" >
-                                @if (isAdminView)
-                                {
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                    Color="Color.Error"
-                                    Size="Size.Small"
-                                    OnClick="() => DeleteMessage(message)"/>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                                       Color="Color.Info"
-                                                       Size="Size.Small"
-                                                       OnClick="() => MessageInformation(message)" />
-                                    if (message.IsApproved == false)
+                                    @if (isAdminView)
                                     {
-                                        <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
-                                        Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                        Color="Color.Error"
+                                        Size="Size.Small"
+                                        OnClick="() => DeleteMessage(message)"/>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                        Color="Color.Info"
+                                        Size="Size.Small"
+                                        OnClick="() => MessageInformation(message)" />
+                                        if (message.IsApproved == false)
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
+                                            Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
+                                        }
                                     }
-                                }
 
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
                                     OnClick="() => EditMessage(message)"  />
                                 </div>
-                                    }
-
-                            </div>
                             }
+
+                        </div>
                     }
-                </div>
-            </MudContainer>
-            <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
+                }
+            </div>
+            <LoadingIndicator IsVisible="@_isLoading" />
+        </MudContainer>
+        <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
             <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex" Accept=".jpg, .jpeg, .png, .gif, .bmp, .tiff, .tif,
                 .svg, .webp, .ico, .heic, .heif, .raw, .psd,.dds, .jp2, .j2k, .jpf, .eps, .ai">
                 <ActivatorContent>
                     <MudIconButton Style="color:#efefef"
-                                   Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
+                    Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
                 </ActivatorContent>
             </MudFileUpload>
             <MudTextField @bind-Value="newMessage"
-                          Class="flex-grow-1"
-                          Placeholder="Type a message..."
-                          Variant="Variant.Outlined"
-                          Clearable="true"
-                          @ref="messageField"
-                          Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Send"
-                          OnAdornmentClick="( () => SendMessage(newMessage) )"
-                          TextUpdateSuppression=false
-                          AutoFocus="true"
-                          OnKeyUp="HandleKeyPress">
+            Class="flex-grow-1"
+            Placeholder="Type a message..."
+            Variant="Variant.Outlined"
+            Clearable="true"
+            @ref="messageField"
+            Adornment="Adornment.End"
+            AdornmentIcon="@Icons.Material.Filled.Send"
+            OnAdornmentClick="( () => SendMessage(newMessage) )"
+            TextUpdateSuppression=false
+            AutoFocus="true"
+            OnKeyUp="HandleKeyPress">
             </MudTextField>
 
         </MudPaper>
@@ -159,6 +160,7 @@
     private bool hasMoreMessages = true;
     private bool finishedLoading = false;
     private bool _isInitialScrollComplete = false;
+    private bool _isLoading;
     private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
     ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
@@ -193,8 +195,10 @@
     {
         try
         {
+            _isLoading = true;
             UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
             await SendMessage(UploadedFileUrl);
+            _isLoading = false;
         }
         catch (Exception ex)
         {
@@ -281,6 +285,7 @@
     }
     private async Task<bool> SendMessage(string newMessage)
     {
+        _isLoading = true;
         await messageField.BlurAsync();
         if (string.IsNullOrWhiteSpace(newMessage))
         {
@@ -296,7 +301,7 @@
             await LoadMessages(initial: true);
             newMessage = string.Empty;
             await messageField.FocusAsync();
-
+            _isLoading = false;
             return true;
         }
         catch (Exception ex)
