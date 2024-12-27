@@ -465,7 +465,7 @@ else
                     <EditTemplate Context="context">
                         <MudSelect T="AdminProjectStatus" Class="mt-3"
                         Variant="Variant.Outlined"
-                        Label="Admin Status"
+                                   Label="Client Payment Status"
                         @bind-Value="context.Item.AdminStatus"
                         Required="true">
                             @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
