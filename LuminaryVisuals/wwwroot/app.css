@@ -254,8 +254,8 @@
     .mud-sm-table .mud-table-row {
         display: table !important;
         margin-bottom: 20px;
-        width:100vw;
-        padding:5vw;
+        width: 100%;
+        padding: 5vw;
     }
     .mud-sm-table.mud-table-bordered .mud-table-container .mud-table-root colgroup ~ .mud-table-body .mud-table-row .mud-table-cell {
         border-right: hidden !important;
@@ -342,8 +342,9 @@
         right: 8% !important;
     }
     .floating-chat-container {
-        width: 100vw !important;
-        height: 100vh !important;
+        width: calc(100vw - env(safe-area-inset-top)) !important;
+        height: calc(100vh - env(safe-area-inset-top)) !important;
+        padding-top: env(safe-area-inset-top);
     }
     .chat-panel {
         width: inherit !important;

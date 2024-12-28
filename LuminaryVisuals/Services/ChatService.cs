@@ -180,7 +180,7 @@ public class ChatService
 
             // Get unapproved message count
             var unapprovedMessageCount = await query
-                .Where(message => message.IsApproved == false)
+                .Where(message => message.IsApproved == false && !message.IsDeleted)
                 .CountAsync();
 
             // Get the last sent message timestamp (the most recent one)
