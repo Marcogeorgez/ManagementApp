@@ -21,7 +21,7 @@
                 <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start" Row=true>
                     @foreach (var structure in VideoStructureOptions)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
             </MudRadioGroup>
@@ -31,7 +31,7 @@
                 Transitions VFX to use/avoid:
             </MudText>
             <MudGrid Spacing=4 Class="px-10 py-2" >
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Cross Fades:
                 </MudText>
@@ -40,12 +40,13 @@
 
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
+                     
                     }
                 </MudStack>
             </MudRadioGroup>
             </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Fades to Black:
             </MudText>
@@ -54,12 +55,12 @@
 
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
             </MudRadioGroup>
                         </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Black and White:
             </MudText>
@@ -68,12 +69,12 @@
 
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
             </MudRadioGroup>
                         </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Double exposure:
             </MudText>
@@ -82,12 +83,12 @@
 
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
             </MudRadioGroup>
                         </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Masking transitions:
             </MudText>
@@ -95,12 +96,12 @@
                 <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start"  Row=true>
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
             </MudRadioGroup>
                         </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Lens flares:
             </MudText>
@@ -108,13 +109,13 @@
                 <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start"  Row=true>
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
 
             </MudRadioGroup>
                         </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Old Film look:
             </MudText>
@@ -122,12 +123,12 @@
                 <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start"  Row=true>
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
             </MudRadioGroup>
                         </MudItem>
-            <MudItem xs="4">
+            <MudItem xs="12" sm="6" md="4">
             <MudText Typo="Typo.body1">
                 Picture in picture:
             </MudText>
@@ -135,7 +136,7 @@
                 <MudStack Spacing="0" Class="" AlignItems="AlignItems.Start"  Row=true>
                     @foreach (var structure in Options)
                     {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                     }
                 </MudStack>
 
@@ -154,12 +155,14 @@
                 <MudText Typo="Typo.h6" Class="mt-3 mb-3">
                     Do you like to use speeches from the day in the highlights film:
                 </MudText>
-                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=true>
+                <MudGrid Spacing="2" Class="ml-md-10 mb-md-2">
                     @foreach (var speech in speeches)
-                    {
-                        <MudRadio Color="Color.Info" Value="@speech">@speech.ToString()</MudRadio>
+                    {   
+                        <MudItem xs="6" sm="6" md="3" >
+                            <MudRadio Color="Color.Info" Dense=true Value="@speech">@speech.ToString()</MudRadio>
+                        </MudItem>
                     }
-                </MudStack>
+                </MudGrid>
             </MudRadioGroup>
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Comments on the use of speeches:
@@ -171,12 +174,15 @@
                 <MudText Typo="Typo.h6" Class="mt-3 mb-3">
                     Emphasis on sound design:
                 </MudText>
-                <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=true>
+                <MudGrid Spacing="2" Class="ml-md-10 mb-md-2">
                     @foreach (var _soundDesign in soundDesign)
                     {
-                        <MudRadio Color="Color.Info" Value="@_soundDesign">@_soundDesign.ToString()</MudRadio>
+                        <MudItem xs="6" sm="6" md="4" >
+                        <MudRadio Color="Color.Info" Dense=true Value="@_soundDesign">@_soundDesign.ToString()</MudRadio>
+                        </MudItem>
+
                     }
-                </MudStack>
+                </MudGrid>
             </MudRadioGroup>
             <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                 Comments on the use of sound deign:
