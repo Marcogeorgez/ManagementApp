@@ -1266,8 +1266,6 @@ else
 
             var newProject = new Project();
             newProject.ClientId = project.ClientId;
-            newProject.PrimaryEditorId = project.PrimaryEditorId;
-            newProject.SecondaryEditorId = project.SecondaryEditorId;
             newProject.ProjectName = project.ProjectName + "- Copy ";
             newProject.FootageLink = project.FootageLink;
             newProject.Deliverables = project.Deliverables;
@@ -1279,12 +1277,8 @@ else
                 newProject.ProjectSpecifications.CameraNumber = project.ProjectSpecifications.CameraNumber;
                 newProject.ProjectSpecifications.Resolution = project.ProjectSpecifications.Resolution;
                 newProject.ProjectSpecifications.Size = project.ProjectSpecifications.Size;
-
+                newProject.ProjectSpecifications.AudioDetails = project.ProjectSpecifications.AudioDetails;
             };
-            newProject.NotesForProject = project.NotesForProject;
-            newProject.ShootDate = project.ShootDate;
-            newProject.DueDate = project.DueDate;
-            newProject.ProgressBar = project.ProgressBar;
             await projectServices.AddProjectAsync(newProject);
             await LoadProjects();
             LoadingService.HideLoading();
