@@ -1271,6 +1271,10 @@ else
             newProject.Deliverables = project.Deliverables;
             newProject.Description = project.Description;
             newProject.MusicPreference = project.MusicPreference;
+            newProject.ShootDate = DateTime.UtcNow;
+            newProject.DueDate = DateTime.UtcNow.AddDays(28);
+            newProject.MusicPreference = project.MusicPreference;
+
             newProject.ProjectSpecifications = project.ProjectSpecifications;
             {
                 newProject.ProjectSpecifications.ColorProfile = project.ProjectSpecifications.ColorProfile;
