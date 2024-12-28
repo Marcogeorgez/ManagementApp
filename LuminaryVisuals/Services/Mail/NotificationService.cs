@@ -1,4 +1,5 @@
-﻿using LuminaryVisuals.Data;
+﻿using LuminaryVisuals.Components.Pages;
+using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,8 +38,8 @@ public class NotificationService : BackgroundService, INotificationService
                 var notificationItem = new NotificationQueueItem
                 {
                     UserId = user.Id,
-                    Subject = "New Chat Message",
-                    Message = $"New message in project {project.ProjectName}",
+                    Subject = "You have a new message on Synchron ⚡",
+                    Message = $"Hello there, you have received a new message on the project {project.ProjectName}.\n Please reply when you can!",
                     CreatedAt = DateTime.UtcNow,
                     MessageId = message.MessageId,
                     ProjectId = project.ProjectId
@@ -54,8 +55,8 @@ public class NotificationService : BackgroundService, INotificationService
                 var notificationItem = new NotificationQueueItem
                 {
                     UserId = user.Id,
-                    Subject = "New Chat Message",
-                    Message = $"New message in project {project.ProjectName}",
+                    Subject = "You have a new message on Synchron ⚡",
+                    Message = $"Hello there, you have received a new message on the project {project.ProjectName}.\n Please reply when you can!",
                     CreatedAt = DateTime.UtcNow,
                     MessageId = message.MessageId,
                     ProjectId = project.ProjectId
@@ -126,8 +127,11 @@ public class NotificationService : BackgroundService, INotificationService
             var notificationItem = new NotificationQueueItem
             {
                 UserId = admin.Id,
-                Subject = "Project Status Change",
-                Message = $"Project '{project.ProjectName}' status changed from {oldStatus} to {newStatus}",
+                Subject = $"The Project {project.ProjectName} has changed status",
+                Message = $@"
+                            <p>The project for the client <strong>{project.ClientName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> and <strong>{project.SecondaryEditorName}</strong> 
+                             status changed from <strong>{oldStatus}</strong> to <strong>{newStatus}</strong> on 
+                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
             };
             AddToQueue(notificationItem);
@@ -143,7 +147,7 @@ public class NotificationService : BackgroundService, INotificationService
                     var notificationItem = new NotificationQueueItem
                     {
                         UserId = primaryEditor.Id,
-                        Subject = "Project Status Update",
+                        Subject = $"Project {project.ProjectName} Status Update",
                         Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
                         CreatedAt = DateTime.UtcNow
                     };
@@ -159,7 +163,7 @@ public class NotificationService : BackgroundService, INotificationService
                     var notificationItem = new NotificationQueueItem
                     {
                         UserId = secondaryEditor.Id,
-                        Subject = "Project Status Update",
+                        Subject = $"Project {project.ProjectName} Status Update",
                         Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
                         CreatedAt = DateTime.UtcNow
                     };
@@ -181,8 +185,8 @@ public class NotificationService : BackgroundService, INotificationService
                     var notificationItem = new NotificationQueueItem
                     {
                         UserId = client.Id,
-                        Subject = "Project Status Update",
-                        Message = $"Your project '{project.ProjectName}' status has been updated to {newStatus}",
+                        Subject = $"Your Project {project.ProjectName} has updates ⚡",
+                        Message = $@" <p>The project '<strong>{project.ProjectName}</strong>' has been marked as '<strong>{newStatus}</strong>' on <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                         CreatedAt = DateTime.UtcNow
                     };
                     AddToQueue(notificationItem);
@@ -288,7 +292,7 @@ public class NotificationService : BackgroundService, INotificationService
                                 : group.Messages.First();
 
                             _logger.LogInformation($"Sending email to {user.Email} with {group.Messages.Count} notifications");
-                            await emailService.SendEmailAsync(user.Email, group.Subject, body);
+                            await emailService.SendEmailAsync(user.Email, group.Subject, body, true);
                         }
                     }
                 }
