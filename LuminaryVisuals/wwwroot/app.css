@@ -342,11 +342,11 @@
         right: 8% !important;
     }
     .floating-chat-container {
-        width: 100%;
+        width: 100% !important;
         /* Fallback for browsers that don't support dvh */
-        height: 95vh;
+        height: 95vh !important;
         /* Modern solution that accounts for mobile browser UI */
-        height: 100dvh;
+        height: 100dvh !important;
     }
     body.chat-open {
         overflow: hidden;
