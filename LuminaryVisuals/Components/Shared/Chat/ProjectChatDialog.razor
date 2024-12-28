@@ -10,7 +10,7 @@
 @inject IMessageNotificationService MessageNotificationService
 @inject CloudflareR2Service CloudflareR2Service
 @inject ProjectState ProjectState
-
+<div @ref="chatContainerRef">
 <MudContainer Class="chat-container" Gutters=false>
     <MudPaper Elevation="4" Class="chat-panel">
         <MudPaper Elevation="3" Class="chat-header" Outlined="true">
@@ -137,7 +137,7 @@
         </MudPaper>
     </MudPaper>
 </MudContainer>
-
+</div>
 @code {
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
@@ -199,6 +199,8 @@
         });
         await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
         await JSRuntime.InvokeVoidAsync("setupInitialScrollListener", DotNetObjectReference.Create(this));
+        await JSRuntime.InvokeVoidAsync("document.body.classList.add", "chat-open");
+
     }
     private async Task UploadFiles(IBrowserFile file)
     {
@@ -286,6 +288,7 @@
             finishedLoading = true;
             StateHasChanged();
         });
+
     }
 
     private async Task MarkMessagesAsRead()
@@ -516,6 +519,7 @@
         {
             ProjectState.SetProject(null);
         }
+        await JSRuntime.InvokeVoidAsync("document.body.classList.remove", "chat-open");
     }
 
     private async Task<DialogResult> ShowConfirmationDialog()
@@ -534,7 +538,20 @@
 
         return DialogResult.Ok(true); 
     }
+    private ElementReference chatContainerRef;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initializeFocusTrap", chatContainerRef);
+            // Focus the message input field
+            if (messageField != null)
+            {
+                await messageField.FocusAsync();
+            }
+        }
+    }
 }
 <style>
     .mud-dialog-width-md {
@@ -598,4 +615,38 @@
 
 
 
+
+
+
+    window.initializeFocusTrap = (element) => {
+        const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+        element.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const focusable = Array.from(element.querySelectorAll(focusableElements))
+                    .filter(el => !el.disabled && el.offsetParent !== null);
+
+                const firstFocusable = focusable[0];
+                const lastFocusable = focusable[focusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        lastFocusable.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        firstFocusable.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+
+            // Add escape key handling
+            if (e.key === 'Escape') {
+                // Call your close method
+                element.querySelector('.close-button')?.click();
+            }
+        });
+    };
 </script>
