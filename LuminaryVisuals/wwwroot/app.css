@@ -354,11 +354,11 @@
         width: 100%;
     }
     .chat-panel {
-        width: 100%;
+        width: 100% !important;
         /* Fallback for browsers that don't support dvh */
-        height: 95vh;
+        height: 95vh !important;
         /* Modern solution that accounts for mobile browser UI */
-        height: 100dvh;
+        height: 100dvh !important;
     }
 
     .chat-message:active + .message-hover-options,
