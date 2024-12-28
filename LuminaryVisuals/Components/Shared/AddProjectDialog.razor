@@ -1,7 +1,8 @@
 ﻿@using LuminaryVisuals.Data.Entities
 @using MudBlazor
 @using System.Text
-
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
 <MudDialog>
     <DialogContent>
         <MudForm @ref="form" @bind-IsValid="@success">
@@ -14,7 +15,40 @@
                                   Required="true"
                                    />
                 </MudItem>
+                @if (!_isClientView)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Primary Editor"
+                                   @bind-Value="newProject.PrimaryEditorId">
+                            @foreach (var editor in Editors)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                    @editor.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Client"
+                                   @bind-Value="newProject.ClientId">
+                            @foreach (var client in Clients)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                                    @client.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
 
+                }
                 <MudItem xs="12" sm="6">
                     <MudDatePicker Label="Shoot Date"
                                    Variant="Variant.Outlined"
@@ -40,39 +74,7 @@
                                    Required="true" />
                 </MudItem>
                 }
-                @if (!_isClientView)
-                {
-                    <MudItem xs="12" sm="6">
-                        <MudSelect T="string"
-                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                   Class="d-flex justify-center mud-width-full py-2"
-                                   Variant="Variant.Outlined"
-                                   Label="Client"
-                                   @bind-Value="newProject.ClientId">
-                            @foreach (var client in Clients)
-                            {
-                                <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
-                                    @client.UserName
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudSelect T="string"
-                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                   Class="d-flex justify-center mud-width-full py-2"
-                                   Variant="Variant.Outlined"
-                                   Label="Primary Editor"
-                                   @bind-Value="newProject.PrimaryEditorId">
-                                    @foreach (var editor in Editors)
-                                    {
-                                        <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
-                                            @editor.UserName
-                                        </MudSelectItem>
-                                    }
-                        </MudSelect>
-                    </MudItem>
-                }
+      
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
                                   Label="Footage Link"
@@ -115,7 +117,15 @@
                                   Required="@(newProject.Status != ProjectStatus.Upcoming)"
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
-
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Add Audio Details"
+                                  Placeholder="Add Details about Audio recorders"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.AudioDetails"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
                                   Label="Color Profile"
@@ -168,24 +178,70 @@
                         </MudSelect>
                     </MudItem>
                 }
+                @if (_isClientView)
+                {
+                    <MudItem xs="12" sm="12">
+                        <MudSelect T="ProjectStatus" Variant=Variant.Outlined
+                                   Label="Status"
+                                   @bind-Value="newProject.Status"
+                                   Required="true"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="ProjectStatus.Upcoming">Upcoming</MudSelectItem>
+                            <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
+                            <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="12" Class="mb-3 pl-5 pr-5 ">
 
-                <MudItem xs="12" sm="12">
-                    <MudTextField T="string"
-                                  Label="Deliverables"
-                                  Placeholder="Write down what the deliverables for this project will be"
-                                  Variant="Variant.Outlined"
-                                  @bind-Value="newProject.Deliverables"
-                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
-                                  RequiredError="Please write down what the deliverables for this project will be"
-                                   />
+                    <MudText Typo="Typo.body1" Class="mb-2">Deliverables:</MudText>
+                    <div class="border-solid border-2 @(_hasErrorDeliverable ? "description-error mud-input-error" : "")">
+                        <MudHtmlEditor Outlined="true"
+                                       Text="Deliverables"
+                                       Html="@newProject.Deliverables"
+                                       HtmlChanged="OnDeliverableTextChanged"
+                                       Resizable="true"
+                                       style="min-height:50px;"
+                                       Placeholder="Please write down what the deliverables for this project will be">
+                            <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
+                                <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
+                                <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
+
+                                    <select class="ql-font">
+                                        <option value="sans-serif"></option>
+                                        <option value="serif"></option>
+                                        <option value="monospace"></option>
+                                    </select>
+                                    <select class="ql-size">
+                                        <option value="small"></option>
+                                        <option selected></option>
+                                        <option value="large"></option>
+                                        <option value="huge"></option>
+                                    </select>
+                                    <MudHtmlToolbarOptions />
+                                    <button class="ql-list" value="check"></button>
+                                    <button class="ql-clean">Remove Formatting</button>
+                                </MudCollapse>
+                            </div>
+
+                        </MudHtmlEditor>
+
+
+                    </div>
+                    @if (_hasErrorDeliverable)
+                    {
+                        <MudText Color="Color.Error" Class="mt-2 mud-input-error d-flex mud-input-helper-text mud-input-error mud-input-control-helper-container px-2 ">
+                            @_errorText
+                        </MudText>
+                    }
                 </MudItem>
 
                 <MudItem xs="12" Class="mb-3 pl-5 pr-5 ">
                     
                     <MudText Typo="Typo.body1" Class="mb-2">Description:</MudText>
-                    <div class="border-solid border-2 @(_hasError ? "description-error" : "")">
+                    <div class="border-solid border-2 @(_hasErrorDescription ? "description-error mud-input-error" : "")">
                     <MudHtmlEditor Outlined="true"
-                                   Text="Description" 
+                                   Text="Brief of The Day and Technical Issues Notes:" 
                                    Html="@newProject.Description"
                                    HtmlChanged="OnNoteTextChanged"
                                    Resizable="true"
@@ -219,7 +275,7 @@ The Bride was married like I said before, so this wedding was quite special beca
 
 
                     </div>
-                    @if (_hasError)
+                    @if (_hasErrorDescription)
                     {
                         <MudText Color="Color.Error" Class="mt-2 mud-input-error d-flex mud-input-helper-text mud-input-error mud-input-control-helper-container px-2 ">
                             @_errorText
@@ -227,29 +283,44 @@ The Bride was married like I said before, so this wedding was quite special beca
                     }
                 </MudItem>
 
-                @if (_isClientView)
-                {
-                    <MudItem xs="12" sm="12">
-                        <MudSelect T="ProjectStatus" Variant=Variant.Outlined
-                                   Label="Status"
-                                   @bind-Value="newProject.Status"
-                                   Required="true"
-                                   AnchorOrigin="Origin.BottomCenter">
-                                <MudSelectItem Value="ProjectStatus.Upcoming">Upcoming</MudSelectItem>
-                                <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
-                                <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
-                        </MudSelect>
-                    </MudItem>
-                }
 
 
-                <MudItem xs="12" sm="12">
-                    <MudTextField T="string"
-                                  Label="Music Preferences"
-                                  Placeholder="Place link to music here and any comments"
-                                  Variant="Variant.Outlined"
-                                  @bind-Value="newProject.MusicPreference"
-                                   />
+
+                <MudItem xs="12" sm="12" Class="mb-3 pl-5 pr-5">
+                    <MudText Typo="Typo.body1" Class="mb-2">Music Preferences:</MudText>
+                    <div class="border-solid border-2">
+                        <MudHtmlEditor Outlined="true"
+                                       Text="Music Preferences"
+                                       Html="@newProject.MusicPreference"
+                                       HtmlChanged="OnDeliverableTextChanged"
+                                       Resizable="true"
+                                       style="min-height:50px;"
+                                       Placeholder="Place link to music here and any comments">
+                            <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
+                                <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
+                                <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
+
+                                    <select class="ql-font">
+                                        <option value="sans-serif"></option>
+                                        <option value="serif"></option>
+                                        <option value="monospace"></option>
+                                    </select>
+                                    <select class="ql-size">
+                                        <option value="small"></option>
+                                        <option selected></option>
+                                        <option value="large"></option>
+                                        <option value="huge"></option>
+                                    </select>
+                                    <MudHtmlToolbarOptions />
+                                    <button class="ql-list" value="check"></button>
+                                    <button class="ql-clean">Remove Formatting</button>
+                                </MudCollapse>
+                            </div>
+
+                        </MudHtmlEditor>
+
+
+                    </div>
                 </MudItem>
 
 
@@ -264,7 +335,7 @@ The Bride was married like I said before, so this wedding was quite special beca
 
     <DialogActions>
         <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Cancel</MudButton>
-        <MudButton Size="Size.Large" Color="Color.Success" Variant="Variant.Filled" OnClick="@Submit">Add Project</MudButton>
+        <MudButton Size="Size.Large" Color="@(success ? Color.Success : Color.Warning)" Variant="Variant.Filled" OnClick="@Submit">Add Project</MudButton>
     </DialogActions>
 
 </MudDialog>
@@ -279,7 +350,9 @@ The Bride was married like I said before, so this wedding was quite special beca
     private MudForm form;
     private string errorMessage;
     private bool success;
-    private bool _hasError = false;
+    private bool _hasErrorDescription;
+    private bool _hasErrorDeliverable;
+
     private string _errorText = string.Empty;
     private enum ProgressBarValue
     {
@@ -311,6 +384,14 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
         newProject.Description = text;
     }
+        private void OnDeliverableTextChanged(string text)
+    {
+        newProject.Deliverables = text;
+    }
+    private void OnMusicTextChanged(string text)
+    {
+        newProject.MusicPreference = text;
+    }
     bool _expanded = true;
 
     private void OnExpandCollapseClick()
@@ -320,14 +401,33 @@ The Bride was married like I said before, so this wedding was quite special beca
     private async Task Submit()
     {
         await form.Validate();
+        await InvokeAsync(StateHasChanged);
 
-        if (string.IsNullOrWhiteSpace(newProject.Description) && newProject.Status != ProjectStatus.Upcoming)
+        await JSRuntime.InvokeVoidAsync("scrollToFirstInvalidFieldAfterRender");
+        if (!form.IsValid)
         {
-            _hasError = true;
-            _errorText = "Description is required";
-            success = false;
-            StateHasChanged();
+            errorMessage = "Please fill in all required fields correctly before submitting.";
+            Snackbar.Add("There are missing unfilled fields, please fill them", Severity.Error);
             return;
+        }
+        if (newProject.Status != ProjectStatus.Upcoming)
+        {
+            _hasErrorDescription = string.IsNullOrWhiteSpace(newProject.Description);
+            _hasErrorDeliverable = string.IsNullOrWhiteSpace(newProject.Deliverables);
+
+            if (_hasErrorDescription || _hasErrorDeliverable)
+            {
+                _errorText = ( _hasErrorDescription && _hasErrorDeliverable )
+                    ? "Brief of the day and Deliverables are required"
+                    : _hasErrorDescription
+                        ? "Brief of the day is required"
+                        : "Deliverables are required";
+
+                success = false;
+                Snackbar.Add("Make sure Brief of the day and Deliverable are filled", Severity.Error);
+                StateHasChanged();
+                return;
+            }
         }
 
         if (form.IsValid)
@@ -341,4 +441,26 @@ The Bride was married like I said before, so this wedding was quite special beca
         }
     }
 
+    private async Task ScrollToFirstError()
+    {
+        // Look for the first input with validation error
+        await JSRuntime.InvokeVoidAsync("scrollToFirstInvalidField");
+    }
+
 }
+
+<script>
+        window.scrollToFirstInvalidFieldAfterRender  = function() {
+                requestAnimationFrame(function(){
+                    const firstInvalidElement = document.querySelector('.mud-input-error');
+                    if (firstInvalidElement) {
+                        firstInvalidElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        // Optional: focus the field
+                        firstInvalidElement.focus();
+                    }
+                });
+};
+</script>
