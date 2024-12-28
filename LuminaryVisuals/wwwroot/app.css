@@ -342,9 +342,11 @@
         right: 8% !important;
     }
     .floating-chat-container {
-        width: calc(100vw - env(safe-area-inset-top)) !important;
-        height: calc(98vh - env(safe-area-inset-top)) !important;
-        padding-top: env(safe-area-inset-top);
+        width: 100%;
+        /* Fallback for browsers that don't support dvh */
+        height: 95vh;
+        /* Modern solution that accounts for mobile browser UI */
+        height: 100dvh;
     }
     body.chat-open {
         overflow: hidden;
@@ -352,9 +354,11 @@
         width: 100%;
     }
     .chat-panel {
-        width: calc(100vw - env(safe-area-inset-top)) !important;
-        height: calc(98vh - env(safe-area-inset-top)) !important;
-        padding-top: env(safe-area-inset-top);
+        width: 100%;
+        /* Fallback for browsers that don't support dvh */
+        height: 95vh;
+        /* Modern solution that accounts for mobile browser UI */
+        height: 100dvh;
     }
 
     .chat-message:active + .message-hover-options,
@@ -534,8 +538,8 @@
     overflow-x:hidden;
 }
 .chat-panel {
-    width: inherit;
-    height: inherit;
+    width: 100vw;
+    height: 100vh;
     border-radius: 12px;
     background-color: #161621;
     color: #E0E0E0;
@@ -561,12 +565,14 @@
     padding: 10px 15px;
     border-bottom: 1px solid #3A3A3A;
     transition: all 0.3s ease;
+    position:sticky;
+
 }
 
-    .chat-header:hover {
-        background-color: #01315e;
-        animation: pulse 2s infinite;
-    }
+.chat-header:hover {
+    background-color: #01315e;
+    animation: pulse 2s infinite;
+}
 
 .chat-title {
     color: #efefef;
