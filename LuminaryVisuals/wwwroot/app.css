@@ -343,12 +343,18 @@
     }
     .floating-chat-container {
         width: calc(100vw - env(safe-area-inset-top)) !important;
-        height: calc(100vh - env(safe-area-inset-top)) !important;
+        height: calc(98vh - env(safe-area-inset-top)) !important;
         padding-top: env(safe-area-inset-top);
     }
+    body.chat-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
     .chat-panel {
-        width: inherit !important;
-        height: inherit !important;
+        width: calc(100vw - env(safe-area-inset-top)) !important;
+        height: calc(98vh - env(safe-area-inset-top)) !important;
+        padding-top: env(safe-area-inset-top);
     }
 
     .chat-message:active + .message-hover-options,
@@ -483,7 +489,10 @@
     z-index: 1500;
     width: 45vw;
     max-height: 100vh;
-    height:100vh;
+    height: 100vh;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
 }
 @keyframes slideIn {
     from {
