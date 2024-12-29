@@ -105,8 +105,10 @@ public class NotificationService : BackgroundService, INotificationService
             var notificationItem = new NotificationQueueItem
             {
                 UserId = admin.Id,
-                Subject = "New Project Created",
-                Message = $"New project '{project.ProjectName}' has been created by {project.ClientName}",
+                Subject = $"The project {project.ProjectName} has been added by {project.ClientName}⚡",
+                Message = $@"
+                            <p>The project for the client <strong>{project.ClientName}</strong> has been added as <strong>{project.FormatStatus}</strong> on 
+                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -136,7 +138,7 @@ public class NotificationService : BackgroundService, INotificationService
             };
             AddToQueue(notificationItem);
         }
-        if (newStatus == ProjectStatus.Scheduled || newStatus == ProjectStatus.Revision)
+        if (newStatus == ProjectStatus.Revision)
         {
             // Notify editors if they exist
             if (project.PrimaryEditorId != null)
@@ -330,27 +332,14 @@ public class NotificationService : BackgroundService, INotificationService
                 }
 
                 // Then process the valid notifications
-                if (validNotifications.Any())
+                foreach (var notification in validNotifications)
                 {
-                    var groupedNotifications = validNotifications  // Changed from notifications to validNotifications
-                        .GroupBy(n => n.Subject)
-                        .Select(g => new
-                        {
-                            Subject = g.Key,
-                            Messages = g.Select(n => n.Message).ToList()
-                        });
-
-                    foreach (var group in groupedNotifications)
+                    if (!string.IsNullOrEmpty(notification.Message))
                     {
-                        if (group.Messages.Any())
-                        {
-                            string body = group.Messages.Count > 1
-                                ? $"You have {group.Messages.Count} new notifications:\n\n{string.Join("\n\n", group.Messages)}"
-                                : group.Messages.First();
+                        _logger.LogInformation($"Sending email to {user.Email} for notification with subject {notification.Subject}");
+                        string body = notification.Message;
 
-                            _logger.LogInformation($"Sending email to {user.Email} with {group.Messages.Count} notifications");
-                            await emailService.SendEmailAsync(user.Email, group.Subject, body, true);
-                        }
+                        await emailService.SendEmailAsync(user.Email, notification.Subject, body, true);
                     }
                 }
 
