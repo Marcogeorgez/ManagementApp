@@ -55,8 +55,8 @@ public class NotificationService : BackgroundService, INotificationService
                 var notificationItem = new NotificationQueueItem
                 {
                     UserId = user.Id,
-                    Subject = "You have a new message on Synchron ⚡",
-                    Message = $"Hello there, you have received a new message on the project {project.ProjectName}.\n Please reply when you can!",
+                    Subject = "You have a new message approval request on Synchron ⚡",
+                    Message = $"Hello there, you have received a new message approval request  on the project {project.ProjectName} by editor {project.PrimaryEditor}. Review asap!",
                     CreatedAt = DateTime.UtcNow,
                     MessageId = message.MessageId,
                     ProjectId = project.ProjectId
@@ -173,9 +173,7 @@ public class NotificationService : BackgroundService, INotificationService
         }
 
         // Notify client for specific statuses
-        if (newStatus == ProjectStatus.Scheduled ||
-            newStatus == ProjectStatus.Delivered ||
-            newStatus == ProjectStatus.Finished)
+        if (newStatus == ProjectStatus.Scheduled || newStatus == ProjectStatus.Finished)
         {
             if (project.ClientId != null && project.ClientId != updatedByUserId)
             {
@@ -187,6 +185,65 @@ public class NotificationService : BackgroundService, INotificationService
                         UserId = client.Id,
                         Subject = $"Your Project {project.ProjectName} has updates ⚡",
                         Message = $@" <p>The project '<strong>{project.ProjectName}</strong>' has been marked as '<strong>{newStatus}</strong>' on <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    AddToQueue(notificationItem);
+                }
+            }
+        }
+        if (newStatus == ProjectStatus.Delivered)
+        {
+            if (project.ClientId != null && project.ClientId != updatedByUserId)
+            {
+                var client = await userService.GetUserByIdAsync(project.ClientId);
+                if (client != null)
+                {
+                    var notificationItem = new NotificationQueueItem
+                    {
+                        UserId = client.Id,
+                        Subject = $"You have a new project delivered by Luminary Visuals ⚡",
+                        Message = $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Project Delivered</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }}
+        *{{text-align: center; }}
+        .container {{
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }}
+        h2 {{
+            color: #4CAF50;
+        }}
+        a {{
+            color: #007bff;
+            text-decoration: none;
+        }}
+        a:hover {{
+            text-decoration: underline;
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h2>The project '<strong>{project.ProjectName}</strong>' has updates⚡</h2>
+        <p>Hello there, the project '<strong>{project.ProjectName}</strong>' has been marked as '<strong>{newStatus}</strong>' on 
+        <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.
+        <br/> If you have any specific revisions please add them with timestamps on the <a href='{project.Link}' target='_blank'>Dropbox file</a> </p>
+    </div>
+</body>
+</html>",
                         CreatedAt = DateTime.UtcNow
                     };
                     AddToQueue(notificationItem);
@@ -215,7 +272,7 @@ public class NotificationService : BackgroundService, INotificationService
             _logger.LogInformation("Starting notification processing cycle");
             await ProcessNotificationQueue();
             int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 30); // Default to 30 minutes if not set
-            TimeSpan delayTimeSpan = TimeSpan.FromMinutes(delayMinutes);
+            TimeSpan delayTimeSpan = TimeSpan.FromMinutes(1);
             Console.WriteLine(delayMinutes);
             await Task.Delay(delayTimeSpan, stoppingToken);
         }
