@@ -8,6 +8,9 @@ namespace LuminaryVisuals.Data
 
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
+
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<MigratedUser> MigratedUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
@@ -28,6 +31,14 @@ namespace LuminaryVisuals.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<DataProtectionKey>(entity =>
+            {
+                entity.ToTable("DataProtectionKeys");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.FriendlyName).HasMaxLength(100);
+                entity.Property(e => e.Xml).HasColumnType("text");
+            });
 
             // Configure PostgreSQL specific settings
             builder.UseIdentityColumns();

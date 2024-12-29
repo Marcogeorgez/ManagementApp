@@ -33,26 +33,13 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 // Using Data Protection system to be saved which is needed when in production 
 
-var keyStorageEnv = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS");
-Console.WriteLine($"key is: {keyStorageEnv}");
-if (!string.IsNullOrEmpty(keyStorageEnv))
-{
-    builder.Services.AddDataProtection()
-        .SetApplicationName("YourAppName")  // optional
-        .UseCustomKey(keyStorageEnv);
-}
-else
-{
-    builder.Services.AddDataProtection()
-    .UseCryptographicAlgorithms(
-    new AuthenticatedEncryptorConfiguration
-    {
-        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
-        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
-    })
-    .PersistKeysToFileSystem(new DirectoryInfo(@"/app/data-protection-keys"));
-}
-    string? connectionString = "";
+
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<ApplicationDbContext>()
+    .SetApplicationName("Synchron");
+
+
+string? connectionString = "";
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
@@ -315,6 +302,7 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Migration failed: {ex.Message}");
     }
 }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
