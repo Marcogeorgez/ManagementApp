@@ -6,6 +6,7 @@ using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 public class ProjectService
@@ -68,6 +69,49 @@ public class ProjectService
             return projects;
         }
     }
+
+
+    public async Task<Project?> GetProjectByIdAsync(int projectId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var project = await context.Projects
+                .AsTracking()
+                .Where(p => p.ProjectId == projectId)
+                .Include(p => p.Archive)
+                .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
+                .Include(p => p.Revisions)
+                .FirstOrDefaultAsync();
+
+            if (project != null)
+            {
+                var userIds = new[] { project.ClientId, project.PrimaryEditorId, project.SecondaryEditorId }
+                    .Where(id => id != null)
+                    .Distinct()
+                    .ToList();
+
+                var userNames = await context.Users
+                    .Where(u => userIds.Contains(u.Id))
+                    .Select(u => new { u.Id, u.UserName })
+                    .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+                project.ClientName = userNames.GetValueOrDefault(project.ClientId, "No Client Assigned ??");
+                project.PrimaryEditorName = project.PrimaryEditorId != null
+                    ? userNames.GetValueOrDefault(project.PrimaryEditorId, "No Editor Assigned")
+                    : "No Editor Assigned"; 
+                project.SecondaryEditorName = project.SecondaryEditorId != null
+                    ? userNames.GetValueOrDefault(project.SecondaryEditorId, "No Editor Assigned")
+                    : "No Editor Assigned"; 
+
+            }
+
+            await context.SaveChangesAsync();
+            return project;
+        }
+    }
+
     // Used for dragging orders to update projects when dragged
     public async Task<List<Project>> GetProjectsAsync()
     {
