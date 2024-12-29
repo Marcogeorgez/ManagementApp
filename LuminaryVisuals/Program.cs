@@ -27,6 +27,24 @@ using MudBlazor.Services;
 using System.Text;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDataProtection()
+                .UseCryptographicAlgorithms(
+                    new AuthenticatedEncryptorConfiguration()
+                    {
+                        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+                        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256,
+
+                    }
+                ).SetApplicationName("Synchron")
+                .PersistKeysToDbContext<ApplicationDbContext>()
+                .AddKeyManagementOptions(options =>
+                {
+                    options.XmlRepository = new EntityFrameworkDataProtectionKeysRepository(
+                        builder.Services.BuildServiceProvider(),
+                        builder.Services.BuildServiceProvider().GetRequiredService<ILogger<EntityFrameworkDataProtectionKeysRepository>>()
+                    );
+                });
+var x = new DataProtectionOptions();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
@@ -49,11 +67,6 @@ else
 
 }
 // Using Data Protection system to be saved which is needed when in production 
-
-builder.Services.AddSingleton<IXmlRepository, EntityFrameworkDataProtectionKeysRepository>();
-
-builder.Services.AddDataProtection()
-    .SetApplicationName("Synchron");
 
 
 // Added services to the container.
