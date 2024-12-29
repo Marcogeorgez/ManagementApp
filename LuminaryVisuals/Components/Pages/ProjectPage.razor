@@ -56,7 +56,7 @@ else
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ColumnsPanelReordering=true
     ShowColumnOptions=true
-    Groupable=true
+    Groupable=true QuickFilter="@_quickFilter"
     ShowMenuIcon=true
     EditMode="DataGridEditMode.Form"
     EditTrigger="DataGridEditTrigger.OnRowClick" RowClick="@OnRowClick"
@@ -71,7 +71,9 @@ else
 
             <MudText Typo="Typo.h4">Your Projects</MudText>
             <MudSpacer />
-
+            <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
+                          Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                          Class="mt-0" />
         </ToolBarContent>
         <ColGroup>
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
@@ -990,7 +992,34 @@ else
     {
         InvokeAsync(StateHasChanged);
     }
+    // quick filter - filter globally across multiple columns with the same input
+    private Func<Project, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
 
+        // Null-safe string comparisons
+        if (x.ProjectName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (x.Description?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        // Combine all fields with null checks
+        var searchableText = string.Join(" ", new string[]
+        {
+        x.Link,
+        x.FormatStatus,
+        x.FormatAdminStatus,
+        x.PrimaryEditorName,
+        x.SecondaryEditorName,
+        x.FormattedShootDate,
+        x.FormattedDueDate,
+        x.NotesForProject,
+        x.FormattedWorkingMonth,
+            }.Where(s => s != null));
+
+        return searchableText.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+    };
     protected override async Task OnInitializedAsync()
     {
         // Get the current user ID
