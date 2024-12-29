@@ -139,16 +139,22 @@ public class ProjectService
             // Include PrimaryEditor only if the user is the primary editor
             foreach (var project in projects)
             {
+                project.PrimaryEditorName = project.PrimaryEditorId != null 
+                                    ? project.PrimaryEditor!.UserName
+                                    : "No Editor Assigned";
+                project.SecondaryEditorName = project.SecondaryEditorId != null
+                                    ? project.SecondaryEditor!.UserName
+                                    : "No Editor Assigned";
                 if (project.PrimaryEditorId != userId)
                 {
                     project.PrimaryEditorDetails = null;
                 }
-
                 if (project.SecondaryEditorId != userId)
                 {
                     project.SecondaryEditorDetails = null;
                 }
             }
+
             return projects;
         }
     }
