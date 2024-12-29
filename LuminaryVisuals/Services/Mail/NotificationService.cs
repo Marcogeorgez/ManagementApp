@@ -306,11 +306,14 @@ public class NotificationService : BackgroundService, INotificationService
 
                 var validNotifications = new List<NotificationQueueItem>();
 
-                // collect all valid notifications
+                // collect all valid notifications (this is specifically for checking if a notification is a message
+                // and if it has been read by the user then we don't send it)
                 foreach (var notification in notifications)
                 {
                     if (notification.MessageId.HasValue)
                     {
+                        var messageExists = await context.Messages
+                            .AnyAsync(m => m.MessageId == notification.MessageId.Value  && !m.IsDeleted);
                         var isRead = await context.ChatReadStatus
                             .AnyAsync(crs => crs.MessageId == notification.MessageId.Value &&
                                             crs.UserId == notification.UserId &&
@@ -331,7 +334,7 @@ public class NotificationService : BackgroundService, INotificationService
                     }
                 }
 
-                // Then process the valid notifications
+                // Then process the remaining notifications
                 foreach (var notification in validNotifications)
                 {
                     if (!string.IsNullOrEmpty(notification.Message))
