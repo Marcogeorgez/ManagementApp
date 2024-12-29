@@ -6,6 +6,7 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Helpers;
 using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Scheduled;
 using Microsoft.AspNetCore.Authentication;
@@ -22,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
+using System.Text;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -30,7 +32,18 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear(); // Trust all proxies (optional for Railway)
 });
 // Using Data Protection system to be saved which is needed when in production 
-builder.Services.AddDataProtection()
+
+var keyStorageEnv = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS");
+Console.WriteLine($"key is: {keyStorageEnv}");
+if (!string.IsNullOrEmpty(keyStorageEnv))
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("YourAppName")  // optional
+        .UseCustomKey(keyStorageEnv);
+}
+else
+{
+    builder.Services.AddDataProtection()
     .UseCryptographicAlgorithms(
     new AuthenticatedEncryptorConfiguration
     {
@@ -38,8 +51,8 @@ builder.Services.AddDataProtection()
         ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
     })
     .PersistKeysToFileSystem(new DirectoryInfo(@"/app/data-protection-keys"));
-
-string? connectionString = "";
+}
+    string? connectionString = "";
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(databaseUrl))
 {
