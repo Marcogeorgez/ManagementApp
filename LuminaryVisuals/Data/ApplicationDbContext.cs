@@ -8,7 +8,6 @@ namespace LuminaryVisuals.Data
 
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
