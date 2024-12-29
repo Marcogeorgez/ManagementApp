@@ -105,9 +105,9 @@ public class NotificationService : BackgroundService, INotificationService
             var notificationItem = new NotificationQueueItem
             {
                 UserId = admin.Id,
-                Subject = $"The project {project.ProjectName} has been added by {project.ClientName}⚡",
+                Subject = $"The project {project.ProjectName} has been added by {project.Client.UserName}⚡",
                 Message = $@"
-                            <p>The project for the client <strong>{project.ClientName}</strong> has been added as <strong>{project.FormatStatus}</strong> on 
+                            <p>The project for the client <strong>{project.Client.UserName}</strong> has been added as <strong>{project.FormatStatus}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
             };
@@ -131,7 +131,7 @@ public class NotificationService : BackgroundService, INotificationService
                 UserId = admin.Id,
                 Subject = $"The Project {project.ProjectName} has changed status",
                 Message = $@"
-                            <p>The project for the client <strong>{project.ClientName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> and <strong>{project.SecondaryEditorName}</strong> 
+                            <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> and <strong>{project.SecondaryEditorName}</strong> 
                              status changed from <strong>{oldStatus}</strong> to <strong>{newStatus}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
