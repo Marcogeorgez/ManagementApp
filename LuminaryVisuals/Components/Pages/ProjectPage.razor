@@ -133,8 +133,8 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
             {
-                <PropertyColumn Property="x => x.Description" Title="Project Brief"
-                Hideable="true" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
+                <PropertyColumn Property="x => x.ProjectName" Title="Project Brief"
+                Hideable="false" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
                 Groupable="false" Editable=false Required=false>
                     <CellTemplate>
                         @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -558,7 +558,7 @@ else
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
+                    <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <EditTemplate>
                             @if(context.Item.PrimaryEditorId != null)
                             {
@@ -614,7 +614,7 @@ else
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
-                    <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
+                    <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <EditTemplate>
                             @if(context.Item.SecondaryEditorId != null)
                             {
