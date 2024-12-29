@@ -70,6 +70,7 @@ else
         <ToolBarContent>
 
             <MudText Typo="Typo.h4">Your Projects</MudText>
+            <MudButton OnClick="@(() => _gridKey = Guid.NewGuid())" Color="Color.Info">Reset State</MudButton>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
                           Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
