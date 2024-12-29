@@ -13,12 +13,16 @@
   <ItemGroup>
     <Compile Remove="Documentation\**" />
     <Compile Remove="Middleware\**" />
+    <Compile Remove="Services\Configuration\**" />
     <Content Remove="Documentation\**" />
     <Content Remove="Middleware\**" />
+    <Content Remove="Services\Configuration\**" />
     <EmbeddedResource Remove="Documentation\**" />
     <EmbeddedResource Remove="Middleware\**" />
+    <EmbeddedResource Remove="Services\Configuration\**" />
     <None Remove="Documentation\**" />
     <None Remove="Middleware\**" />
+    <None Remove="Services\Configuration\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,10 +50,6 @@
     <PackageReference Include="Sentry.Profiling" Version="5.0.0" />
     <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
     <PackageReference Include="Tizzani.MudBlazor.HtmlEditor" Version="2.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\Configuration\" />
   </ItemGroup>
 
 </Project>
