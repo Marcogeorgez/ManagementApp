@@ -194,82 +194,128 @@
     {
         try
         {
-            decimal? _cameraValue;
-            newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
-            newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
-            newProject.CalculationDetails.Resolution = selectedMultipliers[2];
-            newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
-            decimal? _footageSize = newProject.CalculationDetails.FootageSize;
-            decimal? _Misc = ( newProject.CalculationDetails.Misc * 60 ); // Calculate it in minutes
-            decimal _prepartsDuration = 0;// Calculate it in minutes
-            decimal _documentryMulticameraDuration = 0; // Calculate it in minutes
-            decimal _hightlightDuration = 0; // Calculate it in minutes
-            decimal _socialMediaDuration = 0; // Calculate it in minutes
-            decimal? _clientDiscount = ( 1 - ( newProject.CalculationDetails.ClientDiscount / 100 ) );
+            InitializeCalculationDetails();
 
-            _prepartsDuration += EvaluateExpression(newProject.CalculationDetails.PrePartsDuration) * 60;
-            _documentryMulticameraDuration += EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDurationHours) * 60 + EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDuration);
-            _hightlightDuration += EvaluateExpression(newProject.CalculationDetails.HighlightsDuration);
-            _socialMediaDuration += EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration);
-            if (_cameraNum <= 2 && _cameraNum > 0)
-                _cameraValue = 1;
-            else
-                _cameraValue = ( _cameraNum - 2 ) * 0.03m + 1;
+            decimal? cameraValue = CalculateCameraValue();
+            decimal? footageSize = CalculateFootageSize();
+            decimal miscMinutes = CalculateMiscMinutes();
+            decimal prePartsDuration = CalculatePrePartsDuration();
+            decimal documentaryMulticameraDuration = CalculateDocumentaryMulticameraDuration();
+            decimal highlightsDuration = CalculateHighlightsDuration();
+            decimal socialMediaDuration = CalculateSocialMediaDuration();
 
-            // add as minutes
-            if (_footageSize <= 300)
-                _footageSize = 0;
-            else
-                _footageSize = ( _footageSize - 300m ) * 0.4m; // minutes
+            var totalDuration = CalculateTotalDuration(footageSize, miscMinutes, prePartsDuration,
+                documentaryMulticameraDuration, highlightsDuration, socialMediaDuration);
 
-            // if <= 40 then * 8 if <= 90 then multiply the rest by 6, if > 90 multiply the rest with 4
-            _documentryMulticameraDuration = _documentryMulticameraDuration <= 40
-                ? _documentryMulticameraDuration * 8
-                : _documentryMulticameraDuration <= 90
-                    ? ( 40 * 8 ) + ( ( _documentryMulticameraDuration - 40 ) * 6 )
-                    : ( 40 * 8 ) + ( 50 * 6 ) + ( ( _documentryMulticameraDuration - 90 ) * 4 );
+            var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
+            var adjustedValue = ApplyDiscount(totalDuration, qualityMultiplier);
 
-            if (_hightlightDuration <= 3)
-            {
-                _hightlightDuration = _hightlightDuration * 160;// mins
-            }
-            else if (_hightlightDuration <= 7)
-            {
-                _hightlightDuration = ( 3 * 160 ) + ( _hightlightDuration - 3 ) * 110;// mins
-            }
-            else
-            {
-                _hightlightDuration = ( 3 * 160 ) + ( 4 * 110 ) + ( _hightlightDuration - 7 ) * 60;// mins
-            }
-
-            _hightlightDuration *= newProject.CalculationDetails.PrePartsPrecentage.Value * newProject.CalculationDetails.HighlightsDifficulty.Value;
-            _socialMediaDuration *= 30;
-
-            // Calculate the total duration of all components
-            var totalDuration = _footageSize + _Misc + _prepartsDuration
-                                + _documentryMulticameraDuration
-                                + _hightlightDuration
-                                + _socialMediaDuration;
-            Console.WriteLine(totalDuration);
-            // Calculate the quality multiplier
-            var qualityMultiplier = newProject.CalculationDetails.FootageQuality!.Value * newProject.CalculationDetails.Resolution!.Value
-                                    * _cameraValue;
-
-            // Combine the total duration with the quality multiplier and multiply the final by the discount
-            var adjustedValue = ( totalDuration * qualityMultiplier ) * _clientDiscount;
-
-            // Convert to hours and round to two decimal places
-            newProject.CalculationDetails.FinalProjectBillableHours = Math.Round(adjustedValue.Value / 60, 2);
+            SetFinalBillableHours(adjustedValue);
 
             StateHasChanged();
         }
         catch (Exception e)
         {
-            Console.WriteLine($"There is an error in calculations {e} ");
-            Snackbar.Add("You need to enter numbers only and ensure there are no missing fields!", Severity.Error);
+            HandleCalculationError(e);
         }
-        
     }
+
+    private void InitializeCalculationDetails()
+    {
+        var calculationDetails = newProject.CalculationDetails;
+        calculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+        calculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+        calculationDetails.Resolution = selectedMultipliers[2];
+        calculationDetails.FootageQuality = selectedMultipliers[3];
+    }
+
+    private decimal? CalculateCameraValue()
+    {
+        return _cameraNum <= 2 && _cameraNum > 0 ? 1 : ( ( _cameraNum - 2 ) * 0.03m ) + 1;
+    }
+
+    private decimal? CalculateFootageSize()
+    {
+        var footageSize = newProject.CalculationDetails.FootageSize;
+        return footageSize > 300 ? ( footageSize - 300m ) * 0.4m : 0;
+    }
+
+    private decimal CalculateMiscMinutes()
+    {
+
+        return newProject.CalculationDetails.Misc!.Value * 60;
+    }
+
+    private decimal CalculatePrePartsDuration()
+    {
+        return EvaluateExpression(newProject.CalculationDetails.PrePartsDuration!) * 60;
+    }
+
+    private decimal CalculateDocumentaryMulticameraDuration()
+    {
+        var details = newProject.CalculationDetails;
+        decimal duration = ( EvaluateExpression(details.DocumentaryMulticameraDurationHours!) * 60 ) +
+                           EvaluateExpression(details.DocumentaryMulticameraDuration!);
+
+        return duration switch
+        {
+            <= 40 => duration * 8,
+            <= 90 => ( 40 * 8 ) + ( ( duration - 40 ) * 6 ),
+            _ => ( 40 * 8 ) + ( 50 * 6 ) + ( ( duration - 90 ) * 4 )
+        };
+    }
+
+    private decimal CalculateHighlightsDuration()
+    {
+        var details = newProject.CalculationDetails;
+        decimal duration = EvaluateExpression(details.HighlightsDuration);
+
+        duration = duration switch
+        {
+            <= 3 => duration * 160,
+            <= 7 => ( 3 * 160 ) + ( ( duration - 3 ) * 110 ),
+            _ => ( 3 * 160 ) + ( 4 * 110 ) + ( ( duration - 7 ) * 60 )
+        };
+
+        return duration * details.PrePartsPrecentage.GetValueOrDefault() * details.HighlightsDifficulty.GetValueOrDefault();
+    }
+
+    private decimal CalculateSocialMediaDuration()
+    {
+        return EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration) * 30;
+    }
+
+    private decimal? CalculateTotalDuration(decimal? footageSize, decimal miscMinutes, decimal prePartsDuration,
+        decimal documentaryMulticameraDuration, decimal highlightsDuration, decimal socialMediaDuration)
+    {
+        return footageSize + miscMinutes + prePartsDuration + documentaryMulticameraDuration + highlightsDuration + socialMediaDuration;
+    }
+
+    private decimal CalculateQualityMultiplier(decimal? cameraValue)
+    {
+        var details = newProject.CalculationDetails;
+        return details.FootageQuality.GetValueOrDefault() *
+               details.Resolution.GetValueOrDefault() *
+               cameraValue.GetValueOrDefault();
+    }
+
+    private decimal? ApplyDiscount(decimal? totalDuration, decimal qualityMultiplier)
+    {
+        var clientDiscount = 1 - ( newProject.CalculationDetails.ClientDiscount / 100 );
+        return totalDuration * qualityMultiplier * clientDiscount;
+    }
+
+    private void SetFinalBillableHours(decimal? adjustedValue)
+    {
+        newProject.CalculationDetails.FinalProjectBillableHours = Math.Round(adjustedValue.GetValueOrDefault() / 60, 2);
+    }
+
+    private void HandleCalculationError(Exception e)
+    {
+        Console.WriteLine($"There is an error in calculations: {e}");
+        Snackbar.Add("You need to enter numbers only and ensure there are no missing fields!", Severity.Error);
+    }
+
     private decimal EvaluateExpression(string expression)
     {
         if (string.IsNullOrEmpty(expression))
