@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,13 +32,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
     options.KnownProxies.Clear(); // Trust all proxies (optional for Railway)
 });
-// Using Data Protection system to be saved which is needed when in production 
-
-
-builder.Services.AddDataProtection()
-    .PersistKeysToDbContext<ApplicationDbContext>()
-    .SetApplicationName("Synchron");
-
 
 string? connectionString = "";
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
@@ -54,6 +48,13 @@ else
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 }
+// Using Data Protection system to be saved which is needed when in production 
+
+builder.Services.AddSingleton<IXmlRepository, EntityFrameworkDataProtectionKeysRepository>();
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("Synchron");
+
 
 // Added services to the container.
 builder.Services.AddMudServices(config =>
@@ -319,6 +320,20 @@ if (!app.Environment.IsDevelopment())
     });
     // Only use HTTPS redirection if not running in a container
         app.UseHsts();
+}
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var repo = scope.ServiceProvider.GetRequiredService<IXmlRepository>();
+    logger.LogWarning($"Active repository type: {repo.GetType().Name}");
+
+    // Force key generation
+    var dataProtector = scope.ServiceProvider
+        .GetRequiredService<IDataProtectionProvider>()
+        .CreateProtector("Test");
+
+    var testValue = dataProtector.Protect("Test Value");
+    logger.LogWarning("Created protected value: " + testValue);
 }
 
 app.UseForwardedHeaders();
