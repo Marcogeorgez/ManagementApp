@@ -192,79 +192,83 @@
 
     private void CalculateBillableHours()
     {
-        if(!form.IsValid)
+        try
         {
-            Snackbar.Add("Please fill the entire form", Severity.Error);
-            return;
+            decimal? _cameraValue;
+            newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+            newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+            newProject.CalculationDetails.Resolution = selectedMultipliers[2];
+            newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
+            decimal? _footageSize = newProject.CalculationDetails.FootageSize;
+            decimal? _Misc = ( newProject.CalculationDetails.Misc * 60 ); // Calculate it in minutes
+            decimal _prepartsDuration = 0;// Calculate it in minutes
+            decimal _documentryMulticameraDuration = 0; // Calculate it in minutes
+            decimal _hightlightDuration = 0; // Calculate it in minutes
+            decimal _socialMediaDuration = 0; // Calculate it in minutes
+            decimal? _clientDiscount = ( 1 - ( newProject.CalculationDetails.ClientDiscount / 100 ) );
+
+            _prepartsDuration += EvaluateExpression(newProject.CalculationDetails.PrePartsDuration) * 60;
+            _documentryMulticameraDuration += EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDurationHours) * 60 + EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDuration);
+            _hightlightDuration += EvaluateExpression(newProject.CalculationDetails.HighlightsDuration);
+            _socialMediaDuration += EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration);
+            if (_cameraNum <= 2 && _cameraNum > 0)
+                _cameraValue = 1;
+            else
+                _cameraValue = ( _cameraNum - 2 ) * 0.03m + 1;
+
+            // add as minutes
+            if (_footageSize <= 300)
+                _footageSize = 0;
+            else
+                _footageSize = ( _footageSize - 300m ) * 0.4m; // minutes
+
+            // if <= 40 then * 8 if <= 90 then multiply the rest by 6, if > 90 multiply the rest with 4
+            _documentryMulticameraDuration = _documentryMulticameraDuration <= 40
+                ? _documentryMulticameraDuration * 8
+                : _documentryMulticameraDuration <= 90
+                    ? ( 40 * 8 ) + ( ( _documentryMulticameraDuration - 40 ) * 6 )
+                    : ( 40 * 8 ) + ( 50 * 6 ) + ( ( _documentryMulticameraDuration - 90 ) * 4 );
+
+            if (_hightlightDuration <= 3)
+            {
+                _hightlightDuration = _hightlightDuration * 160;// mins
+            }
+            else if (_hightlightDuration <= 7)
+            {
+                _hightlightDuration = ( 3 * 160 ) + ( _hightlightDuration - 3 ) * 110;// mins
+            }
+            else
+            {
+                _hightlightDuration = ( 3 * 160 ) + ( 4 * 110 ) + ( _hightlightDuration - 7 ) * 60;// mins
+            }
+
+            _hightlightDuration *= newProject.CalculationDetails.PrePartsPrecentage.Value * newProject.CalculationDetails.HighlightsDifficulty.Value;
+            _socialMediaDuration *= 30;
+
+            // Calculate the total duration of all components
+            var totalDuration = _footageSize + _Misc + _prepartsDuration
+                                + _documentryMulticameraDuration
+                                + _hightlightDuration
+                                + _socialMediaDuration;
+            Console.WriteLine(totalDuration);
+            // Calculate the quality multiplier
+            var qualityMultiplier = newProject.CalculationDetails.FootageQuality!.Value * newProject.CalculationDetails.Resolution!.Value
+                                    * _cameraValue;
+
+            // Combine the total duration with the quality multiplier and multiply the final by the discount
+            var adjustedValue = ( totalDuration * qualityMultiplier ) * _clientDiscount;
+
+            // Convert to hours and round to two decimal places
+            newProject.CalculationDetails.FinalProjectBillableHours = Math.Round(adjustedValue.Value / 60, 2);
+
+            StateHasChanged();
         }
-        decimal? _cameraValue;
-        newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
-        newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
-        newProject.CalculationDetails.Resolution = selectedMultipliers[2];
-        newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
-        decimal? _footageSize = newProject.CalculationDetails.FootageSize;
-        decimal? _Misc = ( newProject.CalculationDetails.Misc * 60 ); // Calculate it in minutes
-        decimal _prepartsDuration = 0;// Calculate it in minutes
-        decimal _documentryMulticameraDuration = 0; // Calculate it in minutes
-        decimal _hightlightDuration = 0; // Calculate it in minutes
-        decimal _socialMediaDuration = 0; // Calculate it in minutes
-        decimal? _clientDiscount = ( 1 - (newProject.CalculationDetails.ClientDiscount / 100) );
-
-        _prepartsDuration += EvaluateExpression(newProject.CalculationDetails.PrePartsDuration) * 60;
-        _documentryMulticameraDuration += EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDurationHours) * 60 + EvaluateExpression(newProject.CalculationDetails.DocumentaryMulticameraDuration);
-        _hightlightDuration += EvaluateExpression(newProject.CalculationDetails.HighlightsDuration);
-        _socialMediaDuration += EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration);
-        if (_cameraNum <= 2 && _cameraNum > 0)
-            _cameraValue = 1;
-        else
-            _cameraValue = (_cameraNum - 2) * 0.03m + 1;
-
-        // add as minutes
-        if (_footageSize <= 300)
-            _footageSize = 0;
-        else
-            _footageSize = (_footageSize - 300m) * 0.4m; // minutes
-
-        // if <= 40 then * 8 if <= 90 then multiply the rest by 6, if > 90 multiply the rest with 4
-        _documentryMulticameraDuration = _documentryMulticameraDuration <= 40
-            ? _documentryMulticameraDuration * 8
-            : _documentryMulticameraDuration <= 90
-                ? ( 40 * 8 ) + ( ( _documentryMulticameraDuration - 40 ) * 6 )
-                : ( 40 * 8 ) + ( 50 * 6 ) + ( ( _documentryMulticameraDuration - 90 ) * 4 );
-
-        if(_hightlightDuration <= 3 )
+        catch (Exception e)
         {
-            _hightlightDuration = _hightlightDuration * 160;// mins
+            Console.WriteLine($"There is an error in calculations {e} ");
+            Snackbar.Add("You need to enter numbers only and ensure there are no missing fields!", Severity.Error);
         }
-        else if (_hightlightDuration <= 7)
-        {
-            _hightlightDuration = ( 3 * 160 ) + (_hightlightDuration - 3) * 110;// mins
-        }
-        else
-        {
-            _hightlightDuration = ( 3 * 160 ) + (4 * 110) + ( _hightlightDuration - 7 ) * 60;// mins
-        }
-
-        _hightlightDuration *= newProject.CalculationDetails.PrePartsPrecentage.Value * newProject.CalculationDetails.HighlightsDifficulty.Value;
-        _socialMediaDuration *= 30;
-
-        // Calculate the total duration of all components
-        var totalDuration = _footageSize + _Misc + _prepartsDuration
-                            + _documentryMulticameraDuration
-                            + _hightlightDuration
-                            + _socialMediaDuration;
-        Console.WriteLine(totalDuration);
-        // Calculate the quality multiplier
-        var qualityMultiplier = newProject.CalculationDetails.FootageQuality!.Value * newProject.CalculationDetails.Resolution!.Value
-                                * _cameraValue;
-
-        // Combine the total duration with the quality multiplier and multiply the final by the discount
-        var adjustedValue = (totalDuration * qualityMultiplier) * _clientDiscount;
-
-        // Convert to hours and round to two decimal places
-        newProject.CalculationDetails.FinalProjectBillableHours = Math.Round(adjustedValue.Value / 60, 2);
-
-        StateHasChanged();
+        
     }
     private decimal EvaluateExpression(string expression)
     {
