@@ -166,7 +166,7 @@ else
                                 AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
                                 OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                                 </MudTextField>
-                        <MudFab Class="d-flex floating-chat-icon " @onclick="async () => await OpenProjectChat(context.Item)" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" />
+                                <MudFab Class="d-flex floating-chat-icon " @onclick="async () => await OpenProjectChat(context.Item)" StartIcon="@Icons.Material.Filled.Email" Size="Size.Small" />
 
                             </div>
 
@@ -352,7 +352,7 @@ else
                                     Value="context.Item.FormattedDueDate" Class="outlined-dialog-max-content"
                                     ReadOnly="true" Variant="Variant.Outlined"
                                     Immediate="true" Adornment="Adornment.End"
-                                    
+
                                     >
                                     </MudTextField>
                                 }
@@ -464,7 +464,7 @@ else
                     <EditTemplate Context="context">
                         <MudSelect T="AdminProjectStatus" Class="mt-3"
                         Variant="Variant.Outlined"
-                                   Label="Client Payment Status"
+                        Label="Client Payment Status"
                         @bind-Value="context.Item.AdminStatus"
                         Required="true">
                             @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
@@ -1219,7 +1219,8 @@ else
             StateHasChanged();
             if(_isClientView)
             {
-                await _notificationService.QueueProjectCreationNotification(newProject);
+                var project = await projectServices.GetProjectByIdAsync(newProject.ProjectId);
+                await _notificationService.QueueProjectCreationNotification(project);
             }
         }
     }
