@@ -191,8 +191,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     }
     MudTheme _theme = new MudTheme()
         {
-            //  for the background #0d0e19 , for the table background #13131b , for the sidebar #02020a and .
-            //for the logos a slightly grayish color will work(not pure white like #efefef ),
             PaletteDark = new PaletteDark()
             {
 
@@ -220,7 +218,7 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         };
     private void SetupPeriodicRefresh()
     {
-        _refreshTimer = new System.Timers.Timer(TimeSpan.FromMinutes(2).TotalMilliseconds);
+        _refreshTimer = new System.Timers.Timer(TimeSpan.FromSeconds(30).TotalMilliseconds);
 
         _refreshTimer.Elapsed += async (sender, e) =>
         {
@@ -240,7 +238,6 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
     {
         try
         {
-            Console.WriteLine($"Successfully run the periodic refresh for fetching unread message count.");
             totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
             StateHasChanged();
         }
@@ -251,15 +248,13 @@ OpenMiniOnHover="@_isMinihover" Elevation="0" >
         }
     }
 
-    // Implements IAsyncDisposable to properly clean up the timer
     public async ValueTask DisposeAsync()
     {
-        Console.WriteLine("Component disposal started"); // Add logging
         if (_refreshTimer != null)
         {
             _refreshTimer.Stop();
             _refreshTimer.Dispose();
-            Console.WriteLine("Timer disposed"); // Add logging
+            Console.WriteLine("Timer disposed"); 
             Console.WriteLine($"User Closed Tab {currentUser!.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!}");
         }
     }
