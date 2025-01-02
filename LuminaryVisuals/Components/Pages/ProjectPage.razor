@@ -315,6 +315,10 @@ else
             {
                 <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" 
                 Groupable="true" Editable=false CellStyle="text-align:center;">
+                                 <CellTemplate>
+                        <MudTextField T="string" Value="@context.Item.FormattedShootDate" Class="outlined-dialog-md-content"
+                     ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
+                     </CellTemplate>
                     <EditTemplate Context="context">
                         @* If changed from here I will later need of a way to change due date*@
                         @if(_isAdminView || _isClientView){
@@ -344,7 +348,7 @@ else
                     </TemplateColumn>
                 }
                 <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false"
-                CellClass="outlined-dialog-max-content" Groupable="true" Editable=false >
+                CellClass="outlined-dialog-md-content" Groupable="true" Editable=false >
                     <CellTemplate>
                         @if (context.Item.IsUrgent == true)
                         {
@@ -352,7 +356,7 @@ else
                                 @if(isAdminView)
                                 {
                                     <MudTextField T="string" 
-                                    Value="context.Item.FormattedDueDate" Class="outlined-dialog-max-content"
+                                    Value="context.Item.FormattedDueDate" Class="outlined-dialog-md-content"
                                     ReadOnly="true" Variant="Variant.Outlined"
                                     Immediate="true" Adornment="Adornment.End"
 
@@ -360,7 +364,7 @@ else
                                     </MudTextField>
                                 }
                                 else{
-                                    <MudTextField T="string" Class="outlined-dialog-max-content"
+                                    <MudTextField T="string" Class="outlined-dialog-md-content"
                                     Value="context.Item.FormattedDueDate"
                                     ReadOnly="true" Variant="Variant.Outlined">
                                     </MudTextField>
@@ -375,7 +379,7 @@ else
                         {
                             @if (isAdminView)
                             {
-                                <MudTextField T="string" Class="outlined-dialog-max-content"
+                                <MudTextField T="string" Class="outlined-dialog-md-content"
                                 Value="context.Item.FormattedDueDate"
                                 ReadOnly="true" Variant="Variant.Outlined"
                                 Immediate="true" Adornment="Adornment.End"
@@ -384,7 +388,7 @@ else
                             }
                             else
                             {
-                                <MudTextField T="string" Class="outlined-dialog-max-content"
+                                <MudTextField T="string" Class="outlined-dialog-md-content"
                                 Value="context.Item.FormattedDueDate"
                                 ReadOnly="true" Variant="Variant.Outlined">
                                 </MudTextField>
@@ -410,8 +414,12 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
             {
-                <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false
+                <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content"
                 CellStyle="text-align:center;" Groupable="true" Editable=false>
+                 <CellTemplate>
+                     <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" Class="outlined-dialog-md-content"
+                     ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
+                     </CellTemplate>
                     <EditTemplate Context="context">
                         @if(@_isAdminView){
                             <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
@@ -484,7 +492,7 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
             {
-                <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-max-content" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
+                <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-md-content" Title="Private Notes" Hideable="true" Groupable="false" CellStyle="text-align:center;"
                 Editable=false Required=false>
                     <CellTemplate>
                         <MudTextField T="string"
@@ -767,7 +775,7 @@ else
                         <MudItem >
                             <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
                             Color="@(context.Item.IsPaymentVisible ? Color.Success : Color.Error)"
-                            OnClick="@(async () => await TogglePaymentVisibility(context.Item))"
+                            OnClick="@(async () => await TogglePaymentVisibility(context.Item))" Class="d-flex justify-center" style="text-align:center;"
                             Size="Size.Small" />
                         </MudItem>
                     </CellTemplate>
