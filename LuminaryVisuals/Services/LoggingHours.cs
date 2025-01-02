@@ -24,15 +24,6 @@ namespace LuminaryVisuals.Services
             {
                 using var context = _contextFactory.CreateDbContext();
                 {
-                    var existing = await context.EditorLoggingHours
-                        .FirstOrDefaultAsync(e => e.UserId == loggingHours.UserId && e.ProjectId == loggingHours.ProjectId
-                        && e.Date == loggingHours.Date );
-                    if(existing != null)
-                    {
-                        _logger.LogWarning($"Trying to log hours in existing Date:{loggingHours.Date} with same Project:{loggingHours.ProjectId}and User:{loggingHours.UserId}.");
-                        return false;
-                    }
-
                     loggingHours.Date = loggingHours.Date.Date;
                     context.EditorLoggingHours.Add(loggingHours);
                     await context.SaveChangesAsync();
