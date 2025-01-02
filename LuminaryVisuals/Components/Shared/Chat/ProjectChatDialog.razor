@@ -308,9 +308,10 @@
         {
             await messageField.Clear();
 
-            await ChatService.AddMessageAsync(Project.ProjectId, UserId, newMessage, isEditorView);
+            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, newMessage, isEditorView);
             await MarkMessagesAsRead();
-            await LoadMessages(initial: true);
+            // await LoadMessages(initial: true);
+            messages.Add(message);
             newMessage = string.Empty;
             await messageField.FocusAsync();
             _isLoading = false;

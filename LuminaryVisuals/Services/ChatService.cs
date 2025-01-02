@@ -39,7 +39,7 @@ public class ChatService
     }
 
     // Add a new message to the chat
-    public async Task AddMessageAsync(int projectId, string userId, string message, bool isEditor)
+    public async Task<Message> AddMessageAsync(int projectId, string userId, string message, bool isEditor)
     {
         using var context = _contextFactory.CreateDbContext();
         var chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
@@ -67,6 +67,7 @@ public class ChatService
         {
             await _notificationService.QueueChatNotification(project!, newMessage);
         }
+        return newMessage;
     }
 
     // Approve a message
