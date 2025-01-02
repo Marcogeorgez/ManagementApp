@@ -165,8 +165,7 @@ namespace LuminaryVisuals.Data
             });
             builder.Entity<EditorLoggingHours>(entity =>
             {
-                entity.HasIndex(e => new { e.UserId, e.ProjectId, e.Date })
-                .IsUnique();
+
 
                 entity.Property(e => e.EditorWorkingHours)
                 .HasPrecision(5, 2);
