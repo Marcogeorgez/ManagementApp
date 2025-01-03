@@ -74,8 +74,8 @@ else
             <MudButton OnClick="@(() => _gridKey = Guid.NewGuid())" Color="Color.Info">Reset State</MudButton>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
-                          Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
-                          Class="mt-0" />
+            Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+            Class="mt-0" />
         </ToolBarContent>
         <ColGroup>
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
@@ -107,6 +107,15 @@ else
                             <MudText>@context.Item.InternalOrder</MudText>
                         </MudHidden>
                     </CellTemplate>
+                    <EditTemplate>
+                        @if(!_isAdminView){
+                            <MudText Style="display:none;" />
+                        }
+                        else
+                        { 
+                        <MudNumericField @bind-Value="context.Item.InternalOrder" Label="Id" Variant="Variant.Outlined" Min="1" Max="projects.Count()"/>
+                        }
+                    </EditTemplate>
                 </PropertyColumn>
             }
             @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
@@ -148,7 +157,7 @@ else
                                 <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
                                     <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
                                 </MudTooltip>
-                                <MudTextField T="string" 
+                                <MudTextField T="string"
                                 Value="context.Item.ProjectName" Class="outlined-dialog-max-content "
                                 ReadOnly="true" Variant="Variant.Outlined"
                                 Immediate="true" Adornment="Adornment.End"
@@ -497,8 +506,8 @@ else
                 Editable=false Required=false>
                     <CellTemplate>
                         <MudTextField T="string"
-                        Class="outlined-dialog-max-content" 
-                        Text="Notes" Variant="Variant.Outlined"
+                                      Class="outlined-dialog-max-content"
+                                      Text="Notes" Variant="Variant.Outlined"
                         ReadOnly="true" Adornment="Adornment.End"
                         AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                         MaxLines="1"
@@ -544,7 +553,7 @@ else
                         <CellTemplate>
                             @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
                             {
-                                <MudTextField Variant="Variant.Outlined">@context.Item.PrimaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
+                                <MudTextField Variant="Variant.Outlined" @bind-Value="context.Item.PrimaryEditorDetails.DatePaidEditor">@context.Item.PrimaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
                             }
                             else{
                                 <MudText>N/A</MudText>
@@ -553,7 +562,9 @@ else
                         <EditTemplate>
                             @if(context.Item.PrimaryEditorId != null)
                             {
-                                <MudDatePicker Date="@context.Item.PrimaryEditorDetails.DatePaidEditor" Label="P.Date Paid" Variant=Variant.Outlined DateChanged="@(date => context.Item.PrimaryEditorDetails.DatePaidEditor = date)" />
+                                <MudDatePicker Date="@context.Item.PrimaryEditorDetails.DatePaidEditor" 
+                                DateChanged="@(date => context.Item.PrimaryEditorDetails.DatePaidEditor = date.HasValue ? DateTime.SpecifyKind(date.Value, DateTimeKind.Utc) : null)"
+                                Label="P.Date Paid" Variant=Variant.Outlined/>
                             }
                         </EditTemplate>
                     </PropertyColumn>
@@ -601,7 +612,7 @@ else
                         <CellTemplate>
                             @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
                             {
-                                <MudTextField Variant="Variant.Outlined">@context.Item.SecondaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
+                                <MudTextField Variant="Variant.Outlined" >@context.Item.SecondaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudTextField>
                             }
                             else{
                                 <MudText>N/A</MudText>
@@ -610,7 +621,11 @@ else
                         <EditTemplate>
                             @if(context.Item.SecondaryEditorId != null)
                             {
-                                <MudDatePicker Date="@context.Item.SecondaryEditorDetails.DatePaidEditor" Label="Sec.Date Paid" Variant=Variant.Outlined DateChanged="@(date => context.Item.PrimaryEditorDetails.DatePaidEditor = date)" />
+                                <MudDatePicker  
+                                    Date="@context.Item.SecondaryEditorDetails.DatePaidEditor"
+                                    Label="Sec.Date Paid"
+                                    Variant=Variant.Outlined
+                                    DateChanged="@(date => context.Item.SecondaryEditorDetails.DatePaidEditor = date.HasValue ? DateTime.SpecifyKind(date.Value, DateTimeKind.Utc) : null)" />
                             }
                         </EditTemplate>
                     </PropertyColumn>
