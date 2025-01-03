@@ -231,7 +231,8 @@
 
     private decimal? CalculateCameraValue()
     {
-        return _cameraNum <= 2 && _cameraNum > 0 ? 1 : ( ( _cameraNum - 2 ) * 0.03m ) + 1;
+        decimal CameraNumber = EvaluateExpression(newProject.CalculationDetails.CameraNumber!);
+        return CameraNumber <= 2 && CameraNumber >= 0 ? 1 : ( ( CameraNumber - 2 ) * 0.03m ) + 1;
     }
 
     private decimal? CalculateFootageSize()
