@@ -57,7 +57,7 @@
                               Variant="Variant.Outlined"
                               @bind-Value="context.ProjectSpecifications.AudioDetails" />
             </MudItem>
-        <MudItem xs="12" sm="12" Class="mb-3">
+            <MudItem xs="12" sm="12" Class="mb-3  flex-column">
                 <MudText Typo="Typo.body1" Class="mb-2">Deliverables:</MudText>
                     <MudHtmlEditor Outlined="true"
                                    Text="Deliverables"
@@ -90,7 +90,7 @@
                     </MudHtmlEditor>
         </MudItem>
 
-        <MudItem xs="12" sm="12" Class="mt-5">
+            <MudItem xs="12" sm="12" Class="mt-5  flex-column">
                 <MudText Class="my-2">
                     Brief Of The Day and Technical Issues Notes
                     <MudHtmlEditor Html="@context.Description"  HtmlChanged="OnNoteTextChanged" style="height:200px;"
@@ -122,7 +122,7 @@ The Bride was married like I said before, so this wedding was quite special beca
             </MudText>
         </MudItem>
 
-                <MudItem xs="12" sm="12" Class="mb-3">
+            <MudItem xs="12" sm="12" Class="mb-3  flex-column">
                     <MudText Typo="Typo.body1" Class="mb-2">Music Preferences:</MudText>
                         <MudHtmlEditor Outlined="true"
                                        Text="Music Preferences"
@@ -155,7 +155,7 @@ The Bride was married like I said before, so this wedding was quite special beca
                 </MudItem>
 
             <MudItem xs="12" sm="12">
-            <MudText Typo=Typo.body1  Class="mt-5" >Revisions:
+            <MudText Typo=Typo.body1  Class="mt-5 " >Revisions:
 
                     @if (context.Revisions != null)
                     {
