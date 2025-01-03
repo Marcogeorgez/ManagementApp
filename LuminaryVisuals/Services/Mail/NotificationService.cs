@@ -126,12 +126,13 @@ public class NotificationService : BackgroundService, INotificationService
         var adminUsers = await userService.GetAllAdminsAsync();
         foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
         {
+            var secondPrimaryEditorNameMessage = project.SecondaryEditorName != null ? $" and <strong>{project.SecondaryEditorName}</strong>" : "";
             var notificationItem = new NotificationQueueItem
             {
                 UserId = admin.Id,
                 Subject = $"The Project {project.ProjectName} has changed status",
                 Message = $@"
-                            <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> and <strong>{project.SecondaryEditorName}</strong> 
+                            <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> <strong>{secondPrimaryEditorNameMessage}</strong> 
                              status changed from <strong>{oldStatus}</strong> to <strong>{newStatus}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
