@@ -14,11 +14,7 @@
     justify-content: center;
     display: flex;
 }
-.mud-input > input.mud-input-root-outlined.mud-input-root-adorned-end, div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-end > mud-input-control.mud-input-input-control.outlined-dialog-md-content > .mud-input-control-input-container > .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input {
-    min-width: 120px !important;
-    text-align: center;
-    padding-inline-start: 0px;
-}
+
 .mud-input-control.mud-input-input-control.outlined-dialog-md-content > .mud-input-control-input-container > .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input {
     padding: 0px !important;
 }
@@ -380,6 +376,14 @@
     .message-hover-options:active {
         display: flex !important;
     }
+    div.mud-input-control.mud-input-input-control.outlined-dialog-max-content >
+    div.mud-input-control-input-container >
+    div.mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input >
+    input.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end {
+        min-width: 60px !important;
+        text-align: center;
+    }
+
 }
 
 .projects-title {
