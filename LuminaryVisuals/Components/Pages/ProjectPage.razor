@@ -60,10 +60,11 @@ else
     ShowMenuIcon=true
     EditMode="DataGridEditMode.Form"
     EditTrigger="DataGridEditTrigger.OnRowClick" RowClick="@OnRowClick"
-    ReadOnly=false
+    ReadOnly=false RowStyle="text-align:center;"
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
-    CommittedItemChanges="@CommittedItemChanges" Virtualize="true" FixedHeader="true" Height="100%"
+    CommittedItemChanges="@CommittedItemChanges" 
+    FixedHeader="true" Height="600px" Virtualize=true
     RowClassFunc="@GetRowClass">
 
 
