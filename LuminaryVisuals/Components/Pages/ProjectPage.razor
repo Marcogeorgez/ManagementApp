@@ -74,7 +74,19 @@ else
             <MudText Typo="Typo.h4">Your Projects</MudText>
             <MudButton OnClick="@(() => _gridKey = Guid.NewGuid())" Color="Color.Info">Reset State</MudButton>
             <MudButton OnClick="OnClick" Color="Color.Info">Scroll bottom</MudButton>
-
+            <MudTooltip Text="Download Filtered Projects ">
+                <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
+                           Color="Color.Primary" Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                    Download Filtered
+                </MudButton>
+            </MudTooltip>
+            <MudTooltip Text="Download All Projects">
+                <MudButton OnClick="DownloadAllProjects" Class="" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small"
+                           StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                    Backup Projects
+                </MudButton>
+            </MudTooltip>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
             Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
@@ -933,24 +945,6 @@ else
             <MudSpacer />
 
             <MudDivider style="border-width:0px !important;" />
-
-            <MudTooltip Text="Download Filtered Projects ">
-                <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
-                Color="Color.Primary" Variant="Variant.Filled" 
-                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
-                    Download Filtered
-                </MudButton>
-            </MudTooltip>
-            <MudTooltip Text="Download All Projects">
-                <MudButton OnClick="DownloadAllProjects" Class="" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small"
-                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
-                    Backup Projects
-                </MudButton>
-            </MudTooltip>
-            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-
-                <MudSpacer />
-            </MudHidden>
 
         }
         else if (_isClientView)
