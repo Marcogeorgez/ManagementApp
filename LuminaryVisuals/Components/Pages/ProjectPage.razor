@@ -11,6 +11,7 @@
 @implements IDisposable
 @inject IEmailService EmailService
 @inject INotificationService _notificationService
+@inject IScrollManager ScrollManager
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
 <PageTitle>Projects</PageTitle>
 @* <MudButton OnClick="HideColumns" Color="Color.Warning" >Hide damn columns</MudButton>
@@ -72,6 +73,8 @@ else
 
             <MudText Typo="Typo.h4">Your Projects</MudText>
             <MudButton OnClick="@(() => _gridKey = Guid.NewGuid())" Color="Color.Info">Reset State</MudButton>
+            <MudButton OnClick="OnClick" Color="Color.Info">Scroll bottom</MudButton>
+
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
             Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
@@ -81,7 +84,7 @@ else
             <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
             </MudHidden>
         </ColGroup>
-        <Columns>
+        <Columns >
 
             @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
             {
@@ -113,7 +116,7 @@ else
                         }
                         else
                         { 
-                        <MudNumericField @bind-Value="context.Item.InternalOrder" Label="Id" Variant="Variant.Outlined" Min="1" Max="projects.Count()"/>
+                            <MudNumericField @bind-Value="context.Item.InternalOrder" Label="Id" Variant="Variant.Outlined" Min="1" Max="projects.Count()"/>
                         }
                     </EditTemplate>
                 </PropertyColumn>
@@ -325,10 +328,10 @@ else
             {
                 <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" 
                 Groupable="true" Editable=false CellStyle="text-align:center;">
-                                 <CellTemplate>
+                    <CellTemplate>
                         <MudTextField T="string" Value="@context.Item.FormattedShootDate" Class="outlined-dialog-md-content"
-                     ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
-                     </CellTemplate>
+                        ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
+                    </CellTemplate>
                     <EditTemplate Context="context">
                         @* If changed from here I will later need of a way to change due date*@
                         @if(_isAdminView || _isClientView){
@@ -426,10 +429,10 @@ else
             {
                 <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content"
                 CellStyle="text-align:center;" Groupable="true" Editable=false>
-                 <CellTemplate>
-                     <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" Class="outlined-dialog-md-content"
-                     ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
-                     </CellTemplate>
+                    <CellTemplate>
+                        <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" Class="outlined-dialog-md-content"
+                        ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
+                    </CellTemplate>
                     <EditTemplate Context="context">
                         @if(@_isAdminView){
                             <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
@@ -506,8 +509,8 @@ else
                 Editable=false Required=false>
                     <CellTemplate>
                         <MudTextField T="string"
-                                      Class="outlined-dialog-max-content"
-                                      Text="Notes" Variant="Variant.Outlined"
+                        Class="outlined-dialog-max-content"
+                        Text="Notes" Variant="Variant.Outlined"
                         ReadOnly="true" Adornment="Adornment.End"
                         AdornmentIcon="@Icons.Material.Filled.OpenInNew"
                         MaxLines="1"
@@ -622,10 +625,10 @@ else
                             @if(context.Item.SecondaryEditorId != null)
                             {
                                 <MudDatePicker  
-                                    Date="@context.Item.SecondaryEditorDetails.DatePaidEditor"
-                                    Label="Sec.Date Paid"
-                                    Variant=Variant.Outlined
-                                    DateChanged="@(date => context.Item.SecondaryEditorDetails.DatePaidEditor = date.HasValue ? DateTime.SpecifyKind(date.Value, DateTimeKind.Utc) : null)" />
+                                Date="@context.Item.SecondaryEditorDetails.DatePaidEditor"
+                                Label="Sec.Date Paid"
+                                Variant=Variant.Outlined
+                                DateChanged="@(date => context.Item.SecondaryEditorDetails.DatePaidEditor = date.HasValue ? DateTime.SpecifyKind(date.Value, DateTimeKind.Utc) : null)" />
                             }
                         </EditTemplate>
                     </PropertyColumn>
@@ -1078,20 +1081,24 @@ else
         CircuitId = Guid.NewGuid().ToString(); 
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
         await LoadProjects();
+
         _loading = false;
     }    
+    private async Task OnClick(){
+        await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
+
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
-
+            timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");            
         }
+
     }
     private async Task OnRowClick(DataGridRowClickEventArgs<Project> args)
     {
         StateHasChanged();
-        await Task.Delay(50);
         await _dataGrid.SetEditingItemAsync(args.Item);
         LoadingService.HideLoading();
         StateHasChanged();
@@ -1202,6 +1209,7 @@ else
         else if (_isEditorView && isAdminView == false)
             await LoadProjectsForEditors();
         StateHasChanged();
+
     }
     // Loading Projects for Editors View
     private async Task LoadProjectsForEditors()
