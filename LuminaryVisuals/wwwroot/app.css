@@ -1,5 +1,13 @@
 ﻿* {
-    font-family: 'Inter', sans-serif ;
+    font-family: 'Inter', sans-serif;
+    font-size: 100%;
+}
+
+.filtered, .mud-direction-asc {
+    color: #6ea867 !important;
+}
+.mud-direction-desc, .mud-direction-desc:hover {
+    color: #3d73f2 !important;
 }
 
 
