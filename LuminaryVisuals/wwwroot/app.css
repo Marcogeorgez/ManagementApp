@@ -18,10 +18,6 @@
 
 }
 
-.mud-grid-item {
-    justify-content: center;
-    display: flex;
-}
 
 .mud-input-control.mud-input-input-control.outlined-dialog-md-content > .mud-input-control-input-container > .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input {
     padding: 0px !important;
@@ -65,15 +61,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
 .ql-editor li > .ql-ui {
     position: relative;
     display: inline-block;
@@ -96,10 +83,9 @@
 .ql-editor {
     color: white !important;
 }
-
-    .ql-editor p {
+.ql-editor p {
         color: white !important;
-    }
+}
 .ql-editor [style*="color: rgb(0, 0, 0)"] {
     color: white !important; 
 }
