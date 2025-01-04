@@ -43,13 +43,13 @@ else
 
     <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
     SelectedItems="SelectedItems" @ref=_dataGrid QuickFilter="_quickFilter"
-    Breakpoint="Breakpoint.Sm"
+    Breakpoint="Breakpoint.None"
     Items="@AllUsers" SortMode="SortMode.Multiple"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
     EditMode="DataGridEditMode.Form"
     EditTrigger="DataGridEditTrigger.Manual"
-    ReadOnly=false 
+    ReadOnly=false Style="margin-bottom: -100px; transform: scale(0.8); transform-origin: top left;width: 125%;"
     StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItemAsync" 
     CommittedItemChanges="@CommittedItemChanges">
 
@@ -196,7 +196,7 @@ else
             <MudDataGridPager T="UserRoleViewModel" />
         </PagerContent>
     </MudDataGrid>
-    <MudContainer Gutters=false Style="margin-left:inherit !important;margin-right:inherit !important;">
+    <MudContainer Gutters=false Class="ml-15">
 
         @if(_usdToLek){
             <MudNumericField T="decimal?"
