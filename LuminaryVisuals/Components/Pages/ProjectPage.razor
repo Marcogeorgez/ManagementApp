@@ -53,7 +53,7 @@ else
 {
     <LoadingIndicator IsVisible="@_loadingIndicator" />
     <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
-    Style="transform: scale(0.7); transform-origin: top left; width: 143%;" CurrentPage=0
+    Style="transform: scale(0.7); transform-origin: top left; width: 143%;" CurrentPage=0 RowsPerPageChanged=LoadProjects
     Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.None"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ColumnsPanelReordering=true
