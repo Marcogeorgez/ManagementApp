@@ -100,6 +100,9 @@
     .ql-editor p {
         color: white !important;
     }
+.ql-editor [style*="color: rgb(0, 0, 0)"] {
+    color: white !important; 
+}
 
 @keyframes checkmark-mega-burst {
     0% {
