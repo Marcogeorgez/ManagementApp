@@ -102,7 +102,7 @@ else
             @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
             {
                 <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center; "
-                DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                DragAndDropEnabled="false" Groupable="false" Editable=true >
                     <CellTemplate>
                         <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                             <div style="height:100px;"
@@ -1184,7 +1184,7 @@ else
     {
         if (_isAdminView)
         {
-            projects = await projectServices.GetProjectsAsync(_isArchived);
+            projects = await projectServices.GetProjectsAsync(_isArchived,_dataGrid.RowsPerPage);
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             HasAnyPrimaryEditor = !projects.Any(x => x.PrimaryEditorId != null);
@@ -1197,7 +1197,7 @@ else
         // this is for the admin to see all the projects but from the client view
         else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
         {
-            projects = await projectServices.GetProjectsAsync(_isArchived);
+            projects = await projectServices.GetProjectsAsync(_isArchived, _dataGrid.RowsPerPage);
             Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
         }

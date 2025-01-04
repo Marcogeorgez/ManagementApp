@@ -24,7 +24,7 @@ public class ProjectService
         _notificationService = notificationService;
     }
 
-    public async Task<List<Project>> GetProjectsAsync(bool isArchived)
+    public async Task<List<Project>> GetProjectsAsync(bool isArchived, int itemsPerPage)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -38,39 +38,48 @@ public class ProjectService
                 .Include(p => p.Revisions)
                 .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
-            var userIds = projects
+
+            var totalCount = projects.Count;
+            var reorderedProjects = new List<Project>();
+
+            // Get the chunks in reverse order but maintain original order within each chunk
+            for (int startIndex = totalCount; startIndex > 0; startIndex -= itemsPerPage)
+            {
+                int skip = Math.Max(0, startIndex - itemsPerPage);
+                int take = Math.Min(itemsPerPage, startIndex - skip);
+
+                var chunk = projects.GetRange(skip, take);
+                reorderedProjects.AddRange(chunk);
+            }
+
+            var userIds = reorderedProjects
                     .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
                     .Where(id => id != null)
                     .Distinct()
                     .ToList();
 
-            // Step 3: Fetch the user names,hourly rate based on the collected IDs
             var userNames = await context.Users
                     .Where(u => userIds.Contains(u.Id))
                     .Select(u => new { u.Id, u.UserName, u.HourlyRate })
                     .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-            // Step 4: Map user names back to each project
-            foreach (var project in projects)
+            foreach (var project in reorderedProjects)
             {
                 project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
                     ? userNames[project.ClientId]!
                     : "No Client Assigned ??";
-
                 project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
                     ? userNames[project.PrimaryEditorId]!
                     : "No Editor Assigned";
-
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                     ? userNames[project.SecondaryEditorId]!
                     : "No Editor Assigned";
             }
+
             await context.SaveChangesAsync();
-            return projects;
+            return reorderedProjects;
         }
     }
-
-
     public async Task<Project?> GetProjectByIdAsync(int projectId)
     {
         using (var context = _contextFactory.CreateDbContext())
