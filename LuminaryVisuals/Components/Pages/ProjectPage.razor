@@ -587,13 +587,13 @@ else
 
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <CellTemplate>
-                        @if(@context.Item.PrimaryEditorDetails.BillableHours >= 0)
-                        {
-                            <MudText>Hr @context.Item.PrimaryEditorDetails.BillableHours</MudText>
-                        }
-                        else{
-                            <MudText>N/A</MudText>
-                        }
+                            @if(@context.Item.PrimaryEditorDetails.BillableHours >= 0)
+                            {
+                                <MudText>Hr @context.Item.PrimaryEditorDetails.BillableHours</MudText>
+                            }
+                            else{
+                                <MudText>N/A</MudText>
+                            }
                         </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
@@ -601,13 +601,13 @@ else
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <CellTemplate>
-                        @if(@context.Item.PrimaryEditorDetails.Overtime != null )
-                        {
-                        <MudText>Hr @context.Item.PrimaryEditorDetails.Overtime</MudText>
-                        }
-                        else{
-                            <MudText>N/A</MudText>
-                        }
+                            @if(@context.Item.PrimaryEditorDetails.Overtime != null )
+                            {
+                                <MudText>Hr @context.Item.PrimaryEditorDetails.Overtime</MudText>
+                            }
+                            else{
+                                <MudText>N/A</MudText>
+                            }
                         </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
@@ -616,7 +616,7 @@ else
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
                         <CellTemplate>
                             @if(@context.Item.PrimaryEditorDetails.AdjustmentHours >= 0){
-                            <MudText>Hr @context.Item.PrimaryEditorDetails.AdjustmentHours</MudText>
+                                <MudText>Hr @context.Item.PrimaryEditorDetails.AdjustmentHours</MudText>
                             }
                             else{
                                 <MudText>N/A</MudText>
@@ -688,7 +688,7 @@ else
                             {
                                 <MudText>N/A</MudText>
                             }
-                            </CellTemplate>
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
@@ -718,7 +718,7 @@ else
                             {
                                 <MudText>N/A</MudText>
                             }
-                            </CellTemplate>
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
@@ -727,13 +727,13 @@ else
 
                     <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                         <CellTemplate>
-                           @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
-                           {
-                            <MudText>Hr @context.Item.SecondaryEditorDetails.FinalBillableHours</MudText>
-                           }
-                           else{
+                            @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
+                            {
+                                <MudText>Hr @context.Item.SecondaryEditorDetails.FinalBillableHours</MudText>
+                            }
+                            else{
                                 <MudText>N/A</MudText>
-                           }
+                            }
                         </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
@@ -759,9 +759,9 @@ else
                 {
                     <TemplateColumn Title="Editor Paid Date" Sortable="true" Filterable="true" Groupable="false" Editable=false Hideable="true">
                         <CellTemplate>
-                        @{var _DatePaidEditor = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
+                            @{var _DatePaidEditor = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
                         : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor : null );
-                        }
+                            }
                             @if (_DatePaidEditor == null)
                             {
                                 <MudText>N/A</MudText>
@@ -774,12 +774,12 @@ else
                     </TemplateColumn>
                     <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                         <CellTemplate>
-                        @{decimal? _BillableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
+                            @{decimal? _BillableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
                         : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours : null );
-                        }
+                            }
                             @if(_BillableHours  == null)
                             {
-                            <MudText>N/A</MudText>                                
+                                <MudText>N/A</MudText>                                
                             }
                             else{
                                 <MudText>Hr @_BillableHours </MudText>
@@ -788,15 +788,15 @@ else
                     </TemplateColumn>
                     <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                         <CellTemplate>
-                       @{decimal? _overtime = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
+                            @{decimal? _overtime = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
                        : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime : null );
                             }
                             @if(_overtime  == null)
                             {
-                            <MudText>N/A</MudText>                                
+                                <MudText>N/A</MudText>                                
                             }
                             else{
-                            <MudText>Hr @_overtime </MudText>
+                                <MudText>Hr @_overtime </MudText>
                             }
                         </CellTemplate>
                     </TemplateColumn>
@@ -808,27 +808,27 @@ else
                             }
                             @if(_adjustment == null)
                             {
-                            <MudText>N/A</MudText>                                
+                                <MudText>N/A</MudText>                                
                             }
                             else{
-                            <MudText>Hr @_adjustment</MudText>
+                                <MudText>Hr @_adjustment</MudText>
                             }
                         </CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                         <CellTemplate>
-                        @{decimal? _billableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
+                            @{decimal? _billableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
                         : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours : null );
-                        }
+                            }
 
-                        @if(_billableHours >= 0)
-                        {
+                            @if(_billableHours >= 0)
+                            {
                                 <MudText>Hr @_billableHours</MudText>
-                        }
+                            }
                             else if (_billableHours == null)
-                        {
-                            <MudText>N/A</MudText>
-                        }
+                            {
+                                <MudText>N/A</MudText>
+                            }
                         </CellTemplate>
                     </TemplateColumn>
                     <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
@@ -852,16 +852,16 @@ else
             @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
             {
                 <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
-                          <CellTemplate>
-                              @if(context.Item.ClientBillableHours >= 0)
-                              {
-                                  <MudText>Hr @context.Item.ClientBillableHours</MudText>
-                              }
-                              else
-                              {
-                                  <MudText>N/A</MudText>
-                              }
-                          </CellTemplate>
+                    <CellTemplate>
+                        @if(context.Item.ClientBillableHours >= 0)
+                        {
+                            <MudText>Hr @context.Item.ClientBillableHours</MudText>
+                        }
+                        else
+                        {
+                            <MudText>N/A</MudText>
+                        }
+                    </CellTemplate>
                     <EditTemplate>
                         <MudText Style="display:none;" />
                     </EditTemplate>
@@ -1287,33 +1287,51 @@ else
             LoadingService.HideLoading();
         }
     }
-
-
+    /// <summary>
+    /// Ensures thread-safe access to the LoadProjects method using SemaphoreSlim.
+    /// SemaphoreSlim(1,1) creates a lightweight synchronization object that:
+    /// - Allows only 1 thread to access the protected code at a time (first parameter)
+    /// - Has a maximum count of 1 (second parameter)
+    /// WaitAsync() acquires the lock before executing the code
+    /// Release() ensures the lock is released after execution, even if an exception occurs
+    /// This prevents race conditions when LoadProjects is called simultaneously by multiple events
+    /// </summary>
+    
+    // Using it here to prevent LoadProject and RowsPerPageChanged from calling LoadProjects simultaneously
+    private SemaphoreSlim _loadingSemaphore = new SemaphoreSlim(1, 1);
     //  Load project for admin/editor view only (will later be split )
     private async Task LoadProjects()
     {
-        if (_isAdminView)
+        try
         {
-            projects = await projectServices.GetProjectsAsync(_isArchived,_dataGrid.RowsPerPage);
-            Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
-            Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
-            HasAnyPrimaryEditor = !projects.Any(x => x.PrimaryEditorId != null);
-            HasAnySecondaryEditor = !projects.Any(x => x.SecondaryEditorId != null);
+            await _loadingSemaphore.WaitAsync();
+            if (_isAdminView)
+            {
+                projects = await projectServices.GetProjectsAsync(_isArchived,_dataGrid.RowsPerPage);
+                Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                HasAnyPrimaryEditor = !projects.Any(x => x.PrimaryEditorId != null);
+                HasAnySecondaryEditor = !projects.Any(x => x.SecondaryEditorId != null);
 
+            }
+            // for client view which will fetch his own projects only)
+            else if (_isClientView && isAdminView == false)
+                await LoadProjectsForClient();
+            // this is for the admin to see all the projects but from the client view
+            else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
+            {
+                projects = await projectServices.GetProjectsAsync(_isArchived, _dataGrid.RowsPerPage);
+                Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+            }
+            else if (_isEditorView && isAdminView == false)
+                await LoadProjectsForEditors();
+            StateHasChanged();
         }
-        // for client view which will fetch his own projects only)
-        else if (_isClientView && isAdminView == false)
-            await LoadProjectsForClient();
-        // this is for the admin to see all the projects but from the client view
-        else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
+        finally
         {
-            projects = await projectServices.GetProjectsAsync(_isArchived, _dataGrid.RowsPerPage);
-            Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
-            Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+            _loadingSemaphore.Release();
         }
-        else if (_isEditorView && isAdminView == false)
-            await LoadProjectsForEditors();
-        StateHasChanged();
 
     }
     // Loading Projects for Editors View
