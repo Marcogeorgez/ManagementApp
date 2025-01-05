@@ -597,7 +597,6 @@
 
 .chat-header:hover {
     background-color: #01315e;
-    animation: pulse 2s infinite;
 }
 
 .chat-title {

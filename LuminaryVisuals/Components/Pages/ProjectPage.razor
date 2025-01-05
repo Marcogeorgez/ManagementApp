@@ -66,7 +66,7 @@ else
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges" 
-    FixedHeader="true" Height="750px" Virtualize=true
+    FixedHeader="true" Height="730px" Virtualize=true
     RowClassFunc="@GetRowClass">
 
 
@@ -1058,7 +1058,7 @@ else
             <MudButton Color="Color.Success"
             Variant="Variant.Filled" Size="Size.Small"
             StartIcon="@Icons.Material.Filled.AddCircle"
-            OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="">
+            OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-3">
                 Add Project
             </MudButton>
             <MudSpacer />
@@ -1068,7 +1068,7 @@ else
         }
         else if (_isClientView)
         {
-            <MudButton Color="Color.Success" Class="mt-10"
+            <MudButton Color="Color.Success" Class="mt-5"
             Variant="Variant.Filled"
             StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
             OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
