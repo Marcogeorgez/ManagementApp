@@ -85,6 +85,8 @@ else
                 <MudMenuItem OnClick="OnClick">
                     Scroll to Bottom
                 </MudMenuItem>
+                                @if (isAdminView)
+                {
                 <MudMenuItem OnClick="DownloadFilteredAsCsv">
                     <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                     Download Filtered Projects
@@ -93,8 +95,7 @@ else
                     <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                     Backup Projects
                 </MudMenuItem>
-                @if (isAdminView)
-                {
+
                 <MudStack Spacing="0" Class=" mt-5">
                 <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
                 <MudStack Row=true Style="background:#151726;">
