@@ -52,7 +52,7 @@
 else
 {
     <LoadingIndicator IsVisible="@_loadingIndicator" />
-    <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
+    <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey  
     Style="transform: scale(0.7); transform-origin: top left; width: 143%;" CurrentPage=0 RowsPerPageChanged=LoadProjects
     Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.None"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -77,14 +77,14 @@ else
             <MudButton OnClick="OnClick" Color="Color.Info">Scroll bottom</MudButton>
             <MudTooltip Text="Download Filtered Projects ">
                 <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
-                           Color="Color.Primary" Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                Color="Color.Primary" Variant="Variant.Filled"
+                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
                     Download Filtered
                 </MudButton>
             </MudTooltip>
             <MudTooltip Text="Download All Projects">
                 <MudButton OnClick="DownloadAllProjects" Class="" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small"
-                           StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
                     Backup Projects
                 </MudButton>
             </MudTooltip>
@@ -586,24 +586,57 @@ else
                     </PropertyColumn>
 
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
+                        <CellTemplate>
+                        @if(@context.Item.PrimaryEditorDetails.BillableHours >= 0)
+                        {
+                            <MudText>Hr @context.Item.PrimaryEditorDetails.BillableHours</MudText>
+                        }
+                        else{
+                            <MudText>N/A</MudText>
+                        }
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
+                        <CellTemplate>
+                        @if(@context.Item.PrimaryEditorDetails.Overtime != null )
+                        {
+                        <MudText>Hr @context.Item.PrimaryEditorDetails.Overtime</MudText>
+                        }
+                        else{
+                            <MudText>N/A</MudText>
+                        }
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjustment" Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
-                        <EditTemplate>
-                            @if(context.Item.PrimaryEditorId != null)
-                            {
-                                <MudNumericField Label="P.Adjustment" Variant="Variant.Outlined" @bind-Value="context.Item.PrimaryEditorDetails.AdjustmentHours" />
+                        <CellTemplate>
+                            @if(@context.Item.PrimaryEditorDetails.AdjustmentHours >= 0){
+                            <MudText>Hr @context.Item.PrimaryEditorDetails.AdjustmentHours</MudText>
                             }
+                            else{
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnyPrimaryEditor>
+                        <CellTemplate>
+                            @if(@context.Item.PrimaryEditorDetails.FinalBillableHours >= 0)
+                            {
+                                <MudText>Hr @context.Item.PrimaryEditorDetails.FinalBillableHours</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
@@ -646,26 +679,62 @@ else
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec.Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
+                        <CellTemplate>
+                            @if(context.Item.SecondaryEditorDetails.BillableHours != null)
+                            {
+                                <MudText>Hr @context.Item.SecondaryEditorDetails.BillableHours</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                            </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
+                        <CellTemplate>
+                            @if(context.Item.SecondaryEditorDetails.Overtime != null)
+                            {
+                                <MudText>Hr @context.Item.SecondaryEditorDetails.Overtime</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
                     <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec.Adjustment" Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
-                        <EditTemplate>
-                            @if(context.Item.SecondaryEditorId != null)
+                        <CellTemplate>
+                            @if(context.Item.SecondaryEditorDetails.AdjustmentHours != null)
                             {
-                                <MudNumericField Label="Sec.Adjustment" Variant="Variant.Outlined" @bind-Value="context.Item.SecondaryEditorDetails.AdjustmentHours" />
+                                <MudText>Hr @context.Item.SecondaryEditorDetails.AdjustmentHours</MudText>
                             }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                            </CellTemplate>
+                        <EditTemplate>
+                            <MudText Style="display:none;" />
                         </EditTemplate>
                     </PropertyColumn>
 
 
                     <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
+                        <CellTemplate>
+                           @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
+                           {
+                            <MudText>Hr @context.Item.SecondaryEditorDetails.FinalBillableHours</MudText>
+                           }
+                           else{
+                                <MudText>N/A</MudText>
+                           }
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
@@ -688,61 +757,84 @@ else
                 }
                 else if (_isEditorView)
                 {
-                    <TemplateColumn Title="Editor Paid Date" Sortable="true" Filterable="true" Groupable="false" Editable=false>
+                    <TemplateColumn Title="Editor Paid Date" Sortable="true" Filterable="true" Groupable="false" Editable=false Hideable="true">
                         <CellTemplate>
-                            @context.Item.PrimaryEditorDetails.Overtime
-                            @(
-                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor
-                : "N/A" )
-                )
+                        @{var _DatePaidEditor = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.DatePaidEditor
+                        : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.DatePaidEditor : null );
+                        }
+                            @if (_DatePaidEditor == null)
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                            else
+                            {
+                                <MudText>@_DatePaidEditor.Value.ToString("MM/dd/yyyy")</MudText>
+                            }
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false">
+                    <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                         <CellTemplate>
-                            @(
-                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
-                : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours
-                :   "N/A")
-                    )
+                        @{decimal? _BillableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
+                        : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours : null );
+                        }
+                            @if(_BillableHours  == null)
+                            {
+                            <MudText>N/A</MudText>                                
+                            }
+                            else{
+                                <MudText>Hr @_BillableHours </MudText>
+                            }
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false">
+                    <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                         <CellTemplate>
-                            @context.Item.PrimaryEditorDetails.Overtime
-                            @(
-                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime
-                    : "N/A" )
-                    )
+                       @{decimal? _overtime = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
+                       : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime : null );
+                            }
+                            @if(_overtime  == null)
+                            {
+                            <MudText>N/A</MudText>                                
+                            }
+                            else{
+                            <MudText>Hr @_overtime </MudText>
+                            }
                         </CellTemplate>
                     </TemplateColumn>
-                    <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false">
-                        <CellTemplate>
-                            @(
-                context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
-                : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours
-                :   "N/A")
-                    )
-                            @context.Item.PrimaryEditorDetails.AdjustmentHours
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false">
-                        <CellTemplate>
-                            @(
-                    context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours
-                    : "N/A" )
-                    )
-                            @context.Item.PrimaryEditorDetails.FinalBillableHours
-                        </CellTemplate>
-                    </TemplateColumn>
-                    <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false">
+                    <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                         <CellTemplate>
                             @{
+                                decimal? _adjustment = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
+                              : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours : null );
+                            }
+                            @if(_adjustment == null)
+                            {
+                            <MudText>N/A</MudText>                                
+                            }
+                            else{
+                            <MudText>Hr @_adjustment</MudText>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
+                        <CellTemplate>
+                        @{decimal? _billableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
+                        : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours : null );
+                        }
 
-                                var paymentAmount = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.PaymentAmount
-                    : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.PaymentAmount : null);
+                        @if(_billableHours >= 0)
+                        {
+                                <MudText>Hr @_billableHours</MudText>
+                        }
+                            else if (_billableHours == null)
+                        {
+                            <MudText>N/A</MudText>
+                        }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
+                        <CellTemplate>
+                            @{var paymentAmount = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.PaymentAmount
+                            : (context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.PaymentAmount : null);
                             }
                             @if (paymentAmount >= 0)
                             {
@@ -757,12 +849,19 @@ else
                 }
 
             }
-            @if (RoleBasedColumns[_currentRole].Contains("BillableHours")){
-
-            }
             @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
             {
                 <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;">
+                          <CellTemplate>
+                              @if(context.Item.ClientBillableHours >= 0)
+                              {
+                                  <MudText>Hr @context.Item.ClientBillableHours</MudText>
+                              }
+                              else
+                              {
+                                  <MudText>N/A</MudText>
+                              }
+                          </CellTemplate>
                     <EditTemplate>
                         <MudText Style="display:none;" />
                     </EditTemplate>
@@ -773,6 +872,16 @@ else
                 if(_isAdminView)
                 {
                     <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;">
+                        <CellTemplate>
+                            @if(context.Item.ClientBillableAmount >= 0)
+                            {
+                                <MudText>$@context.Item.ClientBillableAmount</MudText>
+                            }
+                            else
+                            {
+                                <MudText>N/A</MudText>
+                            }
+                        </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
                         </EditTemplate>
@@ -786,7 +895,7 @@ else
                                 var project = context.Item as Project;
                                 @if (project?.IsPaymentVisible == true)
                                 {
-                                    @project.ClientBillableAmount
+                                    <MudText>$@project.ClientBillableAmount</MudText>
                                 }
                                 else
                                 {
