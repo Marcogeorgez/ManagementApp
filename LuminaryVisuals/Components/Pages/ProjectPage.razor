@@ -1340,6 +1340,7 @@ else
         finally
         {
             _loadingSemaphore.Release();
+            await Task.Delay(150);
             await OnClick();
         }
 
