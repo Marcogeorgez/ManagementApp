@@ -10,7 +10,7 @@
     color: #3d73f2 !important;
 }
 
-.mud-link.mud-link-underline-hover {
+.mud-link.mud-link-underline-hover, .html-content-wrapper a {
     color: #1ce6e6 !important;
 }
 .mud-list {
