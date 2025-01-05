@@ -10,7 +10,9 @@
     color: #3d73f2 !important;
 }
 
-
+.mud-link.mud-link-underline-hover {
+    color: #1ce6e6 !important;
+}
 @media screen and (-webkit-min-device-pixel-ratio:0) {
     .outlined-dialog-max-content {
         min-width: 200px !important;
