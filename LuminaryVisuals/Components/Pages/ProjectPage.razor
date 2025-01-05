@@ -85,7 +85,7 @@ else
                 <MudMenuItem OnClick="OnClick">
                     Scroll to Bottom
                 </MudMenuItem>
-                                @if (isAdminView)
+                @if (isAdminView)
                 {
                 <MudMenuItem OnClick="DownloadFilteredAsCsv">
                     <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
@@ -1201,7 +1201,6 @@ else
     }    
     private async Task OnClick(){
         await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
-
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -1341,6 +1340,7 @@ else
         finally
         {
             _loadingSemaphore.Release();
+            await OnClick();
         }
 
     }
