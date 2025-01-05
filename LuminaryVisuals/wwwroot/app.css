@@ -16,6 +16,9 @@
 .mud-list {
     background: #151726 !important;
 }
+.html-content-wrapper:not(.is-outlined) .ql-editor {
+    border-top: 0px solid !important;
+}
 @media screen and (-webkit-min-device-pixel-ratio:0) {
     .outlined-dialog-max-content {
         min-width: 200px !important;
