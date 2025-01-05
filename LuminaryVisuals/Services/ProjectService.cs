@@ -53,15 +53,15 @@ public class ProjectService
             }
 
             var userIds = reorderedProjects
-                    .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
-                    .Where(id => id != null)
-                    .Distinct()
-                    .ToList();
+                .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
+                .Where(id => id != null)
+                .Distinct()
+                .ToList();
 
             var userNames = await context.Users
-                    .Where(u => userIds.Contains(u.Id))
-                    .Select(u => new { u.Id, u.UserName, u.HourlyRate })
-                    .ToDictionaryAsync(u => u.Id, u => u.UserName);
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.UserName, u.HourlyRate })
+                .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
             foreach (var project in reorderedProjects)
             {
@@ -317,6 +317,18 @@ public class ProjectService
             {
                 var isChanged = false;
                 var oldStatus = _project.Status;
+                if (_project.ClientId != project.ClientId)
+                {
+                    if (project.Client.WeeksToDueDateDefault == null)
+                    {
+                        project.Client.WeeksToDueDateDefault = 4;
+                    }
+                    _project.ClientId = project.ClientId;
+                    var highestOrderForClient = context.Projects
+                        .Where(p => !p.IsArchived && _project.ClientId == p.ClientId)
+                        .Max(p => (int?) p.ExternalOrder) ?? 0;
+                    _project.ExternalOrder = highestOrderForClient + 1;
+                }
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
                 {
                     await ReorderProjectAsync(project.ProjectId, project.InternalOrder!.Value,false);
@@ -324,13 +336,6 @@ public class ProjectService
                 if (_project.ExternalOrder != project.ExternalOrder && _project.ExternalOrder != null)
                 {
                     await ReorderProjectAsync(project.ProjectId, project.ExternalOrder!.Value,true);
-                }
-                if(_project.ClientId != project.ClientId)
-                {
-                    if (project.Client.WeeksToDueDateDefault == null)
-                    {
-                        project.Client.WeeksToDueDateDefault = 4;
-                    }
                 }
                 if(_project.PrimaryEditorId != project.PrimaryEditorId && _project.PrimaryEditorId == null)
                 {
@@ -377,13 +382,13 @@ public class ProjectService
                     }
                 }
                 }
+                // Send notification to user if the project status has changed
                 if (oldStatus != _project.Status)
                 {
                     await _notificationService.QueueStatusChangeNotification(project, oldStatus, _project.Status,updatedByUserId);
                 }
 
                 await context.SaveChangesAsync();
-
                 await _broadcaster.NotifyAllAsync();
                 
             }
@@ -563,8 +568,8 @@ public class ProjectService
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
-        await _broadcaster.NotifyAllAsync();
+                // Notify all clients of the change in project order
+                await _broadcaster.NotifyAllAsync();
             }
             catch
             {
@@ -647,7 +652,7 @@ public class ProjectService
                     .AsTracking()
                     .Where(p => p.ProjectId == _project.ProjectId)
                     .Include(p => p.Client)
-                    .Include(p => p.PrimaryEditor) 
+                    .Include(p => p.PrimaryEditor)
                     .Include(p => p.SecondaryEditor)
                     .Include(p => p.PrimaryEditorDetails)
                     .Include(p => p.SecondaryEditorDetails)
@@ -656,7 +661,7 @@ public class ProjectService
                 // Calculate client billable amount
                 if (project.ClientBillableHours != null && project.Client.HourlyRate != null)
                 {
-                project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
+                    project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
                 }
 
                 // Calculate primary editor details
