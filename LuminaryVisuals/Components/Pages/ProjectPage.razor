@@ -1202,12 +1202,20 @@ else
     private async Task OnClick(){
         await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
     }
+    private bool _shouldScroll = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");            
         }
+        if (_shouldScroll)
+        {
+            _shouldScroll = false;
+            await Task.Delay(1000);
+            await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
+        }
+    await base.OnAfterRenderAsync(firstRender);
 
     }
     private async Task OnRowClick(DataGridRowClickEventArgs<Project> args)
@@ -1336,12 +1344,12 @@ else
             else if (_isEditorView && isAdminView == false)
                 await LoadProjectsForEditors();
             StateHasChanged();
+            _shouldScroll = true;
         }
         finally
         {
             _loadingSemaphore.Release();
-            await Task.Delay(150);
-            await OnClick();
+
         }
 
     }
