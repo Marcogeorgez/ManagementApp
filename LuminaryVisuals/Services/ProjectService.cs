@@ -130,7 +130,7 @@ public class ProjectService
             .ToListAsync();
         }
     }
-    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId)
+    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId, int itemsPerPage)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -144,6 +144,7 @@ public class ProjectService
                 .Include(p => p.Revisions)
                 .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
+
 
             // Include PrimaryEditor only if the user is the primary editor
             foreach (var project in projects)
@@ -163,24 +164,56 @@ public class ProjectService
                     project.SecondaryEditorDetails = null;
                 }
             }
+            if (itemsPerPage > 0)
+            {
+                var totalCount = projects.Count;
+                var reorderedProjects = new List<Project>();
 
+                // Get the chunks in reverse order but maintain original order within each chunk
+                for (int startIndex = totalCount; startIndex > 0; startIndex -= itemsPerPage)
+                {
+                    int skip = Math.Max(0, startIndex - itemsPerPage);
+                    int take = Math.Min(itemsPerPage, startIndex - skip);
+
+                    var chunk = projects.GetRange(skip, take);
+                    reorderedProjects.AddRange(chunk);
+                }
+                return reorderedProjects;
+
+            }
             return projects;
         }
     }
 
-    public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId)
+    public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId, int itemsPerPage)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var project = await context.Projects
+            var projects = await context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.Archive)
             .Include(p => p.Revisions)
             .OrderBy(p => p.ExternalOrder)
             .ToListAsync();
-            if (project == null)
-                return null;
-            return project;
+            if (itemsPerPage > 0)
+            {
+                var totalCount = projects.Count;
+                var reorderedProjects = new List<Project>();
+
+                // Get the chunks in reverse order but maintain original order within each chunk
+                for (int startIndex = totalCount; startIndex > 0; startIndex -= itemsPerPage)
+                {
+                    int skip = Math.Max(0, startIndex - itemsPerPage);
+                    int take = Math.Min(itemsPerPage, startIndex - skip);
+
+                    var chunk = projects.GetRange(skip, take);
+                    reorderedProjects.AddRange(chunk);
+                }
+                if (reorderedProjects == null)
+                    return null;
+                return reorderedProjects;
+            }
+            return projects;
         }
     }
 

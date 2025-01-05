@@ -73,7 +73,7 @@ else
         <ToolBarContent>
 
             <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
-            <MudMenu Icon="@Icons.Material.Filled.Settings"  Label="Actions" Variant="Variant.Filled" AriaLabel="Projects Options" 
+            <MudMenu Icon="@Icons.Material.Filled.Settings"  Label="Actions" Variant="Variant.Filled" AriaLabel="Projects Options"  Class="pa-1"
             LockScroll=true DropShadow=true 
             AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
                 <MudMenuItem OnClick="@(() => _gridKey = Guid.NewGuid())">
@@ -97,8 +97,9 @@ else
                 </MudMenuItem>
 
                 <MudStack Spacing="0" Class=" mt-5">
-                <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-                <MudStack Row=true Style="background:#151726;">
+                <MudSwitch T="bool" Class="ml-5 mb-1" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+                <MudText Class="ml-5">View as</MudText>
+                <MudStack Row=true Style="background:#151726;" Class="ml-5">
                     <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
                     <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
                     <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
@@ -156,7 +157,7 @@ else
             @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
             {
                 <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
-                DragAndDropEnabled="false" Groupable="false" Editable=true InitialDirection="SortDirection.Ascending">
+                DragAndDropEnabled="false" Groupable="false" Editable=true >
                     <CellTemplate>
                         <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                             <div class="drag-handle flex-row  justify-center align-center " style="height:100px;" draggable="true"
@@ -1347,7 +1348,7 @@ else
     private async Task LoadProjectsForEditors()
     {
         LoadingService.ShowLoading();
-        projects = await projectServices.GetProjectsForEditors(_isArchived, _currentUserId);
+        projects = await projectServices.GetProjectsForEditors(_isArchived, _currentUserId, _dataGrid.RowsPerPage);
         LoadingService.HideLoading();
         StateHasChanged();
     }
@@ -1355,7 +1356,7 @@ else
     private async Task LoadProjectsForClient()
     {
         LoadingService.ShowLoading();
-        projects = await projectServices.GetProjectsForClients(_isArchived, _currentUserId);
+        projects = await projectServices.GetProjectsForClients(_isArchived, _currentUserId,_dataGrid.RowsPerPage);
         LoadingService.HideLoading();
         StateHasChanged();
     }
