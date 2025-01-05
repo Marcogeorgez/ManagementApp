@@ -23,7 +23,9 @@
 
 }
 
-
+.outlined-dialog-md-content{
+    width:115px;
+}
 .mud-input-control.mud-input-input-control.outlined-dialog-md-content > .mud-input-control-input-container > .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input {
     padding: 0px !important;
 }
