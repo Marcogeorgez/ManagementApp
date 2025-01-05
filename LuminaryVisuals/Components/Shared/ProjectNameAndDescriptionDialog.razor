@@ -16,12 +16,18 @@
                                 <MudText Typo="Typo.subtitle2" Color="Color.Success">Footage Links</MudText>
                                 @if (!string.IsNullOrEmpty(context.FootageLink))
                                 {
-                                    <div class="d-flex flex-column gap-1">
-                                        @foreach (var link in context.FootageLink.Split(new[] { '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                                @foreach (var word in context.FootageLink.Split(' '))
                                         {
-                                            <MudLink Href="@link" Target="_blank" Typo="Typo.body1">@link</MudLink>
+                                            if (StringHelper.IsLink(word))
+                                            {
+                                                <MudLink Href="@word" Target="_blank" Typo="Typo.body1">@word</MudLink>
+                                            }
+                                            else
+                                            {
+                                                <span> @word </span>
+                                            }
+                                            <span>&nbsp;</span>
                                         }
-                                    </div>
                                 }
                                 else
                                 {
