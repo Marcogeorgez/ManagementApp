@@ -74,11 +74,11 @@
             }
             else if (isEditorView)
             {
-                projects = (await ProjectService.GetProjectsForEditors(false, userId))!;
+                projects = (await ProjectService.GetProjectsForEditors(false, userId,0))!;
             }
             else if(isClientView)
             {
-                projects = (await ProjectService.GetProjectsForClients(false, userId))!;
+                projects = (await ProjectService.GetProjectsForClients(false, userId,0))!;
             }
             else
             {
