@@ -357,7 +357,7 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
             {
-                <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" 
+                <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;"
                 Groupable="true" Editable=false CellStyle="text-align:center;">
                     <CellTemplate>
                         <MudTextField T="string" Value="@context.Item.FormattedShootDate" Class="outlined-dialog-md-content"
