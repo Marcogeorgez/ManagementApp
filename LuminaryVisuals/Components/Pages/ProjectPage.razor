@@ -57,9 +57,9 @@ else
     Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.None"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ColumnsPanelReordering=true
-    ShowColumnOptions=true
+    ShowColumnOptions=false 
     Groupable=true QuickFilter="@_quickFilter"
-    ShowMenuIcon=true
+    ShowMenuIcon=false
     EditMode="DataGridEditMode.Form"
     EditTrigger="DataGridEditTrigger.OnRowClick" RowClick="@OnRowClick"
     ReadOnly=false RowStyle="text-align:center;"
@@ -72,22 +72,29 @@ else
 
         <ToolBarContent>
 
-            <MudText Typo="Typo.h4">Your Projects</MudText>
-            <MudButton OnClick="@(() => _gridKey = Guid.NewGuid())" Color="Color.Info">Reset State</MudButton>
-            <MudButton OnClick="OnClick" Color="Color.Info">Scroll bottom</MudButton>
-            <MudTooltip Text="Download Filtered Projects ">
-                <MudButton OnClick="DownloadFilteredAsCsv" Class="" Size="Size.Small"
-                Color="Color.Primary" Variant="Variant.Filled"
-                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
-                    Download Filtered
-                </MudButton>
-            </MudTooltip>
-            <MudTooltip Text="Download All Projects">
-                <MudButton OnClick="DownloadAllProjects" Class="" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small"
-                StartIcon="@Icons.Material.TwoTone.Download" IconSize="Size.Large">
+            <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
+            <MudMenu Icon="@Icons.Material.Filled.Settings"  Label="Actions" Variant="Variant.Filled" AriaLabel="Projects Options" 
+            LockScroll=true DropShadow=true 
+            AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
+                <MudMenuItem OnClick="@(() => _gridKey = Guid.NewGuid())">
+                    Reset State
+                </MudMenuItem>
+                <MudMenuItem OnClick="@(() => _dataGrid.ShowColumnsPanel())">
+                    Show Columns Panel
+                </MudMenuItem>
+                <MudMenuItem OnClick="OnClick">
+                    Scroll to Bottom
+                </MudMenuItem>
+                <MudMenuItem OnClick="DownloadFilteredAsCsv">
+                    <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
+                    Download Filtered Projects
+                </MudMenuItem>
+                <MudMenuItem OnClick="DownloadAllProjects">
+                    <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                     Backup Projects
-                </MudButton>
-            </MudTooltip>
+                </MudMenuItem>
+
+            </MudMenu>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
             Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
