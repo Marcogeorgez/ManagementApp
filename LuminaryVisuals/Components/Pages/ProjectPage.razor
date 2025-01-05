@@ -66,7 +66,7 @@ else
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges" 
-    FixedHeader="true" Height="600px" Virtualize=true
+    FixedHeader="true" Height="750px" Virtualize=true
     RowClassFunc="@GetRowClass">
 
 
@@ -93,6 +93,17 @@ else
                     <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                     Backup Projects
                 </MudMenuItem>
+                @if (isAdminView)
+                {
+                <MudStack Spacing="0" Class=" mt-5">
+                <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+                <MudStack Row=true Style="background:#151726;">
+                    <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
+                    <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
+                    <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
+                </MudStack>
+            </MudStack>
+                }
 
             </MudMenu>
             <MudSpacer />
@@ -1041,20 +1052,9 @@ else
         </PagerContent>
     </MudDataGrid>
     <MudContainer Class="justify-start d-flex flex-grow-1 gap-2 flex-wrap container-for-toggles" Gutters=false
-    Style="margin-top: -230px; transform: scale(0.7); transform-origin: top left; padding-left: 50px;">
+    Style="margin-top: -230px; transform: scale(0.7); transform-origin: top left; padding-left: 15px;">
         @if(isAdminView)
         { 
-            <MudStack Spacing="0" Class=" mt-5">
-                <MudSwitch T="bool" Class="ml-15" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-                <MudStack Row=true>
-                    <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
-                    <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
-                    <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
-                </MudStack>
-            </MudStack>
-            <MudDivider style="border-width:0px !important;" />
-            <div class="flex-none d-flex " style=" flex: none !important; margin-left:80px;" />
-
             <MudButton Color="Color.Success"
             Variant="Variant.Filled" Size="Size.Small"
             StartIcon="@Icons.Material.Filled.AddCircle"
