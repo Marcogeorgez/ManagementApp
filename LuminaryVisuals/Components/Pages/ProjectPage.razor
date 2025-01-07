@@ -1199,7 +1199,7 @@ else
         _loading = false;
     }    
     private async Task OnClick(){
-        await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
+        await ScrollManager.ScrollToBottomAsync(".mud-main-content", ScrollBehavior.Smooth);
     }
     private bool _shouldScroll = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1212,7 +1212,7 @@ else
         {
             _shouldScroll = false;
             await Task.Delay(1000);
-            await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
+            await ScrollManager.ScrollToBottomAsync(".mud-main-content", ScrollBehavior.Smooth);
         }
     await base.OnAfterRenderAsync(firstRender);
 
