@@ -1153,6 +1153,7 @@ else
         x.Link,
         x.FormatStatus,
         x.FormatAdminStatus,
+        x.ClientName,
         x.PrimaryEditorName,
         x.SecondaryEditorName,
         x.FormattedShootDate,
@@ -1614,7 +1615,6 @@ else
             var _project = result.Data! as Project;
             if (_project != null)
             {
-
                 await projectServices.UpdateProjectBillableHoursAsync(_project);
                 await projectServices.CalculateProjectFinalPrice(_project);
 
