@@ -95,20 +95,36 @@ public class UserServices
 
             // Fetch projects where the user is the client
             var projectsAsClient = await context.Projects
-                .Where(p => p.ClientId == userId)
+                .AsTracking()
+                .Where(p => p.ClientId == userId || p.PrimaryEditorId == userId || p.SecondaryEditorId == userId)
                 .ToListAsync();
 
             // Reassign projects to the new client
             foreach (var project in projectsAsClient)
             {
-                project.ClientId = AdminId;
+                if (project.ClientId == userId)
+                {
+                    // Update ClientId to AdminId
+                    project.ClientId = AdminId;
 
-                // Update the ExternalOrder for the new client
-                var highestOrderForClient = await context.Projects
-                    .Where(p => p.ClientId == AdminId && !p.IsArchived)
-                    .MaxAsync(p => (int?) p.ExternalOrder) ?? 0;
+                    // Update the ExternalOrder for the new client
+                    var highestOrderForClient = await context.Projects
+                        .Where(p => p.ClientId == AdminId && !p.IsArchived)
+                        .MaxAsync(p => (int?) p.ExternalOrder) ?? 0;
 
-                project.ExternalOrder = highestOrderForClient + 1;
+                    project.ExternalOrder = highestOrderForClient + 1;
+                }
+                if (project.PrimaryEditorId == userId)
+                {
+                    // Update PrimaryEditorId to AdminId
+                    project.PrimaryEditorId = AdminId;
+                }
+                if (project.SecondaryEditorId == userId)
+                {
+                    // Update SecondaryEditorId to AdminId
+                    project.SecondaryEditorId = AdminId;
+                }
+
             }
 
             // Remove the user and his related notes and role
