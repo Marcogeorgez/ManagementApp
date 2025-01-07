@@ -140,14 +140,14 @@
                         @if (newProject.PrimaryEditor != null)
                         {
                             <MudItem xs="4">
-                                <MudTextField @bind-Value="@newProject.PrimaryEditorDetails.FinalBillableHours" ReadOnly=true
+                                <MudTextField @bind-Value="@newProject.PrimaryEditorDetails.FinalBillableHours" 
                                 Label="Primary Editor Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
                             </MudItem>
                         }
                         @if (newProject.SecondaryEditor != null)
                         {
                             <MudItem xs="4">
-                                <MudTextField T="decimal?"  ReadOnly=true @bind-Value="@newProject.SecondaryEditorDetails.FinalBillableHours"
+                                <MudTextField T="decimal?"  @bind-Value="@newProject.SecondaryEditorDetails.FinalBillableHours"
                             Label="Secondary Editor Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
                         </MudItem>
                         }

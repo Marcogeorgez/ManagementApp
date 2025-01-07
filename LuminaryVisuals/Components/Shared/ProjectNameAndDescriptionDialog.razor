@@ -10,12 +10,12 @@
                     <MudPaper Class="pa-4" Elevation="0">
                         <MudGrid Spacing="4">
                             <MudItem xs="12" sm="12" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Project Name</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Project Name</MudText>
                                 <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectName) ? "-" : context.ProjectName)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="12" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Footage Links</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Footage Links</MudText>
                                 @if (!string.IsNullOrEmpty(context.FootageLink))
                                 {
                                 @foreach (var word in context.FootageLink.Split(' '))
@@ -38,32 +38,32 @@
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Resolution</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Resolution</MudText>
                                 <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.Resolution) ? "-" : context.ProjectSpecifications.Resolution)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Footage Size</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Footage Size</MudText>
                                 <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.Size) ? "-" : context.ProjectSpecifications.Size)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Number of Cameras</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Number of Cameras</MudText>
                                 <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.CameraNumber) ? "-" : context.ProjectSpecifications.CameraNumber)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Color Profile</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Color Profile</MudText>
                                 <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.ColorProfile) ? "-" : context.ProjectSpecifications.ColorProfile)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success">Audio Details</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default">Audio Details</MudText>
                                 <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.AudioDetails) ? "-" : context.ProjectSpecifications.AudioDetails)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success" Class="mb-2">Deliverables</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Deliverables</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.Deliverables))
                                     {
@@ -78,7 +78,7 @@
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success" Class="mb-2">Brief Of The Day and Technical Issues Notes</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Brief Of The Day and Technical Issues Notes</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.Description))
                                     {
@@ -93,7 +93,7 @@
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success" Class="mb-2">Music Preferences</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Music Preferences</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.MusicPreference))
                                     {
@@ -108,7 +108,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Success" Class="mb-2">Revisions</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Revisions</MudText>
                                 @if (context.Revisions != null && context.Revisions.Any())
                                 {
                                     foreach (var revision in context.Revisions)
@@ -323,7 +323,7 @@ The Bride was married like I said before, so this wedding was quite special beca
     <DialogActions>
         <MudItem sm="12">
             <MudSwitch @bind-Value="isViewMode"
-                       Color="Color.Success" UncheckedColor="Color.Warning"
+                       Color="Color.Info" UncheckedColor="Color.Warning"
                        ThumbIcon="@Icons.Material.Filled.Edit"> 
                         @(isViewMode ? "View Mode" : "Edit Mode")
             </MudSwitch>
