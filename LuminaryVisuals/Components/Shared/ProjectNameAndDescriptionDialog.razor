@@ -342,10 +342,13 @@ The Bride was married like I said before, so this wedding was quite special beca
     bool isAdmin = false;
     bool _expanded = true;
     bool isViewMode = true;
-    private void ViewMode()
+    private async Task ViewMode()
     {
+         await Task.Delay(100); // Small delay to ensure proper initialization
         isViewMode = !isViewMode;
+        StateHasChanged();
     }
+
     private void OnExpandCollapseClick()
     {
         _expanded = !_expanded;
