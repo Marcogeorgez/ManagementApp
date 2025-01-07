@@ -218,6 +218,10 @@ public class ChatService
                 .ToListAsync();
 
             // Check if user is admin
+            if(string.IsNullOrEmpty(userId))
+            {
+                return 0;
+            }
             var isAdmin = await _userManager.IsInRoleAsync(await _userManager.FindByIdAsync(userId), "Admin");
 
             if (readMessageIds.Count > 0)
