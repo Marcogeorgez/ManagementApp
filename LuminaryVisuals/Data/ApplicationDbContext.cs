@@ -132,7 +132,7 @@ namespace LuminaryVisuals.Data
                 entity.HasOne(m => m.User)
                       .WithMany()  // A user can send many messages
                       .HasForeignKey(m => m.UserId)  // Foreign key to User
-                      .OnDelete(DeleteBehavior.Restrict);  // Prevent deletion of User from deleting their messages
+                      .OnDelete(DeleteBehavior.Cascade);  // Prevent deletion of User from deleting their messages
 
                 // Required properties
                 entity.Property(m => m.Content)

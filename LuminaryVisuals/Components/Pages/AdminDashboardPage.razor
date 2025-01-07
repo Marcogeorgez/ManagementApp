@@ -552,7 +552,7 @@ else
     }
     private async Task DeleteUser(UserRoleViewModel User,string adminId)
     {
-        bool isDeleted = false; ;
+        bool isDeleted = false;
         if (await ConfirmationService.Confirm($"Are you sure you want to delete {User.UserName} with Email {User.UserEmail}? All his projects will be assigned to admin user."))
         {
             isDeleted = await UserManagementService.DeleteUserAsync(User.UserId, adminId);
