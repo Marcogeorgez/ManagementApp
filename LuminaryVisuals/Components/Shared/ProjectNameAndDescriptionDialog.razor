@@ -322,9 +322,10 @@ The Bride was married like I said before, so this wedding was quite special beca
 
     <DialogActions>
         <MudItem sm="12">
-            <MudSwitch @bind-Value="isViewMode"
-            Color="Color.Info" UncheckedColor="Color.Warning"
-            ThumbIcon="@Icons.Material.Filled.Edit"> 
+            <MudSwitch @bind-Value="isViewMode" @onclick="ViewMode"
+                       Disabled="_isToggle"
+                       Color="Color.Info" UncheckedColor="Color.Warning"
+                       ThumbIcon="@Icons.Material.Filled.Edit">
                 @(isViewMode ? "View Mode" : "Edit Mode")
             </MudSwitch>
         </MudItem>
@@ -342,11 +343,14 @@ The Bride was married like I said before, so this wedding was quite special beca
     bool isAdmin = false;
     bool _expanded = true;
     bool isViewMode = true;
+    bool _isToggle = false;
     private async Task ViewMode()
     {
-         await Task.Delay(100); // Small delay to ensure proper initialization
+        _isToggle = true;
         isViewMode = !isViewMode;
         StateHasChanged();
+        await Task.Delay(1000);
+        _isToggle = false;
     }
 
     private void OnExpandCollapseClick()
