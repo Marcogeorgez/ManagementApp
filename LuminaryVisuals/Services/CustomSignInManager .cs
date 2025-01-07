@@ -1,4 +1,5 @@
 ﻿using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Services.Mail;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -8,6 +9,8 @@ namespace LuminaryVisuals.Services
 {
     public class CustomSignInManager : SignInManager<ApplicationUser>
     {
+        private readonly NotificationService _notificationService;
+
         public CustomSignInManager(
             UserManager<ApplicationUser> userManager,
             IHttpContextAccessor contextAccessor,
@@ -15,9 +18,11 @@ namespace LuminaryVisuals.Services
             IOptions<IdentityOptions> optionsAccessor,
             ILogger<SignInManager<ApplicationUser>> logger,
             IAuthenticationSchemeProvider schemes,
-            IUserConfirmation<ApplicationUser> confirmation)
+            IUserConfirmation<ApplicationUser> confirmation,
+            NotificationService notificationService)
             : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
         {
+            _notificationService = notificationService;
         }
 
 
@@ -115,6 +120,7 @@ namespace LuminaryVisuals.Services
                                 
                                 // Sign in the new user
                                 await SignInAsync(user, isPersistent);
+                                await _notificationService.NewUserJoinedNoitifcation(user);
                                 return SignInResult.Success;
                             }
                         }
