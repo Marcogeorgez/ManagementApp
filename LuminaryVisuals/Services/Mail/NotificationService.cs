@@ -115,6 +115,36 @@ public class NotificationService : BackgroundService, INotificationService
             AddToQueue(notificationItem);
         }
     }
+
+    public async Task NewUserJoinedNoitifcation(ApplicationUser User)
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
+
+            var adminUsers = await userService.GetAllAdminsAsync();
+
+            foreach (var admin in adminUsers)
+            {
+                var notificationItem = new NotificationQueueItem
+                {
+                    UserId = admin.Id,
+                    Subject = $"New User {User.UserName} has requested to join Synchron ⚡",
+                    Message = $@"
+                            <p>The user <strong>{User.UserName}</strong> with email {User.Email} has joined as a guest on 
+                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a> please review it and assign a role to them.</p>",
+                    CreatedAt = DateTime.UtcNow
+                };
+                AddToQueue(notificationItem);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+        
+    }
     public async Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus, string updatedByUserId)
     {
         _logger.LogInformation($"Queueing status change notification for project {project.ProjectName} from {oldStatus} to {newStatus}");
@@ -225,9 +255,6 @@ public class NotificationService : BackgroundService, INotificationService
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }}
-        h2 {{
-            color: #4CAF50;
         }}
         a {{
             color: #007bff;
