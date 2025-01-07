@@ -432,6 +432,7 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             var _project = await context.Projects
+                .AsTracking()
                 .Include(p => p.Client)
                 .Include(p => p.CalculationDetails)
                 .FirstAsync(p => p.ProjectId == project.ProjectId);
@@ -659,8 +660,8 @@ public class ProjectService
             return;
 
         // Check if new order is within valid range
-        if (newOrder < 1 || newOrder > projects.Count)
-            throw new InvalidProjectOrderException($"Invalid order. Must be between 1 and {projects.Count}.");
+        if (newOrder < 1 || newOrder > projects.Count + 1)
+            throw new InvalidProjectOrderException($"Invalid order. Must be between 1 and {projects.Count + 1}.");
     }
     // Calculate the final price of the project based on the billable hours of the client and editors assigned to the project 
     // Where Project.ClientBillableHours is the total billable hours for the client 
