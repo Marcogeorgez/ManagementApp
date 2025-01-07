@@ -88,12 +88,17 @@ else
                 @if (isAdminView)
                 {
                 <MudMenuItem OnClick="DownloadFilteredAsCsv">
+                    <div style="display:flex;">
                     <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                     Download Filtered Projects
+                    </div>
+
                 </MudMenuItem>
                 <MudMenuItem OnClick="DownloadAllProjects">
+                    <div style="display:flex;">
                     <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                     Backup Projects
+                    </div>
                 </MudMenuItem>
 
                 <MudStack Spacing="0" Class="mb-3">
