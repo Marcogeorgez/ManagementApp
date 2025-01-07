@@ -18,18 +18,18 @@
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Footage Links</MudText>
                                 @if (!string.IsNullOrEmpty(context.FootageLink))
                                 {
-                                @foreach (var word in context.FootageLink.Split(' '))
+                                    @foreach (var word in context.FootageLink.Split(' '))
+                                    {
+                                        if (StringHelper.IsLink(word))
                                         {
-                                            if (StringHelper.IsLink(word))
-                                            {
-                                                <MudLink Href="@word" Target="_blank" Typo="Typo.body1">@word</MudLink>
-                                            }
-                                            else
-                                            {
-                                                <span> @word </span>
-                                            }
-                                            <span>&nbsp;</span>
+                                            <MudLink Href="@word" Target="_blank" Typo="Typo.body1">@word</MudLink>
                                         }
+                                        else
+                                        {
+                                            <span> @word </span>
+                                        }
+                                        <span>&nbsp;</span>
+                                    }
                                 }
                                 else
                                 {
@@ -63,7 +63,7 @@
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Deliverables</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Deliverables</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.Deliverables))
                                     {
@@ -78,7 +78,7 @@
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Brief Of The Day and Technical Issues Notes</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Brief Of The Day and Technical Issues Notes</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.Description))
                                     {
@@ -93,7 +93,7 @@
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Music Preferences</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Music Preferences</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.MusicPreference))
                                     {
@@ -108,7 +108,7 @@
                             </MudItem>
 
                             <MudItem xs="12">
-                                <MudText Typo="Typo.subtitle2" Color="Color.Default"> Class="mb-2">Revisions</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Revisions</MudText>
                                 @if (context.Revisions != null && context.Revisions.Any())
                                 {
                                     foreach (var revision in context.Revisions)
@@ -127,7 +127,7 @@
                     </MudPaper>
                 </MudItem>
             </MudGrid>
-            
+
         }
         else{
             <MudGrid Spacing="1">
@@ -323,12 +323,12 @@ The Bride was married like I said before, so this wedding was quite special beca
     <DialogActions>
         <MudItem sm="12">
             <MudSwitch @bind-Value="isViewMode"
-                       Color="Color.Info" UncheckedColor="Color.Warning"
-                       ThumbIcon="@Icons.Material.Filled.Edit"> 
-                        @(isViewMode ? "View Mode" : "Edit Mode")
+            Color="Color.Info" UncheckedColor="Color.Warning"
+            ThumbIcon="@Icons.Material.Filled.Edit"> 
+                @(isViewMode ? "View Mode" : "Edit Mode")
             </MudSwitch>
         </MudItem>
-<MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
         <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">Save</MudButton>
     </DialogActions>
 </MudDialog>
@@ -350,10 +350,11 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
         _expanded = !_expanded;
     }
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         isAdmin = currentRole == "Admin";
         projectTitle = context.ProjectName;
+        await base.OnInitializedAsync();
     }
     private void AddRevision()
     {
@@ -366,21 +367,30 @@ The Bride was married like I said before, so this wedding was quite special beca
     }
     private void OnNoteTextChanged(string text)
     {
-        context.Description = text;
+        if (context != null)
+        {
+            context.Description = text;
+        }
     }
     private void OnNoteTextChangedForMusicPreference(string text)
     {
-        context.MusicPreference = text;
+        if (context != null)
+        {
+            context.MusicPreference = text;
+        }
     }
     private void OnNoteTextChangedForRevision(Revision revision,string text)
     {
-        revision.Content = text;
-        var existingRevision = context.Revisions.FirstOrDefault(r => r.RevisionId == revision.RevisionId);
-        if(existingRevision != null)
-            existingRevision.Content = text;
-        else
+        if (context != null)
         {
-            context.Revisions.Add(revision);
+            revision.Content = text;
+            var existingRevision = context.Revisions.FirstOrDefault(r => r.RevisionId == revision.RevisionId);
+            if (existingRevision != null)
+                existingRevision.Content = text;
+            else
+            {
+                context.Revisions.Add(revision);
+            }
         }
     }
     private void OnDeliverableTextChanged(string text)
