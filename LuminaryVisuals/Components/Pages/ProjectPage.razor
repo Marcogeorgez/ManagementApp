@@ -53,7 +53,7 @@ else
 {
     <LoadingIndicator IsVisible="@_loadingIndicator" />
     <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey  
-    Style="transform: scale(0.7); transform-origin: top left; width: 143%;" CurrentPage=0 RowsPerPageChanged=LoadProjects
+    Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% * 0.7);" CurrentPage=0 RowsPerPageChanged=LoadProjects
     Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.None"
     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
     ColumnsPanelReordering=true
@@ -66,14 +66,32 @@ else
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges" 
-    FixedHeader="true" Height="730px" Virtualize=true
+    FixedHeader="true" Height="" Virtualize=true
     RowClassFunc="@GetRowClass">
 
 
         <ToolBarContent>
 
             <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
-            <MudMenu Icon="@Icons.Material.Filled.Settings"  Label="Actions" Variant="Variant.Filled" AriaLabel="Projects Options"  Class="pa-1"
+            @if (isAdminView)
+            {
+                <MudButton Color="Color.Success"
+                           Variant="Variant.Filled" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.AddCircle"
+                           OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-3">
+                    Add Project
+                </MudButton>
+            }
+            else if (_isClientView)
+            {
+                <MudButton Color="Color.Success" Class="mt-5"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
+                           OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
+                    Create New Project
+                </MudButton>
+            }
+            <MudMenu Icon="@Icons.Material.Filled.Settings"  Label="Actions" Variant="Variant.Filled" AriaLabel="Projects Options"  Class="pa-1 mt-3"
             LockScroll=true DropShadow=true 
             AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
                 <MudMenuItem OnClick="@(() => _gridKey = Guid.NewGuid())">
@@ -1058,31 +1076,6 @@ else
             <MudDataGridPager T="Project"/>
         </PagerContent>
     </MudDataGrid>
-    <MudContainer Class="justify-start d-flex flex-grow-1 gap-2 flex-wrap container-for-toggles" Gutters=false
-    Style="margin-top: -230px; transform: scale(0.8); transform-origin: top left; padding-left: 0px; margin-left:20px;">
-        @if(isAdminView)
-        { 
-            <MudButton Color="Color.Success"
-            Variant="Variant.Filled" Size="Size.Small"
-            StartIcon="@Icons.Material.Filled.AddCircle"
-            OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-3">
-                Add Project
-            </MudButton>
-            <MudSpacer />
-
-            <MudDivider style="border-width:0px !important;" />
-
-        }
-        else if (_isClientView)
-        {
-            <MudButton Color="Color.Success" Class="mt-5"
-            Variant="Variant.Filled"
-            StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
-            OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
-                Create New Project
-            </MudButton>
-        }
-    </MudContainer>
     @if (ProjectState.CurrentProject != null )
     {
         <div class="mud-overlay mud-overlay-dialog" style=""><div class="mud-overlay-scrim mud-overlay-dark"></div></div>
