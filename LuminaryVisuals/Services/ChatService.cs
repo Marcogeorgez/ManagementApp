@@ -1,7 +1,9 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
@@ -11,13 +13,16 @@ public class ChatService
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly IMessageNotificationService _messageNotificationService;
     private readonly INotificationService _notificationService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService)
+
+    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService, UserManager<ApplicationUser> userManager)
     {
         this.context = context;
         _contextFactory = contextFactory;
         _messageNotificationService = messageNotificationService;
         _notificationService = notificationService;
+        _userManager = userManager;
     }
 
     // Initialize chat for a project
@@ -203,18 +208,33 @@ public class ChatService
         try
         {
             using var context = _contextFactory.CreateDbContext();
-
             var readMessageIds = await context.ChatReadStatus
                 .Where(crs => crs.UserId == userId)
-                .Select(crs => crs.MessageId)
+                .Join(context.Messages, crs => crs.MessageId, message => message.MessageId, (crs, message) => new { crs, message })
+                .Join(context.Chats, combined => combined.message.ChatId, chat => chat.ChatId, (combined, chat) => new { combined.crs, chat })
+                .Join(context.Projects, combined => combined.chat.ProjectId, project => project.ProjectId, (combined, project) => new { combined.crs, project })
+                .Where(x => !x.project.IsArchived)
+                .Select(x => x.crs.MessageId)
                 .ToListAsync();
-            if(readMessageIds.Count > 0)
+
+            // Check if user is admin
+            var isAdmin = await _userManager.IsInRoleAsync(await _userManager.FindByIdAsync(userId), "Admin");
+
+            if (readMessageIds.Count > 0)
             {
                 var unreadMessageCount = await context.Messages
-                    .Where(message => !readMessageIds.Contains(message.MessageId))
+                    .Join(context.Chats, message => message.ChatId, chat => chat.ChatId, (message, chat) => new { message, chat })
+                    .Join(context.Projects, combined => combined.chat.ProjectId, project => project.ProjectId, (combined, project) => new { combined.message, project })
+                    .Where(x =>
+                        !readMessageIds.Contains(x.message.MessageId) &&
+                        !x.project.IsArchived &&
+                        ( x.project.PrimaryEditorId == userId ||
+                         x.project.SecondaryEditorId == userId ||
+                         x.project.ClientId == userId ||
+                         isAdmin ))
                     .CountAsync();
-                return unreadMessageCount;
 
+                return unreadMessageCount;
             }
             return 0;
         }
@@ -224,7 +244,6 @@ public class ChatService
             throw;
         }
     }
-
 
     // Unsend message (logical delete)
     public async Task UnsendMessageAsync(int projectId, int messageId)
