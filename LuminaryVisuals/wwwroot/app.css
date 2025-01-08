@@ -265,6 +265,10 @@
     }
 }
 @media (max-width: 960px) {
+    .main-content-sm{
+        padding: 0px !important;
+        margin: 0px !important;
+    }
     .mud-table-toolbar {
         margin: 10px 5px;
         padding-top: 10px;
