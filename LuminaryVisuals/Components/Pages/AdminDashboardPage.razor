@@ -15,6 +15,7 @@
 @attribute [Authorize(Policy = "RequireAdminRole")]
 
 <PageTitle>Admin Dashboard</PageTitle>
+<MudMainContent Class="main-content-sm" Style="height:auto; overflow-x: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
 
 @if (_loading)
 {
@@ -226,6 +227,8 @@ else
     }
 
 }
+
+                    </MudMainContent>
 
 @code {
     private bool FilterNotes(UserRoleViewModel User, string searchText)

@@ -45,6 +45,8 @@
 
     }
 } *@
+
+<MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
 @if (_loading)
 {
     <SplashScreen />
@@ -65,8 +67,8 @@ else
     ReadOnly=false RowStyle="text-align:center;"
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
-    CommittedItemChanges="@CommittedItemChanges" 
-    FixedHeader="true" Height="" Virtualize=true
+    CommittedItemChanges="@CommittedItemChanges"
+                 FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true
     RowClassFunc="@GetRowClass">
 
 
@@ -75,21 +77,42 @@ else
             <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
             @if (isAdminView)
             {
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                 <MudButton Color="Color.Success"
                            Variant="Variant.Filled" Size="Size.Small"
                            StartIcon="@Icons.Material.Filled.AddCircle"
                            OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-3">
                     Add Project
                 </MudButton>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+
+                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Class="mt-5"
+                                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
+                </MudHidden>
+
             }
             else if (_isClientView)
             {
-                <MudButton Color="Color.Success" Class="mt-5"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small"
-                           OnClick="@(() => CreateProjectDialogAsync(DialogOptions))">
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
+                <MudButton Color="Color.Success"
+                           Variant="Variant.Filled" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.AddCircle"
+                           OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-3">
                     Create New Project
                 </MudButton>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+
+                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                       Color="Color.Success"
+                                       Size="Size.Small"
+                                       Class="mt-5"
+                                       OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
+                </MudHidden>
             }
             <MudMenu Icon="@Icons.Material.Filled.Settings"  Label="Actions" Variant="Variant.Filled" AriaLabel="Projects Options"  Class="pa-1 mt-5"
             LockScroll=true DropShadow=true 
@@ -1089,6 +1112,7 @@ else
     }
 
 }
+</MudMainContent>
 
 
 
@@ -1199,7 +1223,7 @@ else
         _loading = false;
     }    
     private async Task OnClick(){
-        await ScrollManager.ScrollToBottomAsync(".mud-main-content", ScrollBehavior.Smooth);
+        await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
     }
     private bool _shouldScroll = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1212,7 +1236,7 @@ else
         {
             _shouldScroll = false;
             await Task.Delay(1000);
-            await ScrollManager.ScrollToBottomAsync(".mud-main-content", ScrollBehavior.Smooth);
+            await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
         }
     await base.OnAfterRenderAsync(firstRender);
 
