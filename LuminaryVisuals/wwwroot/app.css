@@ -9,7 +9,9 @@
 .mud-direction-desc, .mud-direction-desc:hover {
     color: #3d73f2 !important;
 }
-
+.mud-table-container, .mud-table-pagination-toolbar {
+    background-color: var(--mud-palette-surface);
+}
 .mud-link.mud-link-underline-hover, .html-content-wrapper a {
     color: #1ce6e6 !important;
 }
