@@ -75,46 +75,8 @@ else
         <ToolBarContent>
 
             <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
-            @if (isAdminView)
-            {
-                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
-                <MudButton Color="Color.Success"
-                                   Variant="Variant.Filled" Size="Size.Small"
-                           StartIcon="@Icons.Material.Filled.AddCircle"
-                           OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-1">
-                    Add Project
-                </MudButton>
-                </MudHidden>
-                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
 
-                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
-                                       Color="Color.Success"
-                                       Size="Size.Medium"
-                                       Class="mt-1"
-                                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
-                </MudHidden>
-
-            }
-            else if (_isClientView)
-            {
-                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
-                <MudButton Color="Color.Success"
-                                   Variant="Variant.Filled" Size="Size.Small"
-                           StartIcon="@Icons.Material.Filled.AddCircle"
-                                   OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-1">
-                    Create New Project
-                </MudButton>
-                </MudHidden>
-                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
-
-                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
-                                       Color="Color.Success"
-                                       Size="Size.Medium" 
-                                       Class="mt-1"
-                                       OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
-                </MudHidden>
-            }
-                <MudMenu Icon="@Icons.Material.Filled.Settings" Label="Actions" AriaLabel="Projects Options" Class="pa-1 mt-1"
+            <MudMenu Icon="@Icons.Material.Filled.Settings" Label="Actions" AriaLabel="Projects Options" Class="pa-1 mt-1 mx-1"
             LockScroll=true DropShadow=true 
             AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
                 <MudMenuItem OnClick="@(() => _gridKey = Guid.NewGuid())">
@@ -154,6 +116,46 @@ else
                 }
 
             </MudMenu>
+            @if (isAdminView)
+            {
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
+                <MudButton Color="Color.Info"
+                                   Variant="Variant.Filled" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.AddCircle"
+                           OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-1">
+                    Add Project
+                </MudButton>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+
+                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                       Color="Color.Info"
+                                       Size="Size.Medium"
+                                       Class="mt-1 mx-5"
+                                       OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
+                </MudHidden>
+
+            }
+            else if (_isClientView)
+            {
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
+                <MudButton Color="Color.Info"
+                                   Variant="Variant.Filled" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.AddCircle"
+                                   OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-1">
+                    Create New Project
+                </MudButton>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+
+                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                       Color="Color.Info"
+                                       Size="Size.Medium" 
+                                       Class="mt-1 mx-5"
+                                       OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
+                </MudHidden>
+            }
+            
             <MudSpacer />
             <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
             Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
@@ -171,7 +173,7 @@ else
                 DragAndDropEnabled="false" Groupable="false" Editable=true >
                     <CellTemplate>
                         <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                            <div style="height:100px;"
+                            <div style="height:30px;"
                             class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center  "
                             draggable="true"
                             @ondragstart="@(() => HandleDragStart(context.Item))"
@@ -206,7 +208,7 @@ else
                 DragAndDropEnabled="false" Groupable="false" Editable=true >
                     <CellTemplate>
                         <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                            <div class="drag-handle flex-row  justify-center align-center " style="height:100px;" draggable="true"
+                            <div class="drag-handle flex-row  justify-center align-center " style="height:30px;" draggable="true"
                             @ondragstart="@(() => HandleDragStart(context.Item))"
                             @ondragover:preventDefault
                             @ondragover="@(() => HandleDragOver(context.Item))"
