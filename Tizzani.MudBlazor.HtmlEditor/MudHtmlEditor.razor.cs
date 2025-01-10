@@ -159,13 +159,20 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         _isDisposed = true;
-        if (_quill is not null)
+        try
         {
-            await _quill.DisposeAsync();
-            _quill = null;
-        }
+            if (_quill is not null)
+            {
+                await _quill.DisposeAsync();
+                _quill = null;
+            }
 
-        _dotNetRef?.Dispose();
-        _dotNetRef = null;
+            _dotNetRef?.Dispose();
+            _dotNetRef = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error during DisposeAsync: {ex.Message}");
+        }
     }
 }
