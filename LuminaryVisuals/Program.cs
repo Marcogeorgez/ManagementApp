@@ -6,14 +6,12 @@ using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
-using LuminaryVisuals.Services.Helpers;
 using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Scheduled;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -24,8 +22,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Text;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection()
                 .UseCryptographicAlgorithms(
@@ -101,8 +97,6 @@ builder.Services.AddScoped<LoggingHours>();
 builder.Services.AddScoped<SettingService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<ProjectState>();
-
-
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
 builder.Services.AddHttpClient();
 // Google Authentication 
@@ -301,7 +295,6 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<NotificationService>();
 builder.Services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<NotificationService>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<NotificationService>());
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
