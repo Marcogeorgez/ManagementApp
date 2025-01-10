@@ -9,7 +9,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     private IJSObjectReference? _quill;
     private ElementReference _toolbar;
     private ElementReference _editor;
-
+    private bool _isDisposed;
     [Inject]
     private IJSRuntime JS { get; set; } = default!;
 
@@ -109,16 +109,31 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_isDisposed)
+            return; // Avoid any further operations after disposal
+
         if (firstRender)
         {
             _dotNetRef = DotNetObjectReference.Create(this);
 
-            await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js");
-            _quill = await module.InvokeAsync<IJSObjectReference>("createQuillInterop", _dotNetRef, _editor, _toolbar, Placeholder);
+            try
+            {
+                await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js");
+                _quill = await module.InvokeAsync<IJSObjectReference>("createQuillInterop", _dotNetRef, _editor, _toolbar, Placeholder);
+                await SetHtml(Html);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Gracefully handle ObjectDisposedException
+                Console.WriteLine("JS interop called on disposed component.");
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+            }
 
-            await SetHtml(Html);
-
-            StateHasChanged();
+            StateHasChanged(); // Ensure re-render after JS interaction
         }
     }
 
@@ -143,6 +158,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
+        _isDisposed = true;
         if (_quill is not null)
         {
             await _quill.DisposeAsync();
