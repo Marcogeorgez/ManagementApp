@@ -1,9 +1,6 @@
-﻿using LuminaryVisuals.Components.Pages;
-using LuminaryVisuals.Data;
+﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 namespace LuminaryVisuals.Services.Mail;
 
@@ -163,7 +160,7 @@ public class NotificationService : BackgroundService, INotificationService
                 Subject = $"The Project {project.ProjectName} has changed status",
                 Message = $@"
                             <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> <strong>{secondPrimaryEditorNameMessage}</strong> 
-                             status changed from <strong>{oldStatus}</strong> to <strong>{newStatus}</strong> on 
+                             status changed from <strong>{oldStatus.ToString().Replace('_',' ')}</strong> to <strong>{newStatus.ToString().Replace('_', ' ')}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
             };
