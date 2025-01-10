@@ -2,8 +2,20 @@
 @inject NavigationManager NavigationManager
 @using Blazr.RenderState
 @inject IBlazrRenderStateService RenderState
+@inject IHostEnvironment HostEnvironment
 
-
+    <div id="blazor-error-ui" data-nosnippet>
+    @if (HostEnvironment.IsProduction())
+    {
+                <span>An error has occurred.</span>
+    }
+    else
+    {
+                <span>An unhandled exception occurred.</span>
+    }
+            <a href="" class="reload">Reload</a>
+            <a class="dismiss">🗙</a>
+    </div>
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider CloseButton="true"
@@ -15,6 +27,7 @@
 <AppUserProvider>
 <CascadingValue Value="_drawerOpen">
     <MudLayout Style="position:absolute;">
+
         @if (_showSplashScreen && !IsStaticSSR)
         {
             <SplashScreen />
@@ -34,8 +47,8 @@
                         @Body
                 </MudHidden>
                 <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
-                    @Body
-                </MudHidden>
+                        @Body
+                        </MudHidden>
             }
 
             <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
@@ -47,7 +60,6 @@
                 document.getElementById(formId).submit();
             }
         </script>
-
 
     </MudLayout>
 </CascadingValue>
