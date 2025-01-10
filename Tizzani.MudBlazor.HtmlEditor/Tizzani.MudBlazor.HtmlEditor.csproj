@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Title>$(AssemblyName)</Title>
+    <Authors>erinnmclaughlin</Authors>
+    <RepositoryUrl>https://github.com/erinnmclaughlin/MudBlazor.HtmlEditor</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>2.3.0</Version>
+    <Description>A customizable HTML editor component for MudBlazor, powered by QuillJS.</Description>
+    <Copyright>2024 Erin McLaughlin</Copyright>
+    <PackageProjectUrl>https://github.com/erinnmclaughlin/MudBlazor.HtmlEditor</PackageProjectUrl>
+    <PackageTags>MudBlazor;RichTextEditor;HtmlEditor;QuillJS;Blazor</PackageTags>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.*" />
+  </ItemGroup>
+</Project>
