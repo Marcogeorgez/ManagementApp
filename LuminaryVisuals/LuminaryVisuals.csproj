@@ -49,7 +49,10 @@
     <PackageReference Include="Sentry.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Sentry.Profiling" Version="5.0.0" />
     <PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
-    <PackageReference Include="Tizzani.MudBlazor.HtmlEditor" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tizzani.MudBlazor.HtmlEditor\Tizzani.MudBlazor.HtmlEditor.csproj" />
   </ItemGroup>
 
 </Project>
