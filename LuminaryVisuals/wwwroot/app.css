@@ -6,6 +6,16 @@
 .filtered, .mud-direction-asc {
     color: #6ea867 !important;
 }
+/* Default state: black background */
+.mud-data-grid .mud-table-cell.sticky-left {
+    background-color: #0d0e19 !important;
+}
+
+/* When the <tr> is hovered, apply inherit to .sticky-left cells */
+.mud-data-grid .mud-table-row:hover .mud-table-cell.sticky-left {
+    background-color: inherit !important;
+}
+
 .mud-direction-desc, .mud-direction-desc:hover {
     color: #3d73f2 !important;
 }

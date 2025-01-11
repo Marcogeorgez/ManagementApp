@@ -68,7 +68,7 @@ else
     StartedEditingItem="@StartedEditingItem" 
     CanceledEditingItem="@CanceledEditingItem"
     CommittedItemChanges="@CommittedItemChanges"
-                 FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true
+    FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true
     RowClassFunc="@GetRowClass">
 
 
@@ -228,7 +228,7 @@ else
             }
             @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
             {
-                <PropertyColumn Property="x => x.ProjectName" Title="Project Brief"
+                <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft=true HeaderStyle="z-index:5 !important;"
                 Hideable="false" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
                 Groupable="false" Editable=false Required=false>
                     <CellTemplate>
@@ -241,7 +241,7 @@ else
                                 <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
                                     <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
                                 </MudTooltip>
-                                <MudTextField T="string"
+                                    <MudTextField T="string" AutoGrow=true
                                 Value="context.Item.ProjectName" Class="outlined-dialog-max-content "
                                 ReadOnly="true" Variant="Variant.Outlined"
                                 Immediate="true" Adornment="Adornment.End"
@@ -256,7 +256,7 @@ else
                         else
                         {      
                             <div class="d-flex gap-2 flex-row  justify-center align-center">
-                                <MudTextField T="string"
+                                    <MudTextField T="string" AutoGrow=true MaxLines="1"
                                 Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
                                 ReadOnly="true"
                                 Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
