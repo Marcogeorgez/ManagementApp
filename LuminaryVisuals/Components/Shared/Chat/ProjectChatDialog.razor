@@ -120,18 +120,10 @@
                         Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
                     </ActivatorContent>
                 </MudFileUpload>
-                <MudTextField @bind-Value="newMessage"
-                Class="flex-grow-1"
-                Placeholder="Type a message..."
-                Variant="Variant.Outlined"
-                Clearable="true"
-                @ref="messageField"
-                Adornment="Adornment.End"
-                AdornmentIcon="@Icons.Material.Filled.Send"
-                OnAdornmentClick="( () => SendMessage(newMessage) )"
-                TextUpdateSuppression=false
-                AutoFocus="true"
-                OnKeyUp="HandleKeyPress">
+                <MudTextField @bind-Value="newMessage" Class="flex-grow-1" Placeholder="Type a message..."
+                Variant="Variant.Outlined" Clearable="true" @ref="messageField" Adornment="Adornment.End"
+                AdornmentIcon="@Icons.Material.Filled.Send" OnAdornmentClick="( () => SendMessage(newMessage) )"
+                TextUpdateSuppression=false AutoFocus="true" OnKeyUp="HandleKeyPress" AutoGrow=true>
                 </MudTextField>
 
             </MudPaper>
