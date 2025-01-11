@@ -479,15 +479,53 @@ public class ProjectService
     {
         using (var context = _contextFactory.CreateDbContext())
         {
-            var project = await context.Projects.AsTracking().FirstOrDefaultAsync(p => p.ProjectId == projectId);
-            if (project != null && !project.IsArchived)
+            var project = await context.Projects
+                .AsTracking()
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (project == null || project.IsArchived)
             {
-                project.IsArchived = true;
-                project.InternalOrder = null;
-                project.ExternalOrder = null;
-                project.Archive = new Archive { ProjectId = projectId, Reason = reason, ArchiveDate = DateTime.UtcNow };
+                return;
+            }
+
+            var clientId = project.ClientId;
+
+            // Archive the project
+            project.IsArchived = true;
+            project.InternalOrder = null;
+            project.ExternalOrder = null;
+            project.Archive = new Archive
+            {
+                ProjectId = projectId,
+                Reason = reason ?? string.Empty,
+                ArchiveDate = DateTime.UtcNow
+            };
+            await context.SaveChangesAsync();
+            // Reorder external (client-specific) projects
+            var externalProjectsToReorder = await context.Projects
+                .AsTracking()
+                .Where(p => !p.IsArchived && p.ClientId == clientId)
+                .OrderBy(p => p.ExternalOrder)
+                .ToListAsync();
+            NormalizeProjectOrder(externalProjectsToReorder, isExternalOrder: true);
+
+            // Reorder internal projects
+            var internalProjectsToReorder = await context.Projects
+                .AsTracking()
+                .Where(p => !p.IsArchived)
+                .OrderBy(p => p.InternalOrder)
+                .ToListAsync();
+            NormalizeProjectOrder(internalProjectsToReorder, isExternalOrder: false);
+
+            try
+            {
                 await context.SaveChangesAsync();
-        await _broadcaster.NotifyAllAsync();
+                await _broadcaster.NotifyAllAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the error or handle it according to your error handling strategy
+                throw new InvalidOperationException("Failed to archive project", ex);
             }
         }
     }
@@ -519,7 +557,7 @@ public class ProjectService
                 }
                 project.IsArchived = false;
                 await context.SaveChangesAsync();
-        await _broadcaster.NotifyAllAsync();
+                await _broadcaster.NotifyAllAsync();
             }
             else
             {
