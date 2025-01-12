@@ -75,15 +75,15 @@
             ProjectState.OnChange += StateHasChanged;
             if (isAdminView)
             {
-                projects = await ProjectService.GetProjectsAsync(false,int.MaxValue);
+                projects = await ProjectService.GetProjectsAsync(false);
             }
             else if (isEditorView)
             {
-                projects = (await ProjectService.GetProjectsForEditors(false, userId,0))!;
+                projects = (await ProjectService.GetProjectsForEditors(false, userId))!;
             }
             else if(isClientView)
             {
-                projects = (await ProjectService.GetProjectsForClients(false, userId,0))!;
+                projects = (await ProjectService.GetProjectsForClients(false, userId))!;
             }
             else
             {
