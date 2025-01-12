@@ -44,7 +44,7 @@ public class NotificationService : BackgroundService, INotificationService
                 await AddToQueueWithReadCheck(notificationItem);
             }
         }
-        else if(!message.IsApproved)
+        else if (!message.IsApproved)
         {
             var adminUsers = await userService.GetAllAdminsAsync();
             foreach (var user in adminUsers)
@@ -140,7 +140,39 @@ public class NotificationService : BackgroundService, INotificationService
         {
             throw ex;
         }
-        
+
+    }
+    public async Task ClientPreferencesUpdated(ApplicationUser User,string UserId)
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
+
+            var adminUsers = await userService.GetAllAdminsAsync();
+
+            foreach (var admin in adminUsers)
+            {
+                if (UserId != admin.Id)
+                {
+                    var notificationItem = new NotificationQueueItem
+                    {
+                        UserId = admin.Id,
+                        Subject = $"Client {User.UserName} Preferences Updated at Synchron ⚡",
+                        Message = $@"
+                            <p>The user <strong>{User.UserName}</strong> with email {User.Email} has updated their preferences.
+                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a> please review to stay up to date.</p>",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    AddToQueue(notificationItem);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+
     }
     public async Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus, string updatedByUserId)
     {
@@ -160,7 +192,7 @@ public class NotificationService : BackgroundService, INotificationService
                 Subject = $"The Project {project.ProjectName} has changed status",
                 Message = $@"
                             <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> <strong>{secondPrimaryEditorNameMessage}</strong> 
-                             status changed from <strong>{oldStatus.ToString().Replace('_',' ')}</strong> to <strong>{newStatus.ToString().Replace('_', ' ')}</strong> on 
+                             status changed from <strong>{oldStatus.ToString().Replace('_', ' ')}</strong> to <strong>{newStatus.ToString().Replace('_', ' ')}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                 CreatedAt = DateTime.UtcNow
             };
@@ -338,7 +370,7 @@ public class NotificationService : BackgroundService, INotificationService
                     if (notification.MessageId.HasValue)
                     {
                         var messageExists = await context.Messages
-                            .AnyAsync(m => m.MessageId == notification.MessageId.Value  && !m.IsDeleted);
+                            .AnyAsync(m => m.MessageId == notification.MessageId.Value && !m.IsDeleted);
                         var isRead = await context.ChatReadStatus
                             .AnyAsync(crs => crs.MessageId == notification.MessageId.Value &&
                                             crs.UserId == notification.UserId &&
@@ -381,7 +413,7 @@ public class NotificationService : BackgroundService, INotificationService
     }
 
 }
-    public class NotificationQueueItem
+public class NotificationQueueItem
     {
         public string UserId { get; set; }
         public string Subject { get; set; }
