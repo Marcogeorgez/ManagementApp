@@ -448,7 +448,6 @@ th.mud-table-cell.sticky-left:hover {
     display: flex;
     align-items: center;
     color: #efefef;
-    margin-bottom: 15px;
     font-weight: 600;
 }
 
@@ -457,7 +456,6 @@ th.mud-table-cell.sticky-left:hover {
     -ms-flex-direction: inherit;
     -webkit-flex-direction: inherit;
     flex-direction: inherit;
-    display: grid;
     grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr));
     overflow-y: auto;
     gap: clamp(5px, 1vw, 30px); 
@@ -474,6 +472,7 @@ th.mud-table-cell.sticky-left:hover {
     position: relative;
     width: 90%;
     margin: 2px 5%; 
+    max-height:100px;
 }
 
 

@@ -11,15 +11,21 @@
             <MudText Typo="Typo.h5" Class="projects-title">
                 Your Messages
             </MudText>
+  
+                <MudAutocomplete T="string" Label="Search projects" @bind-Value="searchText"
+                SearchFunc="@SearchProjects" ResetValueOnEmptyText="true" AdornmentIcon="@Icons.Material.Filled.Search"
+                AdornmentColor="Color.Tertiary" Class="mx-4 mb-3"  CoerceText="false" CoerceValue="true" Clearable=true />
+
             <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
+
         </MudPaper>
-        @if (projects.Any())
+        @if (FilteredProjects().Any())
         {
             <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
                 @foreach (var project in GetPaginatedProjects())
                 {
                     var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView || isEditorView) ? " unapproved-message" : "");
-                    <MudListItem Class="@classText" OnClick="() => OpenProjectChat(project)">
+                    <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)">
                         <div class="project-content">
                             <MudText Typo="Typo.body1">@(isAdminView ? $"{project.ClientName} | {project.ProjectName}" : project.ProjectName)</MudText>
                             @if (project.countUnreadMessages > 0)
@@ -34,8 +40,9 @@
                 }
                 @if (GetPageCount() > 1)
                 {
-                <MudSpacer />
-                <MudPagination Class="d-flex justify-center mb-5" ShowFirstButton="true" ShowLastButton="true" Count="@GetPageCount()" SelectedChanged="PageChanged" />
+                    <MudSpacer />
+                    <MudPagination Class="d-flex justify-center mb-5" ShowFirstButton="true" ShowLastButton="true"
+                    Count="@GetPageCount()" SelectedChanged="PageChanged" />
                 }
             </MudList>
 
@@ -113,16 +120,54 @@
             StateHasChanged();
         }
     }
+
+    private string searchText = "";
+    private async Task<IEnumerable<string>> SearchProjects(string value, CancellationToken token)
+    {
+        if (string.IsNullOrEmpty(value))
+            return new string[] { };
+        return projects
+        .Select(p => isClientView ? p.ProjectName  : $"{p.ClientName} | {p.ProjectName}")
+        .Distinct()
+        .Where(text => text.Contains(value.Trim(), StringComparison.OrdinalIgnoreCase))
+        .ToArray();
+    }
+    private IEnumerable<Project> FilteredProjects()
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return projects;
+
+        if (searchText.Contains("|") && !isClientView)
+        {
+            // match starts with "ClientName | ProjectName" format
+            var parts = searchText.Split("|").Select(s => s.Trim()).ToList();
+            if (parts.Count == 2)
+            {
+                return projects.Where(p =>
+                    p.ClientName.StartsWith(parts[0], StringComparison.OrdinalIgnoreCase) &&
+                    p.ProjectName.StartsWith(parts[1], StringComparison.OrdinalIgnoreCase)
+                );
+            }
+        }
+
+        // Single term search - match either client name or project name
+        return projects.Where(p =>
+            isClientView ? p.ProjectName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) :
+            p.ClientName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
+            p.ProjectName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase)
+        );
+    }
     private IEnumerable<Project> GetPaginatedProjects()
     {
-        return projects
+        var filtered = FilteredProjects().ToList();
+        return filtered
             .Skip(( currentPage - 1 ) * pageSize)
             .Take(pageSize);
     }
 
     private int GetPageCount()
     {
-        return (int) Math.Ceiling(projects.Count() / (double) pageSize);
+        return (int) Math.Ceiling(FilteredProjects().Count() / (double) pageSize);
     }
 
     private void PageChanged(int page)
