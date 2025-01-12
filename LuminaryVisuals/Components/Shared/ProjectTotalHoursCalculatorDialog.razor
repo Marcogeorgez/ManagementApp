@@ -167,6 +167,9 @@
             <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" OnClick="@Unapprove">Unapprove</MudButton>
 
         }
+        @if (newProject.SubmissionStatus == Models.SubmissionStatus.Submitted){
+            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" OnClick="@Unsubmit">unsubmit</MudButton>
+        }
         <MudButton Class="d-flex flex-auto" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
         <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Approve">@textRoleBased</MudButton>
 
@@ -516,6 +519,14 @@
         if (_isAdminView)
         {
             newProject.SubmissionStatus = Models.SubmissionStatus.Submitted;
+        }
+        MudDialog.Close(DialogResult.Ok(newProject));
+    }
+    private void Unsubmit()
+    {
+        if (_isAdminView)
+        {
+            newProject.SubmissionStatus = Models.SubmissionStatus.Pending;
         }
         MudDialog.Close(DialogResult.Ok(newProject));
 
