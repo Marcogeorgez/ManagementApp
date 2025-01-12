@@ -212,11 +212,8 @@ th.mud-table-cell.sticky-left:hover {
 .ql-snow .ql-tooltip.ql-flip {
     top: 50px !important;
     left: 100px !important;
-    width: 100px;
 }
-.html-editor .ql-tooltip a {
-    color: var(--mud-palette-secondary)
-}
+
 
 .outlined-dialog-max-content {
    min-width: max-content;
@@ -907,3 +904,18 @@ text-decoration: underline;
     padding:1%;
 }
 
+.ql-snow .ql-tooltip {
+    background-color: #fff;
+    border: 1px solid #161515;
+    box-shadow: 0 0 2px #dcc0c0;
+    color: #0f0a0a;
+    padding: 5px 12px;
+    white-space: nowrap;
+}
+.html-editor .ql-tooltip a {
+    color: #005ab4 !important;
+}
+.ql-snow .ql-tooltip input[type="text"] {
+    background: #bababa;
+    color: black;
+}
