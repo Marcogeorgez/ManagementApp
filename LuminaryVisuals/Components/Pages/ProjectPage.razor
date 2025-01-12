@@ -75,10 +75,10 @@
 
             <ToolBarContent>
 
-                <MudText Typo="Typo.h4" Class="mr-2 mb-1">Your Projects</MudText>
+                <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
 
                 <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" 
-                Label="Actions" AriaLabel="Projects Options" Class="pa-1 mt-1 mx-1"
+                Label="Actions" AriaLabel="Projects Options" Class="mt-1 mx-1"
                 LockScroll=true DropShadow=true  
                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
                     <MudMenuItem OnClick="@(() => _gridKey = Guid.NewGuid())">
@@ -124,7 +124,7 @@
                 {
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
-                        Variant="Variant.Filled" Size="Size.Small"
+                        Variant="Variant.Filled" Size="Size.Medium"
                         StartIcon="@Icons.Material.Filled.AddCircle"
                         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-1 ma-1">
                             Add Project
@@ -134,8 +134,8 @@
 
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
                         Color="Color.Info"
-                        Size="Size.Medium"
-                        Class="mt-1 mx-5"
+                        Size="Size.Large"
+                        Class="mt-1 mx-2"
                         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
 
@@ -144,7 +144,7 @@
                 {
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
-                        Variant="Variant.Filled" Size="Size.Small"
+                        Variant="Variant.Filled" Size="Size.Medium"
                         StartIcon="@Icons.Material.Filled.AddCircle"
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-1 ma-1">
                             Create New Project
@@ -154,8 +154,8 @@
 
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
                         Color="Color.Info"
-                        Size="Size.Medium" 
-                        Class="mt-1 mx-5"
+                                       Size="Size.Large"
+                                       Class="mt-1 mx-2"
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
                 }
