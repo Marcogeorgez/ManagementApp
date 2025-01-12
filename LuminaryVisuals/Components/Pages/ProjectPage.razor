@@ -1541,7 +1541,7 @@
             await LoadProjects();
         }
         LoadingService.HideLoading();
-        
+
 
     }
     // Opens Description Dialog
@@ -1573,7 +1573,7 @@
             await UpdateProjectAsync(project);
         }
         LoadingService.HideLoading();
-        
+
     }
 
     private void OpenViewClientEditingGuidelinesComponent(Project context)
@@ -1724,7 +1724,6 @@
                     await UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     await LoadProjects();
-                    StateHasChanged();
                 }
                 else
                 {
@@ -1737,7 +1736,6 @@
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
                 await LoadProjects();
-                StateHasChanged();
             }
             else
             {
@@ -1746,21 +1744,25 @@
                     await UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                     await LoadProjects();
-                    StateHasChanged();
                 }
                 else
                 {
                     Snackbar.Add($"Detected unauthorized changes!", Severity.Error);
                 }
             }
-            LoadingService.HideLoading();
 
         }
         catch(Exception ex)
         {
             Snackbar.Add(ex.Message ,Severity.Warning);
             await LoadProjects();
-        }        
+        }
+        finally
+        {
+            StateHasChanged();
+            LoadingService.HideLoading();
+
+        }
     }
 
     private string GetStatusStyle(Project project)
