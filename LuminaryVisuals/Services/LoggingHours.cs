@@ -100,7 +100,7 @@ namespace LuminaryVisuals.Services
         }
 
         /// <summary>
-        /// Gets a specific EditorLoggingHours entry by ProjectID.
+        /// Gets a specific EditorLoggingHours entry by ProjectID and userId.
         /// </summary>
         public async Task<List<EditorLoggingHours?>?> GetByIdAsync(int projectId, string currentUserId)
         {
@@ -125,6 +125,38 @@ namespace LuminaryVisuals.Services
                 return null;
             }
         }
+        public async Task<bool> DeleteLoggedHoursAsync(int projectId, string currentUserId)
+        {
+            try
+            {
+                using var context = _contextFactory.CreateDbContext();
+                {
+                    // Retrieve all logged hours for the specified project and user
+                    var loggedHours = await context.EditorLoggingHours
+                        .AsTracking()
+                        .Where(e => e.ProjectId == projectId && e.UserId == currentUserId)
+                        .ToListAsync();
+
+                    if (loggedHours != null && loggedHours.Any())
+                    {
+                        // Remove the logged hours from the context
+                        context.EditorLoggingHours.RemoveRange(loggedHours);
+
+                        await context.SaveChangesAsync();
+
+                        return true; // Deletion successful
+                    }
+
+                    return false; // No entries to delete
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting LoggingHours entries for ProjectId: {projectId}, UserId: {currentUserId}");
+                return false; // Indicate failure
+            }
+        }
+
         public async Task<bool> CalculateAndSaveBillableHoursAsync(EditorLoggingHours EditorLoggingHours)
         {
             try

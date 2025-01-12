@@ -332,7 +332,25 @@
                                 Class="d-flex justify-center mud-width-full py-2"
                                 Variant="Variant.Outlined"
                                 Label="Primary Editor"
-                                @bind-Value="context.Item.PrimaryEditorId">
+                                ValueChanged="@(async value => {
+                                    if (value == null) {
+                                        var result = await DialogService.ShowMessageBox(
+                                        "Confirm Unassign",
+                                        "Are you sure you want to unassign the editor?",
+                                        yesText: "Unassign",
+                                        cancelText: "Cancel"
+                                        );
+                                        if (result == true)
+                                            context.Item.PrimaryEditorId = value;
+                                    }
+                                        else{
+                                            context.Item.PrimaryEditorId = value;
+                                            }
+                                    })"
+                                Value="@context.Item.PrimaryEditorId">
+                                    <MudSelectItem Class="" T="string" Value="null" Ripple=true>
+                                        Unassign Editor
+                                    </MudSelectItem>
                                     @foreach (var editor in Editors)
                                     {
                                         <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
@@ -360,7 +378,25 @@
                                 Class="d-flex justify-center mud-width-full py-2"
                                 Variant="Variant.Outlined"
                                 Label="Secondary Editor"
-                                @bind-Value="context.Item.SecondaryEditorId">
+                                ValueChanged="@(async value => {
+                                    if (value == null) {
+                                        var result = await DialogService.ShowMessageBox(
+                                        "Confirm Unassign",
+                                        "Are you sure you want to unassign the editor?",
+                                        yesText: "Unassign",
+                                        cancelText: "Cancel"
+                                        );
+                                        if (result == true)
+                                            context.Item.SecondaryEditorId = value;
+                                    }
+                                        else{
+                                            context.Item.SecondaryEditorId = value;
+                                            }
+                                    })"
+                                           Value="@context.Item.SecondaryEditorId">
+                                    <MudSelectItem Class="" T="string" Value="null" Ripple=true>
+                                        Unassign Editor
+                                    </MudSelectItem>
                                     @foreach (var editor in Editors)
                                     {
                                         <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
@@ -1351,7 +1387,7 @@
             await _loadingSemaphore.WaitAsync();
             if (_isAdminView)
             {
-                projects = await projectServices.GetProjectsAsync(_isArchived,_dataGrid.RowsPerPage);
+                projects = await projectServices.GetProjectsAsync(_isArchived);
                 Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
                 Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
                 HasAnyPrimaryEditor = !projects.Any(x => x.PrimaryEditorId != null);
@@ -1364,7 +1400,7 @@
             // this is for the admin to see all the projects but from the client view
             else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
             {
-                projects = await projectServices.GetProjectsAsync(_isArchived, _dataGrid.RowsPerPage);
+                projects = await projectServices.GetProjectsAsync(_isArchived);
                 Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
                 Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             }
@@ -1384,7 +1420,7 @@
     private async Task LoadProjectsForEditors()
     {
         LoadingService.ShowLoading();
-        projects = await projectServices.GetProjectsForEditors(_isArchived, _currentUserId, _dataGrid.RowsPerPage);
+        projects = await projectServices.GetProjectsForEditors(_isArchived, _currentUserId);
         LoadingService.HideLoading();
         StateHasChanged();
     }
@@ -1392,7 +1428,7 @@
     private async Task LoadProjectsForClient()
     {
         LoadingService.ShowLoading();
-        projects = await projectServices.GetProjectsForClients(_isArchived, _currentUserId,_dataGrid.RowsPerPage);
+        projects = await projectServices.GetProjectsForClients(_isArchived, _currentUserId);
         LoadingService.HideLoading();
         StateHasChanged();
     }
