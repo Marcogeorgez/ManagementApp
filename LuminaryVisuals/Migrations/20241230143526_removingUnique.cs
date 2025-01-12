@@ -14,10 +14,6 @@ namespace LuminaryVisuals.Migrations
                 name: "IX_EditorLoggingHours_UserId_ProjectId",
                 table: "EditorLoggingHours");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_EditorLoggingHours_UserId",
-                table: "EditorLoggingHours",
-                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -27,11 +23,6 @@ namespace LuminaryVisuals.Migrations
                 name: "IX_EditorLoggingHours_UserId",
                 table: "EditorLoggingHours");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_EditorLoggingHours_UserId_ProjectId",
-                table: "EditorLoggingHours",
-                columns: new[] { "UserId", "ProjectId" },
-                unique: true);
         }
     }
 }
