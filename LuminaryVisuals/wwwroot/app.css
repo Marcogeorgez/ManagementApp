@@ -48,11 +48,15 @@
 }
 /* Default state: black background */
 .mud-data-grid .mud-table-cell.sticky-left {
-    background-color: #0d0e19 !important;
+    background-color: #191920 !important;
 }
 .mud-dialog-title {
     position: sticky !important;
     top: 0 !important;
+    width: 100%;
+}
+.mud-dialog mud-dialog-width-md{
+    min-width:300px;
 }
 /* When the <tr> is hovered, apply inherit to .sticky-left cells */
 .mud-table-row:hover td.mud-table-cell.sticky-left {
@@ -61,6 +65,85 @@
 th.mud-table-cell.sticky-left:hover {
     background-color: #0d0e19 !important;
 }
+@media (max-width:700px)
+{
+    .sticky-left, .outlined-dialog-xl-content.mud-table-cell sticky-left, .mud-table-cell.sticky-left {
+        background-color: #0d0e19 !important;
+        left: auto !important;
+        position: relative !important;
+    }
+
+    th.mud-table-cell.sticky-left {
+        background-color: #0d0e19 !important;
+        position: sticky !important;
+        z-index: 12 !important;
+        top: 0 !important;
+    }
+}
+@media (max-width: 960px) {
+    .mud-drop-container {
+        max-width: 90% !important;
+    }
+
+    .main-content-sm {
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+
+    .mud-drawer.mud-drawer-mini.mud-drawer-pos-left.mud-drawer--closed {
+        display: none;
+    }
+
+    .mud-table-toolbar {
+        margin: 10px 5px;
+        padding-top: 10px;
+    }
+
+    .mud-sm-table .mud-table-row {
+        display: table !important;
+        margin-bottom: 20px;
+        width: 100%;
+        padding: 5vw;
+    }
+
+    .mud-sm-table.mud-table-bordered .mud-table-container .mud-table-root colgroup ~ .mud-table-body .mud-table-row .mud-table-cell {
+        border-right: hidden !important;
+    }
+
+    .mud-navmenu {
+        height: auto !important;
+    }
+
+    .loading-screen-title {
+        color: #FFB647;
+        font: inherit;
+        font-size: 76px;
+        height: 45%;
+        margin: 80px;
+        text-align: center;
+        color: #FFFFFF;
+        font-family: 'Inter', sans-serif;
+        font-size: 3.5em;
+        line-height: 1.125;
+        font-weight: 600;
+        background-image: linear-gradient(275deg, #FFC700 0%, #FFFFFF 59%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .outlined-dialog-max-content {
+        min-width: auto !important;
+    }
+    .outlined-dialog-xl-content
+    {
+        min-width: auto !important;
+    }
+    .chat-container {
+        width: 100% !important;
+        height: 100% !important;
+    }
+}
+
 
 .mud-direction-desc, .mud-direction-desc:hover {
     color: #3d73f2 !important;
@@ -77,12 +160,25 @@ th.mud-table-cell.sticky-left:hover {
 .html-content-wrapper:not(.is-outlined) .ql-editor {
     border-top: 0px solid !important;
 }
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen and (-webkit-min-device-pixel-ratio:0) and (min-width: 960px) {
     .outlined-dialog-max-content {
         min-width: 200px !important;
     }
 
+    .outlined-dialog-xl-content {
+        min-width: 350px !important;
+    }
 }
+@media screen and (-webkit-min-device-pixel-ratio:0) and (max-width: 960px) {
+    .outlined-dialog-max-content {
+        min-width: 200px !important;
+    }
+
+    .outlined-dialog-xl-content {
+        min-width: 250px !important;
+    }
+}
+
 
 .outlined-dialog-md-content{
     width:115px;
@@ -124,6 +220,10 @@ th.mud-table-cell.sticky-left:hover {
 
 .outlined-dialog-max-content {
    min-width: max-content;
+}
+.outlined-dialog-xl-content{
+    min-width:350px;
+
 }
 
 
@@ -308,55 +408,7 @@ th.mud-table-cell.sticky-left:hover {
         transform: translateY(0);
     }
 }
-@media (max-width: 960px) {
-    .main-content-sm{
-        padding: 0px !important;
-        margin: 0px !important;
-    }
-    .mud-drawer.mud-drawer-mini.mud-drawer-pos-left.mud-drawer--closed{
-        display:none;
-    }
-    .mud-table-toolbar {
-        margin: 10px 5px;
-        padding-top: 10px;
-    }
-    .mud-sm-table .mud-table-row {
-        display: table !important;
-        margin-bottom: 20px;
-        width: 100%;
-        padding: 5vw;
-    }
-    .mud-sm-table.mud-table-bordered .mud-table-container .mud-table-root colgroup ~ .mud-table-body .mud-table-row .mud-table-cell {
-        border-right: hidden !important;
-    }
-    .mud-navmenu {
-        height: auto !important;
-    }
-    .loading-screen-title {
-        color: #FFB647;
-        font: inherit;
-        font-size: 76px;
-        height: 45%;
-        margin: 80px;
-        text-align: center;
-        color: #FFFFFF;
-        font-family: 'Inter', sans-serif;
-        font-size: 3.5em;
-        line-height: 1.125;
-        font-weight: 600;
-        background-image: linear-gradient(275deg, #FFC700 0%, #FFFFFF 59%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
 
-    .outlined-dialog-max-content {
-        min-width: auto !important;
-    }
-    .chat-container {
-        width: 100% !important;
-        height:100% !important;
-    }
-}
 
 
 /* Chats Icon */
