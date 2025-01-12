@@ -69,6 +69,29 @@ namespace LuminaryVisuals.Services.Helpers
             // If the URL already has a scheme, return it unchanged
             return url;
         }
+        public static string ProcessDeliverables(string deliverables)
+        {
+            if (string.IsNullOrEmpty(deliverables))
+                return deliverables;
+
+            // Pattern to match URLs, with negative lookbehind to avoid URLs in existing anchor tags
+            string urlPattern = @"(?<!<a[^>]*>)(?!.*?</a>)(https?:\/\/[^<\s\n]+?)(?:[\s\n]|<br\s*\/?>|<\/p>)";
+
+            // Replace URLs with anchor tags
+            string processed = Regex.Replace(
+                deliverables,
+                urlPattern,
+                match =>
+                {
+                    string url = match.Groups[1].Value;  // Get the URL without the trailing space/newline/HTML break
+                    string endChar = match.Value.Substring(url.Length);  // Preserve the ending character(s)
+                    return $"<a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>{endChar}";
+                },
+                RegexOptions.IgnoreCase | RegexOptions.Multiline
+            );
+
+            return processed;
+        }
     }
     public static class ConvertLocal
     {
