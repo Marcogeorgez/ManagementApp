@@ -340,6 +340,7 @@ public class ProjectService
     {
         using (var context = _contextFactory.CreateDbContext())
         {
+            var isExternalOrderChanged = false;
             var _project = await context.Projects
                 .AsTracking()
                 .Include(p => p.Revisions)
@@ -361,6 +362,7 @@ public class ProjectService
                         .Where(p => !p.IsArchived && _project.ClientId == p.ClientId)
                         .Max(p => (int?) p.ExternalOrder) ?? 0;
                     _project.ExternalOrder = highestOrderForClient + 1;
+                    isExternalOrderChanged = true;
                 }
                 if (_project.InternalOrder != project.InternalOrder && _project.InternalOrder != null)
                 {
@@ -422,8 +424,21 @@ public class ProjectService
                 }
 
                 await context.SaveChangesAsync();
+
+                if (isExternalOrderChanged)
+                {
+                    var externalProjectsToReorder = await context.Projects
+                        .AsTracking()
+                        .Where(p => !p.IsArchived && p.ClientId == project.ClientId)
+                        .OrderBy(p => p.ExternalOrder)
+                        .ToListAsync();
+                    var isExternalOrderValid = IsProjectOrderValid(externalProjectsToReorder, true);
+                    if (!isExternalOrderValid)
+                        NormalizeProjectOrder(externalProjectsToReorder, isExternalOrder: true);
+                    await context.SaveChangesAsync();
+
+                }
                 await _broadcaster.NotifyAllAsync();
-                
             }
         }
     }
@@ -507,7 +522,9 @@ public class ProjectService
                 .Where(p => !p.IsArchived && p.ClientId == clientId)
                 .OrderBy(p => p.ExternalOrder)
                 .ToListAsync();
-            NormalizeProjectOrder(externalProjectsToReorder, isExternalOrder: true);
+            var isExternalOrderValid = IsProjectOrderValid(externalProjectsToReorder, true);
+            if(!isExternalOrderValid)
+                NormalizeProjectOrder(externalProjectsToReorder, isExternalOrder: true);
 
             // Reorder internal projects
             var internalProjectsToReorder = await context.Projects
@@ -515,8 +532,9 @@ public class ProjectService
                 .Where(p => !p.IsArchived)
                 .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
-            NormalizeProjectOrder(internalProjectsToReorder, isExternalOrder: false);
-
+            var isInternalOrderValid = IsProjectOrderValid(externalProjectsToReorder, false);
+            if (!isInternalOrderValid)
+                NormalizeProjectOrder(internalProjectsToReorder, isExternalOrder: false);
             try
             {
                 await context.SaveChangesAsync();
