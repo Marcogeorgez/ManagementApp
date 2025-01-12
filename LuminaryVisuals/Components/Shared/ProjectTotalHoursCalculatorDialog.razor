@@ -263,11 +263,11 @@
                 decimal highlightsDuration = CalculateHighlightsDuration();
                 decimal socialMediaDuration = CalculateSocialMediaDuration();
 
-                var totalDuration = CalculateTotalDuration(footageSize, miscMinutes, prePartsDuration,
+                var totalDuration = CalculateTotalDuration(footageSize, prePartsDuration,
                     documentaryMulticameraDuration, highlightsDuration, socialMediaDuration);
 
                 var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
-                var adjustedValue = ApplyDiscount(totalDuration, qualityMultiplier);
+                var adjustedValue = ApplyDiscount(totalDuration, qualityMultiplier, miscMinutes);
 
                 SetFinalBillableHours(adjustedValue);
                 if(newProject.PrimaryEditor != null && newProject.SecondaryEditor == null)
@@ -303,7 +303,7 @@
         decimal? cameraValue = CalculateCameraValue();
         var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
 
-        return ApplyDiscount(totalDuration, qualityMultiplier);
+        return ApplyDiscount(totalDuration, qualityMultiplier,0);
     }
 
     private decimal? CalculateSecondaryEditorHours()
@@ -314,12 +314,12 @@
         decimal prePartsDuration = CalculatePrePartsDuration();
         decimal documentaryMulticameraDuration = CalculateDocumentaryMulticameraDuration();
 
-        var totalDuration = CalculateTotalDuration(footageSize, miscMinutes, prePartsDuration,
+        var totalDuration = CalculateTotalDuration(footageSize, prePartsDuration,
              documentaryMulticameraDuration,0,0);
 
         var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
 
-        return ApplyDiscount(totalDuration, qualityMultiplier);
+        return ApplyDiscount(totalDuration, qualityMultiplier, miscMinutes);
     }
 
 
@@ -394,10 +394,10 @@
         return EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration) * 30;
     }
 
-    private decimal? CalculateTotalDuration(decimal? footageSize, decimal miscMinutes, decimal prePartsDuration,
+    private decimal? CalculateTotalDuration(decimal? footageSize, decimal prePartsDuration,
         decimal documentaryMulticameraDuration, decimal highlightsDuration, decimal socialMediaDuration)
     {
-        return footageSize + miscMinutes + prePartsDuration + documentaryMulticameraDuration + highlightsDuration + socialMediaDuration;
+        return footageSize  + prePartsDuration + documentaryMulticameraDuration + highlightsDuration + socialMediaDuration;
     }
     /// <summary>
     /// Calculate quality multiplier by multiplying the quality of footage, resolution and camera value
@@ -417,10 +417,10 @@
     /// <param name="totalDuration"></param>
     /// <param name="qualityMultiplier"></param>
     /// <returns></returns>
-    private decimal? ApplyDiscount(decimal? totalDuration, decimal qualityMultiplier)
+    private decimal? ApplyDiscount(decimal? totalDuration, decimal qualityMultiplier, decimal miscMinutes)
     {
         var clientDiscount = 1 - ( newProject.CalculationDetails.ClientDiscount / 100 );
-        return totalDuration * qualityMultiplier * clientDiscount;
+        return (( totalDuration * qualityMultiplier * clientDiscount ) + miscMinutes);
     }
 
     private void SetFinalBillableHours(decimal? adjustedValue)
