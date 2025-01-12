@@ -3,51 +3,48 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject ProjectState ProjectState
+
+
 <MudContainer Class="chat-container" Gutters=false>
-        <MudPaper Elevation="0" Class="chat-panel" style="border:0px;">
-
+    <MudPaper Elevation="0" Class="chat-panel" style="border:0px;">
         <MudPaper Elevation="3" Class="chat-header" Outlined="true">
-        <MudText Typo="Typo.h5" Class="projects-title">
-            Your Messages
-
-        </MudText>
-        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
+            <MudText Typo="Typo.h5" Class="projects-title">
+                Your Messages
+            </MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
         </MudPaper>
-
-            @if (projects.Any())
-            {
-
-
-                <MudList T="Project" Class="projects-list" Padding=true Gutters=true >
-                    @foreach (var project in projects)
-                    {
-                        var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView) ? " unapproved-message" : "");
-                        <MudListItem Class="@classText" OnClick="() => OpenProjectChat(project)">
-                            <div class="project-content">
-                            <MudText Typo="Typo.body1">@project.ProjectName</MudText>
-                            @if (project.MessageRequireApprovalCount > 0 && (isAdminView|| isEditorView))
-                            {
-@*                                 <MudBadge  Content="@project.MessageRequireApprovalCount" Class="badge"/>
- *@                            }
+        @if (projects.Any())
+        {
+            <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
+                @foreach (var project in GetPaginatedProjects())
+                {
+                    var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView || isEditorView) ? " unapproved-message" : "");
+                    <MudListItem Class="@classText" OnClick="() => OpenProjectChat(project)">
+                        <div class="project-content">
+                            <MudText Typo="Typo.body1">@(isAdminView ? $"{project.ClientName} | {project.ProjectName}" : project.ProjectName)</MudText>
                             @if (project.countUnreadMessages > 0)
                             {
                                 <MudBadge Color="Color.Secondary" Content="@project.countUnreadMessages" Class="unread-badge" />
                             }
-                            <MudText Typo="Typo.caption" Class="message-timestamp">@ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
+                            <MudText Typo="Typo.caption" Class="message-timestamp">
+                                @ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
                             </MudText>
-                            
-                            </div>
-                        </MudListItem>
-                    }
-                </MudList>
-            }
-            else
-            {
-                <MudAlert Severity="Severity.Normal" Class="no-projects-alert">>No projects found.</MudAlert>
-            }
+                        </div>
+                    </MudListItem>
+                }
+                @if (GetPageCount() > 1)
+                {
+                <MudSpacer />
+                <MudPagination Class="d-flex justify-center mb-5" ShowFirstButton="true" ShowLastButton="true" Count="@GetPageCount()" SelectedChanged="PageChanged" />
+                }
+            </MudList>
 
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Normal" Class="no-projects-alert">No projects found.</MudAlert>
+        }
     </MudPaper>
-
 </MudContainer>
 
 
@@ -60,7 +57,8 @@
     [Parameter] public bool isClientView { get; set; }
     [Parameter] public int timezoneOffsetMinutes { get; set; }
     [Parameter] public Project SelectedProject { get; set; }
-
+    private int pageSize = 10;
+    private int currentPage = 1;
     private List<Project> projects = new List<Project>(); 
     private string MessageRequireApproval = "";
     protected override async Task OnInitializedAsync()
@@ -70,7 +68,7 @@
             ProjectState.OnChange += StateHasChanged;
             if (isAdminView)
             {
-                projects = await ProjectService.GetProjectsAsync();
+                projects = await ProjectService.GetProjectsAsync(false,int.MaxValue);
             }
             else if (isEditorView)
             {
@@ -115,7 +113,23 @@
             StateHasChanged();
         }
     }
+    private IEnumerable<Project> GetPaginatedProjects()
+    {
+        return projects
+            .Skip(( currentPage - 1 ) * pageSize)
+            .Take(pageSize);
+    }
 
+    private int GetPageCount()
+    {
+        return (int) Math.Ceiling(projects.Count() / (double) pageSize);
+    }
+
+    private void PageChanged(int page)
+    {
+        currentPage = page;
+        StateHasChanged();
+    }
     private void OpenProjectChat(Project Project)
     {
 
