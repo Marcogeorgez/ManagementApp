@@ -123,7 +123,8 @@
                 <MudTextField @bind-Value="newMessage" Class="flex-grow-1" Placeholder="Type a message..."
                 Variant="Variant.Outlined" Clearable="true" @ref="messageField" Adornment="Adornment.End"
                 AdornmentIcon="@Icons.Material.Filled.Send" OnAdornmentClick="( () => SendMessage(newMessage) )"
-                TextUpdateSuppression=false AutoFocus="true" OnKeyUp="HandleKeyPress" AutoGrow=true MaxLines="6">
+                TextUpdateSuppression=false AutoFocus="true" KeyDownPreventDefault=_preventDefault
+                OnKeyDown="HandleKeyPress" AutoGrow=true MaxLines="6">
                 </MudTextField>
 
             </MudPaper>
@@ -227,6 +228,7 @@
 
                 // First load - clear existing messages
                 messages.Clear();
+                await Task.Delay(500);
                 await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
             }
             else
@@ -461,17 +463,21 @@
         }
     }
 
-
+    bool _preventDefault;
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage))
+
+        if (_preventDefault = e.Key == "Enter" && !e.ShiftKey )
         {
             await messageField.BlurAsync();
-            var result = await SendMessage(newMessage);
+            if (!string.IsNullOrWhiteSpace(newMessage))
+            {
+                var result = await SendMessage(newMessage);
 
-            await messageField.Clear();
-            // StateHasChanged();
-            await messageField.FocusAsync();
+                await messageField.Clear();
+                // StateHasChanged();
+                await messageField.FocusAsync();
+            }
         }
         if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
         {
@@ -603,11 +609,6 @@
         const messageIndex = inView ? inView.style.getPropertyValue('--message-index') : null;
         return messageIndex;
     };
-
-
-
-
-
 
     window.initializeFocusTrap = (element) => {
         const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
