@@ -3,11 +3,28 @@
 
 <MudDialog>
     <DialogContent>
+
         <MudExpansionPanels MultiExpansion="true">
             <MudText Typo="Typo.h5" Class="mb-5">Client: @clientName || Last Updated at: @lastUpdatedDate</MudText>
 
             <MudText Typo="Typo.h5" Class="mb-5">Preferences Checklist:</MudText>
             <MudForm @ref="form" Model="@preferences">
+                <MudExpansionPanel Text="General Notes">
+                    <MudItem xs="12" Style="min-height: 100px">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Music Preferences</MudText>
+                        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
+                            @if (!string.IsNullOrEmpty(preferences.GeneralNotes))
+                            {
+                                var processedMusicPreferenceHtml = StringHelper.ProcessDeliverables(preferences.GeneralNotes);
+                                <MudHtmlViewer Html="@processedMusicPreferenceHtml" />
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body1">-</MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                </MudExpansionPanel>
                 <MudExpansionPanel Text="Link To Website">
                     <!-- Website Link -->
 

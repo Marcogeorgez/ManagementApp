@@ -67,7 +67,7 @@
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.Deliverables))
                                     {
-                                        var processedDeliverablesHtml = ProcessDeliverables(context.Deliverables);
+                                        var processedDeliverablesHtml = StringHelper.ProcessDeliverables(context.Deliverables);
                                         <MudHtmlViewer Html="@processedDeliverablesHtml" />
                                     }
                                     else
@@ -82,7 +82,7 @@
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.Description))
                                     {
-                                        var processedBriefDayHtml = ProcessDeliverables(context.Description);
+                                        var processedBriefDayHtml = StringHelper.ProcessDeliverables(context.Description);
                                         <MudHtmlViewer Html="@processedBriefDayHtml" />
                                     }
                                     else
@@ -97,7 +97,7 @@
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
                                     @if (!string.IsNullOrEmpty(context.MusicPreference))
                                     {
-                                        var processedMusicPreferenceHtml = ProcessDeliverables(context.MusicPreference);
+                                        var processedMusicPreferenceHtml = StringHelper.ProcessDeliverables(context.MusicPreference);
                                         <MudHtmlViewer Html="@processedMusicPreferenceHtml" />
                                     }
                                     else
@@ -426,28 +426,5 @@ The Bride was married like I said before, so this wedding was quite special beca
     private void Cancel()
     {
         Dialog.Close(DialogResult.Cancel());
-    }
-    private string ProcessDeliverables(string deliverables)
-    {
-        if (string.IsNullOrEmpty(deliverables))
-            return deliverables;
-
-        // Pattern to match URLs, with negative lookbehind to avoid URLs in existing anchor tags
-        string urlPattern = @"(?<!<a[^>]*>)(?!.*?</a>)(https?:\/\/[^<\s\n]+?)(?:[\s\n]|<br\s*\/?>|<\/p>)";
-
-        // Replace URLs with anchor tags
-        string processed = Regex.Replace(
-            deliverables,
-            urlPattern,
-            match =>
-            {
-                string url = match.Groups[1].Value;  // Get the URL without the trailing space/newline/HTML break
-                string endChar = match.Value.Substring(url.Length);  // Preserve the ending character(s)
-                return $"<a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>{endChar}";
-            },
-            RegexOptions.IgnoreCase | RegexOptions.Multiline
-        );
-
-        return processed;
     }
 }
