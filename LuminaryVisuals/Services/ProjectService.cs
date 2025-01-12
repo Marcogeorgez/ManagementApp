@@ -15,16 +15,18 @@ public class ProjectService
     private readonly ILogger<ProjectService> _logger;
     private readonly CircuitUpdateBroadcaster _broadcaster;
     private readonly INotificationService _notificationService;
+    private readonly LoggingHours loggingHours; 
     public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger,
-        CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService)
+        CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService, LoggingHours loggingHours)
     {
         _contextFactory = context;
         _logger = logger;
         _broadcaster = projectUpdateService;
         _notificationService = notificationService;
+        this.loggingHours = loggingHours;
     }
 
-    public async Task<List<Project>> GetProjectsAsync(bool isArchived, int itemsPerPage)
+    public async Task<List<Project>> GetProjectsAsync(bool isArchived)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -39,20 +41,8 @@ public class ProjectService
                 .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
 
-            var totalCount = projects.Count;
-            var reorderedProjects = new List<Project>();
-
-            // Get the chunks in reverse order but maintain original order within each chunk
-            for (int startIndex = totalCount; startIndex > 0; startIndex -= itemsPerPage)
-            {
-                int skip = Math.Max(0, startIndex - itemsPerPage);
-                int take = Math.Min(itemsPerPage, startIndex - skip);
-
-                var chunk = projects.GetRange(skip, take);
-                reorderedProjects.AddRange(chunk);
-            }
-
-            var userIds = reorderedProjects
+          
+            var userIds = projects
                 .SelectMany(p => new[] { p.ClientId, p.PrimaryEditorId, p.SecondaryEditorId })
                 .Where(id => id != null)
                 .Distinct()
@@ -63,7 +53,7 @@ public class ProjectService
                 .Select(u => new { u.Id, u.UserName, u.HourlyRate })
                 .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-            foreach (var project in reorderedProjects)
+            foreach (var project in projects)
             {
                 project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
                     ? userNames[project.ClientId]!
@@ -77,7 +67,7 @@ public class ProjectService
             }
 
             await context.SaveChangesAsync();
-            return reorderedProjects;
+            return projects;
         }
     }
     public async Task<Project?> GetProjectByIdAsync(int projectId)
@@ -131,7 +121,7 @@ public class ProjectService
                 .ToListAsync();
         }
     }
-    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId, int itemsPerPage)
+    public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -165,28 +155,11 @@ public class ProjectService
                     project.SecondaryEditorDetails = null;
                 }
             }
-            if (itemsPerPage > 0)
-            {
-                var totalCount = projects.Count;
-                var reorderedProjects = new List<Project>();
-
-                // Get the chunks in reverse order but maintain original order within each chunk
-                for (int startIndex = totalCount; startIndex > 0; startIndex -= itemsPerPage)
-                {
-                    int skip = Math.Max(0, startIndex - itemsPerPage);
-                    int take = Math.Min(itemsPerPage, startIndex - skip);
-
-                    var chunk = projects.GetRange(skip, take);
-                    reorderedProjects.AddRange(chunk);
-                }
-                return reorderedProjects;
-
-            }
             return projects;
         }
     }
 
-    public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId, int itemsPerPage)
+    public async Task<List<Project?>> GetProjectsForClients(bool isArchived, string UserId)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -196,24 +169,7 @@ public class ProjectService
             .Include(p => p.Revisions)
             .OrderBy(p => p.ExternalOrder)
             .ToListAsync();
-            if (itemsPerPage > 0)
-            {
-                var totalCount = projects.Count;
-                var reorderedProjects = new List<Project>();
 
-                // Get the chunks in reverse order but maintain original order within each chunk
-                for (int startIndex = totalCount; startIndex > 0; startIndex -= itemsPerPage)
-                {
-                    int skip = Math.Max(0, startIndex - itemsPerPage);
-                    int take = Math.Min(itemsPerPage, startIndex - skip);
-
-                    var chunk = projects.GetRange(skip, take);
-                    reorderedProjects.AddRange(chunk);
-                }
-                if (reorderedProjects == null)
-                    return null;
-                return reorderedProjects;
-            }
             return projects;
         }
     }
@@ -377,6 +333,21 @@ public class ProjectService
                 {
                     _project.PrimaryEditorId = project.PrimaryEditorId;
                     isChanged = true;
+                }
+                bool hasPrimaryEditorChanged = _project.PrimaryEditorId != null && _project.PrimaryEditorId != project.PrimaryEditorId;
+                bool isNewPrimaryEditorNull = project.PrimaryEditorId == null;
+
+                if (hasPrimaryEditorChanged && isNewPrimaryEditorNull)
+                {
+                    await loggingHours.DeleteLoggedHoursAsync(_project.ProjectId,_project.PrimaryEditorId!);
+                    _project.PrimaryEditorId = project.PrimaryEditorId;                    
+                }
+                bool hasSecondaryEditorChanged = _project.SecondaryEditorId != null && _project.SecondaryEditorId != project.SecondaryEditorId;
+                bool isNewSecondaryEditorNull = project.SecondaryEditorId == null;
+                if (hasSecondaryEditorChanged && isNewSecondaryEditorNull)
+                {
+                    await loggingHours.DeleteLoggedHoursAsync(_project.ProjectId, _project.SecondaryEditorId!);
+                    _project.SecondaryEditorId = project.SecondaryEditorId;
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
                 if(isChanged)
