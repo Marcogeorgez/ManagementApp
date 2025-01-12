@@ -10,18 +10,13 @@ namespace LuminaryVisuals.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_EditorLoggingHours_UserId_ProjectId",
-                table: "EditorLoggingHours");
+
 
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_EditorLoggingHours_UserId",
-                table: "EditorLoggingHours");
 
         }
     }
