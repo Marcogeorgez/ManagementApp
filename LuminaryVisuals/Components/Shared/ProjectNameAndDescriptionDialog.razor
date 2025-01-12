@@ -132,7 +132,8 @@
         else{
             <MudGrid Spacing="1">
                 <MudItem xs="12" sm="12">
-                    <MudTextField Class="mb-5" Label="Project Name" ReadOnly="!isAdmin" Variant="Variant.Outlined" @bind-Value="context.ProjectName"></MudTextField>
+                    <MudTextField Class="mb-5" Label="Project Name" ReadOnly="!isAdmin"
+                    Variant="Variant.Outlined" Disabled=!isAdmin @bind-Value="context.ProjectName"></MudTextField>
                 </MudItem>
                 <MudItem xs="12" sm="12">
 
