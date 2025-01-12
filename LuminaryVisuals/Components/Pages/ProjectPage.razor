@@ -59,7 +59,7 @@
         RowsPerPage=_rowsPerPage RowsPerPageChanged=LoadProjects
         Dense=true Hover="true" Bordered=true Breakpoint="Breakpoint.None"
         FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-        ColumnsPanelReordering=true
+        ColumnsPanelReordering=false
         ShowColumnOptions=false 
         Groupable=true QuickFilter="@_quickFilter"
         ShowMenuIcon=false
@@ -67,7 +67,7 @@
         EditTrigger="DataGridEditTrigger.OnRowClick" RowClick="@OnRowClick"
         ReadOnly=false RowStyle="text-align:center;"
         StartedEditingItem="@StartedEditingItem" 
-        CanceledEditingItem="@CanceledEditingItem"
+        CanceledEditingItem="@CanceledEditingItem" 
         CommittedItemChanges="@CommittedItemChanges"
         FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true 
         RowClassFunc="@GetRowClass">
@@ -75,19 +75,17 @@
 
             <ToolBarContent>
 
-                <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
+                <MudText Typo="Typo.h4" Class="mr-2 mb-1">Your Projects</MudText>
 
-                <MudMenu Icon="@Icons.Material.Filled.Settings" Label="Actions" AriaLabel="Projects Options" Class="pa-1 mt-1 mx-1"
-                LockScroll=true DropShadow=true 
-                AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
+                <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" 
+                Label="Actions" AriaLabel="Projects Options" Class="pa-1 mt-1 mx-1"
+                LockScroll=true DropShadow=true  
+                AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
                     <MudMenuItem OnClick="@(() => _gridKey = Guid.NewGuid())">
                         Reset State
                     </MudMenuItem>
                     <MudMenuItem OnClick="@(() => _dataGrid.ShowColumnsPanel())">
                         Show Columns Panel
-                    </MudMenuItem>
-                    <MudMenuItem OnClick="OnClick">
-                        Scroll to Bottom
                     </MudMenuItem>
                     @if (isAdminView)
                     {
@@ -117,13 +115,18 @@
                     }
 
                 </MudMenu>
+                <MudTooltip ShowOnClick=false Text="Scroll to Bottom" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                <MudIconButton Class="pa-1 mt-1 mx-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
+                               OnClick="OnClick" Ripple=true Size="Size.Large">
+                    </MudIconButton>
+                </MudTooltip>
                 @if (isAdminView)
                 {
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
                         Variant="Variant.Filled" Size="Size.Small"
                         StartIcon="@Icons.Material.Filled.AddCircle"
-                        OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-1">
+                        OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-1 ma-1">
                             Add Project
                         </MudButton>
                     </MudHidden>
@@ -143,7 +146,7 @@
                         <MudButton Color="Color.Info"
                         Variant="Variant.Filled" Size="Size.Small"
                         StartIcon="@Icons.Material.Filled.AddCircle"
-                        OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-1">
+                        OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-1 ma-1">
                             Create New Project
                         </MudButton>
                     </MudHidden>
@@ -171,7 +174,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
                 {
                     <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center; "
-                    DragAndDropEnabled="false" Groupable="false" Editable=true >
+                                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true HeaderStyle="z-index:5 !important;">
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                                 <div style="height:30px;"
@@ -229,8 +232,8 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft=true HeaderStyle="z-index:5 !important;"
-                    Hideable="false" CellStyle="text-align:center;" CellClass="outlined-dialog-max-content"
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="z-index:4 !important; left: 100px"
+                    Hideable="false" CellStyle="text-align:center; left:100px;" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -243,7 +246,7 @@
                                         <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
                                     </MudTooltip>
                                     <MudTextField T="string" AutoGrow=true
-                                    Value="context.Item.ProjectName" Class="outlined-dialog-max-content "
+                                    Value="context.Item.ProjectName" Class="outlined-dialog-xl-content "
                                     ReadOnly="true" Variant="Variant.Outlined"
                                     Immediate="true" Adornment="Adornment.End"
                                     AdornmentIcon="@Icons.Material.Filled.OpenInNew"
@@ -258,7 +261,7 @@
                             {      
                                 <div class="d-flex gap-2 flex-row  justify-center align-center">
                                     <MudTextField T="string" AutoGrow=true MaxLines="2"
-                                    Value="context.Item.ProjectName" Class="outlined-dialog-max-content"
+                                    Value="context.Item.ProjectName" Class="outlined-dialog-xl-content"
                                     ReadOnly="true"
                                     Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined"
                                     AdornmentIcon="@Icons.Material.Filled.OpenInNew" 
