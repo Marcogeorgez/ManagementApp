@@ -581,11 +581,7 @@ namespace LuminaryVisuals.Migrations
                 table: "EditorLoggingHours",
                 column: "ProjectId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_EditorLoggingHours_UserId_ProjectId_Date",
-                table: "EditorLoggingHours",
-                columns: new[] { "UserId", "ProjectId", "Date" },
-                unique: true);
+        
 
             migrationBuilder.CreateIndex(
                 name: "IX_MigratedUsers_GoogleProviderKey",
