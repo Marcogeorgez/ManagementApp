@@ -33,6 +33,8 @@ namespace LuminaryVisuals.Data.Entities
         public string? ColorReferences { get; set; } 
         public string? FilmReferences { get; set; } 
         public string? ClientSamples { get; set; }
+        public string? GeneralNotes { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

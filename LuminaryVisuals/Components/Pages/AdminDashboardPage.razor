@@ -577,8 +577,9 @@ else
         var parameters = new DialogParameters
         {
             { "userId", User.UserId },
+            {"currentUser",currentUser }
         };
-        var dialog = await DialogService.ShowAsync<EditClientEditingGuidelinesComponent>("Change Client Preferences", parameters);
+        var dialog = await DialogService.ShowAsync<ClientEditingGuidelinesComponent>("Change Client Preferences", parameters);
     }
     private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
     {
