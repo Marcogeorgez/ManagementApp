@@ -2,6 +2,46 @@
     font-family: 'Inter', sans-serif;
     font-size: 100%;
 }
+:root {
+    --info-color: #002c55 !important;
+    --error-color: #7d0100 !important;
+    --success-color: #00532e !important;
+
+}
+.info-new {
+    background-color: #002c55 !important;
+    border: 2px #008cff solid;
+}
+
+.info-new:hover {
+    background-color: rgb(10,133,255) !important; /* info-darken */
+}
+
+.error-new {
+    background-color: #7d0100 !important;
+    border: 2px #b70000 solid;
+}
+
+.error-new:hover {
+    background-color: rgb(244,47,70) !important; 
+}
+/* not used yet */
+.success-new {
+    background-color: #00532e !important;
+    border: 2px #00b45e solid;
+}
+
+.success-new:hover {
+    background-color: rgb(9,154,108) !important; 
+}
+
+.warning-new {
+    background-color: #FF8C00 !important;
+    border: 2px #FFA500 solid;
+}
+.warning-new:hover {
+    background-color: rgb(214,143,0) !important; /* warning-darken */
+}
 
 .filtered, .mud-direction-asc {
     color: #6ea867 !important;
@@ -10,10 +50,16 @@
 .mud-data-grid .mud-table-cell.sticky-left {
     background-color: #0d0e19 !important;
 }
-
+.mud-dialog-title {
+    position: sticky !important;
+    top: 0 !important;
+}
 /* When the <tr> is hovered, apply inherit to .sticky-left cells */
-.mud-data-grid .mud-table-row:hover .mud-table-cell.sticky-left {
+.mud-table-row:hover td.mud-table-cell.sticky-left {
     background-color: inherit !important;
+}
+th.mud-table-cell.sticky-left:hover {
+    background-color: #0d0e19 !important;
 }
 
 .mud-direction-desc, .mud-direction-desc:hover {
@@ -162,20 +208,6 @@
         text-decoration: line-through;
         color: #a0a0a0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 .loading-screen-container {
