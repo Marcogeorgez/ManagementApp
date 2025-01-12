@@ -452,7 +452,18 @@ th.mud-table-cell.sticky-left:hover {
     font-weight: 600;
 }
 
-
+.projects-list {
+    display: flex;
+    -ms-flex-direction: inherit;
+    -webkit-flex-direction: inherit;
+    flex-direction: inherit;
+    display: grid;
+    grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr));
+    overflow-y: auto;
+    gap: clamp(5px, 1vw, 30px); 
+    padding: 10px 0;
+    height:inherit;
+}
 
 .project-item {
     border: 1px solid #b5b1b1;
@@ -461,9 +472,11 @@ th.mud-table-cell.sticky-left:hover {
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     position: relative;
-    margin: 10px 5%;
     width: 90%;
+    margin: 2px 5%; 
 }
+
+
 
 .project-item:hover {
     transform: translateX(10px);
@@ -478,38 +491,38 @@ th.mud-table-cell.sticky-left:hover {
     transition: all 0.3s ease;
 }
 
-    .unapproved-message::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient( 45deg, rgba(114, 20, 20, 0.2), rgba(255, 50, 50, 0.2) );
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
+.unapproved-message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient( 45deg, rgba(114, 20, 20, 0.2), rgba(255, 50, 50, 0.2) );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
 
-    .unapproved-message:hover::before {
-        opacity: 1;
-    }
+.unapproved-message:hover::before {
+    opacity: 1;
+}
 
-    .unapproved-message::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient( 135deg, rgba(255, 0, 0, 0.1), rgba(255, 100, 0, 0.1), rgba(255, 200, 0, 0.1) );
-        animation: colorPulse 3s ease-in-out infinite alternate;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
+.unapproved-message::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient( 135deg, rgba(255, 0, 0, 0.1), rgba(255, 100, 0, 0.1), rgba(255, 200, 0, 0.1) );
+    animation: colorPulse 3s ease-in-out infinite alternate;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
 
-    .unapproved-message:hover::after {
-        opacity: 1;
-    }
+.unapproved-message:hover::after {
+    opacity: 1;
+}
 
 @keyframes colorPulse {
     0% {
@@ -684,10 +697,11 @@ back-button {
     border-radius: 4px;
 }
 
-.chat-messages, projects-list {
+.chat-messages{
     display: flex;
     flex-direction: column;
 }
+
 
 .date-separator {
     color: #fff4f4;

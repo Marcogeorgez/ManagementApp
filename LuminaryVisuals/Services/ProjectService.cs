@@ -127,7 +127,8 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             return await context.Projects
-            .ToListAsync();
+                .Include(u => u.Client)
+                .ToListAsync();
         }
     }
     public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId, int itemsPerPage)
