@@ -16,17 +16,41 @@ try {
     Quill.register('modules/blotFormatter', QuillBlotFormatter.default);
 } catch { }    
 
-export function createQuillInterop(dotNetRef, editorRef, toolbarRef, placeholder) {
+
+
+
+export function createQuillInterop(dotNetRef, editorRef, toolbarRef, placeholder, theme) {
+
+    // Configure modules based on theme
+    let modules = {
+        blotFormatter: {},
+    };
+
+
+    // Only add toolbar for snow theme
+    if (theme === 'snow') {
+        modules.toolbar = {
+            container: toolbarRef
+        };
+    }
+
     var quill = new Quill(editorRef, {
-        modules: {
-            toolbar: {
-                container: toolbarRef
-            },
-            blotFormatter: {}
-        },
+        modules: modules,
         placeholder: placeholder,
-        theme: 'snow'
+        theme: theme
     });
+
+    var Font = Quill.import('formats/font');
+    Font.whitelist = ['roboto', 'open-sans', 'mycustomfont'];
+
+    // Only add font handler for snow theme
+    if (theme === 'snow') {
+        quill.getModule('toolbar').addHandler('font', function (value) {
+            quill.format('font', value);
+        });
+    }
+
+
     return new MudQuillInterop(dotNetRef, quill, editorRef, toolbarRef);
 }
 

@@ -150,6 +150,8 @@ th.mud-table-cell.sticky-left:hover {
 }
 .mud-table-container, .mud-table-pagination-toolbar {
     background-color: var(--mud-palette-surface);
+    position: sticky !important;
+    top: 0 !important;  
 }
 .mud-link.mud-link-underline-hover, .html-content-wrapper a {
     color: #1ce6e6 !important;
@@ -918,4 +920,15 @@ text-decoration: underline;
 .ql-snow .ql-tooltip input[type="text"] {
     background: #bababa;
     color: black;
+}
+.ql-bubble .ql-tooltip {
+    z-index: 1000;
+}
+
+.ql-bubble .ql-editor {
+    padding: 12px 15px;
+    min-height: 120px;
+}
+.ql-snow .ql-editor code, .ql-snow .ql-editor .ql-code-block-container {
+    background-color: #4f4747 !important;
 }

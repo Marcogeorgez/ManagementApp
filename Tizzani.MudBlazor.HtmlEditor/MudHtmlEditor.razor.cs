@@ -15,7 +15,11 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-
+    /// <summary>
+    /// Whether to use the bubble theme instead of snow theme. Default is false.
+    /// </summary>
+    [Parameter]
+    public bool IsBubble { get; set; } = false;
     /// <summary>
     /// Whether or not to ourline the editor. Default value is <see langword="true" />.
     /// </summary>
@@ -119,7 +123,9 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
             try
             {
                 await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js");
-                _quill = await module.InvokeAsync<IJSObjectReference>("createQuillInterop", _dotNetRef, _editor, _toolbar, Placeholder);
+                string theme = IsBubble ? "bubble" : "snow";
+
+                _quill = await module.InvokeAsync<IJSObjectReference>("createQuillInterop", _dotNetRef, _editor, _toolbar, Placeholder, theme);
                 await SetHtml(Html);
             }
             catch (ObjectDisposedException)
