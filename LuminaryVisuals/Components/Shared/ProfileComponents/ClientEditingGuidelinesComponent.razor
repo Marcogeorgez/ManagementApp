@@ -6,14 +6,14 @@
     <MudExpansionPanels MultiExpansion="true">
         <MudText Style="margin-top:5px;" Typo="Typo.h5">Preferences Checklist:</MudText>
         <MudForm @ref="form" Model="@preferences">
-            <MudExpansionPanel Text="General Notes">
+            <MudExpansionPanel Text="General Notes" Class="">
                 <MudHtmlEditor Outlined="true"
-                               Text="General Notes"
-                               Html="@preferences.GeneralNotes"
-                               HtmlChanged="OnGeneralNoteChange"
-                               Resizable="true"
-                               style="min-height:150px; padding-bottom:25px;"
-                               Placeholder="Please write down any notes you have">
+                Text="General Notes"
+                Html="@preferences.GeneralNotes"
+                HtmlChanged="OnGeneralNoteChange"
+                Resizable="true"
+                style="min-height:150px; padding-bottom:25px;"
+                Placeholder="Please write down any notes you have">
                     <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
                         <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
                         <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
@@ -36,9 +36,21 @@
 
                 </MudHtmlEditor>
             </MudExpansionPanel>
-            <MudExpansionPanel Text="Link To Website">
+            <MudExpansionPanel Text="Links">
                 <!-- Website Link -->
-                <MudTextField Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
+                <MudText Typo="Typo.h6">Website Link:</MudText>
+                <MudTextField Class="mx-10" Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
+
+
+                <MudText  Typo="Typo.h6" Class="mt-3">Your Folder Link:</MudText>
+                @if (currentUser.IsInRole("Admin")){
+                <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
+                              @bind-Value="preferences.FolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                }
+                else{
+                    <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
+                            preferences.FolderLink)" />
+                }
             </MudExpansionPanel>
             <MudExpansionPanel Text="Highlights Film">
                 <!-- Video Structure -->
@@ -298,7 +310,7 @@
                 </MudTextField>
             </MudExpansionPanel>
 
-            
+
             <!-- Save Button -->
             <MudItem xs="12" Class="d-flex align-self-center">
                 <MudButton Class="my-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
@@ -320,13 +332,15 @@
     private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
     [Parameter] public ClaimsPrincipal? currentUser { get; set; }
     [Parameter] public string userId { get; set; }
-
+    private string? _currentUserId;
     protected override async Task OnInitializedAsync()
     {
         // Attempt to get preferences as soon as the component is initialized
         if (!string.IsNullOrEmpty(userId))
         {
             preferences = await GetPreferences(userId);
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+
         }
     }
     private void OnGeneralNoteChange(string text)
