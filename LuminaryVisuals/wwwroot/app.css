@@ -46,6 +46,10 @@
 .filtered, .mud-direction-asc {
     color: #6ea867 !important;
 }
+
+.mud-table-sticky-header * .mud-table-root .mud-table-head * .mud-table-cell {
+    top: -12px !important;
+}
 /* Default state: black background */
 .mud-data-grid .mud-table-cell.sticky-left {
     background-color: #191920 !important;
@@ -58,6 +62,7 @@
 .mud-dialog mud-dialog-width-md{
     min-width:300px;
 }
+
 /* When the <tr> is hovered, apply inherit to .sticky-left cells */
 .mud-table-row:hover td.mud-table-cell.sticky-left {
     background-color: inherit !important;
