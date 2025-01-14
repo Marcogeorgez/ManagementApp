@@ -604,7 +604,7 @@
                     </PropertyColumn>
 
                 }
-                @if (RoleBasedColumns[_currentRole].Contains("AdminStatus"))
+                @if (RoleBasedColumns[_currentRole].Contains("ClientPaymentStatus"))
                 {
                     <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
 
@@ -1311,9 +1311,9 @@
     }
     private Dictionary<string, List<string>> RoleBasedColumns => new()
     {
-        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","AdminStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","SubmittedStatus","Actions","Archive" } },
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","ClientPaymentStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","SubmittedStatus","Actions","Archive" } },
         { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable","SubmittedStatus", "Actions"} },
-        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status" } }
+        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status","ClientPaymentStatus" } }
     };
     private Guid _gridKey = Guid.NewGuid();
     private async Task AdminToggle()
@@ -1442,7 +1442,7 @@
     {   
         LoadingService.ShowLoading();
         var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
-        int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
+        int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 8;
 
         var dialogParameters = new DialogParameters
         {
@@ -1471,7 +1471,7 @@
     {
         LoadingService.ShowLoading();
         var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
-        int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 4;
+        int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 8;
         var dialogParameters = new DialogParameters
         {
             { "WeeksToDueDateDefault", weeksToDueDateDefault },

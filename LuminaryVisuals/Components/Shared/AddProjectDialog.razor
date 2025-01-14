@@ -57,7 +57,7 @@
                                         if (date.HasValue)
                                         {
                                            newProject.DueDate = date.Value.AddDays(WeeksToDueDateDefault != 0 ?
-                                               (WeeksToDueDateDefault * 7) : 28);
+                                               (WeeksToDueDateDefault * 7) : 28*2);
                                          }
                                          })"
                 Required="true" />
