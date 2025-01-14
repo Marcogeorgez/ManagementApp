@@ -330,7 +330,7 @@ public class NotificationService : BackgroundService, INotificationService
         {
             _logger.LogInformation("Starting notification processing cycle");
             await ProcessNotificationQueue();
-            int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 30); // Default to 30 minutes if not set
+            int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 1); // Default to 30 minutes if not set
             TimeSpan delayTimeSpan = TimeSpan.FromMinutes(delayMinutes);
             Console.WriteLine(delayMinutes);
             await Task.Delay(delayTimeSpan, stoppingToken);
@@ -360,6 +360,12 @@ public class NotificationService : BackgroundService, INotificationService
                     _logger.LogWarning($"User {userId} not found or has no email");
                     continue;
                 }
+                // Get ALL associated emails
+                var associatedEmails = await userService.GetAssociatedEmailsAsync(userId);
+                var allEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { user.Email };
+                allEmails.UnionWith(associatedEmails);
+
+
 
                 var validNotifications = new List<NotificationQueueItem>();
 
@@ -396,10 +402,13 @@ public class NotificationService : BackgroundService, INotificationService
                 {
                     if (!string.IsNullOrEmpty(notification.Message))
                     {
-                        _logger.LogInformation($"Sending email to {user.Email} for notification with subject {notification.Subject}");
-                        string body = notification.Message;
+                        foreach (var email in allEmails)
+                        {
+                            _logger.LogInformation($"Sending email to {email} for notification with subject {notification.Subject}");
+                            string body = notification.Message;
 
-                        await emailService.SendEmailAsync(user.Email, notification.Subject, body, true);
+                            await emailService.SendEmailAsync(email, notification.Subject, body, true);
+                        }
                     }
                 }
 
