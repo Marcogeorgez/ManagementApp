@@ -45,6 +45,7 @@
 
     }
 } *@
+     
 
 <MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
 @if (_loading)
@@ -339,7 +340,7 @@
                                     if (value == null) {
                                         var result = await DialogService.ShowMessageBox(
                                         "Confirm Unassign",
-                                        "Are you sure you want to unassign the editor?",
+                                        "Are you sure you want to unassign the editor? HIS LOGGED HOURS WILL BE DELETED.",
                                         yesText: "Unassign",
                                         cancelText: "Cancel"
                                         );
@@ -385,7 +386,7 @@
                                     if (value == null) {
                                         var result = await DialogService.ShowMessageBox(
                                         "Confirm Unassign",
-                                        "Are you sure you want to unassign the editor?",
+                                        "Are you sure you want to unassign the editor? HIS LOGGED HOURS WILL BE DELETED",
                                         yesText: "Unassign",
                                         cancelText: "Cancel"
                                         );
@@ -1947,15 +1948,13 @@
         foreach (var project in projects)
         {
             csv.AppendLine(string.Join(",",
-                EscapeCsvValue(project.ProjectName),
-                project.ClientBillableAmount
-            ));
+                EscapeCsvValue(project.ProjectName),$"{project.ClientBillableAmount ?? 0} $"));
             if(project.ClientBillableAmount != null )
                 total += project.ClientBillableAmount.Value;
         }
         csv.AppendLine();
         csv.AppendLine(string.Join(",",
-            $"Total Price: {total}",
+            $"Total Price: {total} $",
         $" Date: {DateTime.Now:MM-dd-yyyy}"));
         return csv.ToString();
     }
