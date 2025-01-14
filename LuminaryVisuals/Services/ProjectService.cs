@@ -377,23 +377,27 @@ public class ProjectService
 
                 if (project.Revisions != null)
                 { 
-                foreach (var revision in project.Revisions)
-                {
-                    var existingRevision = _project.Revisions
-                        .FirstOrDefault(r => r.RevisionId == revision.RevisionId);
+                    foreach (var revision in project.Revisions)
+                    { 
+                        var existingRevision = _project.Revisions
+                            .FirstOrDefault(r => r.RevisionId == revision.RevisionId);
 
-                    if (existingRevision != null)
-                    {
-                        // If the revision already exists, update its content
-                        existingRevision.Content = revision.Content;
-                        existingRevision.RevisionDate = revision.RevisionDate;
+                        if (existingRevision != null)
+                        {
+                            // If the revision already exists, update its content
+                            existingRevision.Content = revision.Content;
+                            existingRevision.RevisionDate = revision.RevisionDate;
+                            existingRevision.isCompleted = revision.isCompleted;
+                        }
+                        else
+                        {
+                            // If the revision is new, add it to the project
+                            _project.Revisions.Add(revision);
+                            _project.Status = ProjectStatus.Revision;
+                            await context.SaveChangesAsync();
+
+                        }
                     }
-                    else
-                    {
-                        // If the revision is new, add it to the project
-                        _project.Revisions.Add(revision);
-                    }
-                }
                 }
 
 

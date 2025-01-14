@@ -111,10 +111,28 @@
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Revisions</MudText>
                                 @if (context.Revisions != null && context.Revisions.Any())
                                 {
-                                    foreach (var revision in context.Revisions)
+                                    foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
                                     {
-                                        <MudExpansionPanel Class="mt-2" Text="@($"Revision Date: {revision.RevisionDate:MM-dd-yyyy}")">
-                                            <MudHtmlViewer Html="@revision.Content" />
+                                        <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.Last())>
+                                            <TitleContent>
+                                                <div class="d-flex align-center">
+                                                    @if (revision.isCompleted)
+                                                    {
+
+                                                        <span style="font-weight:bold">
+                                                            <MudChip T="int" Variant="Variant.Outlined"
+                                                            Color="Color.Success"
+                                                            Size="Size.Medium">
+                                                                Completed
+                                                            </MudChip>
+                                                        </span>
+                                                    }
+                                                    <span class="ml-2">Revision Date: @revision.RevisionDate.ToString("MM-dd-yyyy")</span>
+                                                </div>
+                                            </TitleContent>
+                                            <ChildContent>
+                                                <MudHtmlViewer Html="@revision.Content" />
+                                            </ChildContent>
                                         </MudExpansionPanel>
                                     }
                                 }
@@ -282,38 +300,80 @@ The Bride was married like I said before, so this wedding was quite special beca
 
                         @if (context.Revisions != null)
                         {
-                            @foreach (var revision in context.Revisions)
+                           
+                            <MudExpansionPanels MultiExpansion=false>
+                            @foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
                             {
-                                <MudExpansionPanel Text="@($"Revision Date: {revision.RevisionDate:MM-dd-yyyy}")">
-                                    <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content" HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
-                                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-                                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
-                                                <select class="ql-font">
-                                                    <option value="sans-serif"></option>
-                                                    <option value="serif"></option>
-                                                    <option value="monospace"></option>
-                                                </select>
-                                                <select class="ql-size">
-                                                    <option value="small"></option>
-                                                    <option selected></option>
-                                                    <option value="large"></option>
-                                                    <option value="huge"></option>
-                                                </select>
-                                                <MudHtmlToolbarOptions />
-                                                <button class="ql-list" value="check"></button>
-                                                <button class="ql-clean">Remove Formatting</button>
-                                            </MudCollapse>
+                                <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == context.Revisions.Last())   >
+                                    <TitleContent>
+                                        <div class="d-flex align-center">
+                                            @if (revision.isCompleted)
+                                            {
+
+                                                <span style="font-weight:bold">
+                                                    <MudChip T="int" Variant="Variant.Outlined"
+                                                    Color="Color.Success"
+                                                    Size="Size.Medium">
+                                                        Completed
+                                                    </MudChip>
+                                                </span>
+                                            }
+                                            <span class="ml-2">Revision Date: @revision.RevisionDate.ToString("MM-dd-yyyy")</span>
                                         </div>
-                                    </MudHtmlEditor>
+                                    </TitleContent>
+                                    <ChildContent>
+                                        @if(revision.isCompleted && isClient)
+                                        {
+                                            <MudHtmlViewer Html="@revision.Content" />
+                                            <MudText Color=Color.Error Typo=Typo.caption>This revision is completed, you can't change it anymore, please add a new one if you want.</MudText>
+                                        }
+                                        else
+                                        {
+
+                                            <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content"  HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
+                                                <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
+                                                    <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
+                                                    <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
+                                                        <select class="ql-font">
+                                                            <option value="sans-serif"></option>
+                                                            <option value="serif"></option>
+                                                            <option value="monospace"></option>
+                                                        </select>
+                                                        <select class="ql-size">
+                                                            <option value="small"></option>
+                                                            <option selected></option>
+                                                            <option value="large"></option>
+                                                            <option value="huge"></option>
+                                                        </select>
+                                                        <MudHtmlToolbarOptions />
+                                                        <button class="ql-list" value="check"></button>
+                                                        <button class="ql-clean">Remove Formatting</button>
+                                                    </MudCollapse>
+                                                </div>
+                                            </MudHtmlEditor>
+
+                                            if(!isClient){
+                                                if (!revision.isCompleted)
+                                                {
+                                                    <MudButton class="my-3" Color="Color.Info" Variant=Variant.Filled OnClick="(() => MarkCompleted(revision))">Mark as completed!</MudButton>
+                                                }
+                                                else
+                                                {
+                                                    <MudButton class="my-3" Variant=Variant.Filled Color=Color.Warning OnClick="(() => MarkCompleted(revision))">Change to uncompleted!</MudButton>
+                                                }
+                                            }
+                                        }
+
+                                    </ChildContent>
                                 </MudExpansionPanel>
 
                             }
+                            </MudExpansionPanels>
                         }
 
 
                         <!-- Button to add a new revision -->
-                        <MudButton Class="mt-5" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRevision">Add New Revision</MudButton>
+                        <MudButton Class="" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRevision">Add New Revision</MudButton>
 
                     </MudText>
                 </MudItem>
@@ -324,9 +384,9 @@ The Bride was married like I said before, so this wedding was quite special beca
     <DialogActions>
         <MudItem sm="12">
             <MudSwitch @bind-Value="isViewMode" @onclick="ViewMode"
-                       Disabled="_isToggle"
-                       Color="Color.Info" UncheckedColor="Color.Default"
-                       ThumbIcon="@Icons.Material.Filled.Edit">
+            Disabled="_isToggle"
+            Color="Color.Info" UncheckedColor="Color.Default"
+            ThumbIcon="@Icons.Material.Filled.Edit">
                 @(isViewMode ? "View Mode" : "Edit Mode")
             </MudSwitch>
         </MudItem>
@@ -342,6 +402,7 @@ The Bride was married like I said before, so this wedding was quite special beca
     [Parameter] public EventCallback<Project> modifiedProject { get; set; }
     private string projectTitle;
     bool isAdmin = false;
+    bool isClient = false;
     bool _expanded = true;
     bool isViewMode = true;
     bool _isToggle = false;
@@ -360,6 +421,7 @@ The Bride was married like I said before, so this wedding was quite special beca
     protected override async Task OnInitializedAsync()
     {
         isAdmin = currentRole == "Admin";
+        isClient = currentRole == "Client";
         projectTitle = context.ProjectName;
         await base.OnInitializedAsync();
     }
@@ -379,6 +441,10 @@ The Bride was married like I said before, so this wedding was quite special beca
             context.Description = text;
         }
     }
+    private void MarkCompleted(Revision revision)
+    {
+        revision.isCompleted = !revision.isCompleted;
+    }
     private void OnNoteTextChangedForMusicPreference(string text)
     {
         if (context != null)
@@ -391,7 +457,7 @@ The Bride was married like I said before, so this wedding was quite special beca
         if (context != null)
         {
             revision.Content = text;
-            var existingRevision = context.Revisions.FirstOrDefault(r => r.RevisionId == revision.RevisionId);
+            var existingRevision = context.Revisions.FirstOrDefault(r => r.RevisionDate == revision.RevisionDate);
             if (existingRevision != null)
                 existingRevision.Content = text;
             else
@@ -428,3 +494,13 @@ The Bride was married like I said before, so this wedding was quite special beca
         Dialog.Close(DialogResult.Cancel());
     }
 }
+<style>
+    .mud-expand-panel .mud-expand-panel-header
+    {
+        background: #1b1b24;
+    }
+
+    .mud-expand-panel.mud-panel-expanded.editing {
+        margin:0px 0px 50px 0px !important;
+    }
+</style>
