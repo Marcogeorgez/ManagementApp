@@ -2,12 +2,13 @@
 @typeparam TItem
 
 <span style="font-weight:bold">
-    @Label: @Context.Grouping.Key 
         <MudChip T="int" Variant="Variant.Outlined" 
                  Color="Color.Success" 
                  Size="Size.Medium">
             total @Context.Grouping.Count()
         </MudChip>
+    @Label: @Context.Grouping.Key
+
 </span>
 
 @code {
