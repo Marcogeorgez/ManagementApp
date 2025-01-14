@@ -45,7 +45,7 @@
 
     }
 } *@
-     
+
 
 <MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
 @if (_loading)
@@ -117,8 +117,8 @@
 
                 </MudMenu>
                 <MudTooltip ShowOnClick=false Text="Scroll to Bottom" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
-                <MudIconButton Class="pa-1 mt-1 mx-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
-                               OnClick="OnClick" Ripple=true Size="Size.Large">
+                    <MudIconButton Class="pa-1 mt-1 mx-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
+                    OnClick="OnClick" Ripple=true Size="Size.Large">
                     </MudIconButton>
                 </MudTooltip>
                 @if (isAdminView)
@@ -155,8 +155,8 @@
 
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
                         Color="Color.Info"
-                                       Size="Size.Large"
-                                       Class="mt-1 mx-2"
+                        Size="Size.Large"
+                        Class="mt-1 mx-2"
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
                 }
@@ -175,7 +175,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
                 {
                     <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center; "
-                                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true HeaderStyle="z-index:5 !important;">
+                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true HeaderStyle="z-index:5 !important;">
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                                 <div style="height:30px;"
@@ -397,7 +397,7 @@
                                             context.Item.SecondaryEditorId = value;
                                             }
                                     })"
-                                           Value="@context.Item.SecondaryEditorId">
+                                Value="@context.Item.SecondaryEditorId">
                                     <MudSelectItem Class="" T="string" Value="null" Ripple=true>
                                         Unassign Editor
                                     </MudSelectItem>
@@ -570,15 +570,19 @@
                 {           
                     <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true">
                         <CellTemplate>
-                            <MudText Class="px-3 py-1 rounded-lg font-weight-bold text-center status-badge " Style="@GetStatusStyle(context.Item)">@context.Item.FormatStatus</MudText>
-                        </CellTemplate>
-                        <EditTemplate Context="context">
-                            <MudSelect T="ProjectStatus" Class="mt-3"
-                            Variant="Variant.Outlined"
-                            Label="Status"
-                            @bind-Value="context.Item.Status"
-                            Required="true">
-                                @if(_isAdminView)
+                            <MudText Class="px-3 py-1 rounded-lg font-weight-bold text-center status-badge " 
+                            Style="@(_isClientView && context.Item.Status == ProjectStatus.Review ? GetStatusStyle(ProjectStatus.Working) 
+                                : GetStatusStyle(context.Item.Status))">
+                                @(_isClientView && context.Item.Status == ProjectStatus.Review ?
+                          ProjectStatus.Working.ToString() : context.Item.FormatStatus)</MudText>
+                            </CellTemplate>
+                            <EditTemplate Context="context">
+                                <MudSelect T="ProjectStatus" Class="mt-3"
+                                Variant="Variant.Outlined"
+                                Label="Status"
+                                @bind-Value="context.Item.Status"
+                                Required="true">
+                                    @if(_isAdminView)
                                 {
                                     @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                                     {
@@ -1263,6 +1267,7 @@
         CircuitId = Guid.NewGuid().ToString();
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
         _loading = false;
+
     }    
     private async Task OnClick(){
         await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
@@ -1805,9 +1810,9 @@
         }
     }
 
-    private string GetStatusStyle(Project project)
+    private string GetStatusStyle(ProjectStatus projectStatus)
     {
-        return project.Status switch
+        return projectStatus switch
         {
             ProjectStatus.Upcoming => "background-color: #6E7AD4; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #5A66B3; text-align:center;",
             ProjectStatus.Scheduled => "background-color: #4A90E2; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #3A7AC5; text-align:center;",
