@@ -303,6 +303,7 @@ public class ProjectService
                 .Include(p => p.Revisions)
                 .Include(p => p.PrimaryEditorDetails)
                 .Include(p => p.SecondaryEditorDetails)
+                .Include(p => p.Client)
                 .FirstOrDefaultAsync(p => p.ProjectId ==  project.ProjectId);
             if (_project != null)
             {
@@ -389,11 +390,7 @@ public class ProjectService
                     }
                 }
                 }
-                // Send notification to user if the project status has changed
-                if (oldStatus != _project.Status)
-                {
-                    await _notificationService.QueueStatusChangeNotification(project, oldStatus, _project.Status,updatedByUserId);
-                }
+
 
                 await context.SaveChangesAsync();
 
@@ -409,6 +406,11 @@ public class ProjectService
                         NormalizeProjectOrder(externalProjectsToReorder, isExternalOrder: true);
                     await context.SaveChangesAsync();
 
+                }
+                // Send notification to user if the project status has changed
+                if (oldStatus != _project.Status)
+                {
+                    await _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId);
                 }
                 await _broadcaster.NotifyAllAsync();
             }
