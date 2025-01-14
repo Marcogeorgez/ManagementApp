@@ -309,6 +309,7 @@ public class ProjectService
             {
                 var isChanged = false;
                 var oldStatus = _project.Status;
+
                 if (_project.ClientId != project.ClientId)
                 {
                     if (project.Client.WeeksToDueDateDefault == null)
@@ -351,7 +352,11 @@ public class ProjectService
                     _project.SecondaryEditorId = project.SecondaryEditorId;
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
-                if(isChanged)
+                if (oldStatus != project.Status && project.Status == ProjectStatus.Delivered)
+                {
+                    _project.AdminStatus = AdminProjectStatus.Delivered_Not_Paid;
+                }
+                if (isChanged)
                 {
                     _project.Status = ProjectStatus.Scheduled;
                 }
