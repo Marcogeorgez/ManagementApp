@@ -342,6 +342,24 @@ public class UserServices
             return AllUsers;
         }
     }
+
+    public async Task<List<string>> GetAssociatedEmailsAsync(string userId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var emails = await context.UserLogins
+            .Where(ul => ul.UserId == userId)
+            .Join(
+                context.MigratedUsers,
+                userLogin => userLogin.ProviderKey,
+                migratedUser => migratedUser.GoogleProviderKey,
+                (userLogin, migratedUser) => migratedUser.Email
+            )
+            .ToListAsync();
+
+            return emails;
+        }
+    }
 }
 
 public class UserRoleViewModel
