@@ -43,6 +43,8 @@
 
 
         <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
+        Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% * 0.7);"
+        FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true
         SelectedItems="SelectedItems" @ref=_dataGrid QuickFilter="_quickFilter"
         Breakpoint="Breakpoint.None"
         Items="@AllUsers" SortMode="SortMode.Multiple"
@@ -50,16 +52,36 @@
         DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
         EditMode="DataGridEditMode.Form"
         EditTrigger="DataGridEditTrigger.Manual"
-        ReadOnly=false Style="margin-bottom: -100px; transform: scale(0.8); transform-origin: top left;width: 125%;"
+        ReadOnly=false
         StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItemAsync" 
         CommittedItemChanges="@CommittedItemChanges">
 
             <ToolBarContent>
                 <MudText Typo="Typo.h4">Admin Dashboard</MudText>
-                <MudSpacer />
+                <MudMenu Label="Options" Variant="Variant.Filled" Class="mx-3 d-flex flex-column"  Color="Color.Primary" Style="flex-grow: 1 !important;"
+                    TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
+                    
+                        <MudNumericField T="decimal?"
+                                         @bind-value="storedValue"
+                                         Label="USD to LEK"
+                                         Min="0.0M"
+                                         Required="true"
+                                         RequiredError="Please enter a positive number"
+                                         Variant="Variant.Outlined"
+                                         Class="w-100"
+                                         DebounceInterval="2000" />
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Error"
+                                   OnClick="@(() => OpenDialog())"
+                                   Class="mt-2 w-100">
+                            Migrate Selected Users
+                        </MudButton>
+                </MudMenu>
+                <div style="flex-grow: 5;"></div>
                 <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
                 Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
-                Class="mt-0" />
+                Class="mt-0" style="flex-grow:5" />
             </ToolBarContent>
 
             <ColGroup>
@@ -197,21 +219,8 @@
                 <MudDataGridPager T="UserRoleViewModel" />
             </PagerContent>
         </MudDataGrid>
-        <MudContainer Gutters=false Class="ml-15">
 
-            @if(_usdToLek){
-                <MudNumericField T="decimal?"
-                @bind-value="storedValue" Label="Usd To Lek" Class="mt-4" Min="0.0M" Required=true RequiredError="Please enter a positive number"
-                Variant="Variant.Outlined" Style="width:fit-content; margin-right: 8px;" DebounceInterval="2000"/>
-            }
-            <div class="d-flex flex-wrap mt-4">
-                <MudSwitch @bind-Value="_usdToLek" Color="Color.Primary">Change Conversion Rate</MudSwitch>
-            </div>
-            <MudButton style="background-color: rgb(244,47,70,0.45)" Variant=Variant.Filled
-            OnClick="@(() => OpenDialog())">
-                Migrate Selected Users
-            </MudButton>
-        </MudContainer>
+
 
         @if (ProjectState.CurrentProject != null)
         {
@@ -738,3 +747,15 @@
 
     }
 }
+<style>
+    .mud-input-control-input-container
+    .mud-input.mud-input-outlined.mud-input-outlined-with-label.mud-shrink.mud-typography-input
+    + .mud-input-label.mud-input-label-animated.mud-input-label-outlined.mud-input-label-inputcontrol {
+        background-color:#151726 !important;
+    }
+
+    .mud-popover.mud-popover-open.mud-popover-top-left.mud-popover-anchor-bottom-left.mud-popover-overflow-flip-onopen.mud-paper.mud-elevation-8.pa-4
+    {
+    background-color: #151726 !important;
+    }
+</style>
