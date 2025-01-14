@@ -313,7 +313,7 @@ public class ProjectService
                 {
                     if (project.Client.WeeksToDueDateDefault == null)
                     {
-                        project.Client.WeeksToDueDateDefault = 4;
+                        project.Client.WeeksToDueDateDefault = 8;
                     }
                     _project.ClientId = project.ClientId;
                     var highestOrderForClient = context.Projects
