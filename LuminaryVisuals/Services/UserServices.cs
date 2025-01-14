@@ -198,31 +198,65 @@ public class UserServices
         }
     }
 
-    public async Task<bool> UpdateHourlyRateAsync(string userId, UserRoleViewModel _user)
+    public async Task<string> UpdateUser(string userId, UserRoleViewModel _user, string newUsername)
     {
         try
         {
             using (var context = _contextFactory.CreateDbContext())
             {
-
+                // Get user by ID
                 var user = await GetUserByIdAsync(userId);
                 if (user != null)
                 {
+                    // Update user fields
                     user.WeeksToDueDateDefault = _user.WeeksToDueDateDefault;
                     user.HourlyRate = _user.HourlyRate;
+                    // Update the user in the database
                     await _userManager.UpdateAsync(user);
                     await context.SaveChangesAsync();
-                    return true;
+                    // Check if new username is provided and if it's already taken
+                    if (!string.IsNullOrEmpty(newUsername) && user.UserName != newUsername)
+                    {
+                        var userWithNewUsername = await _userManager.FindByNameAsync(newUsername);
+                        if (userWithNewUsername != null && userWithNewUsername.Id != user.Id)
+                        {
+                            return "Username is already taken!"; // Return error message
+                        }
+
+                        // Update username
+                        var result = await _userManager.SetUserNameAsync(user, newUsername);
+                        if (result.Succeeded)
+                        {
+                            user.UserName = newUsername;
+                            user.NormalizedUserName = newUsername.ToUpperInvariant();
+                            await _userManager.UpdateNormalizedUserNameAsync(user);
+
+                            return "User details updated successfully!"; // Return success message
+                        }
+                        else
+                        {
+                            return "There is an error, please contact us."; // Return error
+                        }
+                    }
+                    return "User details updated successfully!"; // Return success message
                 }
-                return false;
+                else
+                {
+                    // User not found
+                    return "User not found."; // Return error message if user doesn't exist
+                }
+
+           
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to update hourly rate for user {userId}. Error: {ex.Message}");
-            return false;
+            // Log error and return the error message
+            _logger.LogError($"Failed to update user {userId}. Error: {ex.Message}");
+            return $"Error: {ex.Message}"; // Return error message
         }
     }
+
 
     // Method to get all users with the "Editor" role and their associated projects
     public async Task<List<UserProjectViewModel>> GetEditorsWithProjectsAsync()
@@ -330,7 +364,7 @@ public class UserRoleViewModel
     }
     public decimal? HourlyRate { get; set; }
     public decimal? HourlyRateInLek { get; set; }
-    public int? WeeksToDueDateDefault { get; set; }
+    public int? WeeksToDueDateDefault { get; set; } = 8;
     public string GetNoteValue(string targetUserId)
     {
         // Check if the targetUserId is null or empty
