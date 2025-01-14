@@ -250,7 +250,7 @@ OpenMiniOnHover="true" Elevation="0" >
         };
     private void SetupPeriodicRefresh()
     {
-        _refreshTimer = new System.Timers.Timer(TimeSpan.FromSeconds(5).TotalMilliseconds);
+        _refreshTimer = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
 
         _refreshTimer.Elapsed += async (sender, e) =>
         {
