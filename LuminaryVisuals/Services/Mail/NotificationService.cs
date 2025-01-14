@@ -330,7 +330,7 @@ public class NotificationService : BackgroundService, INotificationService
         {
             _logger.LogInformation("Starting notification processing cycle");
             await ProcessNotificationQueue();
-            int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 1); // Default to 30 minutes if not set
+            int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 30); // Default to 30 minutes if not set
             TimeSpan delayTimeSpan = TimeSpan.FromMinutes(delayMinutes);
             Console.WriteLine(delayMinutes);
             await Task.Delay(delayTimeSpan, stoppingToken);

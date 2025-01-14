@@ -19,6 +19,8 @@ namespace LuminaryVisuals.Data.Entities
         [DataType(DataType.DateTime)]
         public DateTime RevisionDate { get; set; }
 
+        public bool isCompleted { get; set; } = false;
+
         [ForeignKey("ProjectId")]
         public virtual Project Project { get; set; }
     }
