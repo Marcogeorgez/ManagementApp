@@ -378,9 +378,13 @@ public class ProjectService
                 if (project.Revisions != null)
                 { 
                     foreach (var revision in project.Revisions)
-                    { 
+                    {
+                        // Ensure the revision is not null and sort it by RevisionId and RevisionDate so that we can compare it with the existing revisions since RevisionDate is unique for each revision
+                        // This avoids bugs where the same revision is overwritten multiple times in loop where id=0 at beginning
+                        // If revision exists, update its content, revision date, and completion status
+                        // If it does not exist, add it as a new revision to the project and update the project status to 'Revision'
                         var existingRevision = _project.Revisions
-                            .FirstOrDefault(r => r.RevisionId == revision.RevisionId);
+                            .FirstOrDefault(r => r.RevisionId == revision!.RevisionId && r.RevisionDate == revision.RevisionDate);
 
                         if (existingRevision != null)
                         {
@@ -394,7 +398,6 @@ public class ProjectService
                             // If the revision is new, add it to the project
                             _project.Revisions.Add(revision);
                             _project.Status = ProjectStatus.Revision;
-                            await context.SaveChangesAsync();
 
                         }
                     }
