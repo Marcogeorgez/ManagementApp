@@ -406,6 +406,7 @@ public class ProjectService
 
                 await context.SaveChangesAsync();
 
+                // For reordering the projects if the external order has changed and is not valid
                 if (isExternalOrderChanged)
                 {
                     var externalProjectsToReorder = await context.Projects
