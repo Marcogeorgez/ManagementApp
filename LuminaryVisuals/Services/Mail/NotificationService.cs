@@ -180,7 +180,7 @@ public class NotificationService : BackgroundService, INotificationService
 
         using var scope = _serviceProvider.CreateScope();
         var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
-
+        var readyToReviewText = newStatus == ProjectStatus.Ready_To_Review ? $"Make sure to check it before {project.FormattedDueDate}" : "";
         // Always notify admins
         var adminUsers = await userService.GetAllAdminsAsync();
         foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
@@ -193,7 +193,8 @@ public class NotificationService : BackgroundService, INotificationService
                 Message = $@"
                             <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> <strong>{secondPrimaryEditorNameMessage}</strong> 
                              status changed from <strong>{oldStatus.ToString().Replace('_', ' ')}</strong> to <strong>{newStatus.ToString().Replace('_', ' ')}</strong> on 
-                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
+                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.
+                            {readyToReviewText}</p>",
                 CreatedAt = DateTime.UtcNow
             };
             AddToQueue(notificationItem);
