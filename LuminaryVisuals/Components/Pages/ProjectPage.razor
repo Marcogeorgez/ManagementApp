@@ -577,10 +577,11 @@
                           ProjectStatus.Working.ToString() : context.Item.FormatStatus)</MudText>
                             </CellTemplate>
                             <EditTemplate Context="context">
-                                <MudSelect T="ProjectStatus" Class="mt-3"
-                                Variant="Variant.Outlined"
-                                Label="Status"
-                                @bind-Value="context.Item.Status"
+                            <MudSelect T="ProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Status"
+                                       Value="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review 
+                            ? ProjectStatus.Working : context.Item.Status)"
+                                       Text="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? "Working" : context.Item.Status.ToString().Replace("_", " "))"
+                                       ValueChanged="@(newValue => context.Item.Status = newValue)"
                                 Required="true">
                                     @if(_isAdminView)
                                 {
