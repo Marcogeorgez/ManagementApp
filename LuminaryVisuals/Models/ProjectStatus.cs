@@ -6,7 +6,7 @@
         Ready_To_Edit = 1,
         Scheduled = 2,
         Working = 3,
-        Review = 4,
+        Ready_To_Review = 4,
         Delivered = 5,
         Revision = 6,
         Finished = 7

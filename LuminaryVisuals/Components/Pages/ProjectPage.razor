@@ -571,9 +571,9 @@
                     <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true">
                         <CellTemplate>
                             <MudText Class="px-3 py-1 rounded-lg font-weight-bold text-center status-badge " 
-                            Style="@(_isClientView && context.Item.Status == ProjectStatus.Review ? GetStatusStyle(ProjectStatus.Working) 
+                            Style="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? GetStatusStyle(ProjectStatus.Working) 
                                 : GetStatusStyle(context.Item.Status))">
-                                @(_isClientView && context.Item.Status == ProjectStatus.Review ?
+                                @(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ?
                           ProjectStatus.Working.ToString() : context.Item.FormatStatus)</MudText>
                             </CellTemplate>
                             <EditTemplate Context="context">
@@ -1819,7 +1819,7 @@
             ProjectStatus.Ready_To_Edit => "background-color: #E55F7E; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #C74A6A; text-align:center;",
             ProjectStatus.Working => "background-color: #8E6ECE; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #7558B0; text-align:center;",
             ProjectStatus.Delivered => "background-color: #4CAF50; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #3A8C3E; text-align:center;",
-            ProjectStatus.Review => "background-color: #FFA726; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #E69325; text-align:center;",
+            ProjectStatus.Ready_To_Review => "background-color: #FFA726; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #E69325; text-align:center;",
             ProjectStatus.Revision => "background-color: #EF5350; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #D32F2F; text-align:center;",
             ProjectStatus.Finished => "background-color: #26A69A; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #00897B; text-align:center;",
             _ => "background-color: #757575; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #616161; text-align:center;"
