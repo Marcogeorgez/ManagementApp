@@ -3,35 +3,80 @@
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="form" @bind-IsValid="@success">
-            <MudTextField T="string"
-                          Label="Project Name"
-                          Value="@newProject.ProjectName"
-                          ReadOnly="true" />
+        <MudForm @ref="form" @bind-IsValid="@success" Class="mt-4" Style="">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudTextField T="string"
+                                  Label="Project Name"
+                                  Value="@newProject.ProjectName"
+                                  ReadOnly="true"
+                                  Variant="Variant.Outlined"
+                                  Class="rounded-lg"
+                                   />
+                </MudItem>
 
-            <MudTextField T="string"
-                          Label="Description"
-                          Value="@newProject.Description"
-                          ReadOnly="true" />
+                <MudItem xs="12" sm="4">
+                    <MudTextField T="string"
+                                  Label="Client Name" Value="@newProject.ClientName" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField T="string"
+                                  Label="Primary Editor Name" Value="@newProject.PrimaryEditorName" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField T="string"
+                                  Label="Secondary Editor Name" Value="@newProject.SecondaryEditorName" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Status" Value="@newProject.FormatStatus" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Payment Status" Value="@newProject.FormatAdminStatus" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
 
-            <MudDatePicker Label="Shoot Date"
-                           Date="@newProject.ShootDate"
-                           ReadOnly="true" />
-            <MudDatePicker Label="Due Date"
-                           Date="@newProject.DueDate"
-                           ReadOnly="true" />
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Shoot Date"
+                                   Date="@newProject.ShootDate"
+                                   ReadOnly="true"
+                                   Variant="Variant.Outlined"
+                                   Class="rounded-lg"
+                                    />
+                </MudItem>
 
-            <MudDatePicker Label="Working Month"
-                           Date="@newProject.WorkingMonth"
-                           ReadOnly="true" />
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Due Date"
+                                   Date="@newProject.DueDate"
+                                   ReadOnly="true"
+                                   Variant="Variant.Outlined"
+                                   Class="rounded-lg"
+                                    />
+                </MudItem>
 
-            <MudSelect T="ArchiveReason" Label="Reason For Archiving Project" AnchorOrigin="Origin.BottomCenter"
-                       @bind-Value="Reason">
-                <MudSelectItem Value="ArchiveReason.Paid">Paid</MudSelectItem>
-                <MudSelectItem Value="ArchiveReason.Cancelled">Cancelled</MudSelectItem>
-                <MudSelectItem Value="ArchiveReason.Deleted">Deleted</MudSelectItem>
-            </MudSelect>
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Working Month"
+                                   Date="@newProject.WorkingMonth"
+                                   ReadOnly="true"
+                                   Variant="Variant.Outlined"
+                                   Class="rounded-lg"
+                                    />
+                </MudItem>
 
+                <MudItem xs="12" sm="12">
+                    <MudSelect T="ArchiveReason"
+                               Label="Reason For Archiving Project"
+                               AnchorOrigin="Origin.BottomCenter"
+                               @bind-Value="Reason"
+                               Variant="Variant.Outlined"
+                               Class="rounded-lg"
+                               Dense>
+                        <MudSelectItem Value="ArchiveReason.Paid">Paid</MudSelectItem>
+                        <MudSelectItem Value="ArchiveReason.Cancelled">Cancelled</MudSelectItem>
+                        <MudSelectItem Value="ArchiveReason.Deleted">Deleted</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
         </MudForm>
     </DialogContent>
 
