@@ -120,7 +120,7 @@
         else if (email.Length > 100)
             yield return "Agency name cannot exceed 100 characters";
         else if (isEmailTaken)
-            yield return "Email cannot exceed 256 characters.";
+            yield return "Email is already taken! either as a user in agency or for a normal user";
     }
 
     private async Task ProcessMigration()
