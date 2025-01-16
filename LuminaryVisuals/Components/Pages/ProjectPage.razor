@@ -614,6 +614,7 @@
                     <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
 
                         <EditTemplate Context="context">
+                            @if(isAdminView){
                             <MudSelect T="AdminProjectStatus" Class="mt-3"
                             Variant="Variant.Outlined"
                             Label="Client Payment Status"
@@ -624,6 +625,10 @@
                                     <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                                 }
                             </MudSelect>
+                            }
+                            else{
+                                <MudText Style="display:none;" />
+                            }
                         </EditTemplate>
                         <GroupTemplate>
                             <GroupTemplateComponent TItem="Project" Context="@context" Label="Payment Status" />
