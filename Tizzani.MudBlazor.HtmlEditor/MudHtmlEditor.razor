@@ -1,20 +1,23 @@
-<div class="html-editor html-content-wrapper @(Outlined ? "is-outlined" : "")" @attributes="UserAttributes">
+<div class="html-editor html-content-wrapper @(Outlined ? "mud-input-outlined-border" : "")" @attributes="UserAttributes">
+    <label class="html-editor-label">@Label</label>
+
     @if (IsBubble)
     {
         <div @ref="_toolbar" style="display: none;"></div>
     }
     else
     {
-        <div @ref="_toolbar">
-            @if (ChildContent is null)
-            {
+        <div @ref="_toolbar" style="border-bottom-width: 1px;">
+        @if (ChildContent is null)
+        {
                 <MudHtmlToolbarOptions />
-            }
-            else
-            {
-                @ChildContent
-            }
+        }
+        else
+        {
+            @ChildContent
+        }
         </div>
     }
     <div class="@(Resizable ? "is-resizable" : "")" @ref="_editor"></div>
 </div>
+

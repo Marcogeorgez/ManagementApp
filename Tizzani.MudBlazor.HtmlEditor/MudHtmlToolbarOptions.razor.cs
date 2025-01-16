@@ -41,6 +41,11 @@ public partial class MudHtmlToolbarOptions
     public bool? Strike { get; set; }
 
     /// <summary>
+    /// If <see langword="true"/>, the toolbar will include the option to show checklist.
+    /// </summary>
+    [Parameter]
+    public bool? Checklist { get; set; }
+    /// <summary>
     /// If <see langword="true"/>, a color picker for the foreground color will be available in the toolbar.
     /// </summary>
     [Parameter]
@@ -123,6 +128,7 @@ public partial class MudHtmlToolbarOptions
             Italic ??= DefaultOptions.Italic;
             Underline ??= DefaultOptions.Underline;
             Strike ??= DefaultOptions.Strike;
+            Checklist ??= DefaultOptions.Checklist;
             ForegroundColorPicker ??= DefaultOptions.ForegroundColorPicker;
             BackgroundColorPicker ??= DefaultOptions.BackgroundColorPicker;
             SubSuperScript ??= DefaultOptions.SubSuperScript;

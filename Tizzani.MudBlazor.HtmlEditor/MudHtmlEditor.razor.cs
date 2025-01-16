@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-
+using System.Reflection.Emit;
 namespace Tizzani.MudBlazor.HtmlEditor;
 
 public sealed partial class MudHtmlEditor : IAsyncDisposable
@@ -13,6 +13,8 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     [Inject]
     private IJSRuntime JS { get; set; } = default!;
 
+    [Parameter]
+    public string? Label { get; set; }
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
     /// <summary>
@@ -30,7 +32,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     /// The placeholder text to display when the editor has not content.
     /// </summary>
     [Parameter]
-    public string Placeholder { get; set; } = "Tell your story...";
+    public string Placeholder { get; set; } = "Placeholder text...";
 
     /// <summary>
     /// The HTML markup from the editor.
@@ -67,6 +69,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object?>? UserAttributes { get; set; }
+
 
 
     /// <summary>
