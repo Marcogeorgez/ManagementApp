@@ -272,7 +272,8 @@
                 SetFinalBillableHours(adjustedValue);
                 if(newProject.PrimaryEditor != null && newProject.SecondaryEditor == null)
                 {
-                    newProject.PrimaryEditorDetails.FinalBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
+                    newProject.PrimaryEditorDetails.FinalBillableHours = newProject.CalculationDetails.FinalProjectBillableHours.HasValue? 
+                    Math.Round(newProject.CalculationDetails.FinalProjectBillableHours.Value,2) : (decimal?) null;
                     newProject.SecondaryEditorDetails.FinalBillableHours = null;
                     newProject.SecondaryEditorDetails.AdjustmentHours = null;
                     newProject.SecondaryEditorDetails.Overtime = null;
@@ -280,7 +281,8 @@
                 }
                 else if (newProject.PrimaryEditor == null && newProject.SecondaryEditor != null)
                 {
-                    newProject.SecondaryEditorDetails.FinalBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
+                    newProject.SecondaryEditorDetails.FinalBillableHours = newProject.CalculationDetails.FinalProjectBillableHours.HasValue ?
+                    Math.Round(newProject.CalculationDetails.FinalProjectBillableHours.Value, 2) : (decimal?) null;
                     newProject.PrimaryEditorDetails.FinalBillableHours = null;
                     newProject.PrimaryEditorDetails.AdjustmentHours = null;
                     newProject.PrimaryEditorDetails.Overtime = null;
