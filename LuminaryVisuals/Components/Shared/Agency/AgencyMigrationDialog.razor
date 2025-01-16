@@ -7,78 +7,78 @@
 @inject IDialogService DialogService
 
 <MudContainer Gutters=true>
-<MudDialog>
-    <DialogContent>
-        <MudContainer Style="max-height: 500px; overflow-y: auto">
-            <MudForm @ref="form" @bind-IsValid="@isFormValid" @bind-Errors="@formErrors" ValidationDelay="0">
-                <MudGrid Spacing="2" Justify="Justify.SpaceBetween">
-                    
-                    <MudItem xs="12">
-                    <MudList T=UserRoleViewModel Dense="true">
-                    <MudText Class="mb-4 mt-4">Selected Users:</MudText>
-                        @foreach (var user in SelectedUsers)
+    <MudDialog>
+        <DialogContent>
+            <MudContainer Style="max-height: 500px; overflow-y: auto">
+                <MudForm @ref="form" @bind-IsValid="@isFormValid" @bind-Errors="@formErrors" ValidationDelay="0">
+                    <MudGrid Spacing="2" Justify="Justify.SpaceBetween">
+
+                        <MudItem xs="12">
+                            <MudList T=UserRoleViewModel Dense="true">
+                                <MudText Class="mb-4 mt-4">Selected Users:</MudText>
+                                @foreach (var user in SelectedUsers)
+                                {
+                                    <MudListItem>
+                                        <MudText>@user.UserName (@user.UserEmail) - ID: @user.UserId</MudText>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudItem>
+                        <MudDivider Style="border-width: 0px;" />
+                        <MudToggleGroup Class="d-flex flex-auto mx-10" T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
+                            <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("New")" Text="Create New Agency" />
+                            <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("Existing")" Text="Add to Existing Agency" />
+                        </MudToggleGroup>
+                        <MudDivider Style="border-width: 0px;" />
+                        @if (_value1 == "New")
                         {
-                            <MudListItem>
-                                <MudText>@user.UserName (@user.UserEmail) - ID: @user.UserId</MudText>
-                            </MudListItem>
-                        }
-                    </MudList>
-                    </MudItem>
-                    <MudDivider Style="border-width: 0px;" />
-                    <MudToggleGroup Class="d-flex flex-auto mx-10" T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
-                        <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("New")" Text="Create New Agency" />
-                        <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("Existing")" Text="Add to Existing Agency" />
-                    </MudToggleGroup>
-                    <MudDivider Style="border-width: 0px;" />
-                    @if (_value1 == "New")
-                    {
-                        <MudGrid Spacing="3" Class="mx-20 mt-5">
-                            <MudTextField T="string"
-                            @bind-Value="agencyName"
-                            Label="Agency Name"
-                            Required="true" Variant="Variant.Outlined"
-                            RequiredError="Agency name is required!"
-                            Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
-                            <MudTextField T="string"
-                            @bind-Value="agencyEmail"
-                            Label="Agency Email"
-                            Required="true" Variant="Variant.Outlined"
-                            RequiredError="Agency email is required!"
-                            Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
+                            <MudGrid Spacing="3" Class="mx-20 mt-5">
+                                <MudTextField T="string"
+                                @bind-Value="agencyName"
+                                Label="Agency Name"
+                                Required="true" Variant="Variant.Outlined"
+                                RequiredError="Agency name is required!"
+                                Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
+                                <MudTextField T="string"
+                                @bind-Value="agencyEmail"
+                                Label="Agency Email"
+                                Required="true" Variant="Variant.Outlined"
+                                RequiredError="Agency email is required!"
+                                Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
                             </MudGrid>
 
-                    }
-                    else if(_value1 == "Existing")
-                    {
-                        <MudSelect T="string" 
-                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                                   Class="d-flex justify-center mud-width-full mx-20 mt-5"
-                                   Variant="Variant.Outlined"
-                                   Label="Select The Agency"
-                                   @bind-Value="selectedAgency">
-                            @foreach (var user in SelectedUsers)
-                            {
-                                <MudSelectItem Class="" T="string" Value="@user.UserId" Ripple=true>
-                                    @user.UserName
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                </MudGrid>
+                        }
+                        else if(_value1 == "Existing")
+                        {
+                            <MudSelect T="string" 
+                            AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                            Class="d-flex justify-center mud-width-full mx-20 mt-5"
+                            Variant="Variant.Outlined"
+                            Label="Select The Agency"
+                            @bind-Value="selectedAgency">
+                                @foreach (var user in SelectedUsers)
+                                {
+                                    <MudSelectItem Class="" T="string" Value="@user.UserId" Ripple=true>
+                                        @user.UserName
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                    </MudGrid>
 
 
-            </MudForm>
-        </MudContainer>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary"
-                   OnClick="ProcessMigration"
-                   Disabled="@(!CanSubmit())">
-            Create Agency
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+                </MudForm>
+            </MudContainer>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary"
+            OnClick="ProcessMigration"
+            Disabled="@(!CanSubmit())">
+                Create Agency
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
 </MudContainer>
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
@@ -87,7 +87,7 @@
     private MudForm form;
     private string[] formErrors = Array.Empty<string>();
     private bool isFormValid;
-
+    private bool isProcessing = false;
     private string agencyName = string.Empty;
     private string agencyEmail = string.Empty;
     private string _value1 = String.Empty;
@@ -125,8 +125,11 @@
 
     private async Task ProcessMigration()
     {
+        if (isProcessing)
+            return;
         try
         {
+            isProcessing = true;
             if (!isFormValid)
             {
                 Snackbar.Add("Please correct the form errors and ensure users are selected", Severity.Warning);
@@ -165,6 +168,10 @@
         {
             Snackbar.Add($"Error creating agency: {ex.Message}", Severity.Error);
         }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private async Task<bool> ShowConfirmationDialog()
@@ -179,12 +186,14 @@
 
         return !result.Canceled && (bool) result.Data;
     }
-
+    bool isMigratingUsers;
     private async Task MigrateUsersToNewAgency()
     {
+        if(isMigratingUsers)
+            return; 
+        isMigratingUsers = true;
         await using var context = await DbContextFactory.CreateDbContextAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
-
         try
         {
             var userIds = SelectedUsers.Select(u => u.UserId).ToList();
@@ -235,18 +244,22 @@
 
                 await DeleteOldUsers(context, userIds);
                 await transaction.CommitAsync();
-
                 await AssignRoleToUser(newAgency, "Client");
+
                 Snackbar.Add("Agency created successfully!", Severity.Success);
 
             }
-            
+
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch
         {
             await transaction.RollbackAsync();
             throw;
+        }
+        finally
+        {
+            isMigratingUsers = false;
         }
     }
 
@@ -274,8 +287,7 @@
     private async Task AssignRoleToUser(ApplicationUser user, string roleName)
     {
         // Ensure the user exists in the database
-        var userFromDb = await UserManager.FindByIdAsync(user.Id);
-        if (userFromDb == null)
+        if (user == null)
             throw new InvalidOperationException("User must exist in the database before assigning roles.");
 
         // Ensure the role exists
@@ -287,9 +299,9 @@
         }
 
         // Assign the role if not already assigned
-        if (!await UserManager.IsInRoleAsync(userFromDb, roleName))
+        if (!await UserManager.IsInRoleAsync(user, roleName))
         {
-            await UserManager.AddToRoleAsync(userFromDb, roleName);
+            await UserManager.AddToRoleAsync(user, roleName);
             
         }
         await UserManager.UpdateSecurityStampAsync(user);
