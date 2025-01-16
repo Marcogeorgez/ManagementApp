@@ -1,5 +1,21 @@
+<button class="mud-button-root mud-button mud-button-text mud-button-text-default mud-button-text-size-medium"
+        @onclick="OnExpandCollapseClick" @onclick:stopPropagation @onclick:preventDefault>
+    @(_expanded ? "Collapse" : "Expand")
+</button>
+<div class="toolbar-options @(_expanded ? "expanded-toolbar":"collapsed-toolbar" )" style="border-left: 1px solid var(--mud-palette-divider); gap:3px;">
 @if (Show(TypographyPicker))
 {
+    <select class="ql-font">
+        <option value="sans-serif"></option>
+        <option value="serif"></option>
+        <option value="monospace"></option>
+    </select>
+    <select class="ql-size">
+        <option value="small"></option>
+        <option selected></option>
+        <option value="large"></option>
+        <option value="huge"></option>
+    </select>
     <span class="ql-formats">
         <select class="ql-header">
             <option value="1">Heading 1</option>
@@ -32,6 +48,12 @@
         {
             <button class="ql-strike" type="button"></button>
         }
+        @if (Show(Checklist))
+        {
+            <button class="ql-list" value="check"></button>
+        }
+        
+
     </span>
 }
 
@@ -114,4 +136,15 @@
             </button>
         }
     </span>
+    <button class="ql-clean">Remove Formatting</button>
+}
+</div>
+
+@code {
+    bool _expanded = true;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
 }
