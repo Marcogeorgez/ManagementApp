@@ -57,13 +57,13 @@ public class ProjectService
             {
                 project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
                     ? userNames[project.ClientId]!
-                    : "No Client Assigned ??";
+                    : "N/A ??";
                 project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
                     ? userNames[project.PrimaryEditorId]!
-                    : "No Editor Assigned";
+                    : "N/A";
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                     ? userNames[project.SecondaryEditorId]!
-                    : "No Editor Assigned";
+                    : "N/A";
             }
 
             await context.SaveChangesAsync();
@@ -440,12 +440,28 @@ public class ProjectService
                 .FirstAsync(p => p.ProjectId == project.ProjectId);
             if (_project != null)
             {
-                _project.ClientBillableHours = project.ClientBillableHours;
-                _project.ClientBillableAmount = (project.Client.HourlyRate ?? 0 ) * project.ClientBillableHours;
-                _project.PrimaryEditorDetails.FinalBillableHours = project.PrimaryEditorDetails.FinalBillableHours;
-                _project.PrimaryEditorDetails.AdjustmentHours = project.PrimaryEditorDetails.AdjustmentHours;
-                _project.SecondaryEditorDetails.FinalBillableHours = project.SecondaryEditorDetails.FinalBillableHours;
-                _project.SecondaryEditorDetails.AdjustmentHours = project.SecondaryEditorDetails.AdjustmentHours;
+                _project.ClientBillableHours = project.ClientBillableHours.HasValue
+                    ? Math.Round(project.ClientBillableHours.Value, 2)
+                    : (decimal?) null;
+
+                _project.ClientBillableAmount = Math.Round(( project.Client.HourlyRate ?? 0 ) * ( project.ClientBillableHours ?? 0 ), 2);
+
+                _project.PrimaryEditorDetails.FinalBillableHours = project.PrimaryEditorDetails.FinalBillableHours.HasValue
+                    ? Math.Round(project.PrimaryEditorDetails.FinalBillableHours.Value, 2)
+                    : (decimal?) null;
+
+                _project.PrimaryEditorDetails.AdjustmentHours = project.PrimaryEditorDetails.AdjustmentHours.HasValue
+                    ? Math.Round(project.PrimaryEditorDetails.AdjustmentHours.Value, 2)
+                    : (decimal?) null;
+
+                _project.SecondaryEditorDetails.FinalBillableHours = project.SecondaryEditorDetails.FinalBillableHours.HasValue
+                    ? Math.Round(project.SecondaryEditorDetails.FinalBillableHours.Value, 2)
+                    : (decimal?) null;
+
+                _project.SecondaryEditorDetails.AdjustmentHours = project.SecondaryEditorDetails.AdjustmentHours.HasValue
+                    ? Math.Round(project.SecondaryEditorDetails.AdjustmentHours.Value, 2)
+                    : (decimal?) null;
+
                 foreach (var property in typeof(ProjectCalculationDetails).GetProperties())
                 {
                     var newValue = property.GetValue(project.CalculationDetails);
@@ -738,7 +754,9 @@ public class ProjectService
                 // Calculate client billable amount
                 if (project.ClientBillableHours != null && project.Client.HourlyRate != null)
                 {
-                    project.ClientBillableAmount = project.Client.HourlyRate.Value * project.ClientBillableHours;
+                    project.ClientBillableAmount = ( project.Client.HourlyRate.HasValue && project.ClientBillableHours.HasValue )
+                        ? Math.Round(project.Client.HourlyRate.Value * project.ClientBillableHours.Value, 2)
+                        : (decimal?) null;
                 }
 
                 // Calculate primary editor details
@@ -769,10 +787,20 @@ public class ProjectService
 
     private void CalculateEditorPayment(EditorDetails editorDetails, ApplicationUser editor, decimal? clientBillableHours)
     {
-        editorDetails.Overtime = ( editorDetails.BillableHours ?? 0 ) - ( editorDetails.FinalBillableHours ?? 0 );
-        editorDetails.FinalBillableHours = editorDetails.BillableHours -
-            ( editorDetails.Overtime ?? 0 ) + ( editorDetails.AdjustmentHours ?? 0 );
-        editorDetails.PaymentAmount = ( editor.HourlyRate ?? 0 ) * ( editorDetails.FinalBillableHours ?? 0 );
+        editorDetails.Overtime = Math.Round(( editorDetails.BillableHours ?? 0 ) - ( editorDetails.FinalBillableHours ?? 0 ), 2);
+
+        editorDetails.FinalBillableHours = Math.Round(
+            ( editorDetails.BillableHours ?? 0 ) -
+            ( editorDetails.Overtime ?? 0 ) +
+            ( editorDetails.AdjustmentHours ?? 0 ),
+            2
+        );
+
+        editorDetails.PaymentAmount = Math.Round(
+            ( editor.HourlyRate ?? 0 ) * ( editorDetails.FinalBillableHours ?? 0 ),
+            2
+        );
+
     }
 
 }
