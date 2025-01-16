@@ -1,27 +1,7 @@
 ﻿<MudDialog>
     <DialogContent>
-        <MudHtmlEditor Html="@Text" HtmlChanged="OnNoteTextChanged">
-                                <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
-                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
-
-            <select class="ql-font">
-                <option value="sans-serif"></option>
-                <option value="serif"></option>
-                <option value="monospace"></option>
-            </select>
-            <select class="ql-size">
-                <option value="small"></option>
-                <option selected></option>
-                <option value="large"></option>
-                <option value="huge"></option>
-            </select>
+        <MudHtmlEditor Html="@Text" Label="Note:" HtmlChanged="OnNoteTextChanged">
             <MudHtmlToolbarOptions />
-            <button class="ql-list" value="check"></button>
-            <button class="ql-clean">Remove Formatting</button>    <!-- Removes formatting -->
-                </MudCollapse>
-            </div>
-
         </MudHtmlEditor>
 
     </DialogContent>
@@ -41,7 +21,6 @@
     private bool isDelayed = true;
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(2000);
         isDelayed = false;
         StateHasChanged();
     }
@@ -58,10 +37,5 @@
     {
         MudDialog.Cancel();
     }
-    bool _expanded = true;
 
-    private void OnExpandCollapseClick()
-    {
-        _expanded = !_expanded;
-    }
 }

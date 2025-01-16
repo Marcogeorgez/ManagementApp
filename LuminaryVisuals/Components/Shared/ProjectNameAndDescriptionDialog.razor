@@ -198,100 +198,31 @@
                     Variant="Variant.Outlined"
                     @bind-Value="context.ProjectSpecifications.AudioDetails" />
                 </MudItem>
-                <MudItem xs="12" sm="12" Class="mb-3  flex-column">
-                    <MudText Typo="Typo.body1" Class="mb-2">Deliverables:</MudText>
-                    <MudHtmlEditor Outlined="true"
-                    Text="Deliverables"
-                    Html="@context.Deliverables"
-                    HtmlChanged="OnDeliverableTextChanged"
-                    Resizable="true"
-                    style="min-height:50px;"
+                <MudItem xs="12" sm="12" Class="mt-5  flex-column">
+                    <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@context.Deliverables" 
+                    HtmlChanged="OnDeliverableTextChanged" Resizable="true" style="min-height:100px;"
                     Placeholder="Please write down what the deliverables for this project will be">
-                        <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
-                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
-
-                                <select class="ql-font">
-                                    <option value="sans-serif"></option>
-                                    <option value="serif"></option>
-                                    <option value="monospace"></option>
-                                </select>
-                                <select class="ql-size">
-                                    <option value="small"></option>
-                                    <option selected></option>
-                                    <option value="large"></option>
-                                    <option value="huge"></option>
-                                </select>
-                                <MudHtmlToolbarOptions />
-                                <button class="ql-list" value="check"></button>
-                                <button class="ql-clean">Remove Formatting</button>
-                            </MudCollapse>
-                        </div>
-
                     </MudHtmlEditor>
                 </MudItem>
 
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
-                    <MudText Class="my-2">
-                        Brief Of The Day and Technical Issues Notes
                         <MudHtmlEditor Html="@context.Description"  HtmlChanged="OnNoteTextChanged" style="min-height:200px;"
+                                       Label="Brief Of The Day and Technical Issues Notes"
                         Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
 This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
 This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
 The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
-                            <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
-                                <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-                                <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
-                                    <select class="ql-font">
-                                        <option value="sans-serif"></option>
-                                        <option value="serif"></option>
-                                        <option value="monospace"></option>
-                                    </select>
-                                    <select class="ql-size">
-                                        <option value="small"></option>
-                                        <option selected></option>
-                                        <option value="large"></option>
-                                        <option value="huge"></option>
-                                    </select>
-                                    <MudHtmlToolbarOptions />
-                                    <button class="ql-list" value="check"></button>
-                                    <button class="ql-clean">Remove Formatting</button>
-                                </MudCollapse>
-                            </div>
                         </MudHtmlEditor>
-
-                    </MudText>
                 </MudItem>
 
-                <MudItem xs="12" sm="12" Class="mb-3  flex-column">
-                    <MudText Typo="Typo.body1" Class="mb-2">Music Preferences:</MudText>
-                    <MudHtmlEditor Outlined="true"
+                <MudItem xs="12" sm="12" Class="mt-5  flex-column">
+                    <MudHtmlEditor Outlined="true" Label="Music Preferences"
                     Text="Music Preferences"
                     Html="@context.MusicPreference"
                     HtmlChanged="OnMusicTextChanged"
                     Resizable="true"
                     style="min-height:50px;"
                     Placeholder="Place link to music here and any comments">
-                        <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
-                            <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-                            <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
-                                <select class="ql-font">
-                                    <option value="sans-serif"></option>
-                                    <option value="serif"></option>
-                                    <option value="monospace"></option>
-                                </select>
-                                <select class="ql-size">
-                                    <option value="small"></option>
-                                    <option selected></option>
-                                    <option value="large"></option>
-                                    <option value="huge"></option>
-                                </select>
-                                <MudHtmlToolbarOptions />
-                                <button class="ql-list" value="check"></button>
-                                <button class="ql-clean">Remove Formatting</button>
-                            </MudCollapse>
-                        </div>
-
                     </MudHtmlEditor>
                 </MudItem>
 
@@ -331,25 +262,6 @@ The Bride was married like I said before, so this wedding was quite special beca
                                         {
 
                                             <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content"  HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
-                                                <div style="display: flex; align-items: center; gap: 8px; flex:auto;">
-                                                    <MudButton Style="display: inline-flex; width: 150px;" OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-                                                    <MudCollapse Expanded="_expanded" Style="display: flex;flex-direction: row; flex-wrap: wrap; flex:auto;">
-                                                        <select class="ql-font">
-                                                            <option value="sans-serif"></option>
-                                                            <option value="serif"></option>
-                                                            <option value="monospace"></option>
-                                                        </select>
-                                                        <select class="ql-size">
-                                                            <option value="small"></option>
-                                                            <option selected></option>
-                                                            <option value="large"></option>
-                                                            <option value="huge"></option>
-                                                        </select>
-                                                        <MudHtmlToolbarOptions />
-                                                        <button class="ql-list" value="check"></button>
-                                                        <button class="ql-clean">Remove Formatting</button>
-                                                    </MudCollapse>
-                                                </div>
                                             </MudHtmlEditor>
 
                                             if(!isClient){
@@ -403,7 +315,6 @@ The Bride was married like I said before, so this wedding was quite special beca
     private string projectTitle;
     bool isAdmin = false;
     bool isClient = false;
-    bool _expanded = true;
     bool isViewMode = true;
     bool _isToggle = false;
     private async Task ViewMode()
@@ -414,10 +325,6 @@ The Bride was married like I said before, so this wedding was quite special beca
         _isToggle = false;
     }
 
-    private void OnExpandCollapseClick()
-    {
-        _expanded = !_expanded;
-    }
     protected override async Task OnInitializedAsync()
     {
         isAdmin = currentRole == "Admin";
