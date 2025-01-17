@@ -21,46 +21,53 @@ public class NotificationService : BackgroundService, INotificationService
     }
     public async Task QueueChatNotification(Project project, Message message)
     {
-        _logger.LogInformation($"Starting to queue chat notification. MessageId: {message.MessageId}, Project: {project.ProjectName}, Sender: {message.UserId}");
-        using var scope = _serviceProvider.CreateScope();
-        var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
-
-        var projectUsers = await userService.GetAllUsersAssociatedWithProjectAsync(project);
-
-        if (message.IsApproved)
+        try
         {
-            var usersToNotify = projectUsers.Where(u => u.Id != message.UserId);
-            _logger.LogInformation($"Found {usersToNotify.Count()} users to notify for message {message.UserId} which is an approved message");
-            foreach (var user in usersToNotify)
+            _logger.LogInformation($"Starting to queue chat notification. MessageId: {message.MessageId}, Project: {project.ProjectName}, Sender: {message.UserId}");
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
+
+            var projectUsers = await userService.GetAllUsersAssociatedWithProjectAsync(project);
+
+            if (message.IsApproved)
             {
-                var notificationItem = new NotificationQueueItem
+                var usersToNotify = projectUsers.Where(u => u.Id != message.UserId);
+                _logger.LogInformation($"Found {usersToNotify.Count()} users to notify for message {message.UserId} which is an approved message");
+                foreach (var user in usersToNotify)
                 {
-                    UserId = user.Id,
-                    Subject = "You have a new message on Synchron ⚡",
-                    Message = $"Hello there, you have received a new message on the project {project.ProjectName}.\n Please reply when you can!",
-                    CreatedAt = DateTime.UtcNow,
-                    MessageId = message.MessageId,
-                    ProjectId = project.ProjectId
-                };
-                await AddToQueueWithReadCheck(notificationItem);
+                    var notificationItem = new NotificationQueueItem
+                    {
+                        UserId = user.Id,
+                        Subject = "You have a new message on Synchron ⚡",
+                        Message = $"Hello there, you have received a new message on the project {project.ProjectName}.\n Please reply when you can!",
+                        CreatedAt = DateTime.UtcNow,
+                        MessageId = message.MessageId,
+                        ProjectId = project.ProjectId
+                    };
+                    await AddToQueueWithReadCheck(notificationItem);
+                }
+            }
+            else if (!message.IsApproved)
+            {
+                var adminUsers = await userService.GetAllAdminsAsync();
+                foreach (var user in adminUsers)
+                {
+                    var notificationItem = new NotificationQueueItem
+                    {
+                        UserId = user.Id,
+                        Subject = "You have a new message approval request on Synchron ⚡",
+                        Message = $"Hello there, you have received a new message approval request  on the project {project.ProjectName} by editor {project.PrimaryEditor}. Review asap!",
+                        CreatedAt = DateTime.UtcNow,
+                        MessageId = message.MessageId,
+                        ProjectId = project.ProjectId
+                    };
+                    await AddToQueueWithReadCheck(notificationItem);
+                }
             }
         }
-        else if (!message.IsApproved)
+        catch (Exception ex)
         {
-            var adminUsers = await userService.GetAllAdminsAsync();
-            foreach (var user in adminUsers)
-            {
-                var notificationItem = new NotificationQueueItem
-                {
-                    UserId = user.Id,
-                    Subject = "You have a new message approval request on Synchron ⚡",
-                    Message = $"Hello there, you have received a new message approval request  on the project {project.ProjectName} by editor {project.PrimaryEditor}. Review asap!",
-                    CreatedAt = DateTime.UtcNow,
-                    MessageId = message.MessageId,
-                    ProjectId = project.ProjectId
-                };
-                await AddToQueueWithReadCheck(notificationItem);
-            }
+            _logger.LogError(ex, "Error occurred while queuing chat notification.");
         }
     }
     private async Task AddToQueueWithReadCheck(NotificationQueueItem item)
