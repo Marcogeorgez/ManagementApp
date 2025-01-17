@@ -258,7 +258,7 @@
         catch (Exception ex)
         {
             // Handle or log error
-            Snackbar.Add($"Error loading messages",Severity.Error);
+            Snackbar.Add($"Error loading messages. Please try again later, or refresh page if it persists please report this.",Severity.Error);
             Console.WriteLine($"Error loading messages: {ex.Message}");
 
         }

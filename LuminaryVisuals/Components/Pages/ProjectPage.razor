@@ -1838,6 +1838,17 @@
         };
 
     }
+    private string GetAdminStatusStyle(AdminProjectStatus projectStatus)
+    {
+        return projectStatus switch
+        {
+            AdminProjectStatus.Not_Finished => "background-color: #4A90E2; color: white; border-radius: 8px; --parent-bg-color: #3A7AC5; text-align:center;",
+            AdminProjectStatus.Sent_Invoice => "background-color: #ba6b00; color: white; border-radius: 8px; --parent-bg-color: #d77400; text-align:center;",
+            AdminProjectStatus.Delivered_Not_Paid => "background-color: #EF5350; color: white; border-radius: 8px; --parent-bg-color: #D32F2F; text-align:center;",
+            AdminProjectStatus.Paid => "background-color: #00532e; color: white; border-radius: 8px; --parent-bg-color: #008438; text-align:center;",
+        };
+
+    }
     // Downloading Filtered as CSV
     private async Task DownloadFilteredAsCsv()
     {
