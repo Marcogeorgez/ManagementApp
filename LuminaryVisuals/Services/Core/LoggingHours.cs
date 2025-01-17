@@ -2,7 +2,7 @@
 using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace LuminaryVisuals.Services
+namespace LuminaryVisuals.Services.Core
 {
     public class LoggingHours
     {
@@ -47,7 +47,7 @@ namespace LuminaryVisuals.Services
             try
             {
                 using var context = _contextFactory.CreateDbContext();
-                { 
+                {
                     var existing = await context.EditorLoggingHours
                         .FirstOrDefaultAsync(e => e.Id == updatedLoggingHours.Id);
 
@@ -87,7 +87,7 @@ namespace LuminaryVisuals.Services
                 {
                     return await context.EditorLoggingHours
                         .Include(e => e.User)
-                        .Include(e => e.Project) 
+                        .Include(e => e.Project)
                         .Where(e => e.ProjectId == projectId)
                         .ToListAsync();
                 }
@@ -179,12 +179,12 @@ namespace LuminaryVisuals.Services
                 {
                     throw new Exception("Project not found.");
                 }
-                if (project.PrimaryEditor?.Id ==  EditorLoggingHours.UserId)
+                if (project.PrimaryEditor?.Id == EditorLoggingHours.UserId)
                 {
                     project.PrimaryEditorDetails.BillableHours = loggedHours;
 
                 }
-                else if(project.SecondaryEditor?.Id == EditorLoggingHours.UserId)
+                else if (project.SecondaryEditor?.Id == EditorLoggingHours.UserId)
                 {
                     project.SecondaryEditorDetails.BillableHours = loggedHours;
                 }
@@ -200,7 +200,7 @@ namespace LuminaryVisuals.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error calculating and saving billable hours.",ex);
+                _logger.LogError("Error calculating and saving billable hours.", ex);
                 return false;
             }
         }

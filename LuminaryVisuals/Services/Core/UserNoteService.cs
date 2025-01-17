@@ -1,9 +1,10 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 
-namespace LuminaryVisuals.Services;
+namespace LuminaryVisuals.Services.Core;
 
 
 public class UserNoteService
@@ -55,7 +56,7 @@ public class UserNoteService
         using (var context = _contextFactory.CreateDbContext())
         {
             var EntityNote = await context.UserNote.FirstOrDefaultAsync(u => u.TargetUserId == userId);
-            if(EntityNote != null )
+            if (EntityNote != null)
                 return EntityNote.Note;
             else
                 return "This user has no notes assigned.";

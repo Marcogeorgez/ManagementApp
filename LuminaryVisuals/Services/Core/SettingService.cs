@@ -2,8 +2,10 @@
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace LuminaryVisuals.Services
+namespace LuminaryVisuals.Services.Core
 {
+    // Setting Service for updating the setting table in the database
+    // which contains the conversion rate from USD to Lek
     public class SettingService
     {
         private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
@@ -29,7 +31,7 @@ namespace LuminaryVisuals.Services
         public async Task UpdateSettingAsync(string name, decimal? ConversionRateUSToLek, string updatedByUserId)
         {
             using (var context = _contextFactory.CreateDbContext())
-            { 
+            {
                 var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
                 if (setting == null)
                 {

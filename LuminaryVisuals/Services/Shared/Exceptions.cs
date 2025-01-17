@@ -2,9 +2,10 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace LuminaryVisuals.Services
+namespace LuminaryVisuals.Services.Shared
 {
-    public class ProjectReorderingServiceException : Exception {
+    public class ProjectReorderingServiceException : Exception
+    {
         public ProjectReorderingServiceException() { }
 
         public ProjectReorderingServiceException(string message)

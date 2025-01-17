@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace LuminaryVisuals.Services;
+namespace LuminaryVisuals.Services.Configuration;
 
 public class RoleInitializer
 {

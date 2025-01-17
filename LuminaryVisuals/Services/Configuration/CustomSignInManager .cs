@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
-namespace LuminaryVisuals.Services
+namespace LuminaryVisuals.Services.Configuration
 {
     public class CustomSignInManager : SignInManager<ApplicationUser>
     {
@@ -63,14 +63,14 @@ namespace LuminaryVisuals.Services
             // Return failed if the user could not be created
             return SignInResult.Failed;
         }
-    
 
-    // Override to prevent any other external logins except Google
-    public override async Task<SignInResult> ExternalLoginSignInAsync(
-            string loginProvider,
-            string providerKey,
-            bool isPersistent,
-            bool bypassTwoFactor)
+
+        // Override to prevent any other external logins except Google
+        public override async Task<SignInResult> ExternalLoginSignInAsync(
+                string loginProvider,
+                string providerKey,
+                bool isPersistent,
+                bool bypassTwoFactor)
         {
             ApplicationUser user = null;
             // Only allow Google authentication
@@ -117,7 +117,7 @@ namespace LuminaryVisuals.Services
                             {
                                 // Assign Guest role only for new users
                                 await UserManager.AddToRoleAsync(user, "Guest");
-                                
+
                                 // Sign in the new user
                                 await SignInAsync(user, isPersistent);
                                 await _notificationService.NewUserJoinedNoitifcation(user);

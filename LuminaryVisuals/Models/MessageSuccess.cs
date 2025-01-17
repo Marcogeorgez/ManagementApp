@@ -1,4 +1,4 @@
-﻿namespace LuminaryVisuals.Services
+﻿namespace LuminaryVisuals.Models
 {
     public class MessageSuccess
     {

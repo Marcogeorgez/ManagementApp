@@ -1,5 +1,6 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Services.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 namespace LuminaryVisuals.Services.Mail;

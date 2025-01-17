@@ -73,7 +73,10 @@ namespace LuminaryVisuals.Services.Helpers
         {
             if (string.IsNullOrEmpty(deliverables))
                 return deliverables;
-
+            if(deliverables.Contains("<img src"))
+            {
+                return deliverables;
+            }   
             // Pattern to match URLs, with negative lookbehind to avoid URLs in existing anchor tags
             string urlPattern = @"(?<!<a[^>]*>)(?!.*?</a>)(https?:\/\/[^<\s\n]+?)(?:[\s\n]|<br\s*\/?>|<\/p>)";
 
