@@ -15,20 +15,20 @@
             }
             else
             {
-                
-            <MudText Class="mb-3">Users Associated with the Agency:</MudText>
 
-            <MudList T="ApplicationUser" Dense="true">
-                @foreach (var user in AgencyUsers)
-                {
-                    <MudListItem>
-                        <MudText>User Name:@user.UserName
-                            <MudSpacer/>
-                            User Email:(@user.Email)</MudText>
-                        <MudButton Class="mt-2" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => DeleteGoogleProviderByNameAndEmail(user.UserName,user.Email)">Remove Google Login</MudButton>
-                    </MudListItem>
-                }
-            </MudList>
+                <MudText Class="mb-3">Users Associated with the Agency:</MudText>
+
+                <MudList T="ApplicationUser" Dense="true">
+                    @foreach (var user in AgencyUsers)
+                    {
+                        <MudListItem>
+                            <MudText>User Name:@user.UserName
+                                <MudSpacer/>
+                                User Email:(@user.Email)</MudText>
+                            <MudButton Class="mt-2" Color="Color.Error" Variant="Variant.Outlined" OnClick="() => DeleteGoogleProviderByNameAndEmail(user.UserName,user.Email)">Remove Google Login</MudButton>
+                        </MudListItem>
+                    }
+                </MudList>
             }
 
         </MudContainer>
@@ -43,7 +43,7 @@
     [Parameter] public string AgencyId { get; set; }
 
     private List<ApplicationUser> AgencyUsers { get; set; } = new List<ApplicationUser>();
-
+    private bool isProcessing;
     protected override async Task OnInitializedAsync()
     {
         await LoadAgencyUsers();
@@ -51,28 +51,41 @@
 
     private async Task LoadAgencyUsers()
     {
-        // Get the users associated with the agency via their Google login provider
-        await using var context = await DbContextFactory.CreateDbContextAsync();
+        isProcessing = true;
+        try{
+            // Get the users associated with the agency via their Google login provider
+            await using var context = await DbContextFactory.CreateDbContextAsync();
 
-        var usersWithGoogleLogin = await context.UserLogins
-            .Where(ul => ul.UserId == AgencyId)
-            .Join(context.MigratedUsers, // Join on the GoogleProviderKey
-                ul => ul.ProviderKey,
-                mu => mu.GoogleProviderKey, // Match the Google provider key
-                (ul, mu) => new ApplicationUser
+            var usersWithGoogleLogin = await context.UserLogins
+                .Where(ul => ul.UserId == AgencyId)
+                .Join(context.MigratedUsers, // Join on the GoogleProviderKey
+                    ul => ul.ProviderKey,
+                    mu => mu.GoogleProviderKey, // Match the Google provider key
+                    (ul, mu) => new ApplicationUser
                     {
                         Id = ul.UserId,
                         UserName = mu.Name, // Map the Name from MigratedUser
                         Email = mu.Email     // Map the Email from MigratedUser
 
                     })
-        .ToListAsync();
+            .ToListAsync();
 
-        AgencyUsers = usersWithGoogleLogin;
+            AgencyUsers = usersWithGoogleLogin;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading agency users: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private async Task DeleteGoogleProviderByNameAndEmail(string userName, string email)
     {
+        isProcessing = true;
+
         await using var context = await DbContextFactory.CreateDbContextAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -107,13 +120,17 @@
 
             MudDialog.Close(DialogResult.Ok(true));
             Snackbar.Add("User has been removed successfully", Severity.Success);
-            
+
         }
         catch (Exception ex)
         {
             // Rollback in case of any errors
             await transaction.RollbackAsync();
-            Snackbar.Add($"Error removing Google provider: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error removing Google provider: {ex.Message}, Please contact support.", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
         }
     }
 
