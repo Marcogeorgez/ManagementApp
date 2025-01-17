@@ -3,9 +3,9 @@ using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
-using static LuminaryVisuals.Services.UserRoleViewModel;
+using static LuminaryVisuals.Services.Core.UserRoleViewModel;
 
-namespace LuminaryVisuals.Services;
+namespace LuminaryVisuals.Services.Core;
 
 public class UserServices
 {
@@ -38,7 +38,7 @@ public class UserServices
                                         on userRole.RoleId equals role.Id
                                     select new
                                     {
-                                        UserId = userRole.UserId,
+                                        userRole.UserId,
                                         RoleName = role.Name
                                     } ).ToListAsync();
 
@@ -62,7 +62,7 @@ public class UserServices
                             .ToDictionary(n => n.TargetUserId, n => n)
 
             }).ToList();
-        
+
             return result;
         }
     }
@@ -110,7 +110,7 @@ public class UserServices
                     // Update the ExternalOrder for the new client
                     var highestOrderForClient = await context.Projects
                         .Where(p => p.ClientId == AdminId && !p.IsArchived)
-                        .MaxAsync(p => (int?) p.ExternalOrder) ?? 0;
+                        .MaxAsync(p =>  p.ExternalOrder) ?? 0;
 
                     project.ExternalOrder = highestOrderForClient + 1;
                 }
@@ -246,7 +246,7 @@ public class UserServices
                     return "User not found."; // Return error message if user doesn't exist
                 }
 
-           
+
             }
         }
         catch (Exception ex)
@@ -312,9 +312,9 @@ public class UserServices
                 .Include(p => p.SecondaryEditor)
                 .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
 
-            if(_project != null)
+            if (_project != null)
             {
-                if(_project.PrimaryEditorId != null)
+                if (_project.PrimaryEditorId != null)
                 {
                     var primaryEditor = await _userManager.FindByIdAsync(_project.PrimaryEditorId);
                     if (primaryEditor != null)
@@ -322,7 +322,7 @@ public class UserServices
                         AllUsers.Add(primaryEditor);
                     }
                 }
-                if(_project.SecondaryEditorId != null)
+                if (_project.SecondaryEditorId != null)
                 {
                     var secondaryEditor = await _userManager.FindByIdAsync(_project.SecondaryEditorId);
                     if (secondaryEditor != null)
@@ -330,7 +330,7 @@ public class UserServices
                         AllUsers.Add(secondaryEditor);
                     }
                 }
-                if(_project.ClientId != null)
+                if (_project.ClientId != null)
                 {
                     var client = await _userManager.FindByIdAsync(_project.ClientId);
                     if (client != null)
@@ -371,7 +371,8 @@ public class UserRoleViewModel
     public string SelectedRole { get; set; }
     public Dictionary<string, UserNote> Notes { get; set; }
     public string Note
-    { get => Notes.ContainsKey(UserId)? Notes[UserId]?.Note ?? string.Empty : string.Empty;
+    {
+        get => Notes.ContainsKey(UserId) ? Notes[UserId]?.Note ?? string.Empty : string.Empty;
         set
         {
             if (Notes.ContainsKey(UserId))

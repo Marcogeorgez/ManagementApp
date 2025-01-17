@@ -1,7 +1,7 @@
 ﻿using LuminaryVisuals.Components.Shared;
 using MudBlazor;
 
-namespace LuminaryVisuals.Services
+namespace LuminaryVisuals.Services.Shared
 {
     public interface IConfirmationService
     {
