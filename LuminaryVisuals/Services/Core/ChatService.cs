@@ -68,10 +68,7 @@ public class ChatService
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
         var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
-        if (newMessage.IsApproved == true)
-        {
-            await _notificationService.QueueChatNotification(project!, newMessage);
-        }
+        _ = Task.Run(() => _notificationService.QueueChatNotification(project!, newMessage));
         return newMessage;
     }
 
