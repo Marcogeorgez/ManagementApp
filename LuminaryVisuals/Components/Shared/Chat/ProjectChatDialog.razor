@@ -202,12 +202,14 @@
             _isLoading = true;
             UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
             await SendMessage(UploadedFileUrl);
-            _isLoading = false;
         }
         catch (Exception ex)
         {
             Snackbar.Add("Unsupported Format or file is larger than 10MB. Please attach the file using a link hosted on another cloud storage", Severity.Warning);
-            Console.WriteLine(ex);
+            Console.WriteLine($"Error uploading file: {ex}");
+        }
+        finally{
+            _isLoading = false;
         }
 
     }
