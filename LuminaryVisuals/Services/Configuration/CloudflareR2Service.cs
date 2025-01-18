@@ -56,7 +56,7 @@ public class CloudflareR2Service
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Upload error: {ex.Message}");
+            _logger.LogError($"Logged Upload error: {ex.Message}");
             throw;
         }
     }
