@@ -1,0 +1,31 @@
+﻿<MudDialog>
+    <DialogContent>
+
+        <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@project.Link" />
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Class="mr-3" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Class="mr-3" Size="Size.Large">Save</MudButton>
+
+    </DialogActions>
+
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Project project { get; set; }
+    private string? Text = "";
+
+    private async Task Save()
+    {
+
+        MudDialog.Close(DialogResult.Ok(project));
+    }
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+}

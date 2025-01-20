@@ -218,7 +218,7 @@
                                             @(context.Item.IsArchived ? "Unarchive" : "Archive")
                                         </MudMenuItem>
                                         <MudMenuItem OnClick="@(() => DeleteDialog(context.Item))"
-                                                     Icon="@Icons.Material.Filled.Delete" IconSize="Size.Small">
+                                        Icon="@Icons.Material.Filled.Delete" IconSize="Size.Small">
                                             Delete
                                         </MudMenuItem>
                                     }
@@ -268,10 +268,11 @@
                         </CellTemplate>
                     </TemplateColumn>
                 }
+
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="z-index:4 !important; left: 200px"
-                    Hideable="false" CellStyle=" left:200px;" CellClass="outlined-dialog-xl-content"
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:200px; z-index:4" : "")"
+                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:200px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -319,11 +320,13 @@
                     Editable=false Required=false >
                         <CellTemplate>
                             <MudTextField T="string"
-                            Value="context.Item.Client.UserName"  Class="outlined-dialog-max-content"
+                            Value="context.Item.Client.UserName" 
                             ReadOnly="true" 
                             Immediate="true" Adornment="Adornment.End"
                             AdornmentIcon="@Icons.Material.Filled.OpenInNew" Variant="Variant.Outlined"
                             MaxLines="4"
+                            class="@(_isAdminView ? "cursor-pointer outlined-dialog-max-content grey-border": "outlined-dialog-max-content grey-border")"
+                            @onclick="@( _isAdminView ? (async () => await OpenClientNameDialog(context.Item)) : null )"
                             OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
                             </MudTextField>
                         </CellTemplate>
@@ -553,15 +556,29 @@
                         @if (!String.IsNullOrEmpty(@context.Item.Link))
                         {
                             <MudTooltip Text="@context.Item.Link">
-                                <MudLink Style="color:#0e9b42 !important;" Href="@context.Item.Link" Target="_blank">
-                                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" />
-                                </MudLink>
+                                @if(_isClientView)
+                                {
+                                    <MudLink Style="color:#0e9b42 !important;" Href="@context.Item.Link" Target="_blank">
+                                        <MudIcon Icon="@Icons.Material.Filled.OpenInNew" />
+                                    </MudLink>
+                                }
+                                else
+                                {
+                                    <MudIconButton Style="color:#0e9b42 !important;" Icon="@Icons.Material.Filled.OpenInNew" @onclick="@(() => OpenLinkDialog(context.Item))" />
+                                }
                             </MudTooltip>
                         }
                         else
                         {
-                            <MudIcon Disabled Icon="@Icons.Material.Filled.OpenInNew" Color="Color.Default"></MudIcon>
-                        }
+                            @if(_isClientView)
+                            {
+                                <MudIcon Disabled Icon="@Icons.Material.Filled.OpenInNew" Color="Color.Default" />
+                            }
+                            else
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" @onclick="@(() => OpenLinkDialog(context.Item))" Color="Color.Default" />
+                            }
+                        }      
                     </CellTemplate>
                     <EditTemplate>
                         <div class="@EditTemplateCss">
@@ -689,7 +706,7 @@
                             <MudTooltip Text="Click to view/change private note">
 
                                 <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
-                                               Style=@($"{(!isEmpty ? "color: #f60008;" : "color: var(--mud-palette-text-primary);")}")
+                                Style=@($"{(!isEmpty ? "color: #f60008;" : "color: var(--mud-palette-text-primary);")}")
                                 @onclick="@(() => OpensPrivateNoteForProject(context.Item))" />
                             </MudTooltip>
                         </CellTemplate>
@@ -852,7 +869,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Editor Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Editor Log Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden=@HasAnySecondaryEditor>
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.BillableHours != null)
                                 {
@@ -1918,17 +1935,17 @@
         {
             if (await ConfirmationService.Confirm("Do you want to download the filtered projects in CSV file?"))
             {
-            var filteredItems = _dataGrid.FilteredItems.ToList();
-            var groupedByClient = filteredItems.GroupBy(p => p.ClientName);
+                var filteredItems = _dataGrid.FilteredItems.ToList();
+                var groupedByClient = filteredItems.GroupBy(p => p.ClientName);
 
-            foreach (var clientGroup in groupedByClient)
-            {
-                var clientName = clientGroup.Key;
-                var projects = clientGroup.ToList();
-                var csvContent = GenerateCsvContentFiltered(projects);
-                var filename = $"{clientName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
-                await DownloadFile(filename, csvContent);
-            }
+                foreach (var clientGroup in groupedByClient)
+                {
+                    var clientName = clientGroup.Key;
+                    var projects = clientGroup.ToList();
+                    var csvContent = GenerateCsvContentFiltered(projects);
+                    var filename = $"{clientName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
+                    await DownloadFile(filename, csvContent);
+                }
             }
         }
         catch (Exception ex)
@@ -2134,7 +2151,7 @@
     {
         try
         {
-        LoadingService.ShowLoading();
+            LoadingService.ShowLoading();
 
             if (draggedProject == null || targetProject == null)
                 return;
@@ -2255,6 +2272,66 @@
         {
             Snackbar.Add("Failed to update payment visibility", Severity.Error);
             Console.WriteLine($"Error updating payment visibility: {ex.Message}");
+        }
+    }
+    private async Task OpenClientNameDialog(Project project)
+    {
+        try{
+            if (_isClientView) return;
+
+            var parameters = new DialogParameters
+            {
+                { "_project", project },
+                { "Clients", Clients }
+            };
+
+            var dialog = await DialogService.ShowAsync<ClientNameDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                var _project = (Project) result.Data;
+                await UpdateProjectAsync(_project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update progress", Severity.Error);
+            Console.WriteLine($"Error updating progress: {ex.Message}");
+        }
+    }
+    private async Task OpenLinkDialog(Project project)
+    {
+        try{
+            if (_isClientView)
+            {
+                return;
+            }
+
+            var parameters = new DialogParameters
+            {
+                { "project", project },
+            };
+
+            var dialog = await DialogService.ShowAsync<ProjectLink>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                var _project = (Project) result.Data;
+                await UpdateProjectAsync(_project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update progress", Severity.Error);
+            Console.WriteLine($"Error updating progress: {ex.Message}");
         }
     }
     private async Task OpenProgressDialog(Project project)

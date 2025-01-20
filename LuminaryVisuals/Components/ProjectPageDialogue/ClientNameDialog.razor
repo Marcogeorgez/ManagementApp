@@ -1,0 +1,37 @@
+﻿<MudDialog>
+    <DialogContent>
+        @if (Clients != null && Clients.Any())
+        {
+            <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                       Class="d-flex justify-center mud-width-full py-2 outlined-dialog-max-content"
+                       Variant="Variant.Outlined"
+                       Label="Client Name"
+                       @bind-Value="_project.ClientId">
+                @foreach (var client in Clients)
+                {
+                    <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                        @client.UserName
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project _project { get; set; }
+    [Parameter] public List<UserRoleViewModel.UserProjectViewModel> Clients { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok((Project) _project));
+
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

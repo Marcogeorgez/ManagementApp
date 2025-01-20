@@ -1014,9 +1014,6 @@ text-decoration: underline;
     cursor: pointer !important;
 }
 
-.mud-table-root {
-    margin-top: 60px;
-}
 .mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar {
     display: block ruby !important
 }
@@ -1038,4 +1035,11 @@ text-decoration: underline;
 
 #connection-label{
     cursor:pointer;
+}
+.mud-input > input.mud-input-root-outlined.mud-input-root-adorned-start,
+div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
+    padding-inline-end: 26px;
+}
+.mud-input-adornment-end {
+    margin-inline-end: 6px;
 }

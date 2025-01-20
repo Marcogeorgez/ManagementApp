@@ -23,7 +23,7 @@
 
 
                 <!-- Client Payment Status -->
-                <MudSelect T="AdminProjectStatus" Label="Client Payment Status"
+            <MudSelect T="AdminProjectStatus" Label="Client Payment Status" Variant="Variant.Outlined"
                            @bind-Value="editModel.PaymentStatus" Class="mb-4">
                     @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
                     {
