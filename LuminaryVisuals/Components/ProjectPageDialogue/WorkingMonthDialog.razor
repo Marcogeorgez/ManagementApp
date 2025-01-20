@@ -1,0 +1,30 @@
+﻿<MudDialog>
+    <DialogContent>
+            <MudDatePicker Label="Working Month"
+                           Variant="Variant.Outlined"
+                           Date="@WorkingMonth"
+                           DateChanged="@(date => WorkingMonth = date.Value)"
+                           Class="mt-3"
+                           Required="false"
+                           FixDay="1"
+                           DateFormat="MM/yyyy" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DateTime WorkingMonth { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(WorkingMonth));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+}
+

@@ -1,0 +1,31 @@
+﻿<MudDialog>
+    <DialogContent>
+
+            <MudDatePicker Label="Due Date"
+                           Variant="Variant.Outlined"
+                           Date="@DueDate"
+                           DateChanged="@(date => DueDate = date.Value)"
+                           Class="mt-3"
+                           Required="false" />
+            <MudCheckBox Label="Mark as Urgent"
+                         @bind-Value="@IsUrgent" Class="mt-3" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DateTime DueDate { get; set; }
+    [Parameter] public bool IsUrgent { get; set; }
+    
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok((DueDate, IsUrgent)));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+}

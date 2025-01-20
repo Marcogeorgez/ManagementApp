@@ -10,7 +10,7 @@
 }
 .mud-input-outlined-border {
     border-radius: 8px !important;
-    border-width: 3px !important;
+    border-width: 2px !important;
     border-color: var(--parent-bg-color, #5a5a5f) !important;
 }
 
@@ -959,10 +959,10 @@ text-decoration: underline;
 .html-editor-label {
     top: -10px;
     left: 15px;
+    width:fit-content;
     font-size: 12px;
     position: relative;
     background: #0d0e19;
-    max-width: 100px;
     text-wrap: nowrap;
     font-size: 1rem;
     font-weight: 400;
@@ -995,4 +995,33 @@ text-decoration: underline;
 }
 .mud-expand-panel.mud-expand-panel-border{
     border:0px !important;
+}
+
+.cursor-pointer .mud-input-control-input-container .mud-input-mud-input-outlined-mud-input-adorned-end-mud-shrink-mud-typography-input .mud-input-slot-mud-input-root-mud-input-root-outlined-mud-input-root-adorned-end,
+.cursor-pointer .mud-progress-linear-mud-progress-linear-small-mud-progress-linear-color-info {
+    cursor: pointer !important;
+}
+/* Make input text red */
+.mud-input-control.mud-input-input-control.outlined-dialog-md-content.cursor-pointer
+.mud-input-control-input-container
+.mud-input
+.mud-input-slot,
+.cursor-pointer >
+.mud-input-control-input-container >
+.mud-input.mud-input-outlined >
+.mud-input-slot.mud-input-root.mud-input-root-outlined {
+    cursor: pointer !important;
+}
+
+.mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar
+{
+    display: inline-flex !important
+}
+.html-editor.html-content-wrapper.mud-input-outlined-border
+{
+    min-width:680px;    
+    margin-top:12px;
+}
+.ql-container.ql-snow{
+    min-height:100px;
 }

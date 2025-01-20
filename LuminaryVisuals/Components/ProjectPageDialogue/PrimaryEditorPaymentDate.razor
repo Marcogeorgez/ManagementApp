@@ -1,0 +1,29 @@
+﻿<MudDialog>
+    <DialogContent>
+            <MudDatePicker Label="Primary Editor Payment Date"
+                           Variant="Variant.Outlined"
+                           Date="@(_PrimaryEditorPaymentDate )"
+                           DateChanged="@(date => _PrimaryEditorPaymentDate = date.Value)"
+                           Class="mt-3"
+                           Required="false" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DateTime? _PrimaryEditorPaymentDate { get; set; }
+    [Parameter] public bool IsUrgent { get; set; }
+
+    private void Submit()
+    {
+        var dateToSave = _PrimaryEditorPaymentDate ?? DateTime.Today;
+        MudDialog.Close(DialogResult.Ok(DateTime.SpecifyKind(dateToSave, DateTimeKind.Utc)));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+}

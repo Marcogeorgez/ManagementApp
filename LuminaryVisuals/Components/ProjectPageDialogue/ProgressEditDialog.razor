@@ -1,0 +1,35 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudSelect T="ProgressBarValue"
+                   Label="Progress"
+                   Class="mt-3"
+                   AnchorOrigin="Origin.BottomCenter"
+                   Value="@((ProgressBarValue)Progress)" 
+                   ValueChanged="@(newValue => Progress = (int)newValue)"
+                   Variant="Variant.Outlined">
+            <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
+            <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+            <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
+            <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+            <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+            <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int Progress { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok((int) Progress));
+
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

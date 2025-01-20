@@ -1,0 +1,59 @@
+﻿@inject IDialogService dialogService
+<MudDialog>
+    <DialogContent>
+        @if (Editors != null && Editors.Any())
+        {
+            <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                       Class="d-flex justify-center mud-width-full py-2" Variant="Variant.Outlined" Label="Primary Editor"
+                       ValueChanged="@(async value => {
+                           if (value == null) {
+                               var result = await dialogService.ShowMessageBox(
+                                   "Confirm Unassign",
+                                   "Are you sure you want to unassign the editor? HIS LOGGED HOURS WILL BE DELETED.",
+                                   yesText: "Unassign",
+                                   cancelText: "Cancel"
+                               );
+                               if (result == true)
+                                   PrimaryEditorId = value;
+                           }
+                           else {
+                               PrimaryEditorId = value;
+                           }
+                       })"
+                       Value="@PrimaryEditorId">
+                <MudSelectItem Class="" T="string" Value="null" Ripple=true>
+                    Unassign Editor
+                </MudSelectItem>
+                @foreach (var editor in Editors)
+                {
+                    <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                        @editor.UserName
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        }
+        else
+        {
+            <MudText Typo="Typo.h5">There are no assigned Editors in the app.</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string? PrimaryEditorId { get; set; }
+    [Parameter] public List<UserRoleViewModel.UserProjectViewModel>? Editors { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(PrimaryEditorId));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+
+}
