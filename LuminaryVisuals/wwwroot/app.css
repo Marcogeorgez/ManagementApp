@@ -101,6 +101,7 @@ th.mud-table-cell.sticky-left:hover {
         top: 0 !important;
     }
 }
+
 @media (max-width: 960px) {
     .mud-drop-container {
         max-width: 90% !important;
@@ -1013,8 +1014,10 @@ text-decoration: underline;
     cursor: pointer !important;
 }
 
-.mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar
-{
+.mud-table-root {
+    margin-top: 60px;
+}
+.mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar {
     display: inline-flex !important
 }
 .html-editor.html-content-wrapper.mud-input-outlined-border
@@ -1024,4 +1027,18 @@ text-decoration: underline;
 }
 .ql-container.ql-snow{
     min-height:100px;
+}
+
+@media (max-width: 960px) {
+    .connection-lines {
+        left: 470px !important;
+        width: auto !important;
+    }
+}
+
+.connection-lines {
+
+}
+#connection-label{
+    cursor:pointer;
 }
