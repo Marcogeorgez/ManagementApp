@@ -431,6 +431,74 @@ public class ProjectService
             }
         }
     }
+    public async Task UpdateProjectsInBatchAsync(IEnumerable<Project> projects, string updatedByUserId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var projectIds = projects.Select(p => p.ProjectId).ToList();
+
+            // Load all affected projects with their relations
+            var dbProjects = await context.Projects
+                .AsTracking()
+                .Include(p => p.Revisions)
+                .Include(p => p.PrimaryEditorDetails)
+                .Include(p => p.SecondaryEditorDetails)
+                .Include(p => p.Client)
+                .Where(p => projectIds.Contains(p.ProjectId))
+                .ToDictionaryAsync(p => p.ProjectId);
+
+            var statusChanges = new List<(Project Project, ProjectStatus OldStatus, ProjectStatus NewStatus)>();
+
+            foreach (var project in projects)
+            {
+                if (!dbProjects.TryGetValue(project.ProjectId, out var dbProject))
+                    continue;
+
+                var oldStatus = dbProject.Status;
+
+                // Update project values
+                context.Entry(dbProject).CurrentValues.SetValues(project);
+
+                // Handle status changes
+                if (oldStatus != project.Status)
+                {
+                    if (project.Status == ProjectStatus.Delivered)
+                    {
+                        dbProject.AdminStatus = AdminProjectStatus.Delivered_Not_Paid;
+                    }
+                    statusChanges.Add((dbProject, oldStatus, project.Status));
+                }
+
+                // Update related entities
+                if (project.PrimaryEditorDetails != null)
+                {
+                    dbProject.PrimaryEditorDetails.DatePaidEditor = project.PrimaryEditorDetails.DatePaidEditor!;
+                }
+
+                if (project.SecondaryEditorDetails != null)
+                {
+                    dbProject.SecondaryEditorDetails.DatePaidEditor = project.SecondaryEditorDetails.DatePaidEditor!;
+                }
+
+                if (project.ProjectSpecifications != null)
+                {
+                    context.Entry(dbProject.ProjectSpecifications).CurrentValues.SetValues(project.ProjectSpecifications);
+                }
+            }
+
+            // Save all changes
+            await context.SaveChangesAsync();
+
+            // Send notifications for status changes
+            foreach (var (project, oldStatus, newStatus) in statusChanges)
+            {
+                _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(project, oldStatus, newStatus, updatedByUserId));
+            }
+
+            // Broadcast changes
+            await _broadcaster.NotifyAllAsync();
+        }
+    }
     public async Task UpdateProjectBillableHoursAsync(Project project)
     {
         using (var context = _contextFactory.CreateDbContext())
@@ -757,7 +825,7 @@ public class ProjectService
                 if (project.ClientBillableHours != null && project.Client.HourlyRate != null)
                 {
                     project.ClientBillableAmount =  project.Client.HourlyRate.HasValue && project.ClientBillableHours.HasValue 
-                        ? Math.Round(project.Client.HourlyRate.Value * project.ClientBillableHours.Value, 2)
+                        ? Math.Round(project.Client.HourlyRate.Value * project.ClientBillableHours.Value, 0, MidpointRounding.AwayFromZero)
                         :  null;
                 }
 
@@ -800,8 +868,7 @@ public class ProjectService
 
         editorDetails.PaymentAmount = Math.Round(
             ( editor.HourlyRate ?? 0 ) * ( editorDetails.FinalBillableHours ?? 0 ),
-            2
-        );
+            0, MidpointRounding.AwayFromZero);
 
     }
 

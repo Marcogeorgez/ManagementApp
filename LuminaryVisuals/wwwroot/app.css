@@ -428,7 +428,7 @@ th.mud-table-cell.sticky-left:hover {
     background: var(--info-color) !important;
     min-width: 50px;
     border: solid 2px #008cff !important;
-    border-radius: 0px !important;
+    border-radius: 6px !important;
 }
 
 .floating-chat-icon:hover {
@@ -1018,7 +1018,7 @@ text-decoration: underline;
     margin-top: 60px;
 }
 .mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar {
-    display: inline-flex !important
+    display: block ruby !important
 }
 .html-editor.html-content-wrapper.mud-input-outlined-border
 {
@@ -1036,9 +1036,6 @@ text-decoration: underline;
     }
 }
 
-.connection-lines {
-
-}
 #connection-label{
     cursor:pointer;
 }
