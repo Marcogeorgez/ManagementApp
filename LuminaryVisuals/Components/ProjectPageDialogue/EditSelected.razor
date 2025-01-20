@@ -1,0 +1,242 @@
+﻿@using MudBlazor
+@using System.Collections.Generic
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh;min-width:600px; overflow-y: auto;">
+            <MudTreeView Class="ml-n3 pa-0" T="string" ReadOnly>
+                <MudTreeViewItem Text="@($"Batch Edit Selected Projects ({SelectedProjects?.Count})")">
+                    @foreach (var project in SelectedProjects)
+                    {
+                        <MudTreeViewItem Text="@project.ProjectName" />
+                    }
+                </MudTreeViewItem>
+            </MudTreeView>
+            <!-- Status -->
+            <MudSelect T="ProjectStatus" Label="Project Status" Variant="Variant.Outlined"
+                       @bind-Value="editModel.Status" Class="my-2">
+                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                {
+                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                }
+            </MudSelect>
+
+
+                <!-- Client Payment Status -->
+                <MudSelect T="AdminProjectStatus" Label="Client Payment Status"
+                           @bind-Value="editModel.PaymentStatus" Class="mb-4">
+                    @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+                    {
+                        <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <!-- Editor Payment Dates -->
+            <MudDatePicker Label="Primary Editor Payment Date" Variant="Variant.Outlined"
+                           @bind-Date="editModel.PrimaryEditorDatePaid" />
+            <MudDatePicker Label="Sec Editor Payment Date" Variant="Variant.Outlined"
+                           @bind-Date="editModel.SecondaryEditorDatePaid" />
+                <!-- Progress -->
+                <MudSelect T="ProgressBarValue"
+                           Label="Progress"
+                           Class="mt-3"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Value="@((ProgressBarValue)editModel.Progress)"
+                           ValueChanged="@(newValue => editModel.Progress = (int)newValue)"
+                           Variant="Variant.Outlined">
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+                </MudSelect>
+
+                
+                <MudItem sm="6">
+                <!-- Payment Visible -->
+                <MudCheckBox @bind-Value="editModel.IsPaymentVisible"
+                             Label="Payment Visible to Client" Class="mb-2" />
+                </MudItem>
+                <MudItem sm="6">
+
+                <!-- Urgent Warning -->
+                <MudCheckBox @bind-Value="editModel.IsUrgent"
+                             Label="Mark as Urgent" Class="mb-2" />
+                </MudItem>
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public HashSet<Project> SelectedProjects { get; set; }
+
+    private MudForm form;
+    private EditModel editModel = new();
+    private HashSet<string> modifiedProperties = new();
+
+    private class EditModel
+    {
+        private AdminProjectStatus? _paymentStatus;
+        public AdminProjectStatus PaymentStatus
+        {
+            get => _paymentStatus ?? default;
+            set
+            {
+                if (_paymentStatus != value)
+                {
+                    _paymentStatus = value;
+                    OnPropertyModified(nameof(PaymentStatus));
+                }
+            }
+        }
+
+        private DateTime? _primaryEditorDatePaid = null;
+        public DateTime? PrimaryEditorDatePaid
+        {
+            get => _primaryEditorDatePaid;
+            set
+            {
+                DateTime? utcValue = value.HasValue
+                    ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
+                    : null;
+                if (_primaryEditorDatePaid != utcValue)
+                {
+                    _primaryEditorDatePaid = utcValue;
+                    OnPropertyModified(nameof(PrimaryEditorDatePaid));
+                }
+            }
+        }
+
+        private DateTime? _secondaryEditorDatePaid = null;
+        public DateTime? SecondaryEditorDatePaid
+        {
+            get => _secondaryEditorDatePaid;
+            set
+            {
+                DateTime? utcValue = value.HasValue
+                    ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
+                    : null;
+                if (_secondaryEditorDatePaid != utcValue)
+                {
+                    _secondaryEditorDatePaid = utcValue;
+                    OnPropertyModified(nameof(SecondaryEditorDatePaid));
+                }
+            }
+        }
+        private int? _progress;
+        public int Progress
+        {
+            get => _progress ?? default;
+            set
+            {
+                if (_progress != value)
+                {
+                    _progress = value;
+                    OnPropertyModified(nameof(Progress));
+                }
+            }
+        }
+
+        private ProjectStatus? _status;
+        public ProjectStatus Status
+        {
+            get => _status ?? default;
+            set
+            {
+                if (_status != value)
+                {
+                    _status = value;
+                    OnPropertyModified(nameof(Status));
+                }
+            }
+        }
+
+        private bool? _isPaymentVisible;
+        public bool IsPaymentVisible
+        {
+            get => _isPaymentVisible ?? default;
+            set
+            {
+                if (_isPaymentVisible != value)
+                {
+                    _isPaymentVisible = value;
+                    OnPropertyModified(nameof(IsPaymentVisible));
+                }
+            }
+        }
+
+        private bool? _IsUrgent;
+        public bool IsUrgent
+        {
+            get => _IsUrgent ?? default;
+            set
+            {
+                if (_IsUrgent != value)
+                {
+                    _IsUrgent = value;
+                    OnPropertyModified(nameof(IsUrgent));
+                }
+            }
+        }
+
+        public void OnPropertyModified(string propertyName)
+        {
+            if (_modifiedProperties != null)
+            {
+                _modifiedProperties.Add(propertyName);
+            }
+        }
+
+        private HashSet<string> _modifiedProperties;
+        public void SetModifiedPropertiesTracker(HashSet<string> tracker)
+        {
+            _modifiedProperties = tracker;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        editModel.SetModifiedPropertiesTracker(modifiedProperties);
+        base.OnInitialized();
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task Submit()
+    {
+            foreach (var project in SelectedProjects)
+            {
+                if (modifiedProperties.Contains(nameof(EditModel.PaymentStatus)))
+                    project.AdminStatus = editModel.PaymentStatus;
+
+                if (modifiedProperties.Contains(nameof(EditModel.PrimaryEditorDatePaid)))
+                    project.PrimaryEditorDetails.DatePaidEditor = editModel.PrimaryEditorDatePaid;
+
+                if (modifiedProperties.Contains(nameof(EditModel.SecondaryEditorDatePaid)))
+                    project.SecondaryEditorDetails.DatePaidEditor = editModel.SecondaryEditorDatePaid;
+
+                if (modifiedProperties.Contains(nameof(EditModel.Progress)))
+                    project.ProgressBar = editModel.Progress;
+
+                if (modifiedProperties.Contains(nameof(EditModel.Status)))
+                    project.Status = editModel.Status;
+
+                if (modifiedProperties.Contains(nameof(EditModel.IsPaymentVisible)))
+                    project.IsPaymentVisible = editModel.IsPaymentVisible;
+
+                if (modifiedProperties.Contains(nameof(EditModel.IsUrgent)))
+                    project.IsUrgent = editModel.IsUrgent;
+            }
+            MudDialog.Close(DialogResult.Ok(SelectedProjects));
+    }
+}
