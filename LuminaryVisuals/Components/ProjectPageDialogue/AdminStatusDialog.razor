@@ -1,0 +1,31 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudSelect T="AdminProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Client Payment Status"
+                   Value="@AdminStatus"
+                   ValueChanged="@(newValue => AdminStatus = newValue)"
+                   Required="true">
+            @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+            {
+                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public AdminProjectStatus AdminStatus { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(AdminStatus));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+ 
+}

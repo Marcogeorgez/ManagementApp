@@ -1,4 +1,6 @@
 ﻿@page "/project"
+@using LuminaryVisuals.Components.ProjectPageDialogue
+@using LuminaryVisuals.Services.Shared
 @using Microsoft.Extensions.Options
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -64,11 +66,9 @@
         Groupable=true QuickFilter="@_quickFilter"
         ShowMenuIcon=false
         EditMode="DataGridEditMode.Form"
-        EditTrigger="DataGridEditTrigger.OnRowClick" RowClick="@OnRowClick"
         ReadOnly=false RowStyle="text-align:center;"
         StartedEditingItem="@StartedEditingItem" 
-        CanceledEditingItem="@CanceledEditingItem" 
-        CommittedItemChanges="@CommittedItemChanges"
+        CanceledEditingItem="@CanceledEditingItem"         CommittedItemChanges="@CommittedItemChanges"
         FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true 
         RowClassFunc="@GetRowClass">
 
@@ -264,6 +264,10 @@
                                         Logging
                                     </MudMenuItem>
                                 }
+                                    <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
+                                        Icon="@Icons.Material.Filled.Edit">
+                                        Edit Row
+                                    </MudMenuItem>
                             </MudMenu>
                             @{
                                 var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
@@ -375,15 +379,19 @@
 
                 @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
                 {
-                    <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle=""> 
+                    <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle="vertical-align: middle;"> 
                         <CellTemplate>
                         @if (context?.Item != null)
+                        {
+                            <div class="@(_isAdminView || _isEditorView ? "cursor-pointer ": "") " style="width: 100%; min-height: 40px; display:flex; align-items:center;"
+                                @onclick="@( _isAdminView|| _isEditorView ? (async () => await OpenProgressDialog(context.Item)) : null )">
 
-                            {
-
-                                <MudProgressLinear Value="@context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
-
-                            } 
+                                @if (context?.Item != null)
+                                {
+                                    <MudProgressLinear Value="context.Item.ProgressBar" Color="Color.Info" Size="Size.Small" Class="my-0" />
+                                }
+                            </div>
+                        } 
                         </CellTemplate>
 
                         <EditTemplate Context="context">
@@ -411,11 +419,13 @@
                     <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;"
                                     Groupable="true" Editable=false CellStyle="text-align:center;" >
                         <CellTemplate>
-                            <MudTextField T="string" Value="@context.Item.FormattedShootDate" Class="outlined-dialog-md-content" style="background-color:#32333c;"
-                            ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End" />
+                            <MudTextField T="string" Value="@context.Item.FormattedShootDate" 
+                            Class=@($"outlined-dialog-lg-content grey-border {( _isAdminView || _isClientView ? "cursor-pointer" : "" )}")
+                            ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"
+                            style="background-color:#32333c;"
+                            @onclick="@( _isAdminView || _isClientView ? (() => OpenShootDateDialog(context.Item)) : null )"/>
                         </CellTemplate>
                         <EditTemplate Context="context">
-                            @* If changed from here I will later need of a way to change due date*@
                             @if(_isAdminView || _isClientView){
                                 <MudDatePicker Label="Shoot Date" Variant="Variant.Outlined" Date="@context.Item.ShootDate"
                                 DateChanged="@(date => context.Item.ShootDate = date)" Class="mt-3" Required="false" />
@@ -428,41 +438,24 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
                 {
-
-                    if(_isAdminView)
-                    {
-                        <TemplateColumn T="Project" Title="Add Warning" Sortable="false" Filterable="false" Groupable=false Hideable="true">
-                            <CellTemplate>
-                                <MudItem Class="d-flex justify-center">
-                                    <MudIconButton Icon="@(context.Item.IsUrgent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
-                                    Color="@(context.Item.IsUrgent ? Color.Warning : Color.Tertiary)"
-                                    OnClick="@(async () => await ToggleUrgentVisibility(context.Item))"
-                                    Size="Size.Small" />
-                                </MudItem>
-                            </CellTemplate>
-                        </TemplateColumn>
-                    }
                     <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false"
                     CellClass="outlined-dialog-md-content" Groupable="true" Editable=false >
                         <CellTemplate>
                             @if (context.Item.IsUrgent == true)
                             {
-                                    @if(_isAdminView || _isEditorView)
-                                    {
-                                        <MudTextField T="string" Value="context.Item.FormattedDueDate" Class="outlined-dialog-lg-content"
+                                        <MudTextField T="string" Value="context.Item.FormattedDueDate" 
                                         ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"
-                                        style="background-color:#b37700;" AdornmentIcon="@Icons.Material.TwoTone.WarningAmber" AdornmentColor="Color.Default"/>
-                                    }
-                                    else{
-                                        <MudTextField T="string" Class="outlined-dialog-lg-content" style="background-color:#32333c;"
-                                                      Value="context.Item.FormattedDueDate"
-                                                      ReadOnly="true" Variant="Variant.Outlined" />
-                                    }
+                                        Class=@($"outlined-dialog-lg-content {( _isAdminView ? "cursor-pointer" : "" )} {(_isClientView ? "grey-border" : "yellow-border")}")
+                                        @onclick="@( _isAdminView ? (() => OpenDueDateDialog(context.Item)) : null )"
+                                        style="@(_isClientView ? "background-color:#32333c;" : "background-color:#b37700;")" AdornmentIcon="@Icons.Material.TwoTone.WarningAmber" AdornmentColor="Color.Default" />
                             }
                             else
                             {
-                                <MudTextField T="string" Class="outlined-dialog-lg-content" style="background-color:#32333c;"
-                                Value="context.Item.FormattedDueDate" ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End" />
+                                        <MudTextField T="string" Value="context.Item.FormattedDueDate" 
+                                        ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"
+                                        Class=@($"outlined-dialog-lg-content {( _isAdminView ? "cursor-pointer" : "" )}")
+                                        @onclick="@( _isAdminView ? (() => OpenDueDateDialog(context.Item)) : null )"
+                                        style="background-color:#32333c;" />
                             }
 
                         </CellTemplate>
@@ -487,8 +480,10 @@
                     <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content"
                     CellStyle="text-align:center;" Groupable="true" Editable=false>
                         <CellTemplate>
-                            <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" Class="outlined-dialog-md-content" style="background-color:#32333c;"
-                            ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
+                            <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" 
+                            Class=@($"outlined-dialog-md-content {( _isAdminView ? "cursor-pointer" : "" )}")
+                            @onclick="@( _isAdminView ? (() => OpenWorkingMonthDialog(context.Item)) : null )"
+                            style="background-color:#32333c;" ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
                         </CellTemplate>
                         <EditTemplate Context="context">
                             @if(@_isAdminView){
@@ -505,12 +500,14 @@
                 {
                     <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true" CellClass="status-cell-center" CellStyle="text-align:center !important;">
                         <CellTemplate>
-                            <MudTextField Class=" outlined-dialog-max-content" ReadOnly=true Variant="Variant.Outlined" 
+                            <MudTextField ReadOnly=true Variant="Variant.Outlined" 
                             Style="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? GetStatusStyle(ProjectStatus.Working) 
                                 : GetStatusStyle(context.Item.Status))" 
-                            Value=@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? ProjectStatus.Working.ToString() : context.Item.FormatStatus)/>
+                            Value=@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? ProjectStatus.Working.ToString() : context.Item.FormatStatus)
+                            Class="outlined-dialog-max-content cursor-pointer"
+                                          @onclick="@(() => OpenStatusDialog(context.Item))" />
                             </CellTemplate>
-                            <EditTemplate Context="context">
+                            <EditTemplate Context="context">    
                             <MudSelect T="ProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Status"
                                        Value="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review 
                             ? ProjectStatus.Working : context.Item.Status)"
@@ -546,14 +543,17 @@
                 @if (RoleBasedColumns[_currentRole].Contains("ClientPaymentStatus"))
                 {
                     <PropertyColumn Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Required=false CellStyle="text-align:center;">
-
+                        <CellTemplate>
+                            <MudTextField ReadOnly=true Variant="Variant.Outlined" 
+                            Style="@GetAdminStatusStyle(context.Item.AdminStatus)" 
+                            Value=context.Item.FormatAdminStatus
+                            Class=@($"outlined-dialog-max-content {( _isAdminView ? "cursor-pointer" : "" )}")
+                            @onclick="@( _isAdminView ? (() => OpenAdminStatusDialog(context.Item)) : null )"/>
+                        </CellTemplate>
                         <EditTemplate Context="context">
                             @if(_isAdminView){
-                            <MudSelect T="AdminProjectStatus" Class="mt-3"
-                            Variant="Variant.Outlined"
-                            Label="Client Payment Status"
-                            @bind-Value="context.Item.AdminStatus"
-                            Required="true">
+                            <MudSelect T="AdminProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Client Payment Status"
+                            @bind-Value="context.Item.AdminStatus"Required="true">
                                 @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
                                 {
                                     <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
@@ -570,12 +570,36 @@
                     </PropertyColumn>
 
                 }
+                <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
+                    <CellTemplate>
+                        @if (!String.IsNullOrEmpty(@context.Item.Link))
+                        {
+                            <MudTooltip Text="@context.Item.Link">
+                                <MudLink Style="color:#0e9b42 !important;" Href="@context.Item.Link" Target="_blank">
+                                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" />
+                                </MudLink>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudIcon Disabled Icon="@Icons.Material.Filled.OpenInNew" Color="Color.Default"></MudIcon>
+                        }
+                    </CellTemplate>
+                    <EditTemplate>
+                        <div class="@EditTemplateCss">
+                            <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.Link" />
+                        </div>
+                    </EditTemplate>
+                </PropertyColumn>
                 @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
                 {
                     <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true"
                                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                         <CellTemplate>
-                            <MudTextField T="string" Value="@context.Item.PrimaryEditorName" Class="outlined-dialog-max-content" style="background-color:#32333c;"
+                            <MudTextField T="string" Value="@context.Item.PrimaryEditorName" 
+                            Class=@($"outlined-dialog-max-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                                          @onclick="@( _isAdminView ? (() => OpenPrimaryEditorDialog(context.Item)) : null )"
+                            style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
                         </CellTemplate>
                         <GroupTemplate>
@@ -626,7 +650,10 @@
                                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
 
                         <CellTemplate>
-                            <MudTextField T="string" Value="@context.Item.SecondaryEditorName" Class="outlined-dialog-max-content" style="background-color:#32333c;"
+                            <MudTextField T="string" Value="@context.Item.SecondaryEditorName" 
+                            Class=@($"outlined-dialog-max-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                            @onclick="@( _isAdminView ? (() => OpenSecondaryEditorDialog(context.Item)) : null )"
+                            style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
                         </CellTemplate>
                         <EditTemplate>
@@ -681,14 +708,12 @@
                                 var notes = context.Item.NotesForProject;
                                 bool isEmpty = string.IsNullOrEmpty(notes);
                             }
-                            <MudTextField T="string" Class=@($"outlined-dialog-max-content {(isEmpty ? "yellow-border" : "error-border")}") Text="Notes" Variant="Variant.Outlined"
-                                          ReadOnly="true" Adornment="Adornment.End" 
-                            AdornmentIcon="@Icons.Material.Filled.OpenInNew" AdornmentColor="Color.Tertiary" MaxLines="1"
-                            OnAdornmentClick="@(() => OpensPrivateNoteForProject(context.Item))">
-                                <MudTooltip Text="Click to view/change private note">
-                                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" />
-                                </MudTooltip>
-                            </MudTextField>
+                            <MudTooltip Text="Click to view/change private note">
+
+                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                               Style=@($"{(!isEmpty ? "color: #f60008;" : "color: #da9a00;")}")
+                                               @onclick="@(() => OpensPrivateNoteForProject(context.Item))" />
+                            </MudTooltip>
                         </CellTemplate>
                         <EditTemplate>
                             <MudText Style="display:none;" />
@@ -696,27 +721,7 @@
                     </PropertyColumn>
                 }
 
-                <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;">
-                    <CellTemplate>
-                        @if (!String.IsNullOrEmpty(@context.Item.Link))
-                        {
-                            <MudTooltip Text="@context.Item.Link" >
-                                <MudLink Style="color:#0e9b42 !important;" Href="@context.Item.Link" Target="_blank">
-                                    <MudIcon  Icon="@Icons.Material.Filled.OpenInNew" />
-                                </MudLink>
-                            </MudTooltip>
-                        }
-                        else
-                        {
-                            <MudIcon Disabled Icon="@Icons.Material.Filled.OpenInNew" Color="Color.Default"></MudIcon>
-                        }
-                    </CellTemplate>
-                    <EditTemplate>
-                        <div class="@EditTemplateCss">
-                            <MudTextField Label="Project Link" Variant="Variant.Outlined" @bind-Value="@context.Item.Link" />
-                        </div>
-                    </EditTemplate>
-                </PropertyColumn>
+               
                 @* Editors Info*@
                 @if (RoleBasedColumns[_currentRole].Contains("EditorBillable"))
                 {
@@ -727,12 +732,16 @@
                                 @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
                                 {
                                     <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")"
-                                                  ReadOnly="true" Variant="Variant.Outlined" Class="grey-border outlined-dialog-lg-content" />
+                                                  ReadOnly="true" Variant="Variant.Outlined" 
+                                                  Class=@($"outlined-dialog-lg-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                                                  @onclick="@( _isAdminView ? (() => OpenPrimaryEditorPaymentDate(context.Item)) : null )"/>
                                 }
                                 else
                                 {
                                     <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                        Variant="Variant.Outlined" Class="grey-border outlined-dialog-lg-content" />
+                                        Variant="Variant.Outlined"
+                                        Class=@($"outlined-dialog-lg-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                                        @onclick="@( _isAdminView ? (() => OpenPrimaryEditorPaymentDate(context.Item)) : null )"/>
                                 }
                             </CellTemplate>
                             <EditTemplate>
@@ -842,12 +851,15 @@
                                 @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
                                 {
                                     <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.DatePaidEditor.Value.ToString("MM/dd/yyyy")" 
-                                        ReadOnly="true" Variant="Variant.Outlined" Class="grey-border outlined-dialog-lg-content" />
+                                        ReadOnly="true" Variant="Variant.Outlined"
+                                                  @onclick="@( _isAdminView ? (() => OpenSecondaryEditorPaymentDate(context.Item)) : null )"
+                                        Class=@($"outlined-dialog-lg-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")/>
                                 }
                                 else
                                 {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true"
-                                                  Variant="Variant.Outlined" Class="grey-border outlined-dialog-lg-content" />
+                                    <MudTextField T="string" Text="N/A" ReadOnly="true" @onclick="@( _isAdminView ? (() => OpenSecondaryEditorPaymentDate(context.Item)) : null )"
+                                                  Variant="Variant.Outlined" 
+                                                  Class=@($"outlined-dialog-lg-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}") />
                                 }
                             </CellTemplate>
                             <EditTemplate>
@@ -1205,15 +1217,7 @@
     private List<UserRoleViewModel.UserProjectViewModel> Clients = new List<UserRoleViewModel.UserProjectViewModel>();
     [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;
     [Inject] private LoadingService LoadingService { get; set; }
-    private enum ProgressBarValue
-    {
-        Zero = 0,
-        Twenty = 20,
-        Forty = 40,
-        Sixty = 60,
-        Eighty = 80,
-        Hundred = 100
-    }
+
     private void HandleProjectStateChange()
     {
         InvokeAsync(StateHasChanged);
@@ -1303,10 +1307,10 @@
         await base.OnAfterRenderAsync(firstRender);
 
     }
-    private async Task OnRowClick(DataGridRowClickEventArgs<Project> args)
+    private async Task OnRowClick(Project project)
     {
         StateHasChanged();
-        await _dataGrid.SetEditingItemAsync(args.Item);
+        await _dataGrid.SetEditingItemAsync(project);
         LoadingService.HideLoading();
         StateHasChanged();
 
@@ -2188,6 +2192,290 @@
             Console.WriteLine($"Error updating payment visibility: {ex.Message}");
         }
     }
+    private async Task OpenProgressDialog(Project project)
+    {
+        try{
+            if (_isClientView) return;
+
+            var parameters = new DialogParameters
+            {
+                { "Progress", project.ProgressBar }
+            };
+
+            var dialog = await DialogService.ShowAsync<ProgressEditDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.ProgressBar = (int)result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update progress", Severity.Error);
+            Console.WriteLine($"Error updating progress: {ex.Message}");
+        }
+    }
+    private async Task OpenShootDateDialog(Project project)
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { "ShootDate", project.ShootDate }
+            };
+
+            var dialog = await DialogService.ShowAsync<ShootDateEditDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.ShootDate = (DateTime) result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update shoot date", Severity.Error);
+            Console.WriteLine($"Error updating shoot date: {ex.Message}");
+        }
+    }
+
+    private async Task OpenDueDateDialog(Project project)
+    {
+        try
+        {
+            if (!_isAdminView)
+                return;
+
+            var parameters = new DialogParameters
+            {
+                { "DueDate", project.DueDate },
+                { "IsUrgent", project.IsUrgent }
+            };
+
+            var dialog = await DialogService.ShowAsync<DueDateDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                (project.DueDate, project.IsUrgent) = ((DateTime, bool)) result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update due date", Severity.Error);
+            Console.WriteLine($"Error updating due date: {ex.Message}");
+        }
+    }
+    private async Task OpenWorkingMonthDialog(Project project)
+    {
+        try
+        {
+            if (!_isAdminView)
+                return;
+
+            var parameters = new DialogParameters
+            {
+                { "WorkingMonth", project.WorkingMonth }
+            };
+
+            var dialog = await DialogService.ShowAsync<WorkingMonthDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.WorkingMonth = (DateTime) result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update working month", Severity.Error);
+            Console.WriteLine($"Error updating working month: {ex.Message}");
+        }
+    }
+  private async Task OpenStatusDialog(Project project)
+  {
+      try
+      {
+          var parameters = new DialogParameters
+          {
+              { "Status", project.Status },
+              { "_isAdminView",_isAdminView },
+              { "_isEditorView", _isEditorView },
+              { "_isClientView", _isClientView }
+
+          };
+
+          var dialog = await DialogService.ShowAsync<StatusDialog>("", parameters);
+          var result = await dialog.Result;
+
+          if (!result.Canceled)
+          {
+              project.Status = (ProjectStatus) result.Data;
+              await UpdateProjectAsync(project);
+          Snackbar.Add("Saved Successfully", Severity.Success);
+
+          }
+
+
+      }
+      catch (Exception ex)
+      {
+          Snackbar.Add("Failed to update status", Severity.Error);
+          Console.WriteLine($"Error updating status: {ex.Message}");
+      }
+  }
+   private async Task OpenAdminStatusDialog(Project project)
+   {
+       try
+       {
+           var parameters = new DialogParameters
+           {
+               { "AdminStatus", project.AdminStatus }
+           };
+
+           var dialog = await DialogService.ShowAsync<AdminStatusDialog>("", parameters);
+           var result = await dialog.Result;
+
+           if (!result.Canceled)
+           {
+               project.AdminStatus = (AdminProjectStatus) result.Data;
+               await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+           }
+       }
+       catch (Exception ex)
+       {
+           Snackbar.Add("Failed to update payment status", Severity.Error);
+           Console.WriteLine($"Error updating payment status: {ex.Message}");
+       }
+   }
+    private async Task OpenPrimaryEditorDialog(Project project)
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { "PrimaryEditorId", project.PrimaryEditorId },
+                { "Editors", Editors }
+
+            };
+
+            var dialog = await DialogService.ShowAsync<PrimaryEditorDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.PrimaryEditorId = (string)result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update primary editor", Severity.Error);
+            Console.WriteLine($"Error updating primary editor: {ex.Message}");
+        }
+    }
+    private async Task OpenSecondaryEditorDialog(Project project)
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { "SecondaryEditorId", project.SecondaryEditorId },
+                { "Editors", Editors }
+
+            };
+
+            var dialog = await DialogService.ShowAsync<SecondaryEditorDialog>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.SecondaryEditorId = (string)result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update secondary editor", Severity.Error);
+            Console.WriteLine($"Error updating secondary editor: {ex.Message}");
+        }
+    }
+    private async Task OpenSecondaryEditorPaymentDate(Project project)
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { "_SecondaryEditorPaymentDate", project.SecondaryEditorDetails.DatePaidEditor }
+
+            };
+
+            var dialog = await DialogService.ShowAsync<SecondaryEditorPaymentDate>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.SecondaryEditorDetails.DatePaidEditor = (DateTime?) result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update secondary editor payment date", Severity.Error);
+            Console.WriteLine($"Error updating secondary editor payment date: {ex.Message}");
+        }
+    }
+    private async Task OpenPrimaryEditorPaymentDate(Project project)
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                { "_PrimaryEditorPaymentDate", project.PrimaryEditorDetails.DatePaidEditor }
+            };
+
+            var dialog = await DialogService.ShowAsync<PrimaryEditorPaymentDate>("", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                project.PrimaryEditorDetails.DatePaidEditor = (DateTime?) result.Data;
+                await UpdateProjectAsync(project);
+                Snackbar.Add("Saved Successfully", Severity.Success);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to update Primary editor payment date", Severity.Error);
+            Console.WriteLine($"Error updating Primary editor payment date: {ex.Message}");
+        }
+    }
+
+
 }
 
 
@@ -2240,14 +2528,13 @@
         --parent-bg-color: #c09837;
         background: #da9a00;
         border-radius: 8px;
-        width: 100px;
         text-align: center;
 }
 .error-border{
         --parent-bg-color: #be0000;
         background: #7d0000;
         border-radius: 8px;
-        width: 100px;
         text-align: center;
 }
+
 </style>

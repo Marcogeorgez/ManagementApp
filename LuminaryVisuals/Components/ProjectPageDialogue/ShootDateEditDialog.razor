@@ -1,0 +1,27 @@
+﻿<MudDialog>
+    <DialogContent>
+            <MudDatePicker Label="Shoot Date"
+                           Variant="Variant.Outlined"
+                           Date="@ShootDate"
+                           DateChanged="@(date => ShootDate = date.Value)"
+                           Class="mt-3"
+                           Required="false" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick ="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    DateTime? date;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public DateTime ShootDate { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(ShootDate));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
