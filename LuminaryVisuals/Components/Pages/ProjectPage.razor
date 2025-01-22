@@ -59,7 +59,7 @@
                         <MudMenuItem OnClick="OpenColumnPreferencesDialog">
                             Set Column Preferences
                         </MudMenuItem>
-                        
+
                         <MudMenuItem OnClick="DownloadFilteredAsCsv">
                             <div style="display:flex;">
                                 <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
@@ -72,16 +72,16 @@
                                 Backup Projects
                             </div>
                         </MudMenuItem>
- 
+
                         <MudStack Spacing="0" Class="mb-3">
-                        <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset" AnchorOrigin="Origin.BottomCenter" Dense=true
-                        TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined" @bind-Value="_selectedPresetName"
+                            <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset" AnchorOrigin="Origin.BottomCenter" Dense=true
+                            TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined" @bind-Value="_selectedPresetName"
                             SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)">
-                            @foreach (var preset in _columnPresets)
-                            {
-                                <MudSelectItem Value="@preset.Name">@preset.Name</MudSelectItem>
-                            }
-                        </MudSelect>
+                                @foreach (var preset in _columnPresets)
+                                {
+                                    <MudSelectItem Value="@preset.Name">@preset.Name</MudSelectItem>
+                                }
+                            </MudSelect>
                             <MudSwitch T="bool" Class="ml-5 mb-1" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
                             <MudText Class="ml-5">View as</MudText>
                             <MudStack Row=true Style="background:#151726;" Class="ml-5">
@@ -104,8 +104,8 @@
                 {
                     <MudTooltip ShowOnClick=false Text="Batch Editing" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
                         <MudIconButton OnClick="@(() => SelectedItems(SelectedProjects))"
-                            Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1 mx-1" >
-                    
+                        Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1 mx-1" >
+
                         </MudIconButton>
                     </MudTooltip>
 
@@ -253,19 +253,19 @@
                                             Archive
                                         </MudMenuItem>
                                         <MudMenuItem OnClick="@(() => Duplicate(context.Item))"
-                                                     Icon="@Icons.Material.Filled.ContentCopy">
+                                        Icon="@Icons.Material.Filled.ContentCopy">
                                             Duplicate
                                         </MudMenuItem>
                                     }
 
                                     <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
-                                                 Icon="@Icons.Material.TwoTone.Edit">
+                                    Icon="@Icons.Material.TwoTone.Edit">
                                         Edit Row
                                     </MudMenuItem>
                                 </MudMenu>
                                 @{
                                     var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
-                                    Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
+                            Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
                                 }
 
                                 <MudTooltip Text="@context.Item.SubmissionStatus.ToString()" Arrow=true Color="submissionStatus" >
@@ -328,7 +328,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
                 {
                     <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" Hidden="@(GetColumnVisibility("ClientUserName"))"
-                                    Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-name-content"
+                    Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-name-content"
                     Editable=false Required=false >
                         <CellTemplate>
                             <MudTextField T="string"
@@ -606,7 +606,7 @@
                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.PrimaryEditorName"
-                                          Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                            Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenPrimaryEditorDialog(context.Item)) : null )"
                             style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
@@ -993,7 +993,7 @@
                                 else
                                 {
                                     <MudTextField Value=@_DatePaidEditor.Value.ToString("MM/dd/yyyy") T="string" Class="grey-border outlined-dialog-lg-content"
-                                                  ReadOnly=true/>
+                                    ReadOnly=true/>
                                 }
                             </CellTemplate>
                         </TemplateColumn>
@@ -1356,7 +1356,6 @@
     private async Task LoadSelectedPreset(string presetName)
     {
         if (string.IsNullOrEmpty(presetName)) return;
-
         try
         {
             // Get the preferences from the service
@@ -1404,7 +1403,7 @@
             StateHasChanged();
         }
     }
-
+   
 
     // Quick Global Filter which is used to search in the entire grid
     private Func<Project, bool> _quickFilter => x =>
