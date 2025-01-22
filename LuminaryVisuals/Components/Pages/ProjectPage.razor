@@ -1387,7 +1387,8 @@
         var parameters = new DialogParameters
         {
             ["VisibilityState"] = _columnVisibility,
-            ["Columns"] = _availableColumns
+            ["Columns"] = _availableColumns,
+            ["_columnPresets"] = _columnPresets
         };
 
         var dialog = await DialogService.ShowAsync<ColumnPreferencesDialog>("Column Preferences", parameters);
