@@ -4,7 +4,7 @@
     {
         public string Name { get; set; }
         public string DisplayName { get; set; }
-        public bool isHidden { get; set; } = false;
+        public bool isHidden { get; set; } = true;
     }
     public class ColumnPreferenceResult
     {
