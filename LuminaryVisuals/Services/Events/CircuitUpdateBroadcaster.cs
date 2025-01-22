@@ -30,7 +30,7 @@ public class CircuitUpdateBroadcaster
             }
             catch (Exception ex)
             {
-                // Log or handle exceptions to prevent breaking the notification chain
+                // handle exceptions to prevent breaking the notification chain
                 Console.WriteLine($"Error notifying circuit: {ex.Message}");
             }
         }
