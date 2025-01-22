@@ -206,7 +206,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 69px" CellStyle=" left:69px; ">
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 58px" CellStyle=" left:58px; ">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
                                 <MudMenu Icon="@Icons.Material.Filled.Edit" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
@@ -270,8 +270,8 @@
 
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:190px; z-index:4" : "")"
-                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:190px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:174px; z-index:4" : "")"
+                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:174px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -1116,8 +1116,8 @@
                     }
                     else if(_isClientView)
                     {
-                        <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true"  
-                        Groupable=false Editable=false CellStyle="text-align:center;">
+                        <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true" HeaderStyle="max-width:140px"
+                                        Groupable=false Editable=false CellStyle="text-align:center; max-width:140px">
                             <CellTemplate Context="context">
                                 @{
                                     var project = context.Item as Project;
@@ -2636,40 +2636,40 @@
 
 
 <style>
-    .cursor-move {
-        cursor: grab;
-    }
+.cursor-move {
+    cursor: grab;
+}
     
-    .being-dragged {
-        opacity: 0.6;
-        cursor: grabbing;
-        background-color: var(--mud-palette-success);
-    }
+.being-dragged {
+    opacity: 0.6;
+    cursor: grabbing;
+    background-color: var(--mud-palette-success);
+}
     
-    .drop-target {
-        border-top: 2px solid var(--mud-palette-primary);
+.drop-target {
+    border-top: 2px solid var(--mud-palette-primary);
 
-    }
+}
     
-    .drag-handle {
-        display: flex;
-        align-items: center;
-        padding: 4px;
-        cursor: grab;
-    }
+.drag-handle {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    cursor: grab;
+}
     
-    .drag-handle:hover {
-        background-color: var(--mud-palette-background-grey);
-        border-radius: 4px;
-    }
-    .drag-handle.grabbing {
+.drag-handle:hover {
+    background-color: var(--mud-palette-background-grey);
+    border-radius: 4px;
+}
+.drag-handle.grabbing {
     cursor: grabbing;
 }
 .grey-border{
         background-color: #32333c;
         --parent-bg-color: #48494f;
         border-radius: 8px;
-        width: 100px;
+        min-width: 100px;
         text-align: center;
 }
 .green-border{
@@ -2677,7 +2677,7 @@
         color: white;
         border-radius: 8px;
         --parent-bg-color: #008438;
-        width: 100px;
+        min-width: 100px;
         text-align: center;
 }
 .yellow-border{
