@@ -31,9 +31,12 @@
                     <TextWithLinks Content="@preferences.WebsiteLink" />
 
 
-                    <MudText Typo="Typo.h6" Class="mt-3">Your Shared Dropbox Folder:</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Preview Folder:</MudText>
                     <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
                             preferences.FolderLink)" />
+                    <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Paid Folder:</MudText>
+                    <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.PaidFolderLink) ? "Link is not assigned yet." :
+                            preferences.PaidFolderLink)" />
                 </MudExpansionPanel>
                 <MudExpansionPanel Text="Highlights Film">
                     <!-- Video Structure -->

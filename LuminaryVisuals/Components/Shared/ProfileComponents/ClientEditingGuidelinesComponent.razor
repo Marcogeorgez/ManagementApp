@@ -21,15 +21,25 @@
                 <MudText Typo="Typo.h6">Website Link:</MudText>
                 <MudTextField Class="mx-10" Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
 
-
-                <MudText Typo="Typo.h6" Class="mt-3">Your Shared Dropbox Folder:</MudText>
+                <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Preview Folder:</MudText>
+                @if (currentUser.IsInRole("Admin"))
+                {
+                    <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
+                                  @bind-Value="preferences.FolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                }
+                else
+                {
+                    <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
+                            preferences.FolderLink)" />
+                }
+                <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Paid Folder:</MudText>
                 @if (currentUser.IsInRole("Admin")){
                 <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
-                              @bind-Value="preferences.FolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                              @bind-Value="preferences.PaidFolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
                 }
                 else{
                     <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
-                            preferences.FolderLink)" />
+                            preferences.PaidFolderLink)" />
                 }
             </MudExpansionPanel>
             <MudExpansionPanel Text="Highlights Film">
