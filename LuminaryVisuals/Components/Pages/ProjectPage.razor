@@ -18,7 +18,7 @@
 <PageTitle>Projects</PageTitle>
 
 
-<MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
+<MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px;">
 @if (_loading)
     {
         <SplashScreen />
@@ -28,18 +28,17 @@
         <LoadingIndicator IsVisible="@_loadingIndicator" />
         <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
         Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.73); transform-style: preserve-3d;" 
-        CurrentPage=0 RowsPerPage=_rowsPerPage RowsPerPageChanged=LoadProjects
         Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None"
         FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
         ColumnsPanelReordering=false 
         ShowColumnOptions=false SelectedItems="SelectedProjects"
         Groupable=true QuickFilter="@_quickFilter"
         ShowMenuIcon=false
-        EditMode="DataGridEditMode.Form"
-        ReadOnly=false RowStyle="text-align:center;"
+        EditMode="DataGridEditMode.Form"  
+        ReadOnly=false RowStyle="text-align:center;"  
         StartedEditingItem="@StartedEditingItem" 
         CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
-        FixedHeader="true" Height="calc(83vh * (1/0.708));" Virtualize=true 
+        FixedHeader="true" Height="calc(83vh * (1/0.708));" Virtualize="true"  OverscanCount=6
         RowClassFunc="@GetRowClass">
 
 
@@ -99,8 +98,17 @@
                     OnClick="OnClick" Ripple=true Size="Size.Large">
                     </MudIconButton>
                 </MudTooltip>
+
+
                 @if (isAdminView)
                 {
+                    <MudTooltip ShowOnClick=false Text="Batch Editing" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                        <MudIconButton OnClick="@(() => SelectedItems(SelectedProjects))"
+                            Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1 mx-1" >
+                    
+                        </MudIconButton>
+                    </MudTooltip>
+
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
                         Variant="Variant.Filled" Size="Size.Medium"
@@ -149,10 +157,10 @@
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
                 </MudHidden>
             </ColGroup>
-            <Columns >
+            <Columns>
                 @if (_isAdminView)
                 {
-                    <SelectColumn T="Project" />
+                    <SelectColumn T="Project"/>
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
                 {
@@ -213,14 +221,20 @@
                         </CellTemplate>
                     </PropertyColumn>
                 }
-
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 50px" CellStyle=" left:50px; ">
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 50px" CellStyle=" left:50px; ">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
                                 <MudMenu Icon="@Icons.Material.Filled.Edit" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
+                                    @if (_isAdminView || _isEditorView)
+                                    {
+                                        <MudMenuItem OnClick="@(() => Logging(context.Item,_currentUserId))"
+                                        Icon="@Icons.Material.Filled.WatchLater" >
+                                            Logging hours
+                                        </MudMenuItem>
+                                    }
                                     @if (_isArchived && _isAdminView)
                                     {
                                         <MudMenuItem OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(context.Item))"
@@ -239,36 +253,23 @@
                                             Archive
                                         </MudMenuItem>
                                         <MudMenuItem OnClick="@(() => Duplicate(context.Item))"
-                                        Icon="@Icons.Material.Filled.Edit">
+                                                     Icon="@Icons.Material.Filled.ContentCopy">
                                             Duplicate
                                         </MudMenuItem>
                                     }
-                                    @if (_isAdminView || _isEditorView)
-                                    {
-                                        <MudMenuItem OnClick="@(() => Logging(context.Item,_currentUserId))"
-                                        Icon="@Icons.Material.Filled.Edit">
-                                            Logging
-                                        </MudMenuItem>
-                                    }
+
                                     <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
-                                    Icon="@Icons.Material.Filled.Edit">
+                                                 Icon="@Icons.Material.TwoTone.Edit">
                                         Edit Row
                                     </MudMenuItem>
-                                    @if (_isAdminView)
-                                    {
-                                        <MudMenuItem OnClick="@(() => SelectedItems(SelectedProjects))"
-                                        Icon="@Icons.Material.Filled.Edit">
-                                            Edit Selected Projects
-                                        </MudMenuItem>
-                                    }
                                 </MudMenu>
                                 @{
                                     var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
-                    Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
+                                    Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
                                 }
 
                                 <MudTooltip Text="@context.Item.SubmissionStatus.ToString()" Arrow=true Color="submissionStatus" >
-                                    <MudIconButton Color="@submissionStatus" Icon="@Icons.Material.Filled.AvTimer" 
+                                    <MudIconButton Color="@submissionStatus" Icon="@Icons.Material.Filled.Calculate" 
                                     Disabled="(_isEditorView && context.Item.SubmissionStatus == Models.SubmissionStatus.Approved)"
                                     Variant="Variant.Text" Size="Size.Large" OnClick="@(() => TimeCalculator(context.Item))" >
                                         @context.Item.SubmissionStatus.ToString()
@@ -735,7 +736,7 @@
                 {
                     @if (_isAdminView)
                     {
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PriamryEditorDatePaid"))">
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorDatePaid"))">
                             <CellTemplate>
                                 @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
                                 {
@@ -817,7 +818,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorFinalBilalbleHours"))" >
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorFinalBillableHours"))" >
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.FinalBillableHours >= 0)
                                 {
@@ -882,7 +883,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Logged Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorLoggedHours"))">
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Logged Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorLoggedHours"))">
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.BillableHours != null)
                                 {
@@ -901,7 +902,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorOvertime"))" >
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorOvertime"))" >
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.Overtime != null)
                                 {
@@ -920,7 +921,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec Adjust" Hideable="true" Sortable="false" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorAdjustment"))">
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec Adjust" Hideable="true" Sortable="false" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorAdjustment"))">
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.AdjustmentHours != null)
                                 {
@@ -939,7 +940,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorFinalBilalbleHours"))">
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorFinalBillableHours"))">
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
                                 {
@@ -958,7 +959,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorPayment"))">
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorPayment"))">
                             <CellTemplate>
                                 @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
                                 {
@@ -1174,10 +1175,6 @@
                     }
                 }        
             </Columns>
-
-            <PagerContent>
-                <MudDataGridPager T="Project"/>
-            </PagerContent>
         </MudDataGrid>
         @if (ProjectState.CurrentProject != null )
         {
@@ -1202,7 +1199,7 @@
     [CascadingParameter]
     public ClaimsPrincipal? currentUser { get; set; }
     private MudDataGrid<Project> _dataGrid = new();
-    private IEnumerable<Project?> projects = new List<Project?>();
+    private List<Project?> projects = new List<Project?>();
     private Project? projectToDelete;
     private bool HasAnySecondaryEditor;
     private bool HasAnyPrimaryEditor;
@@ -1214,7 +1211,6 @@
     private bool _isClientView;
     private bool _groupByClientName;
     private int timezoneOffsetMinutes; // Gets User local time to pass it to change timing of chat-messages etc according to his own.
-    private int _rowsPerPage = 50;
     private string _searchString = "";
     private string _currentUserId = "";
     private string _currentRole = "";
@@ -1318,7 +1314,6 @@
         if (firstRender)
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");        
-            await _dataGrid.SetRowsPerPageAsync(_rowsPerPage);
             await LoadProjects();
 
             StateHasChanged();
@@ -1354,7 +1349,7 @@
     }
     private bool GetColumnVisibility(string columnName)
     {
-        return _columnVisibility.GetValueOrDefault(columnName, false);
+        return !_columnVisibility.GetValueOrDefault(columnName, false);
     }
     
     private string _selectedPresetName;
@@ -2007,8 +2002,8 @@
             ProjectStatus.Working => "background-color: #b46f00; color: white; border-radius: 8px; --parent-bg-color: #fd9b00; text-align:center;",
             ProjectStatus.Delivered => "background-color: #002159 !important; color: white; border-radius: 8px; --parent-bg-color: #2e77ff; text-align:center;",
             ProjectStatus.Ready_To_Review => "background-color: #6527a2; color: white; border-radius: 8px; --parent-bg-color: #b23eeb; text-align:center;",
-            ProjectStatus.Revision => "background-color: #3f2e91; color: white; border-radius: 8px; --parent-bg-color: #7153ff; text-align:center;",
-            ProjectStatus.Finished => "background-color: #3f2e91; color: white; border-radius: 8px; --parent-bg-color: #7153ff; text-align:center;",
+            ProjectStatus.Revision => "background-color: #ae0502; color: white; border-radius: 8px; --parent-bg-color: #fd1c18; text-align:center;",
+            ProjectStatus.Finished => "background-color: #003915; color: white; border-radius: 8px; --parent-bg-color: #008b33; text-align:center;",
             _ => "background-color: #757575; color: white; border-radius: 8px; --parent-bg-color: #616161; text-align:center;"
         };
 
@@ -2019,8 +2014,8 @@
         {
             AdminProjectStatus.Not_Finished => "background-color: #3f2e91; color: white; border-radius: 8px; --parent-bg-color:#7153ff; text-align:center;",
             AdminProjectStatus.Sent_Invoice => "background-color: #b46f00; color: white; border-radius: 8px; --parent-bg-color: #fd9b00; text-align:center;",
-            AdminProjectStatus.Delivered_Not_Paid => "background-color: #3f2e91; color: white; border-radius: 8px; --parent-bg-color: #7153ff; text-align:center;",
-            AdminProjectStatus.Paid => "background-color: #3f2e91; color: white; border-radius: 8px; --parent-bg-color: #7153ff; text-align:center;",
+            AdminProjectStatus.Delivered_Not_Paid => "background-color: #ae0502; color: white; border-radius: 8px; --parent-bg-color: #fd1c18; text-align:center;",
+            AdminProjectStatus.Paid => "background-color: #003915; color: white; border-radius: 8px; --parent-bg-color: #008b33; text-align:center;",
         };
 
     }
