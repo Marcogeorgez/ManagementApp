@@ -153,10 +153,7 @@ th.mud-table-cell.sticky-left:hover {
         -webkit-text-fill-color: transparent;
     }
 
-    .outlined-dialog-max-content, .outlined-dialog-xl-content{
-        min-width: auto !important;
-    }
-
+   
     .chat-container {
         width: 100% !important;
         height: 100% !important;
@@ -1042,4 +1039,7 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
 }
 .mud-input-adornment-end {
     margin-inline-end: 6px;
+}
+.mud-drop-container, .mud-button-text.mud-button-text-primary {
+    --mud-palette-primary: rgba(50, 153, 255, 1) !important;
 }
