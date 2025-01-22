@@ -145,7 +145,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
                 {
-                    <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center; "
+                    <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="false" CellStyle="text-align:center; "
                     DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true HeaderStyle="z-index:5 !important;">
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
@@ -180,7 +180,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
                 {
-                    <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="true" CellStyle="text-align:center;"
+                    <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="false" CellStyle="text-align:center;"
                     DragAndDropEnabled="false" Groupable="false" Editable=true >
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
@@ -206,7 +206,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 90px" CellStyle=" left:90px; ">
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 69px" CellStyle=" left:69px; ">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
                                 <MudMenu Icon="@Icons.Material.Filled.Edit" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
@@ -270,8 +270,8 @@
 
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:200px; z-index:4" : "")"
-                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:200px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:190px; z-index:4" : "")"
+                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:190px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -280,14 +280,15 @@
                     string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
                             {
                                 <div class="d-flex gap-2 flex-row  justify-center align-center">
-                                    <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
-                                        <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
-                                    </MudTooltip>
+
                                     <MudTextField T="string" AutoGrow=true Value="context.Item.ProjectName" Class="outlined-dialog-xl-content "  
                                     ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End" 
                                     AdornmentIcon="@Icons.Material.Filled.OpenInNew" OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
                                         <MudIcon Icon="@Icons.Material.Rounded.WarningAmber"></MudIcon>
                                     </MudTextField>
+                                    <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
+                                        <MudIcon Class="d-flex" Icon="@Icons.Material.Rounded.WarningAmber" Color="Color.Warning" Size="Size.Medium"></MudIcon>
+                                    </MudTooltip>
                                     <MudFab Class="d-flex floating-chat-icon info-new" @onclick="async () => await  OpenProjectChat(context.Item)" 
                                     StartIcon="@Icons.Material.Filled.Chat" Size="Size.Medium" />
                                 </div>
@@ -552,7 +553,7 @@
                     </PropertyColumn>
 
                 }
-                <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden="Link">
+                <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=false Filterable="false" Sortable="false" CellStyle="text-align:center;" Hidden="Link">
                     <CellTemplate>
                         @if (!String.IsNullOrEmpty(@context.Item.Link))
                         {
@@ -697,7 +698,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
                 {
-                    <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-md-content" Title="Private Notes" Hideable="true" Groupable="false" Hidden="PrivateNotes"
+                    <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-md-content" Title="Private Notes" Sortable="false" Filterable="false" Hideable="true" Groupable="false" Hidden="PrivateNotes"
                     Editable=false Required=false>
                         <CellTemplate>
                             @{
@@ -750,7 +751,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorLoggedHours>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorLoggedHours>
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.BillableHours >= 0)
                                 {
@@ -768,7 +769,7 @@
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorOvertime>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorOvertime>
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.Overtime != null)
                                 {
@@ -805,7 +806,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorFinalBilalbleHours>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorFinalBilalbleHours>
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.FinalBillableHours >= 0)
                                 {
@@ -824,7 +825,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" Editable="false" CellStyle="text-align:center;" Hidden=@PrimaryEditorPayment>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" Filterable=false Editable="false" CellStyle="text-align:center;" Hidden=@PrimaryEditorPayment>
                             <CellTemplate>
                                 @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
                                 {
@@ -870,7 +871,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Editor Log Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorLoggedHours>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Logged Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorLoggedHours>
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.BillableHours != null)
                                 {
@@ -889,7 +890,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorOvertime>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorOvertime>
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.Overtime != null)
                                 {
@@ -927,7 +928,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorFinalBilalbleHours>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorFinalBilalbleHours>
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
                                 {
@@ -946,7 +947,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorPayment>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorPayment>
                             <CellTemplate>
                                 @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
                                 {
