@@ -101,6 +101,7 @@ builder.Services.AddScoped<LoggingHours>();
 builder.Services.AddScoped<SettingService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<ProjectState>();
+builder.Services.AddScoped<ColumnPreferenceService>();
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
 builder.Services.AddHttpClient();
 // Google Authentication 
