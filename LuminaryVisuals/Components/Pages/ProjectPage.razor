@@ -150,7 +150,7 @@
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                                 <div style="height:30px;"
-                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center  "
+                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center ml-n3 "
                                 draggable="true"
                                 @ondragstart="@(() => HandleDragStart(context.Item))"
                                 @ondragover:preventDefault
@@ -184,7 +184,7 @@
                     DragAndDropEnabled="false" Groupable="false" Editable=true >
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                                <div class="drag-handle flex-row  justify-center align-center " style="height:30px;" draggable="true"
+                                <div class="drag-handle flex-row  justify-center align-center ml-n3" style="height:30px;" draggable="true"
                                 @ondragstart="@(() => HandleDragStart(context.Item))"
                                 @ondragover:preventDefault
                                 @ondragover="@(() => HandleDragOver(context.Item))"
@@ -2654,7 +2654,6 @@
 .drag-handle {
     display: flex;
     align-items: center;
-    padding: 4px;
     cursor: grab;
 }
     
