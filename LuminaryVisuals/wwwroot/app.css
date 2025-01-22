@@ -164,11 +164,12 @@ th.mud-table-cell.sticky-left:hover {
 .mud-direction-desc, .mud-direction-desc:hover {
     color: #3d73f2 !important;
 }
-.mud-table-container, .mud-table-pagination-toolbar {
+.mud-table-container {
     background-color: var(--mud-palette-surface);
     position: sticky !important;
     top: 0 !important;  
 }
+
 .mud-link.mud-link-underline-hover, .html-content-wrapper a {
     color: #1ce6e6 !important;
 }
@@ -1010,7 +1011,12 @@ text-decoration: underline;
 .mud-input-slot.mud-input-root.mud-input-root-outlined {
     cursor: pointer !important;
 }
-
+.mud-table-pagination {
+    position: fixed !important;
+    bottom: 0px !important;
+    background-color: var(--mud-palette-surface);
+    width: inherit !important;
+}
 .mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar {
     display: block ruby !important
 }
@@ -1058,4 +1064,7 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
     div.mud-popover.mud-popover-open.mud-popover-top-left.mud-popover-anchor-top-left.mud-popover-overflow-flip-always.mud-paper.mud-elevation-4.overflow-y-auto.filters-panel.pa-2[style*="left: 0px"] {
         left: 81px !important;
     }
+}
+.menu-select > .mud-input-control-input-container > label.mud-input-label {
+    background-color: rgb(21, 23, 38) !important;
 }
