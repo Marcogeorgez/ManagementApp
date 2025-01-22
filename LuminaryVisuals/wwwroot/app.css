@@ -183,6 +183,9 @@ th.mud-table-cell.sticky-left:hover {
     .outlined-dialog-max-content, {
         min-width: 200px !important;
     }
+    .outlined-dialog-name-content, {
+        min-width: 230px !important;
+    }
     .outlined-dialog-lg-content{
         min-width:155px !important;
     }
@@ -193,6 +196,9 @@ th.mud-table-cell.sticky-left:hover {
 @media screen and (-webkit-min-device-pixel-ratio:0) and (max-width: 960px) {
     .outlined-dialog-max-content,  {
         min-width: 200px !important;
+    }
+    .outlined-dialog-name-content, {
+        min-width: 230px !important;
     }
     .outlined-dialog-lg-content {
         min-width: 155px !important;
@@ -240,6 +246,9 @@ th.mud-table-cell.sticky-left:hover {
 
 .outlined-dialog-max-content, .outlined-dialog-lg-content {
     min-width: 155px;
+}
+.outlined-dialog-name-content {
+    min-width: 180px !important;
 }
 .outlined-dialog-xl-content{
     min-width:350px;
@@ -1011,15 +1020,7 @@ text-decoration: underline;
 .mud-input-slot.mud-input-root.mud-input-root-outlined {
     cursor: pointer !important;
 }
-/*.mud-table-pagination {
-    position: fixed !important;
-    bottom: 0px !important;
-    background-color: var(--mud-palette-surface);
-    width: inherit !important;
-}
-.mud-toolbar.mud-toolbar-gutters.mud-table-pagination-toolbar {
-    display: block ruby !important
-}*/
+
 .html-editor.html-content-wrapper.mud-input-outlined-border
 {
     min-width:680px;    
