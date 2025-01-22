@@ -1,0 +1,56 @@
+﻿@* ColumnVisibilityDialog.razor *@
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="_presetName"  Variant=Variant.Outlined
+                     Label="Preset Name"
+                     Class="mb-4"/>
+        <MudList T="bool" Dense="true" ReadOnly=true Style="background:#000000ad !important;">
+            @foreach (var column in Columns)
+            {
+                <MudListItem > 
+                    <div class="d-flex align-center">
+                        <MudText Class="mr-4 d-flex flex-grow-1" Typo=Typo.body1 Color="Color.Surface">@column.DisplayName</MudText>
+                        <MudToggleGroup T="bool" @bind-Value="@VisibilityState[column.Name]" Style="border-radius:14px !important;border-width:2px !important;"
+                        Color="Color.Info" CheckMark FixedContent>
+                            <MudToggleItem Value="true" Text="Hidden" Style="border-radius:0px !important;border-width:0px !important;" />
+                            <MudToggleItem Value="false" Text="Visible" Style="border-radius:0px !important;border-width:0px !important;" />
+                        </MudToggleGroup>
+                    </div>
+                </MudListItem>
+            }
+        </MudList>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" 
+                  OnClick="SavePreset" 
+                  Disabled="string.IsNullOrEmpty(_presetName)">
+            Save Preset
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<ColumnDefinition> Columns { get; set; }
+    [Parameter] public Dictionary<string, bool> VisibilityState { get; set; }
+    
+    private string _presetName;
+
+    private void SavePreset()
+    {
+        var result = new ColumnPreferenceResult
+        {
+            PresetName = _presetName,
+            Visibility = new Dictionary<string, bool>(VisibilityState)
+        };
+        MudDialog.Close(DialogResult.Ok(result));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
+<style>
+    .mud-primary-text{
+        color: white;
+    }
+</style>

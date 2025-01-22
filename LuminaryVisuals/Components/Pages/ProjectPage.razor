@@ -2,6 +2,7 @@
 @using LuminaryVisuals.Components.ProjectPageDialogue
 @using LuminaryVisuals.Services.Shared
 @using Microsoft.Extensions.Options
+@inject ColumnPreferenceService columnPreferenceService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
@@ -17,7 +18,6 @@
 <PageTitle>Projects</PageTitle>
 
 
-
 <MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
 @if (_loading)
     {
@@ -27,7 +27,7 @@
     {
         <LoadingIndicator IsVisible="@_loadingIndicator" />
         <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
-        Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% * 0.71); transform-style: preserve-3d;" 
+        Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.73); transform-style: preserve-3d;" 
         CurrentPage=0 RowsPerPage=_rowsPerPage RowsPerPageChanged=LoadProjects
         Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None"
         FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
@@ -39,7 +39,7 @@
         ReadOnly=false RowStyle="text-align:center;"
         StartedEditingItem="@StartedEditingItem" 
         CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
-        FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true 
+        FixedHeader="true" Height="calc(83vh * (1/0.708));" Virtualize=true 
         RowClassFunc="@GetRowClass">
 
 
@@ -57,12 +57,15 @@
                     </MudMenuItem>
                     @if (isAdminView)
                     {
+                        <MudMenuItem OnClick="OpenColumnPreferencesDialog">
+                            Set Column Preferences
+                        </MudMenuItem>
+                        
                         <MudMenuItem OnClick="DownloadFilteredAsCsv">
                             <div style="display:flex;">
                                 <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
                                 Download Filtered Projects
                             </div>
-
                         </MudMenuItem>
                         <MudMenuItem OnClick="DownloadAllProjects">
                             <div style="display:flex;">
@@ -70,8 +73,16 @@
                                 Backup Projects
                             </div>
                         </MudMenuItem>
-
+ 
                         <MudStack Spacing="0" Class="mb-3">
+                        <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset" AnchorOrigin="Origin.BottomCenter" Dense=true
+                        TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined" @bind-Value="_selectedPresetName"
+                            SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)">
+                            @foreach (var preset in _columnPresets)
+                            {
+                                <MudSelectItem Value="@preset.Name">@preset.Name</MudSelectItem>
+                            }
+                        </MudSelect>
                             <MudSwitch T="bool" Class="ml-5 mb-1" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
                             <MudText Class="ml-5">View as</MudText>
                             <MudStack Row=true Style="background:#151726;" Class="ml-5">
@@ -206,7 +217,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 58px" CellStyle=" left:58px; ">
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 50px" CellStyle=" left:50px; ">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
                                 <MudMenu Icon="@Icons.Material.Filled.Edit" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
@@ -270,8 +281,8 @@
 
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:174px; z-index:4" : "")"
-                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:174px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:165px; z-index:4" : "")"
+                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:165px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -313,9 +324,9 @@
                         </EditTemplate>
                     </PropertyColumn>
                 }
-                @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView == true)
+                @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
                 {
-                    <PropertyColumn  Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" Hidden="ClientUserName"    
+                    <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" Hidden="@(GetColumnVisibility("ClientUserName"))"
                     Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-max-content"
                     Editable=false Required=false >
                         <CellTemplate>
@@ -357,10 +368,9 @@
                         </EditTemplate>
                     </PropertyColumn>
                 }
-
                 @if (RoleBasedColumns[_currentRole].Contains("ProgressBar"))
                 {
-                    <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle="vertical-align: middle;" Hidden="ProgressBar"> 
+                    <PropertyColumn T="Project" TProperty="int" Property="x => x.ProgressBar" Title="Progress" Hideable="true" CellStyle="vertical-align: middle;" Hidden="@(GetColumnVisibility("ProgressBar"))"> 
                         <CellTemplate>
                             @if (context?.Item != null)
                             {
@@ -397,7 +407,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
                 {
-                    <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;" Hidden="ShootDate"
+                    <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;" Hidden="@(GetColumnVisibility("ShootDate"))"
                     Groupable="true" Editable=false CellStyle="text-align:center;" >
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.FormattedShootDate" 
@@ -419,7 +429,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
                 {
-                    <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false" Hidden="DueDate"
+                    <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false" Hidden="@(GetColumnVisibility("DueDate"))"
                     CellClass="outlined-dialog-md-content" Groupable="true" Editable=false >
                         <CellTemplate>
                             @if (context.Item.IsUrgent == true)
@@ -458,7 +468,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
                 {
-                    <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content" Hidden="WorkingMonth"
+                    <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content" Hidden="@(GetColumnVisibility("WorkingMonth"))"
                     CellStyle="text-align:center;" Groupable="true" Editable=false>
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" 
@@ -479,7 +489,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("Status"))
                 {
-                    <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true" Hidden="Status"
+                    <PropertyColumn Property="x => x.FormatStatus" Title="Status" Hideable="true" Groupable="true" Hidden="@(GetColumnVisibility("Status"))"
                     CellClass="status-cell-center" CellStyle="text-align:center !important;">
                         <CellTemplate>
                             <MudTextField ReadOnly=true Variant="Variant.Outlined" 
@@ -524,7 +534,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ClientPaymentStatus"))
                 {
-                    <PropertyColumn @ref="PaymentStatusRef" Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Hidden="AdminStatus"
+                    <PropertyColumn  Property="x => x.FormatAdminStatus" Title="Client Payment Status" Hideable="true" Groupable="true" Hidden="@(GetColumnVisibility("AdminStatus"))"
                     Required=false CellStyle="text-align:center;">
                         <CellTemplate>
                             <MudTextField ReadOnly=true Variant="Variant.Outlined" 
@@ -553,7 +563,8 @@
                     </PropertyColumn>
 
                 }
-                <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=false Filterable="false" Sortable="false" CellStyle="text-align:center;" Hidden="Link">
+                <PropertyColumn Property="x => x.Link" Title="Project Link" Required=false Groupable=false Hideable="true" Editable=false Filterable="false" Sortable="false" CellStyle="text-align:center;" 
+                Hidden="@(GetColumnVisibility("Link"))">
                     <CellTemplate>
                         @if (!String.IsNullOrEmpty(@context.Item.Link))
                         {
@@ -590,7 +601,7 @@
                 </PropertyColumn>
                 @if (RoleBasedColumns[_currentRole].Contains("PrimaryEditor"))
                 {
-                    <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" Hidden="PrimaryEditorName"
+                    <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" Hidden="@(GetColumnVisibility("PrimaryEditorName"))"
                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.PrimaryEditorName" 
@@ -643,7 +654,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
                 {
-                    <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" Hidden="SecondaryEditorName"
+                    <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" Hidden="@(GetColumnVisibility("SecondaryEditorName"))"
                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
 
                         <CellTemplate>
@@ -698,8 +709,8 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("PrivateNotes"))
                 {
-                    <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-md-content" Title="Private Notes" Sortable="false" Filterable="false" Hideable="true" Groupable="false" Hidden="PrivateNotes"
-                    Editable=false Required=false>
+                    <PropertyColumn Property="x => x.NotesForProject" CellClass="outlined-dialog-md-content" Title="Private Notes" Hidden="@(GetColumnVisibility("PrivateNotes"))"
+                    Sortable="false" Filterable="false" Hideable="true" Groupable="false"  Editable=false Required=false>
                         <CellTemplate>
                             @{
                                 var notes = context.Item.NotesForProject;
@@ -724,7 +735,7 @@
                 {
                     @if (_isAdminView)
                     {
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden=@PriamryEditorDatePaid>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.DatePaidEditor" Title="P.Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PriamryEditorDatePaid"))">
                             <CellTemplate>
                                 @if (context.Item.PrimaryEditorDetails.DatePaidEditor != null)
                                 {
@@ -751,7 +762,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorLoggedHours>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorLoggedHours"))">
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.BillableHours >= 0)
                                 {
@@ -769,7 +780,7 @@
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorOvertime>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorOvertime"))" >
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.Overtime != null)
                                 {
@@ -787,7 +798,7 @@
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjust" Sortable=false Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@PrimaryEditorAdjustment>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjust" Sortable=false Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorAdjustment"))">
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.AdjustmentHours >= 0)
                                 {
@@ -806,7 +817,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=@PrimaryEditorFinalBilalbleHours>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorFinalBilalbleHours"))" >
                             <CellTemplate>
                                 @if(@context.Item.PrimaryEditorDetails.FinalBillableHours >= 0)
                                 {
@@ -825,7 +836,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" Filterable=false Editable="false" CellStyle="text-align:center;" Hidden=@PrimaryEditorPayment>
+                        <PropertyColumn Property="x => x.PrimaryEditorDetails.PaymentAmount" Title="P.Editor Payment" Groupable="false" Hideable="true" Filterable=false Editable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorPayment"))">
                             <CellTemplate>
                                 @if (context.Item?.PrimaryEditorDetails?.PaymentAmount >= 0)
                                 {
@@ -843,7 +854,7 @@
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="Sec Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden=@SecondaryEditorDatePaid>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.DatePaidEditor" Title="Sec Date Paid" Groupable=false Hideable="true" Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorDatePaid"))">
                             <CellTemplate>
                                 @if (context.Item.SecondaryEditorDetails.DatePaidEditor != null)
                                 {
@@ -871,7 +882,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Logged Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorLoggedHours>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Logged Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorLoggedHours"))">
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.BillableHours != null)
                                 {
@@ -890,7 +901,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorOvertime>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorOvertime"))" >
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.Overtime != null)
                                 {
@@ -909,7 +920,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec Adjust" Hideable="true" Sortable="false" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorAdjustment>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec Adjust" Hideable="true" Sortable="false" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorAdjustment"))">
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.AdjustmentHours != null)
                                 {
@@ -928,7 +939,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorFinalBilalbleHours>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorFinalBilalbleHours"))">
                             <CellTemplate>
                                 @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
                                 {
@@ -947,7 +958,7 @@
                             </EditTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden=@SecondaryPrimaryEditorPayment>
+                        <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryPrimaryEditorPayment"))">
                             <CellTemplate>
                                 @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
                                 {
@@ -1074,7 +1085,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
                 {
-                    <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;" Hidden=ClientBillableHours>
+                    <PropertyColumn Property="x => x.ClientBillableHours" Title="Client Billable Hours" Groupable=false Hideable="true" Editable=false CellStyle="text-align:center;"  Hidden="@(GetColumnVisibility("ClientBillableHours"))">
                         <CellTemplate>
                             @if(context.Item.ClientBillableHours >= 0)
                             {
@@ -1096,7 +1107,7 @@
                 {
                     if(_isAdminView)
                     {
-                        <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;" Hidden=ClientPayment>
+                        <PropertyColumn Property="x => x.ClientBillableAmount" Title="Client Payment" Hideable="true" Groupable=false Editable=false CellStyle="text-align:center;"  Hidden="@(GetColumnVisibility("ClientPayment"))">
                             <CellTemplate>
                                 @if(context.Item.ClientBillableAmount >= 0)
                                 {
@@ -1116,8 +1127,8 @@
                     }
                     else if(_isClientView)
                     {
-                        <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true" HeaderStyle="max-width:140px"
-                                        Groupable=false Editable=false CellStyle="text-align:center; max-width:140px">
+                        <PropertyColumn Property="x => x.ClientBillableAmount" Title="Payment Amount" Hideable="true" HeaderStyle="max-width:140px" 
+                        Groupable=false Editable=false CellStyle="text-align:center; max-width:140px">
                             <CellTemplate Context="context">
                                 @{
                                     var project = context.Item as Project;
@@ -1141,7 +1152,7 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ClientBillable"))
                 {
-                    <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true" Hidden=ClientPaymentToggle>
+                    <TemplateColumn T="Project" Title="Payment Visible" Sortable="false" Filterable="false" Groupable=false Hideable="true" Hidden="@(GetColumnVisibility("ClientPaymentToggle"))">
                         <CellTemplate>
                             <MudItem  Class="d-flex justify-center">
                                 <MudIconButton Icon="@(context.Item.IsPaymentVisible ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
@@ -1202,7 +1213,7 @@
     private bool _isEditorView;
     private bool _isClientView;
     private bool _groupByClientName;
-    private int timezoneOffsetMinutes; // Gets User local time to change timing according to his own.
+    private int timezoneOffsetMinutes; // Gets User local time to pass it to change timing of chat-messages etc according to his own.
     private int _rowsPerPage = 50;
     private string _searchString = "";
     private string _currentUserId = "";
@@ -1214,14 +1225,184 @@
     private string pathData = "";    
     private List<UserRoleViewModel.UserProjectViewModel> Editors = new List<UserRoleViewModel.UserProjectViewModel>();
     private List<UserRoleViewModel.UserProjectViewModel> Clients = new List<UserRoleViewModel.UserProjectViewModel>();
+    private Dictionary<string, bool> _columnVisibility = new();
+    private List<ColumnPreset> _columnPresets = new();
     [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;
     [Inject] private LoadingService LoadingService { get; set; }
+    private Dictionary<string, List<string>> RoleBasedColumns => new()
+    {
+        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","ClientPaymentStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","SubmittedStatus","Actions","Archive" } },
+        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable","SubmittedStatus", "Actions"} },
+        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status","ClientPaymentStatus" } }
+    };
+    private Guid _gridKey = Guid.NewGuid();
+    private List<ColumnDefinition> _availableColumns = new()
+    {
+        new ColumnDefinition { Name = "ClientUserName", DisplayName = "Client User Name" },
+        new ColumnDefinition { Name = "ProgressBar", DisplayName = "Progress Bar" },
+        new ColumnDefinition { Name = "ShootDate", DisplayName = "Shoot Date" },
+        new ColumnDefinition { Name = "DueDate", DisplayName = "Due Date" },
+        new ColumnDefinition { Name = "WorkingMonth", DisplayName = "Working Month" },
+        new ColumnDefinition { Name = "Status", DisplayName = "Status" },
+        new ColumnDefinition { Name = "AdminStatus", DisplayName = "Admin Status" },
+        new ColumnDefinition { Name = "Link", DisplayName = "Link" },
+        new ColumnDefinition { Name = "PrimaryEditorName", DisplayName = "Primary Editor Name" },
+        new ColumnDefinition { Name = "SecondaryEditorName", DisplayName = "Secondary Editor Name" },
+        new ColumnDefinition { Name = "PrivateNotes", DisplayName = "Private Notes" },
+        new ColumnDefinition { Name = "PrimaryEditorDatePaid", DisplayName = "Primary Editor Date Paid" },
+        new ColumnDefinition { Name = "PrimaryEditorLoggedHours", DisplayName = "Primary Editor Logged Hours" },
+        new ColumnDefinition { Name = "PrimaryEditorOvertime", DisplayName = "Primary Editor Overtime" },
+        new ColumnDefinition { Name = "PrimaryEditorAdjustment", DisplayName = "Primary Editor Adjustment" },
+        new ColumnDefinition { Name = "PrimaryEditorFinalBillableHours", DisplayName = "Primary Editor Final Billable Hours" },
+        new ColumnDefinition { Name = "PrimaryEditorPayment", DisplayName = "Primary Editor Payment" },
+        new ColumnDefinition { Name = "SecondaryEditorDatePaid", DisplayName = "Secondary Editor Date Paid" },
+        new ColumnDefinition { Name = "SecondaryEditorLoggedHours", DisplayName = "Secondary Editor Logged Hours" },
+        new ColumnDefinition { Name = "SecondaryEditorOvertime", DisplayName = "Secondary Editor Overtime" },
+        new ColumnDefinition { Name = "SecondaryEditorAdjustment", DisplayName = "Secondary Editor Adjustment" },
+        new ColumnDefinition { Name = "SecondaryEditorFinalBillableHours", DisplayName = "Secondary Editor Final Billable Hours" },
+        new ColumnDefinition { Name = "SecondaryEditorPayment", DisplayName = "Secondary Editor Payment" },
+        new ColumnDefinition { Name = "ClientBillableHours", DisplayName = "Client Billable Hours" },
+        new ColumnDefinition { Name = "ClientPayment", DisplayName = "Client Payment" },
+        new ColumnDefinition { Name = "ClientPaymentToggle", DisplayName = "Client Payment Toggle" },
+
+    };
 
     private void HandleProjectStateChange()
     {
         InvokeAsync(StateHasChanged);
     }
     // quick filter - filter globally across multiple columns with the same input
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current user ID
+        LoadingService.Subscribe(isVisible =>
+        {
+            _loadingIndicator = isVisible;
+            StateHasChanged();
+        });    
+        ProjectState.OnChange += HandleProjectStateChange;
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
+        foreach (var column in _availableColumns)
+        {
+            _columnVisibility[column.Name] = column.isHidden;
+        }
+        if (currentUser.IsInRole("Admin"))
+        {
+            _currentRole = "Admin";
+            _isAdminView = true;
+            isAdminView = true;
+            await GetColumnsPresetPreferences();
+
+        }
+        else if (currentUser.IsInRole("Editor"))
+        {
+            _currentRole = "Editor";
+            _isEditorView = true;
+            _isAdminView = false;
+
+        }
+        else if (currentUser.IsInRole("Client"))
+        {
+            _currentRole = "Client";
+            _isClientView = true;
+            _isAdminView = false;
+        }
+        CircuitId = Guid.NewGuid().ToString();
+        Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
+        _loading = false;
+
+    }    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");        
+            await _dataGrid.SetRowsPerPageAsync(_rowsPerPage);
+            await LoadProjects();
+
+            StateHasChanged();
+
+        }
+
+    }
+    public void Dispose()
+    {
+        if (CircuitId != null)
+        {
+            Broadcaster.Unsubscribe(CircuitId);
+        }
+        ProjectState.OnChange -= HandleProjectStateChange;
+    }
+
+    private async Task ResetState()
+    {
+        _gridKey = Guid.NewGuid();
+    }
+
+
+    private async Task GetColumnsPresetPreferences()
+    {
+        try
+        {
+            _columnPresets = await columnPreferenceService.GetUserPresets(_currentUserId);
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    private bool GetColumnVisibility(string columnName)
+    {
+        return _columnVisibility.GetValueOrDefault(columnName, false);
+    }
+    private string _selectedPresetName;
+    private async Task LoadSelectedPreset(string presetName)
+    {
+        if (string.IsNullOrEmpty(presetName)) return;
+
+        try
+        {
+            // Get the preferences from the service
+            var preferences = await columnPreferenceService.GetPreferencesByName(_currentUserId, presetName);
+
+            // Update the visibility dictionary
+            _columnVisibility = preferences;
+
+            StateHasChanged();
+            Snackbar.Add($"Preset '{presetName}' loaded successfully", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"failed loading preset: {ex.Message}");
+            Snackbar.Add($"Error loading preset. please contact support!", Severity.Error);
+        }
+    }
+    private async Task OpenColumnPreferencesDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["VisibilityState"] = _columnVisibility,
+            ["Columns"] = _availableColumns
+        };
+
+        var dialog = await DialogService.ShowAsync<ColumnPreferencesDialog>("Column Preferences", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            if (result.Data is ColumnPreferenceResult presetResult)
+            {
+                _columnVisibility = presetResult.Visibility;
+                await columnPreferenceService.SavePreset(_currentUserId, presetResult.PresetName, presetResult.Visibility);
+            }
+            else
+            {
+                _columnVisibility = (Dictionary<string, bool>)result.Data;
+            }
+            StateHasChanged();
+        }
+    }
     private Func<Project, bool> _quickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
@@ -1250,115 +1431,13 @@
 
         return searchableText.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
     };
-    protected override async Task OnInitializedAsync()
-    {
-        // Get the current user ID
-        LoadingService.Subscribe(isVisible =>
-        {
-            _loadingIndicator = isVisible;
-            StateHasChanged();
-        });    
-        ProjectState.OnChange += HandleProjectStateChange;
-        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
-        if (currentUser.IsInRole("Admin"))
-        {
-            _currentRole = "Admin";
-            _isAdminView = true;
-            isAdminView = true;
-        }
-        else if (currentUser.IsInRole("Editor"))
-        {
-            _currentRole = "Editor";
-            _isEditorView = true;
-            _isAdminView = false;
 
-        }
-        else if (currentUser.IsInRole("Client"))
-        {
-            _currentRole = "Client";
-            _isClientView = true;
-            _isAdminView = false;
-        }
-        CircuitId = Guid.NewGuid().ToString();
-        Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
-        _loading = false;
-
-    }    
-    bool ClientBillableHours = false;
-    bool AdminStatus = false;
-    bool ClientPayment = false;
-    bool ClientPaymentToggle = false;
-    bool ClientUserName = false;
-    bool DueDate = false;
-    bool Link = false;
-    bool PriamryEditorDatePaid = false;
-    bool PrimaryEditorAdjustment = false;
-    bool PrimaryEditorFinalBilalbleHours = false;
-    bool PrimaryEditorLoggedHours = false;
-    bool PrimaryEditorName = false;
-    bool PrimaryEditorOvertime = false;
-    bool PrimaryEditorPayment = false;
-    bool PrivateNotes = false;
-    bool ProgressBar = false;
-    bool SecondaryEditorDatePaid = false;
-    bool SecondaryEditorName = false;
-    bool SecondaryPrimaryEditorAdjustment = false;
-    bool SecondaryPrimaryEditorFinalBilalbleHours = false;
-    bool SecondaryPrimaryEditorLoggedHours = false;
-    bool SecondaryPrimaryEditorOvertime = false;
-    bool SecondaryPrimaryEditorPayment = false;
-    bool ShootDate = false;
-    bool Status = false;
-    bool WorkingMonth = false;
 
     private async Task OnClick(){
         await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
     }
     private bool _shouldScroll = false;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");        
-            await _dataGrid.SetRowsPerPageAsync(_rowsPerPage);
-            await LoadProjects();
-
-            StateHasChanged();
-
-        }
-
-    }
-    public void Dispose()
-    {
-        if (CircuitId != null)
-        {
-            Broadcaster.Unsubscribe(CircuitId);
-        }
-        ProjectState.OnChange -= HandleProjectStateChange;
-    }
-
-    public class ColumnConnection
-    {
-        public string Id { get; set; }
-        public string Text { get; set; }
-        public List<Column<Project>> ColumnsToToggle { get; set; }
-    }
-    private List<ColumnConnection> connections;
-    // For hidding the columns
-    private Column<Project> ClientNameRef;
-    private Column<Project> ProgressBarRef;
-    private Column<Project> ShootDateRef;
-    private Column<Project> DueDateRef;
-    private Column<Project> MonthRef;
-    private Column<Project> StatusRef;
-    private Column<Project> PaymentStatusRef;
-
-    private async Task ResetState()
-    {
-        _gridKey = Guid.NewGuid();
-    }
-
+   
 
     private async Task OnRowClick(Project project)
     {
@@ -1377,13 +1456,7 @@
         });
     }
 
-    private Dictionary<string, List<string>> RoleBasedColumns => new()
-    {
-        { "Admin", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","ClientPaymentStatus","PrivateNotes","AdminBillableHoursView","ClientBillable","ClientBillableAmount","EditorBillable","SubmittedStatus","Actions","Archive" } },
-        { "Editor", new List<string> { "InternalId", "ProjectName","ClientName","PrimaryEditor","SecondaryEditor", "ProjectDescription", "ProgressBar", "ShootDate", "DueDate", "WorkingMonth", "Status","PrivateNotes","BillableHours","EditorBillable","SubmittedStatus", "Actions"} },
-        { "Client", new List<string> { "ExternalId", "ProjectName", "ProjectDescription", "ProgressBar", "ShootDate","ClientBillableAmount", "Status","ClientPaymentStatus" } }
-    };
-    private Guid _gridKey = Guid.NewGuid();
+    
     private async Task AdminToggle()
     {
         LoadingService.ShowLoading();

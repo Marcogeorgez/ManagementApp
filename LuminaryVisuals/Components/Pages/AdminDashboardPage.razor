@@ -43,8 +43,8 @@
 
 
         <MudDataGrid T="UserRoleViewModel" Bordered=true Hover="true" CanCancelEdit=true MultiSelection=true
-                     Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% * 0.7); transform-style: preserve-3d;"
-        FixedHeader="true" Height="calc(83vh * (1/0.7));" Virtualize=true RowsPerPage=50
+        Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.73); transform-style: preserve-3d;"
+        FixedHeader="true" Height="calc(83vh * (1/0.708));" Virtualize=true RowsPerPage=50
         SelectedItems="SelectedItems" @ref=_dataGrid QuickFilter="_quickFilter"
         Breakpoint="Breakpoint.None"
         Items="@AllUsers" SortMode="SortMode.Multiple"
