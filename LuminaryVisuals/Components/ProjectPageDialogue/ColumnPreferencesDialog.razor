@@ -1,9 +1,15 @@
 ﻿@* ColumnVisibilityDialog.razor *@
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="_presetName"  Variant=Variant.Outlined
-                     Label="Preset Name"
-                     Class="mb-4"/>
+        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField @bind-Value="_presetName"
+            Validation="@(new Func<string, IEnumerable<string>>(ValidatePresetName))"
+            Variant="Variant.Outlined"
+            Label="Preset Name"
+            Required="true"
+            RequiredError="Preset name is required"
+            Class="mb-4" />
+        </MudForm>
         <MudList T="bool" Dense="true" ReadOnly=true Style="background:#000000ad !important;">
             @foreach (var column in Columns)
             {
@@ -23,8 +29,8 @@
     <DialogActions>
         <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Success" 
-                  OnClick="SavePreset" 
-                  Disabled="string.IsNullOrEmpty(_presetName)">
+        OnClick="SavePreset" 
+        Disabled="@(form?.IsValid != true)">  
             Save Preset
         </MudButton>
     </DialogActions>
@@ -34,11 +40,26 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public List<ColumnDefinition> Columns { get; set; }
     [Parameter] public Dictionary<string, bool> VisibilityState { get; set; }
-    
+    [Parameter] public List<ColumnPreset> _columnPresets { get; set; }
     private string _presetName;
 
+    private MudForm form;
+    bool success;
+    string[] errors = { };
+    private IEnumerable<string> ValidatePresetName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            yield return "Name can't be empty!";
+
+        if (_columnPresets.FirstOrDefault(preset => preset.Name == value) != null)
+            yield return "Name is already used! The name must be unique.";
+
+    }
     private void SavePreset()
     {
+        form.Validate();
+        if (!form.IsValid)
+            return;
         var result = new ColumnPreferenceResult
         {
             PresetName = _presetName,
