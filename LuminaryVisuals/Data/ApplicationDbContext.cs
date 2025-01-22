@@ -1,4 +1,5 @@
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
@@ -11,6 +12,7 @@ namespace LuminaryVisuals.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<Entities.ColumnPreset> ColumnPresets { get; set; }
         public DbSet<MigratedUser> MigratedUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Revision> Revisions { get; set; }
@@ -49,9 +51,18 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.Id).HasMaxLength(255);
                 entity.HasIndex(e => e.Id).IsUnique();
             });
-
-            // Configure Project
-            builder.Entity<Project>(entity =>
+            builder.Entity<Entities.ColumnPreset>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.Name).IsRequired();
+                entity.Property(e => e.Preferences).IsRequired();
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId);
+            });
+        // Configure Project
+        builder.Entity<Project>(entity =>
             {
                 entity.ToTable("Projects");
                 entity.Property(e => e.ProjectName).HasMaxLength(255).IsRequired();
