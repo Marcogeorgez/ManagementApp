@@ -1356,6 +1356,7 @@
     {
         return _columnVisibility.GetValueOrDefault(columnName, false);
     }
+    
     private string _selectedPresetName;
     private async Task LoadSelectedPreset(string presetName)
     {
@@ -1378,6 +1379,9 @@
             Snackbar.Add($"Error loading preset. please contact support!", Severity.Error);
         }
     }
+
+    // Open Dialog to Saves the visibility state as a new preset 
+    // which can be loaded for fast access to the columns
     private async Task OpenColumnPreferencesDialog()
     {
         var parameters = new DialogParameters
@@ -1395,6 +1399,7 @@
             {
                 _columnVisibility = presetResult.Visibility;
                 await columnPreferenceService.SavePreset(_currentUserId, presetResult.PresetName, presetResult.Visibility);
+                await GetColumnsPresetPreferences();
             }
             else
             {
@@ -1403,6 +1408,9 @@
             StateHasChanged();
         }
     }
+
+
+    // Quick Global Filter which is used to search in the entire grid
     private Func<Project, bool> _quickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
