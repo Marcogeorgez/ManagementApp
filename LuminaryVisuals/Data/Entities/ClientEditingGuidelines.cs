@@ -14,6 +14,7 @@ namespace LuminaryVisuals.Data.Entities
         public virtual ApplicationUser User { get; set; } 
         public string? WebsiteLink { get; set; }
         public string? FolderLink { get; set; }
+        public string? PaidFolderLink { get; set; }
         public string? VideoStructure { get; set; } 
         public string? CrossFades { get; set; } 
         public string? FadeToBlack { get; set; } 

@@ -830,7 +830,7 @@ public class ProjectService
                 }
 
                 // Calculate primary editor details
-                if (project.PrimaryEditor != null && project.PrimaryEditorDetails.BillableHours != null)
+                if (project.PrimaryEditor != null)
                 {
                     CalculateEditorPayment(project.PrimaryEditorDetails, project.PrimaryEditor, project.ClientBillableHours);
                     context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;
