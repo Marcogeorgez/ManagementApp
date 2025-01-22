@@ -10,27 +10,20 @@
             RequiredError="Preset name is required"
             Class="mb-4" />
         </MudForm>
-        <MudList T="bool" Dense="true" ReadOnly=true Style="background:#000000ad !important;">
+        <MudList T="bool" Dense="true" ReadOnly=true Style="background:#0d0e19 !important;">
             @foreach (var column in Columns)
             {
-                <MudListItem > 
-                    <div class="d-flex align-center">
+                    <div class="d-flex align-center my-1">
                         <MudText Class="mr-4 d-flex flex-grow-1" Typo=Typo.body1 Color="Color.Surface">@column.DisplayName</MudText>
-                        <MudToggleGroup T="bool" @bind-Value="@VisibilityState[column.Name]" Style="border-radius:14px !important;border-width:2px !important;"
-                        Color="Color.Info" CheckMark FixedContent>
-                            <MudToggleItem Value="true" Text="Hidden" Style="border-radius:0px !important;border-width:0px !important;" />
-                            <MudToggleItem Value="false" Text="Visible" Style="border-radius:0px !important;border-width:0px !important;" />
-                        </MudToggleGroup>
+                    <MudSwitch @bind-Value="@VisibilityState[column.Name]" Label="@(VisibilityState[column.Name] ? "Visible" : "Hidden")" LabelPosition=LabelPosition.End Color="Color.Info" />
                     </div>
-                </MudListItem>
             }
         </MudList>
     </DialogContent>
     <DialogActions>
         <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Success" 
-        OnClick="SavePreset" 
-        Disabled="@(form?.IsValid != true)">  
+        OnClick="SavePreset" >  
             Save Preset
         </MudButton>
     </DialogActions>
@@ -42,7 +35,6 @@
     [Parameter] public Dictionary<string, bool> VisibilityState { get; set; }
     [Parameter] public List<ColumnPreset> _columnPresets { get; set; }
     private string _presetName;
-
     private MudForm form;
     bool success;
     string[] errors = { };
