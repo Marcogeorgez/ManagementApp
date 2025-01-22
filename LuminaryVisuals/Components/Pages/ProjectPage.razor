@@ -328,7 +328,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
                 {
                     <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" Hidden="@(GetColumnVisibility("ClientUserName"))"
-                    Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-max-content"
+                                    Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-name-content"
                     Editable=false Required=false >
                         <CellTemplate>
                             <MudTextField T="string"
@@ -337,7 +337,7 @@
                             Immediate="true" Adornment="Adornment.End"
                             AdornmentIcon="@Icons.Material.Filled.OpenInNew" Variant="Variant.Outlined"
                             MaxLines="4"
-                            class="@(_isAdminView ? "cursor-pointer outlined-dialog-max-content grey-border": "outlined-dialog-max-content grey-border")"
+                            class="@(_isAdminView ? "cursor-pointer outlined-dialog-name-content grey-border": "outlined-dialog-name-content grey-border")"
                             @onclick="@( _isAdminView ? (async () => await OpenClientNameDialog(context.Item)) : null )"
                             OnAdornmentClick="@(() => OpenViewClientEditingGuidelinesComponent(context.Item))">
                             </MudTextField>
@@ -605,8 +605,8 @@
                     <PropertyColumn Property="x => x.PrimaryEditorName" Title="Primary Editor" Hideable="true" Hidden="@(GetColumnVisibility("PrimaryEditorName"))"
                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
                         <CellTemplate>
-                            <MudTextField T="string" Value="@context.Item.PrimaryEditorName" 
-                            Class=@($"outlined-dialog-max-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                            <MudTextField T="string" Value="@context.Item.PrimaryEditorName"
+                                          Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenPrimaryEditorDialog(context.Item)) : null )"
                             style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
@@ -660,7 +660,7 @@
 
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.SecondaryEditorName" 
-                            Class=@($"outlined-dialog-max-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                            Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenSecondaryEditorDialog(context.Item)) : null )"
                             style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
@@ -992,8 +992,8 @@
                                 }
                                 else
                                 {
-                                    <MudTextField Value=@_DatePaidEditor.Value.ToString("MM/dd/yyyy") T="string" Class="grey-border outlined-dialog-md-content" 
-                                    ReadOnly=true/>
+                                    <MudTextField Value=@_DatePaidEditor.Value.ToString("MM/dd/yyyy") T="string" Class="grey-border outlined-dialog-lg-content"
+                                                  ReadOnly=true/>
                                 }
                             </CellTemplate>
                         </TemplateColumn>
