@@ -194,16 +194,16 @@ public class NotificationService : BackgroundService, INotificationService
         foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
         {
             var secondPrimaryEditorNameMessage = project.SecondaryEditorName != null ? $" and <strong>{project.SecondaryEditorName}</strong>" : "";
-            var customMessageDelivered = newStatus == ProjectStatus.Delivered ? "<strong> This Project has private notes please check it.</strong>" : "";
+            var messageForPrivateNotes = newStatus == ProjectStatus.Delivered && .NotesForProject.Length > 15 ? $"<strong> This Project has private notes:.</strong> {project.NotesForProject}" : "";
             var notificationItem = new NotificationQueueItem
             {
                 UserId = admin.Id,
-                Subject = $"The Project {project.ProjectName} has changed status {( newStatus == ProjectStatus.Delivered && project.NotesForProject.Length > 15 ? "to delivered and has private notes" : "" )}",
+                Subject = $"The Project {project.ProjectName} has changed status {( newStatus == ProjectStatus.Delivered && project.NotesForProject.Length > 15 ? "to delivered and has private notes" : "" )}",    
                 Message = $@"
                             <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> <strong>{secondPrimaryEditorNameMessage}</strong> 
                              status changed from <strong>{oldStatus.ToString().Replace('_', ' ')}</strong> to <strong>{newStatus.ToString().Replace('_', ' ')}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.
-                            {readyToReviewText}{customMessageDelivered}</p>",
+                            {readyToReviewText}{messageForPrivateNotes}</p>",
                 CreatedAt = DateTime.UtcNow
             };
             AddToQueue(notificationItem);
