@@ -236,16 +236,23 @@ if (environment.IsProduction())
 {
     // Get the Sentry DSN from environment variables or configuration
     var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN");
-
-    // Configure Sentry
-    builder.WebHost.UseSentry(options =>
+    if (sentryDSN is not null || sentryDSN != string.Empty)
     {
-        options.Dsn = sentryDSN;
-        options.AutoSessionTracking = true;
-        options.StackTraceMode = StackTraceMode.Enhanced;
-        options.TracesSampleRate = 1.0;
-        options.ProfilesSampleRate = 1.0f;
-    });
+
+        // Configure Sentry
+        builder.WebHost.UseSentry(options =>
+        {
+            options.Dsn = sentryDSN;
+            options.AutoSessionTracking = true;
+            options.StackTraceMode = StackTraceMode.Enhanced;
+            options.TracesSampleRate = 1.0;
+            options.ProfilesSampleRate = 1.0f;
+        });
+    }
+    else
+    {
+        Console.WriteLine("Sentry DSN not found in environment variables. Sentry will not be configured.");
+    }
 }
 
 
