@@ -1109,6 +1109,3 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
     border-color: var(--parent-bg-color, #5a5a5f) !important;
     transition: border-width .1s ease-in-out !important;
 }
-.mud-dialog-content {
-    overflow: hidden !important;
-}
