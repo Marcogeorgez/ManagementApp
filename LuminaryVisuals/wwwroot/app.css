@@ -8,11 +8,7 @@
     --success-color: #00532e !important;
     
 }
-.mud-input-outlined-border {
-    border-radius: 8px !important;
-    border-width: 2px !important;
-    border-color: var(--parent-bg-color, #5a5a5f) !important;
-}
+
 
 .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input, .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input {
     border-radius: 8px !important;
@@ -1072,4 +1068,46 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
 }
 .mud-dialog.mud-dialog-width-md{
     min-width:400px;
+}
+
+.yellow-border {
+    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+    border-radius: 10px;
+    border-width: 2px !important;
+    --parent-bg-color: #c09837;
+    background: #b17d00;
+}
+.grey-border {
+
+    background-color: #32333c;
+    --parent-bg-color: #48494f;
+    border-radius: 8px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.green-border {
+    background-color: #00532e;
+    color: white;
+    border-radius: 8px;
+    --parent-bg-color: #008438;
+    min-width: 100px;
+    text-align: center;
+}
+
+.error-border {
+    --parent-bg-color: #be0000;
+    background: #7d0000;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.mud-input-outlined-border {
+    border-radius: 8px !important;
+    border-width: var(--border-width,2px) !important;
+    border-color: var(--parent-bg-color, #5a5a5f) !important;
+    transition: border-width .1s ease-in-out !important;
+}
+.mud-dialog-content {
+    overflow: hidden !important;
 }
