@@ -1373,11 +1373,11 @@
         try
         {
 
-                // Get the preferences from the service
-                var preferences = await columnPreferenceService.GetPreferencesByName(_currentUserId, presetName);
+            // Get the preferences from the service
+            var preferences = await columnPreferenceService.GetPreferencesByName(_currentUserId, presetName);
 
-                // Update the visibility dictionary
-                _columnVisibility = preferences;
+            // Update the visibility dictionary
+            _columnVisibility = preferences;
 
             StateHasChanged();
             Snackbar.Add($"Preset '{presetName}' loaded successfully", Severity.Success);
@@ -1410,6 +1410,8 @@
                 _columnVisibility = presetResult.Visibility;
                 await columnPreferenceService.SavePreset(_currentUserId, presetResult.PresetName, presetResult.Visibility);
                 await GetColumnsPresetPreferences();
+                _selectedPresetName = presetResult.PresetName;
+
             }
             else
             {
