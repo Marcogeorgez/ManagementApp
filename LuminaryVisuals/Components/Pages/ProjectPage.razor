@@ -76,7 +76,7 @@
                         <MudStack Spacing="0" Class="mb-3">
                             <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset" AnchorOrigin="Origin.BottomCenter" Dense=true
                             TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined" @bind-Value="_selectedPresetName"
-                            SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)">
+                            SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)" Clearable=true>
                                 @foreach (var preset in _columnPresets)
                                 {
                                     <MudSelectItem Value="@preset.Name">@preset.Name</MudSelectItem>
@@ -1267,7 +1267,6 @@
         new ColumnDefinition { Name = "ClientPaymentToggle", DisplayName = "Client Payment Toggle" },
 
     };
-
     private void HandleProjectStateChange()
     {
         InvokeAsync(StateHasChanged);
@@ -1356,18 +1355,29 @@
     {
         return !_columnVisibility.GetValueOrDefault(columnName, false);
     }
-    
+
     private string _selectedPresetName;
+    private const string _Default = "_Default";
     private async Task LoadSelectedPreset(string presetName)
     {
-        if (string.IsNullOrEmpty(presetName)) return;
+        if (string.IsNullOrEmpty(presetName))
+        {
+           _selectedPresetName = string.Empty;
+            foreach (var column in _availableColumns)
+            {
+                _columnVisibility[column.Name] = column.isHidden;
+            }
+           Snackbar.Add("You've removed the filter", Severity.Info);
+           return;
+        }
         try
         {
-            // Get the preferences from the service
-            var preferences = await columnPreferenceService.GetPreferencesByName(_currentUserId, presetName);
 
-            // Update the visibility dictionary
-            _columnVisibility = preferences;
+                // Get the preferences from the service
+                var preferences = await columnPreferenceService.GetPreferencesByName(_currentUserId, presetName);
+
+                // Update the visibility dictionary
+                _columnVisibility = preferences;
 
             StateHasChanged();
             Snackbar.Add($"Preset '{presetName}' loaded successfully", Severity.Success);
