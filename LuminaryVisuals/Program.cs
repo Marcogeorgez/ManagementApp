@@ -236,10 +236,8 @@ if (environment.IsProduction())
 {
     // Get the Sentry DSN from environment variables or configuration
     var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN");
-    if (sentryDSN is not null || sentryDSN != string.Empty)
+    if (!string.IsNullOrEmpty(sentryDSN))
     {
-
-        // Configure Sentry
         builder.WebHost.UseSentry(options =>
         {
             options.Dsn = sentryDSN;
