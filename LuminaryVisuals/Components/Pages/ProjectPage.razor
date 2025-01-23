@@ -325,7 +325,12 @@
                         </EditTemplate>
                     </PropertyColumn>
                 }
-                @if (RoleBasedColumns[_currentRole].Contains("ClientName"))
+                @* Important: isAdminView is added to the condition to show the column to the admin view
+                    So the admin can group by the client name and see the projects of the client
+                    The client view will not see the client name column, but the client name will be shown in the project brief
+
+                *@
+                @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView ) 
                 {
                     <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" Hidden="@(GetColumnVisibility("ClientUserName"))"
                     Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-name-content"
