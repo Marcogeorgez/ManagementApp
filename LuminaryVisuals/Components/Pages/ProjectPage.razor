@@ -256,6 +256,10 @@
                                         Icon="@Icons.Material.Filled.ContentCopy">
                                             Duplicate
                                         </MudMenuItem>
+
+                                    }
+
+                                    @if(!_isArchived){
                                     <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
                                     Icon="@Icons.Material.TwoTone.Edit">
                                         Edit Row

@@ -1076,6 +1076,7 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
     border-width: 2px !important;
     --parent-bg-color: #c09837;
     background: #b17d00;
+    text-align:center;
 }
 .grey-border {
 
