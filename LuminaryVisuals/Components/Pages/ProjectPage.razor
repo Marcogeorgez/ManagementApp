@@ -265,7 +265,6 @@
                                         Edit Row
                                     </MudMenuItem>
                                     }
-  
                                 </MudMenu>
                                 @{
                                     var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
@@ -274,7 +273,6 @@
 
                                 <MudTooltip Text="@context.Item.SubmissionStatus.ToString()" Arrow=true Color="submissionStatus" >
                                     <MudIconButton Color="@submissionStatus" Icon="@Icons.Material.Filled.Calculate" 
-                                    Disabled="(_isEditorView && context.Item.SubmissionStatus == Models.SubmissionStatus.Approved)"
                                     Variant="Variant.Text" Size="Size.Large" OnClick="@(() => TimeCalculator(context.Item))" >
                                         @context.Item.SubmissionStatus.ToString()
                                     </MudIconButton>
@@ -483,9 +481,9 @@
                     CellStyle="text-align:center;" Groupable="true" Editable=false>
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" 
-                            Class=@($"outlined-dialog-md-content {( _isAdminView ? "cursor-pointer" : "" )}")
+                            Class=@($"outlined-dialog-md-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenWorkingMonthDialog(context.Item)) : null )"
-                            style="background-color:#32333c;" ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
+                            ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
                         </CellTemplate>
                         <EditTemplate Context="context">
                             @if(@_isAdminView){
@@ -618,7 +616,6 @@
                             <MudTextField T="string" Value="@context.Item.PrimaryEditorName"
                             Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenPrimaryEditorDialog(context.Item)) : null )"
-                            style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
                         </CellTemplate>
                         <GroupTemplate>
@@ -672,7 +669,6 @@
                             <MudTextField T="string" Value="@context.Item.SecondaryEditorName" 
                             Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenSecondaryEditorDialog(context.Item)) : null )"
-                            style="background-color:#32333c;"
                             ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
                         </CellTemplate>
                         <EditTemplate>
@@ -1873,11 +1869,9 @@
     private async Task TimeCalculator( Project project)
     {
         LoadingService.ShowLoading();
-        if (_isEditorView && project.SubmissionStatus == Models.SubmissionStatus.Approved)
-        {
-            Snackbar.Add($"As an Editor you aren't allowed to modify projects which status is {project.SubmissionStatus.ToString()}",Severity.Error);
+        if (_isClientView)
             return;
-        }
+
         var dialogParameters = new DialogParameters<ProjectTotalHoursCalculatorDialog> {
             { nameof(ProjectTotalHoursCalculatorDialog.newProject), project },
             { "_isAdminView", _isAdminView},
