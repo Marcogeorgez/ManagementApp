@@ -102,13 +102,11 @@
                 // If there are any unread messages, order by unread messages
                 if (projects.Any(p => p.countUnreadMessages > 0))
                 {
-                    projects = projects.OrderByDescending(p => p.countUnreadMessages).ToList();
+                    projects = projects.OrderByDescending(p => p.countUnreadMessages)
+                    .ThenByDescending(p => p.LastSentMessage)
+                    .ToList();
                 }
-                else
-                {
-                    // If all unread messages count are 0, order by the last sent message timestamp
-                    projects = projects.OrderByDescending(p => p.LastSentMessage).ToList();
-                }
+
             }
         }
         catch (Exception ex)
