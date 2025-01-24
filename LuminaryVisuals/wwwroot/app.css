@@ -1110,12 +1110,12 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
     transition: border-width .1s ease-in-out !important;
 }
 
-.mud-table-row > .mud-table-cell:first-child:not([class*="Id"]):not([data-label="Id"]) {
-    background-color: #191920 !important;
-    position:sticky;
-    top:-12px;
-    left:0px;
-    z-index:5;
+
+
+
+
+
+
 th.mud-table-cell:nth-child(1):not([class*="Id"]):not([data-label="Id"]) {
     z-index: 3 !important;
 }
