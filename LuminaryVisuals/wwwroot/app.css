@@ -1116,4 +1116,6 @@ div.mud-input-slot.mud-input-root-outlined.mud-input-root-adorned-start {
     top:-12px;
     left:0px;
     z-index:5;
+th.mud-table-cell:nth-child(1):not([class*="Id"]):not([data-label="Id"]) {
+    z-index: 3 !important;
 }

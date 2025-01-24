@@ -293,7 +293,7 @@
                 {
                     <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" 
                     Hideable="false"
-                    HeaderStyle="@(isSelectorVisible ? "left:190px; z-index:4" : "left:165px; z-index:4;")"
+                    HeaderStyle="@(isSelectorVisible ? "left:190px; z-index:4" : !_isClientView ? "left:165px; z-index:4;" : "z-index:4;")"
                     CellStyle="@(isSelectorVisible ? "left:190px;" : "left:165px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
@@ -2769,5 +2769,18 @@
 .drag-handle.grabbing {
     cursor: grabbing;
 }
+
+    .mud-table-row > .mud-table-cell:first-child:not([class*="Id"]):not([data-label="Id"]) {
+        background-color: #191920 !important;
+        position: sticky;
+        top: -12px;
+        left: 0px;
+        z-index: 2;
+
+    }
+    th.mud-table-row > .mud-table-cell:first-child:not([class*="Id"]):not([data-label="Id"]) {
+        z-index:3 !important;
+
+    }
 
 </style>
