@@ -160,12 +160,18 @@
             <Columns>
                 @if (_isAdminView)
                 {
+                    {
+                        isSelectorVisible = true; // used to indicate that select columns are visible
+                        Console.WriteLine(isSelectorVisible);
+                    }
                     <SelectColumn T="Project"/>
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
                 {
-                    <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="false" CellStyle="text-align:center; "
-                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true HeaderStyle="z-index:5 !important;">
+                    <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="false"
+                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true
+                    HeaderStyle="@(isSelectorVisible ? "left:32px; z-index:5;" : "z-index:5;")"
+                    CellStyle="@(isSelectorVisible ? "left:32px; text-align:center;" : "text-align:center;")">
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                                 <div style="height:30px;"
@@ -199,11 +205,11 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("ExternalId"))
                 {
-                    <PropertyColumn Property="x => x.ExternalOrder" Title="Id" Sortable="true" Filterable="false" CellStyle="text-align:center;"
+                    <PropertyColumn Property="x => x.ExternalOrder" Class="Id" Title="Id" Sortable="true" Filterable="false" CellStyle="text-align:center;"
                     DragAndDropEnabled="false" Groupable="false" Editable=true >
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                                <div class="drag-handle flex-row  justify-center align-center ml-n3" style="height:30px;" draggable="true"
+                                <div class="drag-handle Id flex-row  justify-center align-center ml-n3" style="height:30px;" draggable="true"
                                 @ondragstart="@(() => HandleDragStart(context.Item))"
                                 @ondragover:preventDefault
                                 @ondragover="@(() => HandleDragOver(context.Item))"
@@ -224,7 +230,9 @@
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true HeaderStyle="z-index:4 !important; left: 50px" CellStyle=" left:50px; ">
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true
+                    HeaderStyle="@(isSelectorVisible ? "left:78px; z-index:5" : "z-index:5; left:50px;")"
+                    CellStyle="@(isSelectorVisible ? "left:78px; text-align:center;" : "text-align:center;left:50px;")">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
                                 <MudMenu Icon="@Icons.Material.Filled.Edit" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
@@ -284,8 +292,10 @@
 
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" HeaderStyle="@(_isAdminView || _isEditorView ? "left:165px; z-index:4" : "")"
-                    Hideable="false" CellStyle="@(_isAdminView || _isEditorView ? "left:165px;" : "left:0px;")" CellClass="outlined-dialog-xl-content"
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" 
+                    Hideable="false"
+                    HeaderStyle="@(isSelectorVisible ? "left:190px; z-index:4" : "left:165px; z-index:4;")"
+                    CellStyle="@(isSelectorVisible ? "left:190px;" : "left:165px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
@@ -1202,6 +1212,7 @@
 @code {
     private bool _loading = true;
     private bool _loadingIndicator;
+    private bool isSelectorVisible;
     [CascadingParameter]
     public ClaimsPrincipal? currentUser { get; set; }
     private MudDataGrid<Project> _dataGrid = new();
@@ -1486,6 +1497,7 @@
         _isClientView = false;
         _isEditorView = false;
         _currentRole = "Admin";
+        isSelectorVisible = true;
         await LoadProjects();
         LoadingService.HideLoading();
     }
@@ -1497,6 +1509,7 @@
         _isClientView = false;
         _isAdminView = false;
         _currentRole = "Editor";
+        isSelectorVisible = false;
         await LoadProjects();
         LoadingService.HideLoading();
     }
@@ -1508,6 +1521,7 @@
         _isAdminView = false;
         _isEditorView = false;
         _currentRole = "Client";
+        isSelectorVisible = false;
         await LoadProjects();
         LoadingService.HideLoading();
     }
