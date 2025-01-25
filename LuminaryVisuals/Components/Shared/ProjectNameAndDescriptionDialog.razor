@@ -392,8 +392,7 @@ The Bride was married like I said before, so this wedding was quite special beca
         context.Revisions = context.Revisions.Where(r => !string.IsNullOrWhiteSpace(r.Content)).ToList();
 
         await modifiedProject.InvokeAsync(context); // Pass the modified project back
-        Snackbar.Add($"Successfully saved the note.", Severity.Info);
-        Dialog.Close(DialogResult.Ok(context));
+        Snackbar.Add($"Successfully Saved.", Severity.Success);
     }
 
     private void Cancel()
