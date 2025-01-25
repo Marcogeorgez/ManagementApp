@@ -1152,3 +1152,6 @@ th {
 th.mud-table-cell.sticky-left {
     box-shadow: -2px 0 4px rgba(25, 25, 32, 0.7), 2px 0 4px rgba(25, 25, 32, 0.7); /* Shadow on both sides */
 }
+.mud-pagination {
+    list-style: none;
+}
