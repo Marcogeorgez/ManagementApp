@@ -18,7 +18,7 @@
 <PageTitle>Projects</PageTitle>
 
 
-<MudMainContent class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px;">
+<MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
 @if (_loading)
     {
         <SplashScreen />
@@ -36,8 +36,8 @@
         ShowMenuIcon=false
         EditMode="DataGridEditMode.Form"  
         ReadOnly=false RowStyle="text-align:center;"  
-        StartedEditingItem="@StartedEditingItem" 
-        CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+        StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" 
+        CommittedItemChanges="@CommittedItemChanges"
         FixedHeader="true" Height="126vh;" Virtualize="true"  OverscanCount=6
         RowClassFunc="@GetRowClass">
 
@@ -95,7 +95,7 @@
                 </MudMenu>
                 <MudTooltip ShowOnClick=false Text="Scroll to Bottom" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
                     <MudIconButton Class="pa-1 mt-1 mx-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
-                    OnClick="OnClick" Ripple=true Size="Size.Large">
+                    OnClick="OnClick"  Size="Size.Large">
                     </MudIconButton>
                 </MudTooltip>
 
@@ -373,7 +373,7 @@
                                 @bind-Value="context.Item.ClientId">
                                     @foreach (var client in Clients)
                                     {
-                                        <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                                        <MudSelectItem Class="" T="string" Value="@client.UserId" >
                                             @client.UserName
                                         </MudSelectItem>
                                     }
@@ -651,12 +651,12 @@
                                         }
                                 })"
                                 Value="@context.Item.PrimaryEditorId">
-                                    <MudSelectItem Class="" T="string" Value="null" Ripple=true>
+                                    <MudSelectItem Class="" T="string" Value="null" >
                                         Unassign Editor
                                     </MudSelectItem>
                                     @foreach (var editor in Editors)
                                     {
-                                        <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                        <MudSelectItem Class="" T="string" Value="@editor.UserId" >
                                             @editor.UserName
                                         </MudSelectItem>
                                     }
@@ -704,12 +704,12 @@
                                         }
                                 })"
                                 Value="@context.Item.SecondaryEditorId">
-                                    <MudSelectItem Class="" T="string" Value="null" Ripple=true>
+                                    <MudSelectItem Class="" T="string" Value="null" >
                                         Unassign Editor
                                     </MudSelectItem>
                                     @foreach (var editor in Editors)
                                     {
-                                        <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                                        <MudSelectItem Class="" T="string" Value="@editor.UserId" >
                                             @editor.UserName
                                         </MudSelectItem>
                                     }

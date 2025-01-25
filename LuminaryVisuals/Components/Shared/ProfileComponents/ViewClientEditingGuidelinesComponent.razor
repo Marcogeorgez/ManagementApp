@@ -321,7 +321,7 @@
 
 </MudDialog>
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     private MudForm form;
     private ClientEditingGuidelines? preferences = new();
     private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };

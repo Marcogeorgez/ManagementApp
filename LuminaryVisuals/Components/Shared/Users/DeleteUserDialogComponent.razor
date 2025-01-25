@@ -14,7 +14,7 @@
         @bind-Value="choosenAdminId">
         @foreach (var admin in adminsList)
         {
-                <MudSelectItem Class="" T="string" Value="@admin.Id" Ripple=true>
+                <MudSelectItem Class="" T="string" Value="@admin.Id" >
                     @admin.UserName
                 </MudSelectItem>
         }
@@ -30,7 +30,7 @@
 
 @code {
     [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    IMudDialogInstance MudDialog { get; set; }
     [Parameter]
     public UserRoleViewModel User { get; set; }
     private List<ApplicationUser>? adminsList { get; set; } = new();

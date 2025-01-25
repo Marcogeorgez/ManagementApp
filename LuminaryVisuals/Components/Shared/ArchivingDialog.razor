@@ -88,7 +88,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project newProject { get; set; } = new Project();
     private bool success;
     private MudForm form;
