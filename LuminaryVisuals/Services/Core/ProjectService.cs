@@ -400,6 +400,7 @@ public class ProjectService
                             // If the revision is new, add it to the project
                             _project.Revisions.Add(revision);
                             _project.Status = ProjectStatus.Revision;
+                            _project.ProgressBar = 0;
 
                         }
                     }
