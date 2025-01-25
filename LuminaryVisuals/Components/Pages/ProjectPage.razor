@@ -28,7 +28,7 @@
         <LoadingIndicator IsVisible="@_loadingIndicator" />
         <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
         Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.75); transform-style: flat;" 
-        Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None"
+        Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None" 
         FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
         ColumnsPanelReordering=false  MultiSelection="true"
         ShowColumnOptions=false  @bind-SelectedItems="@SelectedProjects"
@@ -267,10 +267,10 @@
                                     }
 
                                     @if(!_isArchived){
-                                    <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
-                                    Icon="@Icons.Material.TwoTone.Edit">
-                                        Edit Row
-                                    </MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
+                                        Icon="@Icons.Material.TwoTone.Edit">
+                                            Edit Row
+                                        </MudMenuItem>
                                     }
                                 </MudMenu>
                                 @{
@@ -384,7 +384,7 @@
                                 <MudText Style="display:none;" />
                             }
                         </EditTemplate>
-                        
+
 
                     </PropertyColumn>
                 }
@@ -1373,13 +1373,13 @@
     {
         if (string.IsNullOrEmpty(presetName))
         {
-           _selectedPresetName = string.Empty;
+            _selectedPresetName = string.Empty;
             foreach (var column in _availableColumns)
             {
                 _columnVisibility[column.Name] = column.isHidden;
             }
-           Snackbar.Add("You've removed the filter", Severity.Info);
-           return;
+            Snackbar.Add("You've removed the filter", Severity.Info);
+            return;
         }
         try
         {
@@ -1431,7 +1431,7 @@
             StateHasChanged();
         }
     }
-   
+
 
     // Quick Global Filter which is used to search in the entire grid
     private Func<Project, bool> _quickFilter => x =>
@@ -1468,7 +1468,7 @@
         await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
     }
     private bool _shouldScroll = false;
-   
+
 
     private async Task OnRowClick(Project project)
     {
@@ -1487,7 +1487,7 @@
         });
     }
 
-    
+
     private async Task AdminToggle()
     {
         LoadingService.ShowLoading();
@@ -2028,7 +2028,7 @@
             ProjectStatus.Scheduled => "background-color: #320672; color: white; border-radius: 8px; --parent-bg-color: #7153ff; text-align:center;",
             ProjectStatus.Ready_To_Edit => "background-color: #0e8787; color: white; border-radius: 8px; --parent-bg-color: #00b2b2; text-align:center;",
             ProjectStatus.Working => "background-color: #b46f00; color: white; border-radius: 8px; --parent-bg-color: #fd9b00; text-align:center;",
-            ProjectStatus.Delivered => "background-color: #002159 !important; color: white; border-radius: 8px; --parent-bg-color: #2e77ff; text-align:center;",
+            ProjectStatus.Delivered => "background-color: #002159; color: white; border-radius: 8px; --parent-bg-color: #2e77ff; text-align:center;",
             ProjectStatus.Ready_To_Review => "background-color: #6527a2; color: white; border-radius: 8px; --parent-bg-color: #b23eeb; text-align:center;",
             ProjectStatus.Revision => "background-color: #ae0502; color: white; border-radius: 8px; --parent-bg-color: #fd1c18; text-align:center;",
             ProjectStatus.Finished => "background-color: #003915; color: white; border-radius: 8px; --parent-bg-color: #008b33; text-align:center;",
