@@ -58,7 +58,7 @@
                             @bind-Value="selectedAgency">
                                 @foreach (var user in SelectedUsers)
                                 {
-                                    <MudSelectItem Class="" T="string" Value="@user.UserId" Ripple=true>
+                                    <MudSelectItem Class="" T="string" Value="@user.UserId" >
                                         @user.UserName
                                     </MudSelectItem>
                                 }
@@ -81,7 +81,7 @@
     </MudDialog>
 </MudContainer>
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public IEnumerable<UserRoleViewModel> SelectedUsers { get; set; }
 
     private MudForm form;

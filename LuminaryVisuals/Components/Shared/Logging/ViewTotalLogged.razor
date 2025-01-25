@@ -57,7 +57,7 @@
 
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project { get; set; } = new Project();
     [Parameter] public bool isAdmin { get; set; } 
     [Parameter] public string currentUserId { get; set; }

@@ -79,7 +79,7 @@ builder.Services.AddMudServices(config =>
         config.SnackbarConfiguration.VisibleStateDuration = 10000;
         config.SnackbarConfiguration.HideTransitionDuration = 500;
         config.SnackbarConfiguration.ShowTransitionDuration = 500;
-        config.SnackbarConfiguration.SnackbarVariant = MudBlazor.Variant.Filled;
+        config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
     });
 
 builder.Services.AddRazorComponents()

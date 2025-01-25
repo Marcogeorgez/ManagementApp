@@ -308,7 +308,7 @@ The Bride was married like I said before, so this wedding was quite special beca
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance Dialog { get; set; }
+    [CascadingParameter] IMudDialogInstance Dialog { get; set; }
     [Parameter] public Project context { get; set; }
     [Parameter] public string currentRole { get; set; }
     [Parameter] public EventCallback<Project> modifiedProject { get; set; }

@@ -21,12 +21,12 @@
                            }
                        })"
                        Value="@PrimaryEditorId">
-                <MudSelectItem Class="" T="string" Value="null" Ripple=true>
+                <MudSelectItem Class="" T="string" Value="null" >
                     Unassign Editor
                 </MudSelectItem>
                 @foreach (var editor in Editors)
                 {
-                    <MudSelectItem Class="" T="string" Value="@editor.UserId" Ripple=true>
+                    <MudSelectItem Class="" T="string" Value="@editor.UserId" >
                         @editor.UserName
                     </MudSelectItem>
                 }
@@ -44,7 +44,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string? PrimaryEditorId { get; set; }
     [Parameter] public List<UserRoleViewModel.UserProjectViewModel>? Editors { get; set; }
 

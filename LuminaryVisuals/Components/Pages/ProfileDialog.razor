@@ -118,7 +118,7 @@
 </MudContainer>
 @code
 {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public ClaimsPrincipal? currentUser { get; set; }
     private ApplicationUser? user;
     private string userRole;

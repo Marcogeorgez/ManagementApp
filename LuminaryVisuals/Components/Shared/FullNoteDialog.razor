@@ -12,7 +12,7 @@
 </MudDialog>
 
 @code{
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string Text { get; set; } = "";
     [Parameter] public EventCallback<string> NoteTextChanged { get; set; }
     private bool success;

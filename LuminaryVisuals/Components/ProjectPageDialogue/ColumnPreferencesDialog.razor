@@ -30,7 +30,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public List<ColumnDefinition> Columns { get; set; }
     [Parameter] public Dictionary<string, bool> VisibilityState { get; set; }
     [Parameter] public List<ColumnPreset> _columnPresets { get; set; }

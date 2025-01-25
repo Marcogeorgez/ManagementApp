@@ -39,7 +39,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string AgencyId { get; set; }
 
     private List<ApplicationUser> AgencyUsers { get; set; } = new List<ApplicationUser>();

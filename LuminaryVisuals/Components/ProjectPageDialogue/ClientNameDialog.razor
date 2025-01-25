@@ -2,14 +2,14 @@
     <DialogContent>
         @if (Clients != null && Clients.Any())
         {
-            <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+            <MudSelect T="string" 
                        Class="d-flex justify-center mud-width-full py-2 outlined-dialog-max-content"
                        Variant="Variant.Outlined"
                        Label="Client Name"
                        @bind-Value="_project.ClientId">
                 @foreach (var client in Clients)
                 {
-                    <MudSelectItem Class="" T="string" Value="@client.UserId" Ripple=true>
+                    <MudSelectItem Class="" T="string" Value="@client.UserId">
                         @client.UserName
                     </MudSelectItem>
                 }
@@ -23,7 +23,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project _project { get; set; }
     [Parameter] public List<UserRoleViewModel.UserProjectViewModel> Clients { get; set; }
 

@@ -59,7 +59,7 @@
             <ToolBarContent>
                 <MudText Typo="Typo.h4">Admin Dashboard</MudText>
                 <MudMenu Label="Options" Variant="Variant.Filled" Class="mx-3 d-flex flex-column"  Color="Color.Primary" Style="flex-grow: 1 !important;"
-                    TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft" PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
+                     PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
                     
                         <MudNumericField T="decimal?"
                                          @bind-value="storedValue"
@@ -100,7 +100,7 @@
                 </MudHidden>
             </ColGroup>
             <Columns>
-                <SelectColumn T="UserRoleViewModel"  />
+                <SelectColumn T="UserRoleViewModel"   />
                 <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;" Editable=false>
                     <CellTemplate Context="cell">
                         @{
@@ -135,7 +135,6 @@
                         <MudSelect @bind-Value="context.Item.SelectedRole" 
                         Required Variant="Variant.Outlined"
                         RequiredError="You must select a Role!!!"
-                        AnchorOrigin="Origin.BottomCenter"
                         Margin="@Margin.Dense">
                             @foreach (var role in _allAvailableRoles)
                             {
@@ -151,7 +150,7 @@
                         <MudNumericField T="decimal?"
                         @bind-Value="context.Item.HourlyRate"
                         @bind-Value:event="oninput"
-                        ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)"                                  Variant="Variant.Outlined"
+                        ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)" Variant="Variant.Outlined"
                         Label="Hourly Rate in US$"
                         Format="N" Immediate=true
                         Adornment="Adornment.Start"

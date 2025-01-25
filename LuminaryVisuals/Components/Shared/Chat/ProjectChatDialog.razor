@@ -86,19 +86,17 @@
                                     <div class="message-hover-options" style="@(isClicked == true ? "display: flex !important;" : "display:none;")" >
                                         @if (isAdminView)
                                         {
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                            Color="Color.Error"
-                                            Size="Size.Small"
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"Size="Size.Small"
                                             OnClick="() => DeleteMessage(message)"/>
-                                            <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                            Color="Color.Info"
-                                            Size="Size.Small"
+                                            <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info" Size="Size.Small"
                                             OnClick="() => MessageInformation(message)" />
                                             if (message.IsApproved == false)
                                             {
                                                 <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
                                                 Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
                                             }
+                                        @* <MudIconButton Icon=@Icons.Material.Filled.MarkAsUnread Color="Color.Default" Size="Size.Small"
+                                        OnClick="() => UnreadMessage(message)"/> *@
                                         }
 
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
@@ -133,7 +131,7 @@
 </div>
 @code {
     [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project{ get; set; }
     [Parameter] public string UserId { get; set; }
     [Parameter] public bool isAdminView { get; set; }

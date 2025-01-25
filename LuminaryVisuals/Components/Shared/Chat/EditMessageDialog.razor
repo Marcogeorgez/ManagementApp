@@ -59,7 +59,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Inject]
     private IConfirmationService ConfirmationService { get; set; } = default!;
     [Parameter] public bool isAdminView { get; set; }
