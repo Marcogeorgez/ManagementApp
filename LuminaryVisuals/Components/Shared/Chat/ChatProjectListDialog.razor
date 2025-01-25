@@ -41,7 +41,7 @@
                 @if (GetPageCount() > 1)
                 {
                     <MudSpacer />
-                    <MudPagination Class="d-flex justify-center mb-5" ShowFirstButton="true" ShowLastButton="true"
+                    <MudPagination Class="d-flex justify-center mb-5" ShowFirstButton="true" ShowLastButton="true" Rectangular=true
                     Count="@GetPageCount()" SelectedChanged="PageChanged" />
                 }
             </MudList>
@@ -99,13 +99,9 @@
                     project.MessageRequireApprovalCount = unreadMessageData.Item3;
                 }
 
-                // If there are any unread messages, order by unread messages
-                if (projects.Any(p => p.countUnreadMessages > 0))
-                {
-                    projects = projects.OrderByDescending(p => p.countUnreadMessages)
-                    .ThenByDescending(p => p.LastSentMessage)
-                    .ToList();
-                }
+                projects = projects.OrderByDescending(p => p.countUnreadMessages)
+                .ThenByDescending(p => p.LastSentMessage)
+                .ToList();
 
             }
         }
