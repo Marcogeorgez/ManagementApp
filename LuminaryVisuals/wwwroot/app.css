@@ -1164,3 +1164,6 @@ th.mud-table-cell.sticky-left {
 .mud-pagination {
     list-style: none;
 }
+.mud-menu-item {
+    padding: 8px 14px;
+}
