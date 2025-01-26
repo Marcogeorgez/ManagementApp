@@ -194,7 +194,7 @@ public class NotificationService : BackgroundService, INotificationService
         foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
         {
             var secondPrimaryEditorNameMessage = project.SecondaryEditorName != null ? $" and <strong>{project.SecondaryEditorName}</strong>" : "";
-            var messageForPrivateNotes = newStatus == ProjectStatus.Delivered && project.NotesForProject.Length > 15 ? $"<strong> This Project has private notes:.</strong> {project.NotesForProject}" : "";
+            var messageForPrivateNotes = newStatus == ProjectStatus.Delivered && project.NotesForProject.Length > 15 ? $"<br><strong> This Project has private notes:</strong> {project.NotesForProject}" : "";
             var notificationItem = new NotificationQueueItem
             {
                 UserId = admin.Id,
