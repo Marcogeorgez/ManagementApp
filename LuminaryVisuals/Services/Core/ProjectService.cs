@@ -426,9 +426,26 @@ public class ProjectService
                 // Send notification to user if the project status has changed
                 if (oldStatus != _project.Status)
                 {
-                    await _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId);
+                    var userIds = new List<string?> { _project.PrimaryEditorId, _project.SecondaryEditorId }
+                        .Where(id => id != null)
+                        .Distinct()
+                        .ToList();
+
+                    var userNames = await context.Users
+                        .Where(u => userIds.Contains(u.Id))
+                        .Select(u => new { u.Id, u.UserName, u.HourlyRate })
+                        .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+                        project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
+                            ? userNames[project.PrimaryEditorId]!
+                            : null;
+                        project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
+                            ? userNames[project.SecondaryEditorId]!
+                            : null;
+                    
+                    _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId));
                 }
-                await _broadcaster.NotifyAllAsync();
+                _ = Task.Run(() =>  _broadcaster.NotifyAllAsync());
             }
         }
     }
