@@ -58,13 +58,13 @@
                     {
                         <MudMenuItem OnClick="DownloadFilteredAsCsv">
                             <div style="display:flex;">
-                                <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
+                                <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2 ml-n1" />
                                 Download Filtered Projects
                             </div>
                         </MudMenuItem>
                         <MudMenuItem OnClick="DownloadAllProjects">
                             <div style="display:flex;">
-                                <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2" />
+                                <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2  ml-n1" />
                                 Backup Projects
                             </div>
                         </MudMenuItem>
@@ -73,9 +73,9 @@
                             <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset" AnchorOrigin="Origin.BottomCenter" Dense=true
                             TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined" @bind-Value="_selectedPresetName"
                             SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)" Clearable=true>
-                                <MudSelectItem Value='"createNewPreset"'  >
+                                <MudSelectItem Value='"createNewPreset"'>
                                     <div class="d-flex align-center" style="color: #0baa7a;">
-                                        <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Variant=Variant.Outlined Class="mr-2" />
+                                        <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Success" Variant=Variant.Outlined Class="mr-2" />
                                         <strong>Create New Preset</strong>
                                     </div>
                                 </MudSelectItem> 
@@ -85,8 +85,8 @@
                                 }
                             </MudSelect>
                             <MudSwitch T="bool" Class="ml-2 mb-1" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-                            <MudText Class="ml-2">View as</MudText>
-                            <MudStack Row=true Style="background:#151726;" Class="ml-2">
+                            <MudText Class="ml-5">View as</MudText>
+                            <MudStack Row=true Style="background:#151726;" Class="mx-2" Spacing="1">
                                 <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
                                 <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
                                 <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
