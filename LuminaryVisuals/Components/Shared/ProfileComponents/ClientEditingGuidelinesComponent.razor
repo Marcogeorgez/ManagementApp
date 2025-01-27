@@ -5,7 +5,7 @@
 @inject CloudflareR2Service cloudflareR2Service
 <MudContainer Gutters=false>
     <MudExpansionPanels MultiExpansion="true">
-        <MudText Style="margin-top:5px;" Typo="Typo.h5">Preferences Checklist:</MudText>
+        <MudText Style="margin-top:5px;" class="ml-3 mt-3" Typo="Typo.h5">Preferences Checklist:</MudText>
         <MudForm @ref="form" Model="@preferences">
             <MudExpansionPanel Text="General Notes" Class="">
                 <MudHtmlEditor Outlined="true" Label="General Notes"
@@ -333,9 +333,18 @@
     private const string _djAudio = "(Requires: External Recorded Audio from DJ/LAVALIER MIC from the person talking!)";
     private const string _recordedAudio = "(Requires: External Recorded Audio!)";
     private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
+
+
+    private ClientEditingGuidelines? preferences = new();
+
+    [Inject] PayoneerSettingsService payoneerSettingsService { get; set; }
+    private PayoneerSettings? payoneerSettings = new();
+
     [Parameter] public ClaimsPrincipal? currentUser { get; set; }
-    [Parameter] public string userId { get; set; } // userId which is the preferences for
     private string? _currentUserId; // current user id to check if he is an admin/client
+    
+    [Parameter] public string userId { get; set; } // userId which is the preferences for
+
     protected override async Task OnInitializedAsync()
     {
         if (!string.IsNullOrEmpty(userId))
@@ -357,7 +366,8 @@
     }
     private async Task SavePreferences()
     {
-        try{
+        try
+        {
             preferences.UpdatedAt = DateTime.UtcNow;
             preferences.UserId = userId;
             using var context = DbFactory.CreateDbContext();
@@ -372,12 +382,12 @@
                 context.ClientEditingGuidelines.Update(preferences);
             }
             await context.SaveChangesAsync();
-            await payoneerSettingsService.UpdateSettingsAsync(payoneerSettings);
+            await payoneerSettingsService.UpdateSettingsAsync(payoneerSettings!);
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
             Snackbar.Add($"We have saved your preferences successfully!", Severity.Info);
-            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-            await notificationService.ClientPreferencesUpdated(user, userId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId); // user which is getting updated notification for (client)
+            // _currentUserId: Id of current user (admin/client)
+            await notificationService.ClientPreferencesUpdated(user!, _currentUserId!);
         }
         catch (Exception ex)
         {
