@@ -698,7 +698,7 @@ namespace LuminaryVisuals.Components.Pages
             { "_isAdminView", _isAdminView},
             { "_isEditorView", _isEditorView}
         };
-            var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("Time Calculator", dialogParameters);
+            var dialog = await DialogService.ShowAsync<ProjectTotalHoursCalculatorDialog>("", dialogParameters);
             var result = await dialog.Result;
             if (!result!.Canceled)
             {
