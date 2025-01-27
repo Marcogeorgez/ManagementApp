@@ -113,7 +113,7 @@
                                 {
                                     foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
                                     {
-                                        <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.Last())>
+                                        <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
                                             <TitleContent>
                                                 <div class="d-flex align-center">
                                                     @if (revision.isCompleted)
@@ -231,11 +231,10 @@ The Bride was married like I said before, so this wedding was quite special beca
 
                         @if (context.Revisions != null)
                         {
-                           
                             <MudExpansionPanels MultiExpansion=false>
-                            @foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
+                                @foreach (var revision in context.Revisions.OrderBy(r => r.RevisionDate))
                             {
-                                <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == context.Revisions.Last())   >
+                                    <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
                                     <TitleContent>
                                         <div class="d-flex align-center">
                                             @if (revision.isCompleted)
