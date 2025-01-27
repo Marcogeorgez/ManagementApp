@@ -381,29 +381,46 @@ public class ProjectService
                 {
                     foreach (var revision in project.Revisions)
                     {
-                        // Ensure the revision is not null and sort it by RevisionId and RevisionDate so that we can compare it with the existing revisions since RevisionDate is unique for each revision
-                        // This avoids bugs where the same revision is overwritten multiple times in loop where id=0 at beginning
-                        // If revision exists, update its content, revision date, and completion status
-                        // If it does not exist, add it as a new revision to the project and update the project status to 'Revision'
+                        // Ensure the revision is not null and sort it by RevisionId and RevisionDate
                         var existingRevision = _project.Revisions
                             .FirstOrDefault(r => r.RevisionId == revision!.RevisionId && r.RevisionDate == revision.RevisionDate);
 
+                        // Define a method to check if content is effectively empty (only contains <p><br></p> or similar empty content)
+                        bool IsContentEmpty(string content)
+                        {
+                            // Trim to remove any leading/trailing spaces and check if the content is just the empty paragraph or contains only whitespace
+                            return string.IsNullOrWhiteSpace(content) || content.Trim() == "<p><br></p>";
+                        }
+
                         if (existingRevision != null)
                         {
-                            // If the revision already exists, update its content
-                            existingRevision.Content = revision.Content;
-                            existingRevision.RevisionDate = revision.RevisionDate;
-                            existingRevision.isCompleted = revision.isCompleted;
+                            // If the revision already exists, check if content is empty and remove the revision if necessary
+                            if (IsContentEmpty(revision.Content))
+                            {
+                                // Remove the entire revision if content is empty or only <p><br></p>
+                                _project.Revisions.Remove(existingRevision);
+                                
+                            }
+                            else
+                            {
+                                // If the revision content is not empty, update the revision details
+                                existingRevision.Content = revision.Content;
+                                existingRevision.RevisionDate = revision.RevisionDate;
+                                existingRevision.isCompleted = revision.isCompleted;
+                            }
                         }
                         else
                         {
-                            // If the revision is new, add it to the project
-                            _project.Revisions.Add(revision);
-                            _project.Status = ProjectStatus.Revision;
-                            _project.ProgressBar = 0;
-
+                            // If the revision is new and the content is not empty, add it to the project
+                            if (!IsContentEmpty(revision.Content))
+                            {
+                                _project.Revisions.Add(revision);
+                                _project.Status = ProjectStatus.Revision;
+                                _project.ProgressBar = 0;
+                            }
                         }
                     }
+
                 }
 
 
