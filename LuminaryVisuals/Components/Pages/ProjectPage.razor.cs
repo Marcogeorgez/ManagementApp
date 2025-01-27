@@ -873,24 +873,40 @@ namespace LuminaryVisuals.Components.Pages
                     var filteredItems = _dataGrid.FilteredItems.ToList();
 
                     // Group projects by either PrimaryEditorName or SecondaryEditorName
-                    var groupedByEditor = filteredItems
-                        .SelectMany(p => new[]
-                        {
+                    if (currentUser.IsInRole("Admin"))
+                    {
+                        var groupedByEditor = filteredItems
+                            .SelectMany(p => new[]
+                            {
                             new { EditorName = p.PrimaryEditorName, Project = p },
                             new { EditorName = p.SecondaryEditorName, Project = p }
-                        })
-                        .GroupBy(e => e.EditorName)
-                        .Where(g => !string.IsNullOrEmpty(g.Key) && g.Key != "N/A") // Filter out groups with empty editor names
-                        .ToList();
-
-                    foreach (var editorGroup in groupedByEditor)
-                    {
-                        var editorName = editorGroup.Key;
-                        var projects = editorGroup.Select(e => e.Project).ToList();
-                        var csvContent = GenerateCsvContentFilteredForEditors(projects, editorName);
-                        var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
-                        await DownloadFile(filename, csvContent);
+                            })
+                            .GroupBy(e => e.EditorName)
+                            .Where(g => !string.IsNullOrEmpty(g.Key) && g.Key != "N/A") // Filter out groups with empty editor names
+                            .ToList();
+                        foreach (var editorGroup in groupedByEditor)
+                        {
+                            var editorName = editorGroup.Key;
+                            var projects = editorGroup.Select(e => e.Project).ToList();
+                            var csvContent = GenerateCsvContentFilteredForEditors(projects, editorName);
+                            var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
+                            await DownloadFile(filename, csvContent);
+                        }
                     }
+                    else
+                    {
+                        var filteredProjects = filteredItems
+                            .Where(p => p.PrimaryEditorId == _currentUserId || p.SecondaryEditorId == _currentUserId)
+                            .ToList();
+                        if (filteredProjects.Any())
+                        {
+                            var editorName = currentUser.Identity?.Name;
+                            var csvContent = GenerateCsvContentFilteredForEditors(filteredProjects, editorName);
+                            var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
+                            await DownloadFile(filename, csvContent);
+                        }
+                    }
+                       
                 }
             }
             catch (Exception ex)

@@ -48,12 +48,18 @@
                 Label="Actions" AriaLabel="Projects Options" Class="mt-1 mx-1"
                 LockScroll=true DropShadow=true  @ref=_menuRef
                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
-                    <MudMenuItem OnClick="ResetState">
+                    <MudMenuItem  OnClick="ResetState">
                         Reset State
                     </MudMenuItem>
                     <MudMenuItem OnClick="@(() => _dataGrid.ShowColumnsPanel())">
                         Show Columns Panel
                     </MudMenuItem>
+                    @if (currentUser.IsInRole("Editor"))
+                    {
+                        <MudMenuItem OnClick="DownloadFilteredAsCsvEditors">
+                            Download Filtered Projects CSV
+                        </MudMenuItem>
+                    }   
                     @if (isAdminView)
                     {
                         <MudMenuItem OnClick="DownloadFilteredAsCsvEditors">
@@ -103,7 +109,7 @@
                 </MudMenu>
                 <MudTooltip ShowOnClick=false Text="Scroll to Bottom" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
                     <MudIconButton Class="pa-1 mt-1 mx-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
-                    OnClick="OnClick"  Size="Size.Large">
+                    OnClick="OnClick" Size="Size.Large">
                     </MudIconButton>
                 </MudTooltip>
 
