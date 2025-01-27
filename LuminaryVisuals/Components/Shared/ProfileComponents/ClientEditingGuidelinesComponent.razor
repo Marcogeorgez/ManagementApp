@@ -2,6 +2,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ISnackbar Snackbar
 @inject INotificationService notificationService
+@inject CloudflareR2Service cloudflareR2Service
 <MudContainer Gutters=false>
     <MudExpansionPanels MultiExpansion="true">
         <MudText Style="margin-top:5px;" Typo="Typo.h5">Preferences Checklist:</MudText>
@@ -9,7 +10,7 @@
             <MudExpansionPanel Text="General Notes" Class="">
                 <MudHtmlEditor Outlined="true" Label="General Notes"
                 Text="General Notes"
-                Html="@preferences.GeneralNotes"
+                Html="@preferences.GeneralNotes" OnFileUpload="cloudflareR2Service.UploadFileAsync" 
                 HtmlChanged="OnGeneralNoteChange"
                 Resizable="true"
                 style="min-height:150px; padding-bottom:25px;"
@@ -25,7 +26,7 @@
                 @if (currentUser.IsInRole("Admin"))
                 {
                     <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
-                                  @bind-Value="preferences.FolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                    @bind-Value="preferences.FolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
                 }
                 else
                 {
@@ -34,8 +35,8 @@
                 }
                 <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Paid Folder:</MudText>
                 @if (currentUser.IsInRole("Admin")){
-                <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
-                              @bind-Value="preferences.PaidFolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                    <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
+                    @bind-Value="preferences.PaidFolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
                 }
                 else{
                     <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
@@ -300,7 +301,17 @@
                 </MudTextField>
             </MudExpansionPanel>
 
-
+            @if(currentUser.IsInRole("Admin"))
+            {
+                <MudExpansionPanel Text="Payonner Setting" Class="">
+                    <MudTextField Class="mx-10 my-1" Label="Payonner Company Name" @bind-Value="payoneerSettings.CompanyName" Variant="Variant.Outlined" />
+                    <MudTextField Class="mx-10 my-1" Label="Payonner Company URL" @bind-Value="payoneerSettings.CompanyUrl" Variant="Variant.Outlined" />
+                    <MudTextField Class="mx-10 my-1" Label="Payonner First Name" @bind-Value="payoneerSettings.FirstName" Variant="Variant.Outlined" />
+                    <MudTextField Class="mx-10 my-1" Label="Payonner Last Name" @bind-Value="payoneerSettings.LastName" Variant="Variant.Outlined" />
+                    <MudTextField Class="mx-10 my-1" Label="Payonner Email" @bind-Value="payoneerSettings.Email" Variant="Variant.Outlined" />
+                    <MudTextField Class="mx-10 my-1" Label="Payonner Currency" @bind-Value="payoneerSettings.Currency" Variant="Variant.Outlined" />
+                </MudExpansionPanel>
+            }
             <!-- Save Button -->
             <MudItem xs="12" Class="d-flex align-self-center">
                 <MudButton Class="my-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
@@ -311,6 +322,8 @@
 @code {
     private MudForm form;
     private ClientEditingGuidelines preferences = new();
+    [Inject] PayoneerSettingsService payoneerSettingsService { get; set; }
+    private PayoneerSettings? payoneerSettings = new();
     private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };
     private static readonly string[] Options = new[] { "Yes", "No", "Few" };
     private static readonly string[] speeches = new[] { "No, music only", "Only when they have said something really cool",
@@ -321,15 +334,20 @@
     private const string _recordedAudio = "(Requires: External Recorded Audio!)";
     private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
     [Parameter] public ClaimsPrincipal? currentUser { get; set; }
-    [Parameter] public string userId { get; set; }
-    private string? _currentUserId;
+    [Parameter] public string userId { get; set; } // userId which is the preferences for
+    private string? _currentUserId; // current user id to check if he is an admin/client
     protected override async Task OnInitializedAsync()
     {
-        // Attempt to get preferences as soon as the component is initialized
         if (!string.IsNullOrEmpty(userId))
         {
             preferences = await GetPreferences(userId);
+
             _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            payoneerSettings = await payoneerSettingsService.GetSettingsForUserAsync(userId);
+            if (payoneerSettings is null)
+            {
+                payoneerSettings = await payoneerSettingsService.CreateSettingsAsync(userId);
+            }
 
         }
     }
@@ -354,6 +372,7 @@
                 context.ClientEditingGuidelines.Update(preferences);
             }
             await context.SaveChangesAsync();
+            await payoneerSettingsService.UpdateSettingsAsync(payoneerSettings);
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
             Snackbar.Add($"We have saved your preferences successfully!", Severity.Info);
             var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
