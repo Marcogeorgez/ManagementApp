@@ -862,22 +862,32 @@ namespace LuminaryVisuals.Components.Pages
             };
 
         }
-        // Downloading Filtered as CSV
-        private async Task DownloadFilteredAsCsv()
+        // Downloading Filtered as CSV for editors
+        private async Task DownloadFilteredAsCsvEditors()
         {
             try
             {
                 if (await ConfirmationService.Confirm("Do you want to download the filtered projects in CSV file?"))
                 {
                     var filteredItems = _dataGrid.FilteredItems.ToList();
-                    var groupedByClient = filteredItems.GroupBy(p => p.ClientName);
 
-                    foreach (var clientGroup in groupedByClient)
+                    // Group projects by either PrimaryEditorName or SecondaryEditorName
+                    var groupedByEditor = filteredItems
+                        .SelectMany(p => new[]
+                        {
+                            new { EditorName = p.PrimaryEditorName, Project = p },
+                            new { EditorName = p.SecondaryEditorName, Project = p }
+                        })
+                        .GroupBy(e => e.EditorName)
+                        .Where(g => !string.IsNullOrEmpty(g.Key) && g.Key != "N/A") // Filter out groups with empty editor names
+                        .ToList();
+
+                    foreach (var editorGroup in groupedByEditor)
                     {
-                        var clientName = clientGroup.Key;
-                        var projects = clientGroup.ToList();
-                        var csvContent = GenerateCsvContentFiltered(projects);
-                        var filename = $"{clientName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
+                        var editorName = editorGroup.Key;
+                        var projects = editorGroup.Select(e => e.Project).ToList();
+                        var csvContent = GenerateCsvContentFilteredForEditors(projects, editorName);
+                        var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
                         await DownloadFile(filename, csvContent);
                     }
                 }
@@ -887,6 +897,8 @@ namespace LuminaryVisuals.Components.Pages
                 Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
             }
         }
+
+
         private async Task DownloadFilteredAsCsvPayoneer()
         {
             try
@@ -1000,31 +1012,53 @@ namespace LuminaryVisuals.Components.Pages
                 Snackbar.Add($"File save error: {ex.Message}", Severity.Error);
             }
         }
-        private string GenerateCsvContentFiltered(List<Project> projects)
+        private string GenerateCsvContentFilteredForEditors(List<Project> projects, string editorName)
         {
             // Create CSV header
             decimal total = 0;
             var csv = new System.Text.StringBuilder();
             csv.AppendLine(string.Join(",",
                 nameof(Project.ProjectName),
-                "Price"
-                ));
-
+                "Editor Name",
+                "Payment Amount"
+            ));
 
             // Add data rows
             foreach (var project in projects)
             {
+                decimal paymentAmount = 0;
+
+                // Check if the editor is Primary or Secondary and assign the PaymentAmount
+                if (project.PrimaryEditorName == editorName)
+                {
+                    paymentAmount = project.PrimaryEditorDetails?.PaymentAmount ?? 0;
+                }
+                else if (project.SecondaryEditorName == editorName)
+                {
+                    paymentAmount = project.SecondaryEditorDetails?.PaymentAmount ?? 0;
+                }
+
                 csv.AppendLine(string.Join(",",
-                    EscapeCsvValue(project.ProjectName), $"{project.ClientBillableAmount ?? 0} $"));
-                if (project.ClientBillableAmount != null)
-                    total += project.ClientBillableAmount.Value;
+                    EscapeCsvValue(project.ProjectName),
+                    EscapeCsvValue(editorName),
+                    $"${Math.Round(paymentAmount, MidpointRounding.AwayFromZero)}"
+                ));
+
+                total += paymentAmount;
             }
+
+            // Add total
             csv.AppendLine();
             csv.AppendLine(string.Join(",",
-                $"Total Price: {Math.Round(total, MidpointRounding.AwayFromZero)} $",
-            $" Date: {DateTime.Now:MM-dd-yyyy}"));
+                $"Total Payment: ${Math.Round(total, MidpointRounding.AwayFromZero)}",
+                $"  Date: {DateTime.Now:MM-dd-yyyy}"
+            ));
+
             return csv.ToString();
         }
+
+
+
         [Inject] private PayoneerSettingsService payoneerSettingsService { get; set; }
         private async Task<string> GenerateCsvContentFilteredPayoneer(List<Project> projects)
         {
