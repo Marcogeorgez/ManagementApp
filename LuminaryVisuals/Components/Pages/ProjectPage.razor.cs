@@ -7,6 +7,7 @@ using LuminaryVisuals.Models;
 using LuminaryVisuals.Services.Core;
 using LuminaryVisuals.Services.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Security.Claims;
@@ -878,6 +879,24 @@ namespace LuminaryVisuals.Components.Pages
                 Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
             }
         }
+        private async Task DownloadFilteredAsCsvPayoneer()
+        {
+            try
+            {
+                if (await ConfirmationService.Confirm("Do you want to download the filtered projects as Payoneer batch payment request?"))
+                {
+                        var filteredItems = _dataGrid.FilteredItems.ToList();
+                        var csvContent = await GenerateCsvContentFilteredPayoneer(filteredItems);
+                        var filename = $"PayoneerPaymentBatch-{DateTime.Now:MM_dd_yyyy}.csv";
+                        await DownloadFile(filename, csvContent);
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
+            }
+        }
         private async Task DownloadAllProjects()
         {
             try
@@ -994,11 +1013,67 @@ namespace LuminaryVisuals.Components.Pages
             }
             csv.AppendLine();
             csv.AppendLine(string.Join(",",
-                $"Total Price: {Math.Round(total, 0, MidpointRounding.AwayFromZero)} $",
+                $"Total Price: {Math.Round(total, MidpointRounding.AwayFromZero)} $",
             $" Date: {DateTime.Now:MM-dd-yyyy}"));
             return csv.ToString();
         }
+        [Inject] private PayoneerSettingsService payoneerSettingsService { get; set; }
+        private async Task<string> GenerateCsvContentFilteredPayoneer(List<Project> projects)
+        {
+            // Get unique client IDs from projects
+            List<string> clientIds = projects.Select(p => p.ClientId).Distinct().ToList();
 
+            // Get Payoneer settings for all clients
+            Dictionary<string, PayoneerSettings> clientSettings = await payoneerSettingsService.GetSettingsForClientsAsync(clientIds);
+
+            IEnumerable<IGrouping<string, Project>> groupedByClient = projects.GroupBy(p => p.ClientId);
+            var csv = new System.Text.StringBuilder();
+
+            // Payoneer CSV headers
+            csv.AppendLine(string.Join(",",
+                "Company Name",
+                "Company URL",
+                "First Name",
+                "Last Name",
+                "Email",
+                "Amount",
+                "Currency",
+                "Description",
+                "Payment Due By"));
+
+            foreach (var client in groupedByClient)
+            {
+                var clientName = client.First().ClientName;
+                if (!clientSettings.TryGetValue(client.Key, out var settings))
+                {
+                    // Skip if no settings found for this client
+                    Snackbar.Add($"User {clientName} does not have Payoneer settings. The CSV won't include his projects!! ", Severity.Warning);
+                    continue;
+                }
+
+                decimal clientTotal = client.Sum(p => p.ClientBillableAmount ?? 0);
+                var projectDescription = GenerateProjectDescription(client.ToList(),settings.Currency);
+                projectDescription += $"\nTotal: ${Math.Round(clientTotal, MidpointRounding.AwayFromZero)}";
+                csv.AppendLine(string.Join(",",
+                    EscapeCsvValue(settings.CompanyName),
+                    EscapeCsvValue(settings.CompanyUrl ?? ""),
+                    EscapeCsvValue(settings.FirstName),
+                    EscapeCsvValue(settings.LastName),
+                    EscapeCsvValue(settings.Email),
+                    $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
+                    settings.Currency,
+                    EscapeCsvValue(projectDescription),
+                    DateTime.Now.AddDays(30).ToString("MM-dd-yyyy")
+                ));
+            }
+            return csv.ToString();
+        }
+        // This generates the description for the Payoneer CSV by combining the projects and returning the total amount.
+        private string GenerateProjectDescription(List<Project> projects,string currency)
+        {
+            var projectDescriptions = projects.Select(p => $"{p.ProjectName}: {Math.Round(p.ClientBillableAmount ?? 0, MidpointRounding.AwayFromZero)}").ToList();
+            return string.Join(Environment.NewLine, projectDescriptions);
+        }
         private string EscapeCsvValue(string value)
         {
             if (string.IsNullOrEmpty(value))

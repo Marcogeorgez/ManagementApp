@@ -103,6 +103,7 @@ builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<ProjectState>();
 builder.Services.AddScoped<ColumnPreferenceService>();
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
+builder.Services.AddScoped<PayoneerSettingsService>();
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>

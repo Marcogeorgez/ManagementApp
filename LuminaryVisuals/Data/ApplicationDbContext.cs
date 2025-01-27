@@ -12,6 +12,7 @@ namespace LuminaryVisuals.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<PayoneerSettings> PayoneerSettings { get; set; }
         public DbSet<Entities.ColumnPreset> ColumnPresets { get; set; }
         public DbSet<MigratedUser> MigratedUsers { get; set; }
         public DbSet<Project> Projects { get; set; }
@@ -51,6 +52,10 @@ namespace LuminaryVisuals.Data
                 entity.Property(e => e.Id).HasMaxLength(255);
                 entity.HasIndex(e => e.Id).IsUnique();
             });
+            builder.Entity<PayoneerSettings>()
+                .HasOne(ps => ps.User)
+                .WithOne(u => u.PayoneerSettings)
+                .HasForeignKey<PayoneerSettings>(ps => ps.UserId);
             builder.Entity<Entities.ColumnPreset>(entity =>
             {
                 entity.HasKey(e => e.Id);
