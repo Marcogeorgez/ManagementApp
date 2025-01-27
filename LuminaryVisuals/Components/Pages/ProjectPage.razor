@@ -315,6 +315,7 @@
                                     <MudTextField T="string" AutoGrow=true Value="context.Item.ProjectName" Class="outlined-dialog-xl-content "  
                                     ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End" 
                                     AdornmentIcon="@Icons.Material.Filled.OpenInNew" OnAdornmentClick="@(() => OpenDescriptionDialog(context.Item))">
+                                    
                                         <MudIcon Icon="@Icons.Material.Rounded.WarningAmber"></MudIcon>
                                     </MudTextField>
                                     <MudTooltip Text="Missing Information for the project, please fill it as soon as possible." Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
@@ -527,11 +528,10 @@
                         </CellTemplate>
                         <EditTemplate Context="context">    
                             <MudSelect T="ProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Status"
-                            Value="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review 
-                                ? ProjectStatus.Working : context.Item.Status)"
-                            Text="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? "Working" : context.Item.Status.ToString().Replace("_", " "))"
-                            ValueChanged="@(newValue => context.Item.Status = newValue)"
-                            Required="true">
+                                Value="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? ProjectStatus.Working : context.Item.Status)"
+                                Text="@(_isClientView && context.Item.Status == ProjectStatus.Ready_To_Review ? "Working" : context.Item.Status.ToString().Replace("_", " "))"
+                                ValueChanged="@(newValue => context.Item.Status = newValue)"
+                                Required="true">
                                 @if(_isAdminView)
                                 {
                                     @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))

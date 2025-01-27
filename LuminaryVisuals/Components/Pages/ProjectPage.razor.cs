@@ -804,6 +804,14 @@ namespace LuminaryVisuals.Components.Pages
                 {
                     if (HasNoSignificantChanges(beforeModification, project, "Status", "ShootDate", "DueDate", "ProgressBar", "WorkingMonth") == false)
                     {
+                        if (project.Status == ProjectStatus.Delivered && _isEditorView)
+                        {
+                            if (!await ConfirmationService.Confirm($"Make sure you have summitted the projects deliverables information in the calculator or if it's a non wedding project make sure to write it down to the private notes"))
+                            {
+                                Snackbar.Add("You have cancelled editing, changes won't be saved. ",Severity.Warning);
+                                return;
+                            }
+                        }
                         await UpdateProjectAsync(project);
                         Snackbar.Add($"Successfully updated the project", Severity.Info);
                     }
@@ -1461,13 +1469,13 @@ namespace LuminaryVisuals.Components.Pages
             try
             {
                 var parameters = new DialogParameters
-          {
-              { "Status", project.Status },
-              { "_isAdminView",_isAdminView },
-              { "_isEditorView", _isEditorView },
-              { "_isClientView", _isClientView }
+                {
+                    { "Status", project.Status },
+                    { "_isAdminView",_isAdminView },
+                    { "_isEditorView", _isEditorView },
+                    { "_isClientView", _isClientView }
 
-          };
+                };
 
                 var dialog = await DialogService.ShowAsync<StatusDialog>("", parameters);
                 var result = await dialog.Result;
@@ -1475,6 +1483,13 @@ namespace LuminaryVisuals.Components.Pages
                 if (!result.Canceled)
                 {
                     project.Status = (ProjectStatus) result.Data;
+                    if(project.Status == ProjectStatus.Delivered && _isEditorView)
+                    {
+                        if (!await ConfirmationService.Confirm($"Make sure you have summitted the projects deliverables information in the calculator or if it's a non wedding project make sure to write it down to the private notes"))
+                        {
+                            return;
+                        }
+                    }
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
