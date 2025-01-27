@@ -134,7 +134,7 @@
                         <MudNumericField T="decimal?" Min="0.0M"
                         @bind-Value="@newProject.CalculationDetails.FinalProjectBillableHours"
                         Label="Total Hours"
-                        Variant=Variant.Filled Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                        Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
                     </MudItem>
                     <MudGrid Spacing="3" Justify="Justify.SpaceAround">
                         @if (newProject.PrimaryEditor != null)
@@ -164,16 +164,16 @@
         <MudSpacer />
         @if(_isAdminView && newProject.SubmissionStatus == Models.SubmissionStatus.Approved)
         {
-            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" OnClick="@Unapprove">Unapprove</MudButton>
+            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Unapprove">Unapprove</MudButton>
 
         }
         @if (newProject.SubmissionStatus == Models.SubmissionStatus.Submitted){
-            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" OnClick="@Unsubmit">Unsubmit</MudButton>
+            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Unsubmit">Unsubmit</MudButton>
         }
-        <MudButton Class="d-flex flex-auto" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Class="d-flex flex-auto" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
         @if (_isEditorView && newProject.SubmissionStatus != Models.SubmissionStatus.Approved || _isAdminView)
         {
-            <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" OnClick="@Approve">@textRoleBased</MudButton>
+            <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Approve">@textRoleBased</MudButton>
         }
 
     </DialogActions>

@@ -1,13 +1,14 @@
-﻿<MudDialog>
+﻿@inject CloudflareR2Service cloudflareR2Service
+<MudDialog>
     <DialogContent>
-        <MudHtmlEditor Html="@Text" Label="Note:" HtmlChanged="OnNoteTextChanged">
+        <MudHtmlEditor Html="@Text" Label="Note:" HtmlChanged="OnNoteTextChanged" OnFileUpload="cloudflareR2Service.UploadFileAsync">
             <MudHtmlToolbarOptions />
         </MudHtmlEditor>
 
     </DialogContent>
     <DialogActions>
-        <MudButton  OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
-        <MudButton Disabled="@isDelayed" OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">Save</MudButton>
+        <MudButton  OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
+        <MudButton Disabled="@isDelayed" OnClick="@Save" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
     </DialogActions>
 </MudDialog>
 

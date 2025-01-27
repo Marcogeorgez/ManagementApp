@@ -14,7 +14,7 @@
             </MudTreeView>
             <!-- Status -->
             <MudSelect T="ProjectStatus" Label="Project Status" Variant="Variant.Outlined"
-                       @bind-Value="editModel.Status" Class="my-2">
+            @bind-Value="editModel.Status" Class="my-2">
                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                 {
                     <MudSelectItem Value="@status">@status</MudSelectItem>
@@ -22,58 +22,58 @@
             </MudSelect>
 
 
-                <!-- Client Payment Status -->
+            <!-- Client Payment Status -->
             <MudSelect T="AdminProjectStatus" Label="Client Payment Status" Variant="Variant.Outlined"
-                           @bind-Value="editModel.PaymentStatus" Class="mb-4">
-                    @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
-                    {
-                        <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
-                    }
-                </MudSelect>
+            @bind-Value="editModel.PaymentStatus" Class="mb-4">
+                @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+                {
+                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                }
+            </MudSelect>
 
-                <!-- Editor Payment Dates -->
+            <!-- Editor Payment Dates -->
             <MudDatePicker Label="Working Month" Variant="Variant.Outlined"
             FixDay="1" DateFormat="MM/yyyy"
             @bind-Date="editModel.WorkingMonth" />
 
             <MudDatePicker Label="Primary Editor Payment Date" Variant="Variant.Outlined"
-                           @bind-Date="editModel.PrimaryEditorDatePaid" />
+            @bind-Date="editModel.PrimaryEditorDatePaid" />
             <MudDatePicker Label="Sec Editor Payment Date" Variant="Variant.Outlined"
-                           @bind-Date="editModel.SecondaryEditorDatePaid" />
-                <!-- Progress -->
-                <MudSelect T="ProgressBarValue"
-                           Label="Progress"
-                           Class="mt-3"
-                           AnchorOrigin="Origin.BottomCenter"
-                           Value="@((ProgressBarValue)editModel.Progress)"
-                           ValueChanged="@(newValue => editModel.Progress = (int)newValue)"
-                           Variant="Variant.Outlined">
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
-                    <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
-                </MudSelect>
+            @bind-Date="editModel.SecondaryEditorDatePaid" />
+            <!-- Progress -->
+            <MudSelect T="ProgressBarValue"
+            Label="Progress"
+            Class="mt-3"
+            AnchorOrigin="Origin.BottomCenter"
+            Value="@((ProgressBarValue)editModel.Progress)"
+            ValueChanged="@(newValue => editModel.Progress = (int)newValue)"
+            Variant="Variant.Outlined">
+                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+            </MudSelect>
 
-                
-                <MudItem sm="6">
+
+            <MudItem sm="6">
                 <!-- Payment Visible -->
                 <MudCheckBox @bind-Value="editModel.IsPaymentVisible"
-                             Label="Payment Visible to Client" Class="mb-2" />
-                </MudItem>
-                <MudItem sm="6">
+                Label="Payment Visible to Client" Class="mb-2" />
+            </MudItem>
+            <MudItem sm="6">
 
                 <!-- Urgent Warning -->
                 <MudCheckBox @bind-Value="editModel.IsUrgent"
-                             Label="Mark as Urgent" Class="mb-2" />
-                </MudItem>
+                Label="Mark as Urgent" Class="mb-2" />
+            </MudItem>
 
         </MudContainer>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
     </DialogActions>
 </MudDialog>
 
