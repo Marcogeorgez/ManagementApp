@@ -32,6 +32,10 @@
                 </MudSelect>
 
                 <!-- Editor Payment Dates -->
+            <MudDatePicker Label="Working Month" Variant="Variant.Outlined"
+            FixDay="1" DateFormat="MM/yyyy"
+            @bind-Date="editModel.WorkingMonth" />
+
             <MudDatePicker Label="Primary Editor Payment Date" Variant="Variant.Outlined"
                            @bind-Date="editModel.PrimaryEditorDatePaid" />
             <MudDatePicker Label="Sec Editor Payment Date" Variant="Variant.Outlined"
@@ -113,7 +117,22 @@
                 }
             }
         }
-
+        private DateTime? _WorkingMonth = null;
+        public DateTime? WorkingMonth
+        {
+            get => _WorkingMonth;
+            set
+            {
+                DateTime? utcValue = value.HasValue
+                    ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
+                    : null;
+                if (_WorkingMonth != utcValue)
+                {
+                    _WorkingMonth = utcValue;
+                    OnPropertyModified(nameof(WorkingMonth));
+                }
+            }
+        }
         private DateTime? _secondaryEditorDatePaid = null;
         public DateTime? SecondaryEditorDatePaid
         {
@@ -218,6 +237,10 @@
             {
                 if (modifiedProperties.Contains(nameof(EditModel.PaymentStatus)))
                     project.AdminStatus = editModel.PaymentStatus;
+
+
+                if (modifiedProperties.Contains(nameof(EditModel.WorkingMonth)))
+                    project.WorkingMonth = editModel.WorkingMonth;
 
                 if (modifiedProperties.Contains(nameof(EditModel.PrimaryEditorDatePaid)))
                     project.PrimaryEditorDetails.DatePaidEditor = editModel.PrimaryEditorDatePaid;
