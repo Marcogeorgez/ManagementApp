@@ -171,7 +171,7 @@ namespace LuminaryVisuals.Components.Pages
         }
 
         private string _selectedPresetName;
-        private const string _Default = "_Default";
+        private MudMenu _menuRef;
         private async Task LoadSelectedPreset(string presetName)
         {
             if (string.IsNullOrEmpty(presetName))
@@ -189,6 +189,7 @@ namespace LuminaryVisuals.Components.Pages
             {
                 if (presetName == "createNewPreset")
                 {
+                    await _menuRef.CloseAllMenusAsync();
                     await OpenColumnPreferencesDialog();
                     return;
                 }
