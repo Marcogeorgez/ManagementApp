@@ -2,7 +2,7 @@
     <DialogContent>
             <MudSelect T="ProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Status"
                        Value="@(_isClientView && Status == ProjectStatus.Ready_To_Review ? ProjectStatus.Working : Status)"
-                       Text="@(_isClientView && Status == ProjectStatus.Ready_To_Review ? "Working" : Status.ToString().Replace("_", " "))"
+        Text="@GetStatusText()"
                        ValueChanged="@(newValue => Status = newValue)"
                        Required="true">
                 @if (_isAdminView)
@@ -14,6 +14,8 @@
                 }
                 else if (_isEditorView)
                 {
+                <MudSelectItem Value="ProjectStatus.Ready_To_Review" Style="display:none;" Disabled="true">Ready to Review</MudSelectItem>
+                <MudSelectItem Value="ProjectStatus.Ready_To_Edit" Style="display:none;" Disabled="true">Ready to Edit</MudSelectItem>
                     <MudSelectItem Value="ProjectStatus.Scheduled">Scheduled</MudSelectItem>
                     <MudSelectItem Value="ProjectStatus.Working">Working</MudSelectItem>
                     <MudSelectItem Value="ProjectStatus.Delivered">Delivered</MudSelectItem>
@@ -45,5 +47,12 @@
 
     private void Cancel() => MudDialog.Cancel();
 
-  
+    private string GetStatusText()
+    {
+        if (_isClientView && Status == ProjectStatus.Ready_To_Review)
+            return "Working";
+        string _status = Status.ToString().Replace("_", " ");
+        Console.WriteLine(_status);
+        return _status;
+    }
 }
