@@ -1168,8 +1168,10 @@ th.mud-table-cell.sticky-left {
 .mud-menu-item {
     padding: 8px 14px;
 }
-textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end 
-{
+.mud-input-control.mud-input-input-control.outlined-dialog-xl-content >
+.mud-input-control-input-container >
+.mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-subtitle1.mud-input-auto-grow >
+textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end {
     white-space: pre;
     overflow-x: auto;
     overflow-y: hidden !important;
