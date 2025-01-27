@@ -321,9 +321,6 @@
 </MudContainer>
 @code {
     private MudForm form;
-    private ClientEditingGuidelines preferences = new();
-    [Inject] PayoneerSettingsService payoneerSettingsService { get; set; }
-    private PayoneerSettings? payoneerSettings = new();
     private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };
     private static readonly string[] Options = new[] { "Yes", "No", "Few" };
     private static readonly string[] speeches = new[] { "No, music only", "Only when they have said something really cool",
