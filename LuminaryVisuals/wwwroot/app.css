@@ -67,6 +67,7 @@
     position: sticky !important;
     top: -20px !important;
     width: 100%;
+    background: #0d0e19;
 }
 .mud-dialog mud-dialog-width-md{
     min-width:300px;
