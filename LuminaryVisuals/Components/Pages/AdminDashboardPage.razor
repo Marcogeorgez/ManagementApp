@@ -23,7 +23,7 @@
     }
     else if (_error)
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" >
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
             An error occurred while loading users.
         </MudAlert>
     }
@@ -33,7 +33,7 @@
         @if (!string.IsNullOrEmpty(_updateMessage))
         {
             <MudAlert Severity="@(_updateMessageClass == "alert-success" ? Severity.Success : Severity.Error)"
-            Variant="Variant.Filled"
+            Variant="Variant.Outlined"
             ShowCloseIcon="true"
             CloseIconClicked="@(() => {_updateMessage = null;})"
             OnClick="@(() => { _updateMessage = null; })">
@@ -58,7 +58,7 @@
 
             <ToolBarContent>
                 <MudText Typo="Typo.h4">Admin Dashboard</MudText>
-                <MudMenu Label="Options" Variant="Variant.Filled" Class="mx-3"  Color="Color.Primary" 
+                <MudMenu Label="Options" Variant="Variant.Outlined" Class="mx-3" Color="Color.Primary"
                      PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
                     
                         <MudNumericField T="decimal?"
@@ -71,7 +71,7 @@
                                          Class="w-100"
                                          DebounceInterval="2000" />
 
-                        <MudButton Variant="Variant.Filled"
+                    <MudButton Variant="Variant.Outlined"
                                    Color="Color.Error"
                                    OnClick="@(() => OpenDialog())"
                                    Class="mt-2 w-100">
@@ -513,7 +513,7 @@
                     var result = await UserNoteService.UpdateNoteAsync(noteToSave.Id, noteToSave.Note);
                     if (result.Success)
                     {
-                        Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+                        Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
                         Snackbar.Add($"Successfully updated note", Severity.Info);
                     }
                     else

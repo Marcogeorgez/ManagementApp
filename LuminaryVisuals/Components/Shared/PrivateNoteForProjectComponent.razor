@@ -1,15 +1,15 @@
 ﻿@inject IDbContextFactory<ApplicationDbContext> DbFactory
-
+@inject CloudflareR2Service cloudflareR2Service
 <MudDialog>
     <DialogContent>
-        <MudHtmlEditor Label="Private Notes For This Project" Html="@Text" HtmlChanged="OnNoteTextChanged" style="height:40vh;">
+        <MudHtmlEditor Label="Private Notes For This Project" Html="@Text" HtmlChanged="OnNoteTextChanged"  OnFileUpload="cloudflareR2Service.UploadFileAsync">
         </MudHtmlEditor>
 
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Class="mr-3" Size="Size.Large">Close</MudButton>
-        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Class="mr-3" Size="Size.Large">Save</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">Save</MudButton>
 
     </DialogActions>
 

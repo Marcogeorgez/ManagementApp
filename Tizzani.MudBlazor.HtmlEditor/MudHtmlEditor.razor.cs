@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using System.Reflection.Emit;
 namespace Tizzani.MudBlazor.HtmlEditor;
@@ -69,8 +70,12 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object?>? UserAttributes { get; set; }
-
-
+    /// <summary>
+    /// Raised when an image is uploaded to the editor, Convert base64 of quill to IBrowserFile 
+    /// which can be used to enable uploading to outside storage like cloudflare.
+    /// </summary>
+    [Parameter,EditorRequired]
+    public Func<IBrowserFile, Task<string>>? OnFileUpload { get; set; }
 
     /// <summary>
     /// Clears the content of the editor.
@@ -121,6 +126,11 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
 
         if (firstRender)
         {
+            if (OnFileUpload == null)
+            {
+                throw new InvalidOperationException("OnFileUpload delegate is null. Ensure it's set before rendering.");
+            }
+
             _dotNetRef = DotNetObjectReference.Create(this);
 
             try
@@ -164,6 +174,41 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
         Text = text;
         await TextChanged.InvokeAsync(text);
     }
+    [JSInvokable]
+    public async Task<string> HandleImageUpload(string base64Image, string fileName)
+    {
+        if (OnFileUpload == null)
+        {
+            Console.WriteLine("OnFileUpload delegate is null");
+            throw new InvalidOperationException("Image upload functionality requires OnFileUpload to be set");
+        }
+
+        // Convert base64 to IBrowserFile
+        var base64Data = base64Image.Split(',')[1];
+        var bytes = Convert.FromBase64String(base64Data);
+        var stream = new MemoryStream(bytes);
+
+        // Create BrowserFile with proper content type
+        var contentType = GetContentTypeFromFileName(fileName);
+        var browserFile = new BrowserFile(stream, fileName, contentType);
+
+        // Call the delegate
+        return await OnFileUpload(browserFile);
+    }
+
+    private string GetContentTypeFromFileName(string fileName)
+    {
+        var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        return ext switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
+    }
+
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
@@ -183,5 +228,29 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
         {
             Console.WriteLine($"Unexpected error during DisposeAsync: {ex.Message}");
         }
+    }
+}
+class BrowserFile : IBrowserFile
+{
+    private readonly Stream _stream;
+    public string Name { get; }
+    public string ContentType { get; }
+    public long Size { get; }
+    public DateTimeOffset LastModified => DateTimeOffset.Now;
+
+    public BrowserFile(Stream stream, string name, string contentType)
+    {
+        _stream = stream;
+        Name = name;
+        ContentType = contentType;
+        Size = stream.Length;
+    }
+
+    public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    {
+        if (_stream.Length > maxAllowedSize)
+            throw new InvalidOperationException($"File size ({_stream.Length} bytes) exceeds the maximum allowed size ({maxAllowedSize} bytes)");
+
+        return _stream;
     }
 }

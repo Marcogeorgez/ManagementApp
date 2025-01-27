@@ -125,8 +125,8 @@
 
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
-                        Variant="Variant.Filled" Size="Size.Medium"
-                        StartIcon="@Icons.Material.Filled.AddCircle"
+                        Variant="Variant.Outlined" Size="Size.Medium"
+                        StartIcon="@Icons.Material.Filled.AddCircle" 
                         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" Class="mt-1 ma-1">
                             Add Project
                         </MudButton>
@@ -135,7 +135,7 @@
 
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
                         Color="Color.Info"
-                        Size="Size.Large"
+                        Size="Size.Large" 
                         Class="mt-1 mx-2"
                         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
@@ -145,7 +145,7 @@
                 {
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
-                        Variant="Variant.Filled" Size="Size.Medium"
+                        Variant="Variant.Outlined" Size="Size.Medium"
                         StartIcon="@Icons.Material.Filled.AddCircle"
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" Class="mt-1 ma-1">
                             Create New Project
@@ -1101,7 +1101,7 @@
                                 @if (paymentAmount >= 0)
                                 {
                                     <MudTextField Value="paymentAmount" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="green-border" Adornment="Adornment.End" AdornmentText="$" />
+                                    Variant="Variant.Outlined" Class="green-border" Adornment="Adornment.Start" AdornmentText="$" />
                                 }
                                 else
                                 {

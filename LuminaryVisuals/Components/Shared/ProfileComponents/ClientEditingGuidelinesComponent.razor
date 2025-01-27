@@ -20,13 +20,13 @@
             <MudExpansionPanel Text="Links">
                 <!-- Website Link -->
                 <MudText Typo="Typo.h6">Website Link:</MudText>
-                <MudTextField Class="mx-10" Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Filled" />
+                <MudTextField Class="mx-10" Label="Website Link" @bind-Value="preferences.WebsiteLink" Variant="Variant.Outlined" />
 
                 <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Preview Folder:</MudText>
                 @if (currentUser.IsInRole("Admin"))
                 {
                     <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
-                    @bind-Value="preferences.FolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                    @bind-Value="preferences.FolderLink" Variant="Variant.Outlined" Placeholder="Link is not assigned yet, please wait while we assign you one." />
                 }
                 else
                 {
@@ -36,7 +36,7 @@
                 <MudText Typo="Typo.h6" Class="mt-3">Your Dropbox Paid Folder:</MudText>
                 @if (currentUser.IsInRole("Admin")){
                     <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
-                    @bind-Value="preferences.PaidFolderLink" Variant="Variant.Filled" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+                    @bind-Value="preferences.PaidFolderLink" Variant="Variant.Outlined" Placeholder="Link is not assigned yet, please wait while we assign you one." />
                 }
                 else{
                     <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
@@ -177,7 +177,7 @@
                 <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                     Transitions Comments:
                 </MudText>
-                <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.OtherTransitions" Variant="Variant.Filled" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
+                <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.OtherTransitions" Variant="Variant.Outlined" Placeholder="Ex: With transitions i love them, but i don’t want to go too overboard, I want to keep it more elegant, simple but with a touch of your transitions where you think it would work best.">
                 </MudTextField>
 
                 <!-- speeches from the day in the highlights film -->
@@ -195,7 +195,7 @@
                 <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                     Comments on the use of speeches:                :
                 </MudText>
-                <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SpeechComments" Variant="Variant.Filled" Placeholder="">
+                <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SpeechComments" Variant="Variant.Outlined" Placeholder="">
                 </MudTextField>
                 <!-- Emphasis on sound design:-->
                 <MudRadioGroup T="string" @bind-Value="preferences.SoundDesignEmphasis">
@@ -212,30 +212,30 @@
                 <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
                     Comments on the use of sound deign:
                 </MudText>
-                <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SoundDesignComments" Variant="Variant.Filled" Placeholder="">
+                <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SoundDesignComments" Variant="Variant.Outlined" Placeholder="">
                 </MudTextField>
 
                 <MudText Typo="Typo.h6" Class="mt-5">
                     Music genres or favorite artist + music licensing sites to use:
                 </MudText>
-                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.musicLicensingSites" Variant="Variant.Filled" Placeholder="">
+                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.musicLicensingSites" Variant="Variant.Outlined" Placeholder="">
                 </MudTextField>
                 <MudText Typo="Typo.h6" Class="mt-5">
                     Samples of songs/films with songs you like:
                 </MudText>
-                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SongSamples" Variant="Variant.Filled" Placeholder="">
+                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SongSamples" Variant="Variant.Outlined" Placeholder="">
                 </MudTextField>
 
                 <MudText Typo="Typo.h6" Class="mt-5">
                     Please provide us with your LUTs and references of how you like the color to look like:
                 </MudText>
-                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.ColorReferences" Variant="Variant.Filled" Placeholder="">
+                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.ColorReferences" Variant="Variant.Outlined" Placeholder="">
                 </MudTextField>
 
                 <MudText Typo="Typo.h6" Class="mt-5">
                     Links to films you like or previous edits:
                 </MudText>
-                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.FilmReferences" Variant="Variant.Filled"
+                <MudTextField Class="ml-10 mr-10 mt-3" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.FilmReferences" Variant="Variant.Outlined"
                 Placeholder="Please include the links and a few comments on what makes these films appeal to you.">
                 </MudTextField>
             </MudExpansionPanel>
@@ -296,7 +296,7 @@
                 <MudText Typo="Typo.h6" Class="mt-5">
                     Client Samples:
                 </MudText>
-                <MudTextField T="string" Clearable=true MaxLines=6  @bind-Value="preferences.ClientSamples" Variant="Variant.Filled"
+                <MudTextField T="string" Clearable=true MaxLines=6  @bind-Value="preferences.ClientSamples" Variant="Variant.Outlined"
                 Placeholder="Write if you have any samples on what you prefer">
                 </MudTextField>
             </MudExpansionPanel>
@@ -314,7 +314,7 @@
             }
             <!-- Save Button -->
             <MudItem xs="12" Class="d-flex align-self-center">
-                <MudButton Class="my-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Filled" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
+                <MudButton Class="my-5 d-flex align-end justify-center object-right py-1" Variant="Variant.Outlined" Color="Color.Info" OnClick="SavePreferences">Save Preferences</MudButton>
             </MudItem>
         </MudForm>
     </MudExpansionPanels>

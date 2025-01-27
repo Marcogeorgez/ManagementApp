@@ -1179,6 +1179,33 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
     height: 55px !important;
     max-height: 55px !important;
 }
+.mud-button-outlined {
+    border-width: 2px !important;
+}
+.mud-button-outlined.mud-button-outlined-info:hover {
+    transition: background-color 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,.2),0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12);
+    background-color: var(--mud-palette-info) !important;
+    color: white;
+}
+.mud-button-outlined.mud-button-outlined-error:hover {
+    transition: background-color 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,.2),0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12);
+    background-color: var(--mud-palette-error) !important;
+    color: white;
+}
+.mud-button-outlined.mud-button-outlined-warning:hover {
+    transition: background-color 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,.2),0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12);
+    background-color: var(--mud-palette-warning) !important;
+    color: white;
+}
+.mud-button-outlined.mud-button-outlined-success:hover {
+    transition: background-color 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,.2),0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12);
+    background-color: var(--mud-palette-success) !important;
+    color: white;
+}
 .mud-chip-outlined.mud-chip-color-success{
     border-width: 2px !important;
 }

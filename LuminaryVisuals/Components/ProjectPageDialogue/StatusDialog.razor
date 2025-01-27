@@ -1,35 +1,35 @@
 ﻿<MudDialog>
     <DialogContent>
-            <MudSelect T="ProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Status"
-                       Value="@(_isClientView && Status == ProjectStatus.Ready_To_Review ? ProjectStatus.Working : Status)"
+        <MudSelect T="ProjectStatus" Class="mt-3" Variant="Variant.Outlined" Label="Status"
+        Value="@(_isClientView && Status == ProjectStatus.Ready_To_Review ? ProjectStatus.Working : Status)"
         Text="@GetStatusText()"
-                       ValueChanged="@(newValue => Status = newValue)"
-                       Required="true">
-                @if (_isAdminView)
+        ValueChanged="@(newValue => Status = newValue)"
+        Required="true">
+            @if (_isAdminView)
+            {
+                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                 {
-                    @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
-                    {
-                        <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
-                    }
+                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
                 }
-                else if (_isEditorView)
-                {
+            }
+            else if (_isEditorView)
+            {
                 <MudSelectItem Value="ProjectStatus.Ready_To_Review" Style="display:none;" Disabled="true">Ready to Review</MudSelectItem>
                 <MudSelectItem Value="ProjectStatus.Ready_To_Edit" Style="display:none;" Disabled="true">Ready to Edit</MudSelectItem>
-                    <MudSelectItem Value="ProjectStatus.Scheduled">Scheduled</MudSelectItem>
-                    <MudSelectItem Value="ProjectStatus.Working">Working</MudSelectItem>
-                    <MudSelectItem Value="ProjectStatus.Delivered">Delivered</MudSelectItem>
-                }
-                else
-                {
-                    <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
-                    <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
-                }
-            </MudSelect>
+                <MudSelectItem Value="ProjectStatus.Scheduled">Scheduled</MudSelectItem>
+                <MudSelectItem Value="ProjectStatus.Working">Working</MudSelectItem>
+                <MudSelectItem Value="ProjectStatus.Delivered">Delivered</MudSelectItem>
+            }
+            else
+            {
+                <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
+                <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
+            }
+        </MudSelect>
     </DialogContent>
     <DialogActions>
-        <MudButton Color=Color.Error OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+        <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit">Save</MudButton>
     </DialogActions>
 </MudDialog>
 

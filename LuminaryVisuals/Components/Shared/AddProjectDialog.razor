@@ -4,6 +4,8 @@
 @using MudBlazor.Interfaces
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
+@inject CloudflareR2Service CloudflareService
+
 <MudDialog>
     <DialogContent>
         <MudForm @ref="form" @bind-IsValid="@success"  > 
@@ -196,7 +198,7 @@
                 <MudItem xs="12" sm="12" Class="mb-3 pl-5 pr-5  flex-column">
 
                     <div class="mt-3 @(_hasErrorDeliverable ? "description-error mud-input-error" : "")">
-                        <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@newProject.Deliverables"
+                        <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@newProject.Deliverables" OnFileUpload="@HandleFileUpload"
                             HtmlChanged="OnDeliverableTextChanged" Resizable="true" style="min-height:50px;"
                                        Placeholder="Please write down what the deliverables for this project will be">
                         </MudHtmlEditor>
@@ -214,7 +216,7 @@
                 <MudItem xs="12" Class="mb-3 pl-5 pr-5  flex-column">
                     
                     <div class=" mt-3 @(_hasErrorDescription ? "description-error mud-input-error" : "")">
-                    <MudHtmlEditor Outlined="true" Label="Description"
+                        <MudHtmlEditor Outlined="true" Label="Description" OnFileUpload="@HandleFileUpload"
                                    Text="Brief of The Day and Technical Issues Notes:" 
                                    Html="@newProject.Description"
                                    HtmlChanged="OnNoteTextChanged" 
@@ -239,7 +241,7 @@ The Bride was married like I said before, so this wedding was quite special beca
 
                 <MudItem xs="12" sm="12" Class="mb-3 pl-5 pr-5 flex-column" >
                     <div class="mt-3">
-                        <MudHtmlEditor Outlined="true" Label="Music Preferences"
+                        <MudHtmlEditor Outlined="true" Label="Music Preferences" OnFileUpload="@HandleFileUpload"
                                        Text="Music Preferences"
                                        Html="@newProject.MusicPreference"
                                        HtmlChanged="OnMusicTextChanged"
@@ -263,8 +265,8 @@ The Bride was married like I said before, so this wedding was quite special beca
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Cancel</MudButton>
-        <MudButton Size="Size.Large" Color="@(success ? Color.Success : Color.Warning)" Variant="Variant.Filled" OnClick="@Submit">Add Project</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Cancel</MudButton>
+        <MudButton Size="Size.Large" Color="@(success ? Color.Success : Color.Warning)" Variant="Variant.Outlined" OnClick="@Submit">Add Project</MudButton>
     </DialogActions>
 
 </MudDialog>
@@ -369,6 +371,21 @@ The Bride was married like I said before, so this wedding was quite special beca
         await InvokeAsync(() => MudDialog.Close(DialogResult.Ok(newProject)));
     }
 
+
+    private async Task<string> HandleFileUpload(IBrowserFile file)
+    {
+        try
+        {
+            var url = await CloudflareService.UploadFileAsync(file);
+            Console.WriteLine($"Upload successful, URL: {url}");           
+            return url;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Upload error in mudhtmleditor in page: {ex.Message}");
+            throw;
+        }
+    }
     private async Task ScrollToFirstError()
     {
         // Look for the first input with validation error

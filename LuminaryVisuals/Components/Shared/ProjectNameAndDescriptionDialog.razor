@@ -2,6 +2,8 @@
 @using System.Text
 @using System.Text.RegularExpressions
 @inject ISnackbar Snackbar
+@inject CloudflareR2Service CloudflareService
+
 <MudDialog>
     <DialogContent>
         @if(isViewMode){
@@ -199,24 +201,24 @@
                     @bind-Value="context.ProjectSpecifications.AudioDetails" />
                 </MudItem>
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
-                    <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@context.Deliverables" 
+                    <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@context.Deliverables"  OnFileUpload="@HandleFileUpload"
                     HtmlChanged="OnDeliverableTextChanged" Resizable="true" style="min-height:100px;"
                     Placeholder="Please write down what the deliverables for this project will be">
                     </MudHtmlEditor>
                 </MudItem>
 
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
-                        <MudHtmlEditor Html="@context.Description"  HtmlChanged="OnNoteTextChanged" style="min-height:200px;"
-                                       Label="Brief Of The Day and Technical Issues Notes"
-                        Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
+                    <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="min-height:200px;" OnFileUpload="@HandleFileUpload"
+                    Label="Brief Of The Day and Technical Issues Notes"
+                    Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
 This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
 This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
 The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
-                        </MudHtmlEditor>
+                    </MudHtmlEditor>
                 </MudItem>
 
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
-                    <MudHtmlEditor Outlined="true" Label="Music Preferences"
+                    <MudHtmlEditor Outlined="true" Label="Music Preferences" OnFileUpload="@HandleFileUpload"
                     Text="Music Preferences"
                     Html="@context.MusicPreference"
                     HtmlChanged="OnMusicTextChanged"
@@ -230,61 +232,62 @@ The Bride was married like I said before, so this wedding was quite special beca
                     <MudText Typo=Typo.body1  Class="mt-5 " >Revisions:
 
                         @if (context.Revisions != null)
-                        {
+                        {                           
                             <MudExpansionPanels MultiExpansion=false>
                                 @foreach (var revision in context.Revisions.OrderBy(r => r.RevisionDate))
-                            {
+                                {
                                     <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
-                                    <TitleContent>
-                                        <div class="d-flex align-center">
-                                            @if (revision.isCompleted)
+                                        <TitleContent>
+                                            <div class="d-flex align-center">
+                                                @if (revision.isCompleted)
+                                                {
+
+                                                    <span style="font-weight:bold">
+                                                        <MudChip T="int" Variant="Variant.Outlined"
+                                                        Color="Color.Success"
+                                                        Size="Size.Medium">
+                                                            Completed
+                                                        </MudChip>
+                                                    </span>
+                                                }
+                                                <span class="ml-2">Revision Date: @revision.RevisionDate.ToString("MM-dd-yyyy")</span>
+                                            </div>
+                                        </TitleContent>
+                                        <ChildContent>
+                                            @if(revision.isCompleted && isClient)
+                                            {
+                                                <MudHtmlViewer Html="@revision.Content" />
+                                                <MudText Color=Color.Error Typo=Typo.caption>This revision is completed, you can't change it anymore, please add a new one if you want.</MudText>
+                                            }
+                                            else
                                             {
 
-                                                <span style="font-weight:bold">
-                                                    <MudChip T="int" Variant="Variant.Outlined"
-                                                    Color="Color.Success"
-                                                    Size="Size.Medium">
-                                                        Completed
-                                                    </MudChip>
-                                                </span>
-                                            }
-                                            <span class="ml-2">Revision Date: @revision.RevisionDate.ToString("MM-dd-yyyy")</span>
-                                        </div>
-                                    </TitleContent>
-                                    <ChildContent>
-                                        @if(revision.isCompleted && isClient)
-                                        {
-                                            <MudHtmlViewer Html="@revision.Content" />
-                                            <MudText Color=Color.Error Typo=Typo.caption>This revision is completed, you can't change it anymore, please add a new one if you want.</MudText>
-                                        }
-                                        else
-                                        {
+                                                <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content" 
+                                                OnFileUpload="@HandleFileUpload"  HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
+                                                </MudHtmlEditor>
 
-                                            <MudHtmlEditor style="margin-top:10px;" Html="@revision.Content"  HtmlChanged="@(text => OnNoteTextChangedForRevision(revision,text))">
-                                            </MudHtmlEditor>
-
-                                            if(!isClient){
-                                                if (!revision.isCompleted)
-                                                {
-                                                    <MudButton class="my-3" Color="Color.Info" Variant=Variant.Filled OnClick="(() => MarkCompleted(revision))">Mark as completed!</MudButton>
-                                                }
-                                                else
-                                                {
-                                                    <MudButton class="my-3" Variant=Variant.Filled Color=Color.Warning OnClick="(() => MarkCompleted(revision))">Change to uncompleted!</MudButton>
+                                                if(!isClient){
+                                                    if (!revision.isCompleted)
+                                                    {
+                                                        <MudButton class="my-3" Color="Color.Info" Variant=Variant.Outlined OnClick="(() => MarkCompleted(revision))">Mark as completed!</MudButton>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudButton class="my-3" Variant=Variant.Outlined Color=Color.Warning OnClick="(() => MarkCompleted(revision))">Change to uncompleted!</MudButton>
+                                                    }
                                                 }
                                             }
-                                        }
 
-                                    </ChildContent>
-                                </MudExpansionPanel>
+                                        </ChildContent>
+                                    </MudExpansionPanel>
 
-                            }
+                                }
                             </MudExpansionPanels>
                         }
 
 
                         <!-- Button to add a new revision -->
-                        <MudButton Class="" Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRevision">Add New Revision</MudButton>
+                        <MudButton Class="" Color="Color.Success" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="AddRevision">Add New Revision</MudButton>
 
                     </MudText>
                 </MudItem>
@@ -301,8 +304,8 @@ The Bride was married like I said before, so this wedding was quite special beca
                 @(isViewMode ? "View Mode" : "Edit Mode")
             </MudSwitch>
         </MudItem>
-        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Filled" Size="Size.Large">Close</MudButton>
-        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">Save</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -397,6 +400,21 @@ The Bride was married like I said before, so this wedding was quite special beca
     private void Cancel()
     {
         Dialog.Close(DialogResult.Cancel());
+    }
+
+    private async Task<string> HandleFileUpload(IBrowserFile file)
+    {
+        try
+        {
+            var url = await CloudflareService.UploadFileAsync(file);
+            Console.WriteLine($"Upload successful, URL: {url}");
+            return url;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Upload error in mudhtmleditor in page: {ex.Message}");
+            throw;
+        }
     }
 }
 <style>

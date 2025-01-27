@@ -1,6 +1,6 @@
 <div class="html-content-wrapper ql-snow">
     <div class="ql-editor" style="@(Borderless ? "border:none" : null)">
-        @((MarkupString)Html)
+        @((MarkupString) Html)
     </div>
 </div>
 
@@ -18,4 +18,36 @@
     /// </summary>
     [Parameter]
     public bool Borderless { get; set; } = false;
+
+    private string ProcessedHtml => ProcessLinksAsImages(Html);
+
+    private string ProcessLinksAsImages(string htmlContent)
+    {
+        var pattern = @"http(s)?:\/\/[^\s]+";
+        var regex = new System.Text.RegularExpressions.Regex(pattern);
+
+        return regex.Replace(htmlContent, match =>
+        {
+            var url = match.Value;
+            if (IsImageUrl(url))
+            {
+                // Wrap image inside an anchor tag for clickability
+                return $"<a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\"><img src=\"{url}\" alt=\"Image\" /></a>";
+            }
+            return url;
+        });
+    }
+    // Check if the URL ends with common image extensions
+    HashSet<string> imageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
+        ".svg", ".webp", ".ico", ".heic", ".heif", ".raw", ".psd",
+        ".dds", ".jp2", ".j2k", ".jpf", ".eps", ".ai"
+    };
+
+    private bool IsImageUrl(string url)
+    {
+        return imageExtensions.Contains(Path.GetExtension(url));
+    }
+
 }

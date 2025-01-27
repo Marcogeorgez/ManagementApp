@@ -28,19 +28,19 @@
                             Variant="Variant.Outlined"  />
                 </MudItem>
                 <MudItem xs="12" sm="4" Style="align-content:center;">
-                        <MudButton Variant="Variant.Filled" Class="ml-auto px-10 d-flex info-new"
+                        <MudButton Variant="Variant.Outlined" Class="ml-auto px-10 d-flex" Color="Color.Info"
                         Style="width: 150px; "
-                    Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
-                    @if (processing)
-                    {
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                        <MudText Class="ms-2">Processing</MudText>
-                    }
-                    else
-                    {
-                        <MudText>Update</MudText>
-                    }
-            </MudButton>
+                                Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
+                                @if (processing)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Processing</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Update</MudText>
+                                }
+                        </MudButton>
         </MudItem>
         </MudGrid>
 
@@ -60,7 +60,7 @@
 
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudButton Class="ml-auto px-10 d-flex info-new" Variant="Variant.Filled"
+                        <MudButton Class="ml-auto px-10 d-flex" Variant="Variant.Outlined" Color="Color.Info"
                                    Style="width: 150px;"
                                    OnClick="buttonCLicked">Preferences</MudButton>
 
@@ -84,7 +84,7 @@
 
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudButton OnClick="RevokeLogin" Variant="Variant.Filled"
+                        <MudButton OnClick="RevokeLogin" Variant="Variant.Outlined"
                     Style="width: 150px;"
                     Class="ml-auto px-10 d-flex error-new">Revoke</MudButton>
                     </MudItem>
@@ -105,7 +105,7 @@
                                Class="px-6 px-md-14"
                                OnClick="@LogoutClick"
                                Color="Color.Default"
-                               Variant="Variant.Filled"
+                               Variant="Variant.Outlined"
                                Size="Size.Medium">
                         Log out
                     </MudButton>
