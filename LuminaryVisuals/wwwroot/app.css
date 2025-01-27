@@ -1168,3 +1168,11 @@ th.mud-table-cell.sticky-left {
 .mud-menu-item {
     padding: 8px 14px;
 }
+.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end 
+{
+    white-space: pre;
+    overflow-x: auto;
+    overflow-y: hidden;
+    resize: horizontal;
+    max-height: 51px;
+}
