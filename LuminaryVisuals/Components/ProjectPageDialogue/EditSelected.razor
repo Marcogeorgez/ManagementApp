@@ -17,7 +17,7 @@
             @bind-Value="editModel.Status" Class="my-2">
                 @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                 {
-                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                    <MudSelectItem Value="@status">@status.ToString().Replace("_"," ")</MudSelectItem>
                 }
             </MudSelect>
 
