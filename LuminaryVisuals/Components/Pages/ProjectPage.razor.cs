@@ -615,13 +615,13 @@ namespace LuminaryVisuals.Components.Pages
             LoadingService.ShowLoading();
             var parameters = new DialogParameters
         {
-            { "context", context },
-            { "currentRole", _currentRole},
-            { "modifiedProject", EventCallback.Factory.Create<Project>(this, async (modifiedProject) =>
-                {
-                    await updateProject(modifiedProject);
-                })
-            }
+                { "context", context },
+                { "currentRole", _currentRole},
+                { "modifiedProject", EventCallback.Factory.Create<Project>(this, async (modifiedProject) =>
+                    {
+                        await updateProject(modifiedProject);
+                    })
+                }
         };
             var options = new DialogOptions { };
             DialogService.Show<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
@@ -922,9 +922,13 @@ namespace LuminaryVisuals.Components.Pages
             {
                 if (await ConfirmationService.Confirm("Do you want to download the filtered projects as Payoneer batch payment request?"))
                 {
-                        var filteredItems = _dataGrid.FilteredItems.ToList();
+                        var filteredItems = _dataGrid.SelectedItems.ToList();
+                        if(filteredItems.Count <= 0)
+                        {
+                            filteredItems = _dataGrid.FilteredItems.ToList();
+                        }
                         var csvContent = await GenerateCsvContentFilteredPayoneer(filteredItems);
-                        var filename = $"PayoneerPaymentBatch-{DateTime.Now:MM_dd_yyyy}.csv";
+                        var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_YYYY}.csv";
                         await DownloadFile(filename, csvContent);
                     
                 }
@@ -944,7 +948,7 @@ namespace LuminaryVisuals.Components.Pages
                     {
                         var nonNullProjects = projects.Where(p => p != null).Cast<Project>().ToList(); // Remove null warning
                         var csvContent = ConvertProjectsToCsv(nonNullProjects);
-                        var filename = $"All_Projects_{DateTime.Now:MM_dd_yyyy_HH_mm_ss}.csv";
+                        var filename = $"All_Projects_{DateTime.Now:dd_MM_yyyy_HH_mm_ss}.csv";
                         await DownloadFile(filename, csvContent);
                     }
                 }
@@ -1068,7 +1072,7 @@ namespace LuminaryVisuals.Components.Pages
             csv.AppendLine();
             csv.AppendLine(string.Join(",",
                 $"Total Payment: ${Math.Round(total, MidpointRounding.AwayFromZero)}",
-                $"  Date: {DateTime.Now:MM-dd-yyyy}"
+                $"  Date: {DateTime.Now:dd-MM-yyyy}"
             ));
 
             return csv.ToString();
@@ -1112,7 +1116,7 @@ namespace LuminaryVisuals.Components.Pages
 
                 decimal clientTotal = client.Sum(p => p.ClientBillableAmount ?? 0);
                 var projectDescription = GenerateProjectDescription(client.ToList(),settings.Currency);
-                projectDescription += $"\nTotal: ${Math.Round(clientTotal, MidpointRounding.AwayFromZero)}";
+                projectDescription += $"   Total: ${Math.Round(clientTotal, MidpointRounding.AwayFromZero)}";
                 csv.AppendLine(string.Join(",",
                     EscapeCsvValue(settings.CompanyName),
                     EscapeCsvValue(settings.CompanyUrl ?? ""),
@@ -1121,8 +1125,8 @@ namespace LuminaryVisuals.Components.Pages
                     EscapeCsvValue(settings.Email),
                     $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
                     settings.Currency,
-                    EscapeCsvValue(projectDescription),
-                    DateTime.Now.AddDays(30).ToString("MM-dd-yyyy")
+                    EscapeCsvValueDescritpion(projectDescription),
+                    DateTime.Now.AddDays(7).ToString("dd-MM-yyyy")
                 ));
             }
             return csv.ToString();
@@ -1131,7 +1135,7 @@ namespace LuminaryVisuals.Components.Pages
         private string GenerateProjectDescription(List<Project> projects,string currency)
         {
             var projectDescriptions = projects.Select(p => $"{p.ProjectName}: {Math.Round(p.ClientBillableAmount ?? 0, MidpointRounding.AwayFromZero)}").ToList();
-            return string.Join(Environment.NewLine, projectDescriptions);
+            return string.Join(" ", projectDescriptions);
         }
         private string EscapeCsvValue(string value)
         {
@@ -1140,7 +1144,25 @@ namespace LuminaryVisuals.Components.Pages
 
             // Escape commas and quotes
             value = value.Replace("\"", "\"\"");
-            if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+            if (value.Contains(",") || value.Contains("\"") || value.Contains("/") || value.Contains("\n"))
+            {
+                value = $"\"{value}\"";
+            }
+            return value;
+        }
+        private string EscapeCsvValueDescritpion(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            // Replace / and \ with -
+            value = value.Replace("/", "-").Replace("\\", "-");
+
+            // Escape double quotes
+            value = value.Replace("\"", "\"\"");
+
+            // Wrap in quotes if it contains special CSV characters
+            if (value.Contains(",") || value.Contains("\"") || value.Contains("\n") || value.Contains("\r"))
             {
                 value = $"\"{value}\"";
             }
