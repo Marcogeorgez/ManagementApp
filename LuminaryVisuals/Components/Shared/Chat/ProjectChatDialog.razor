@@ -184,8 +184,9 @@
                 {
                     await LoadMessages(true);
                     await MarkMessagesAsRead();
-
+                    await JSRuntime.InvokeVoidAsync("scrollToBottom");
                 });
+
             }
         });
         await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
@@ -641,4 +642,11 @@
             }
         });
     };
+        window.scrollToBottom = function () {
+        var chatContent = document.querySelector(".chat-content");
+        if (chatContent) {
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+    };
+
 </script>
