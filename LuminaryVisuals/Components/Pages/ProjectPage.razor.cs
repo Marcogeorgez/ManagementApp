@@ -1688,5 +1688,11 @@ namespace LuminaryVisuals.Components.Pages
                 Console.WriteLine($"Error updating Primary editor payment date: {ex.Message}");
             }
         }
+        [Inject] IJSRuntime JS { get; set; }
+        private async Task CopyProjectNameToClipboard(Project project)
+        {
+            var nameToCopy = $"{project.FormattedShootDate}-{project.ProjectName}";
+            await JS.InvokeVoidAsync("copyToClipboard", nameToCopy);
+        }
     }
 }
