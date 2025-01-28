@@ -527,6 +527,28 @@ public class ProjectService
             // Send notifications for status changes
             foreach (var (project, oldStatus, newStatus) in statusChanges)
             {
+                var allUserIds = projects
+                    .SelectMany(p => new[] { p.PrimaryEditorId, p.SecondaryEditorId })
+                    .Where(id => id != null)
+                    .Distinct()
+                    .ToList();
+
+                var userNames = await context.Users
+                    .Where(u => allUserIds.Contains(u.Id))
+                    .Select(u => new { u.Id, u.UserName })
+                    .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+                foreach(Project project1 in projects)
+                {
+                    project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
+                            ? userNames[project.PrimaryEditorId]!
+                            : null;
+                    project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
+                        ? userNames[project.SecondaryEditorId]!
+                        : null;
+                }
+
+          
                 _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(project, oldStatus, newStatus, updatedByUserId));
             }
 
