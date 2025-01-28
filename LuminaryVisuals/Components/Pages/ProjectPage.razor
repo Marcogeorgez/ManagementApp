@@ -255,6 +255,10 @@
                                         Icon="@Icons.Material.Filled.WatchLater" >
                                             Logging hours
                                         </MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => CopyProjectNameToClipboard(context.Item))"
+                                        Icon="@Icons.Material.Outlined.FileCopy" >
+                                            Copy Project Name to Clipboard
+                                        </MudMenuItem>
                                     }
                                     @if (_isArchived && _isAdminView)
                                     {
@@ -1253,3 +1257,13 @@
 
 
 </style>
+<script>
+        window.copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log("Copied to clipboard successfully!");
+        }).catch(err => {
+            console.error("Failed to copy text: ", err);
+        });
+    };
+
+</script>
