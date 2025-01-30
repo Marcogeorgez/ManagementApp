@@ -159,6 +159,9 @@ namespace LuminaryVisuals.Components.Pages
             try
             {
                 _columnPresets = await columnPreferenceService.GetUserPresets(_currentUserId);
+                
+                _selectedPresetName = await columnPreferenceService.GetLastPresetUsed(_currentUserId);
+                await LoadSelectedPreset(_selectedPresetName);
             }
             catch (Exception ex)
             {
