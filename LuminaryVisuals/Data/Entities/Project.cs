@@ -94,7 +94,7 @@ public class Project
     }
     [Required]
     public bool IsArchived { get; set; } = false;
-
+    
     public ProjectStatus Status { get; set; }
     public AdminProjectStatus AdminStatus { get; set; }
 
@@ -113,7 +113,9 @@ public class Project
 
     [JsonIgnore]
     public virtual ICollection<Revision?> Revisions { get; set; }
-
+    public List<UserProjectPin> PinnedByUsers { get; set; } = new();
+    [NotMapped]
+    public bool IsPinned { get; set; }
     [NotMapped]
     public string FormattedShootDate => ShootDate?.ToString("MM-dd-yyyy") ?? "N/A";
 
