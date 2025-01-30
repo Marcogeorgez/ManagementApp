@@ -11,10 +11,10 @@
             <MudText Typo="Typo.h5" Class="projects-title mt-1">
                 Your Messages
             </MudText>
-  
-                <MudAutocomplete T="string" Label="Search projects" @bind-Value="searchText"
-                SearchFunc="@SearchProjects" ResetValueOnEmptyText="true" AdornmentIcon="@Icons.Material.Filled.Search"
-                AdornmentColor="Color.Tertiary" Class="mx-4 mb-3"  CoerceText="false" CoerceValue="true" Clearable=true />
+
+            <MudAutocomplete T="string" Label="Search projects" @bind-Value="searchText"
+            SearchFunc="@SearchProjects" ResetValueOnEmptyText="true" AdornmentIcon="@Icons.Material.Filled.Search"
+            AdornmentColor="Color.Tertiary" Class="mx-4 mb-3"  CoerceText="false" CoerceValue="true" Clearable=true />
 
             <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="CloseChat" />
 
@@ -24,19 +24,25 @@
             <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
                 @foreach (var project in GetPaginatedProjects())
                 {
-                    var classText = "project-item" + (project.MessageRequireApprovalCount > 0 && (isAdminView || isEditorView) ? " unapproved-message" : "");
-                    <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)">
-                        <div class="project-content">
-                            <MudText Typo="Typo.body1">@(isAdminView ? $"{project.ClientName} | {project.ProjectName}" : project.ProjectName)</MudText>
-                            @if (project.countUnreadMessages > 0)
-                            {
-                                <MudBadge Color="Color.Secondary" Content="@project.countUnreadMessages" Class="unread-badge" />
-                            }
-                            <MudText Typo="Typo.caption" Class="message-timestamp">
-                                @ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
-                            </MudText>
-                        </div>
-                    </MudListItem>
+                    var classText = "project-item" + ( project.MessageRequireApprovalCount > 0 && ( isAdminView || isEditorView ) ? " unapproved-message" : "" );
+                    <div class="project-container">
+                        <MudBadge Style="width:100%;" Color="Color.Secondary" Visible="project.countUnreadMessages > 0 ? true : false" Content="@project.countUnreadMessages" Class="unread-badge" Origin="Origin.CenterRight" Bordered=true Overlap="true">
+
+                            <MudBadge Style="width:100%;" Icon="@(project.IsPinned ? @Icons.Material.Outlined.PushPin : @Icons.Material.Filled.PushPin)" Origin="Origin.CenterLeft" BadgeClass="@(project.IsPinned ? "pinned-badge" : "")" Bordered=true Color="@(project.IsPinned ? Color.Error:Color.Info)" OnClick="() => PinChat(project)" >
+
+                        <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)">
+
+                            <div class="project-content">
+
+                                <MudText style="max-width:90%;" Typo="Typo.body1">@(isAdminView || isEditorView ? $"{project.Client.UserName} | {project.ProjectName}" : project.ProjectName)</MudText>
+                                <MudText Typo="Typo.caption" Class="message-timestamp">
+                                    @ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
+                                </MudText>
+                            </div>
+                        </MudListItem>
+                        </MudBadge>
+                        </MudBadge>
+                    </div>
                 }
                 @if (GetPageCount() > 1)
                 {
@@ -56,15 +62,14 @@
 
 
 @code {
-    [CascadingParameter]
-    IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string userId { get; set; }
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
     [Parameter] public int timezoneOffsetMinutes { get; set; }
     [Parameter] public Project SelectedProject { get; set; }
-    private int pageSize = 12;
+    private int pageSize = 10;
     private int currentPage = 1;
     private List<Project> projects = new List<Project>(); 
     private string MessageRequireApproval = "";
@@ -73,22 +78,8 @@
         try
         {
             ProjectState.OnChange += StateHasChanged;
-            if (isAdminView)
-            {
-                projects = await ProjectService.GetProjectsAsync(false);
-            }
-            else if (isEditorView)
-            {
-                projects = (await ProjectService.GetProjectsForEditors(false, userId))!;
-            }
-            else if(isClientView)
-            {
-                projects = (await ProjectService.GetProjectsForClients(false, userId))!;
-            }
-            else
-            {
-                Snackbar.Add("Not authorized! Please contact owner.", Severity.Warning);
-            }
+            projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView,isEditorView,isClientView);
+
             if (projects.Count > 0)
             {
                 foreach (var project in projects)
@@ -99,10 +90,13 @@
                     project.MessageRequireApprovalCount = unreadMessageData.Item3;
                 }
 
-                projects = projects.OrderByDescending(p => p.countUnreadMessages)
-                .ThenByDescending(p => p.LastSentMessage)
-                .ToList();
-
+      
+                projects = projects
+                    .OrderByDescending(p => p.IsPinned)
+                    .ThenByDescending(p => p.countUnreadMessages) // sort by unread messages
+                    .ThenByDescending(p => p.LastSentMessage) // then by last message sent
+                    .ToList();
+                
             }
         }
         catch (Exception ex)
@@ -121,7 +115,7 @@
         if (string.IsNullOrEmpty(value))
             return new string[] { };
         return projects
-        .Select(p => isClientView ? p.ProjectName  : $"{p.ClientName} | {p.ProjectName}")
+        .Select(p => isClientView ? p.ProjectName  : $"{p.Client.UserName} | {p.ProjectName}")
         .Distinct()
         .Where(text => text.Contains(value.Trim(), StringComparison.OrdinalIgnoreCase))
         .ToArray();
@@ -133,12 +127,12 @@
 
         if (searchText.Contains("|") && !isClientView)
         {
-            // match starts with "ClientName | ProjectName" format
+            // match starts with "Client.UserName | ProjectName" format
             var parts = searchText.Split("|").Select(s => s.Trim()).ToList();
             if (parts.Count == 2)
             {
                 return projects.Where(p =>
-                    p.ClientName.StartsWith(parts[0], StringComparison.OrdinalIgnoreCase) &&
+                    p.Client.UserName.StartsWith(parts[0], StringComparison.OrdinalIgnoreCase) &&
                     p.ProjectName.StartsWith(parts[1], StringComparison.OrdinalIgnoreCase)
                 );
             }
@@ -147,7 +141,7 @@
         // Single term search - match either client name or project name
         return projects.Where(p =>
             isClientView ? p.ProjectName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) :
-            p.ClientName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
+            p.Client.UserName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
             p.ProjectName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase)
         );
     }
@@ -169,18 +163,31 @@
         currentPage = page;
         StateHasChanged();
     }
-    private void OpenProjectChat(Project Project)
+    private async void OpenProjectChat(Project Project)
     {
-
         ProjectState.SetProject(Project);
         StateHasChanged();
         MudDialog.Close();
+
+    }
+    private async void PinChat(Project Project)
+    {
+        Project.IsPinned = !Project.IsPinned;
+        await ProjectService.TogglePinAsync(userId, Project.ProjectId, Project.IsPinned);
+        projects = projects
+        .OrderByDescending(p => p.IsPinned)
+        .ThenByDescending(p => p.countUnreadMessages) // Sort by unread messages
+        .ThenByDescending(p => p.LastSentMessage) // Then by last message sent
+        .ToList();
+        StateHasChanged();
 
     }
      private async Task CloseChat()
     {
         MudDialog.Close();
     }
+
+
 
 }
 
@@ -192,6 +199,16 @@
     }
     .chat-container{
         width: 100% !important;
+    }
+    .mud-badge.mud-badge-icon .mud-icon-badge
+    {
+        font-size: 16px !important;
+    }
+
+    .mud-badge.mud-badge-icon
+    {
+        width: 30px !important;
+        height: 30px !important;
     }
     @@media (max-width: 960px){
         .mud-dialog-container.mud-dialog-bottomright .mud-dialog

@@ -113,7 +113,7 @@ public class ProjectService
         }
     }
 
-    // Used for dragging orders to update projects when dragged
+    // fetching projects for users:
     public async Task<List<Project>> GetProjectsAsync()
     {
         using (var context = _contextFactory.CreateDbContext())
@@ -123,6 +123,7 @@ public class ProjectService
                 .ToListAsync();
         }
     }
+
     public async Task<List<Project?>> GetProjectsForEditors(bool isArchived, string userId)
     {
         using (var context = _contextFactory.CreateDbContext())
@@ -175,7 +176,41 @@ public class ProjectService
             return projects;
         }
     }
+    // For chats:
+    public async Task<List<Project?>> GetProjectsForChat(bool isArchived, string userId,bool isAdminView, bool isEditorView, bool isClientView)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            // Query projects with pinned status for the user
+            
+            var projects = await context.Projects
+                .Where(p => p.IsArchived == isArchived &&
+                        ( isAdminView ? true :
+                         isEditorView ? ( p.PrimaryEditorId == userId || p.SecondaryEditorId == userId ) :
+                         isClientView ? p.ClientId == userId : false ))
+                .Include(p => p.Archive)
+                .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
+                .Include(p => p.Revisions)
+                .OrderBy(p => p.InternalOrder)
+                .Select(p => new
+                {
+                    Project = p,
+                    IsPinned = p.PinnedByUsers.Any(up => up.UserId == userId && up.IsPinned)
+                })
+                .ToListAsync();
 
+            // Map the results to include the IsPinned property
+            var result = projects.Select(x =>
+            {
+                x.Project.IsPinned = x.IsPinned; // Set the IsPinned property
+                return x.Project;
+            }).ToList();
+
+            return result;
+        }
+    }
     // Lock to handle concurrency issue
     private static readonly object _orderLock = new object();
     public async Task AddProjectAsync(Project project)
@@ -453,12 +488,12 @@ public class ProjectService
                         .Select(u => new { u.Id, u.UserName, u.HourlyRate })
                         .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-                        project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
-                            ? userNames[project.PrimaryEditorId]!
-                            : null;
-                        project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
-                            ? userNames[project.SecondaryEditorId]!
-                            : null;
+                    _project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
+                        ? userNames[project.PrimaryEditorId]!
+                        : null;
+                    _project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
+                        ? userNames[project.SecondaryEditorId]!
+                        : null;
                     
                     _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId));
                 }
@@ -538,12 +573,12 @@ public class ProjectService
                     .Select(u => new { u.Id, u.UserName })
                     .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-                foreach(Project project1 in projects)
+                foreach(Project _project in projects)
                 {
-                    project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
+                    _project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
                             ? userNames[project.PrimaryEditorId]!
                             : null;
-                    project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
+                    _project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                         ? userNames[project.SecondaryEditorId]!
                         : null;
                 }
@@ -556,6 +591,31 @@ public class ProjectService
             await _broadcaster.NotifyAllAsync();
         }
     }
+    public async Task TogglePinAsync(string userId, int projectId, bool isPinned)
+    {
+        using var context = _contextFactory.CreateDbContext();
+
+        var existingPin = await context.UserProjectPins
+            .AsTracking()
+            .FirstOrDefaultAsync(up => up.UserId == userId && up.ProjectId == projectId);
+
+        if (existingPin != null)
+        {
+            existingPin.IsPinned = isPinned; // Update existing entry
+        }
+        else
+        {
+            context.UserProjectPins.Add(new UserProjectPin
+            {
+                UserId = userId,
+                ProjectId = projectId,
+                IsPinned = isPinned
+            });
+        }
+
+        await context.SaveChangesAsync();
+    }
+
     public async Task UpdateProjectBillableHoursAsync(Project project)
     {
         using (var context = _contextFactory.CreateDbContext())

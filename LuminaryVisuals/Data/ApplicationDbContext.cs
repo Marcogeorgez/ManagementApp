@@ -12,6 +12,8 @@ namespace LuminaryVisuals.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<UserProjectPin> UserProjectPins{ get; set; }
+
         public DbSet<PayoneerSettings> PayoneerSettings { get; set; }
         public DbSet<Entities.ColumnPreset> ColumnPresets { get; set; }
         public DbSet<MigratedUser> MigratedUsers { get; set; }
@@ -66,8 +68,19 @@ namespace LuminaryVisuals.Data
                       .WithMany()
                       .HasForeignKey(e => e.UserId);
             });
-        // Configure Project
-        builder.Entity<Project>(entity =>
+            // Configure composite primary key
+            builder.Entity<UserProjectPin>()
+                    .HasKey(up => new { up.UserId, up.ProjectId });
+            builder.Entity<UserProjectPin>()
+                .HasOne(up => up.User)
+                .WithMany(u => u.PinnedProjects)
+                .HasForeignKey(up => up.UserId);
+             builder.Entity<UserProjectPin>()
+                .HasOne(up => up.Project)
+                .WithMany(u => u.PinnedByUsers)
+                .HasForeignKey(up => up.ProjectId);
+            // Configure Project
+            builder.Entity<Project>(entity =>
             {
                 entity.ToTable("Projects");
                 entity.Property(e => e.ProjectName).HasMaxLength(255).IsRequired();
