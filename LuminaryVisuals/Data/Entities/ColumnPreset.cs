@@ -7,6 +7,8 @@
         public string Name { get; set; }
         public string Preferences { get; set; } 
         public DateTime CreatedAt { get; set; }
+        public DateTime LastUsedAt { get; set; }
+
         public virtual ApplicationUser User { get; set; }
     }
 }

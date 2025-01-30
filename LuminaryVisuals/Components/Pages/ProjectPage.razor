@@ -3,18 +3,18 @@
 @using LuminaryVisuals.Services.Shared
 @using Microsoft.Extensions.Options
 @inject ColumnPreferenceService columnPreferenceService
-@inject ISnackbar Snackbar
-@inject IDialogService DialogService
-@inject IJSRuntime JSRuntime
 @inject UserServices UserServices
 @inject ProjectService projectServices
 @inject CircuitUpdateBroadcaster Broadcaster
 @inject ProjectState ProjectState
-@implements IDisposable
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 @inject IEmailService EmailService
 @inject INotificationService _notificationService
 @inject IScrollManager ScrollManager
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
+@implements IDisposable
 <PageTitle>Projects</PageTitle>
 
 
@@ -1214,7 +1214,7 @@
             <div class="mud-overlay mud-overlay-dialog" style=""><div class="mud-overlay-scrim mud-overlay-dark"></div></div>
             <div class="floating-chat-container">
 
-                <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
+                <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject" OnOpenProjectDialog="OpenDescriptionDialog"
                 UserId="@_currentUserId"
                 IsAdminView="@isAdminView"
                 IsClientView="@_isClientView" isEditorView="@_isEditorView"

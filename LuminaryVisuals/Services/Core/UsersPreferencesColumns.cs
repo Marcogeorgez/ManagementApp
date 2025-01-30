@@ -30,7 +30,8 @@ public class ColumnPreferenceService
             UserId = userId,
             Name = name,
             Preferences = JsonSerializer.Serialize(preferences),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            LastUsedAt = DateTime.UtcNow
         };
 
         context.ColumnPresets.Add(preset);
@@ -41,12 +42,30 @@ public class ColumnPreferenceService
     {
         using var context = await _contextFactory.CreateDbContextAsync();
         var preset = await context.ColumnPresets
+            .AsTracking()
             .Where(p => p.UserId == userId && p.Name == presetName)
             .FirstOrDefaultAsync();
 
+        preset.LastUsedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
         if (preset == null)
             return new Dictionary<string, bool>();
 
         return JsonSerializer.Deserialize<Dictionary<string, bool>>(preset.Preferences)!;
+    }
+    public async Task<string> GetLastPresetUsed(string userId)
+    {
+        using var context = await _contextFactory.CreateDbContextAsync();
+        // Find the maximum LastUsedAt value for the given user
+        var lastUsedAt = await context.ColumnPresets
+            .Where(p => p.UserId == userId)
+            .MaxAsync(p => p.LastUsedAt);
+
+        // Retrieve the preset with the maximum LastUsedAt
+        var preset = await context.ColumnPresets
+            .Where(p => p.UserId == userId && p.LastUsedAt == lastUsedAt)
+            .FirstOrDefaultAsync();
+        return preset.Name!;
     }
 }
