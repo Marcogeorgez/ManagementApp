@@ -1195,6 +1195,12 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
     resize: horizontal !important;
     height: 55px !important;
     max-height: 55px !important;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scrollbar-gutter: stable;
+    backface-visibility: hidden;
 }
 .mud-button-outlined {
     border-width: 2px !important;
