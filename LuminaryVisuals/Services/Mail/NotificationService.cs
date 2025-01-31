@@ -185,96 +185,97 @@ public class NotificationService : BackgroundService, INotificationService
     public async Task QueueStatusChangeNotification(Project project, ProjectStatus oldStatus, ProjectStatus newStatus, string updatedByUserId)
     {
         _logger.LogInformation($"Queueing status change notification for project {project.ProjectName} from {oldStatus} to {newStatus}");
-
-        using var scope = _serviceProvider.CreateScope();
-        var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
-        var readyToReviewText = newStatus == ProjectStatus.Ready_To_Review ? $"Make sure to check it before {project.FormattedDueDate}" : "";
-        // Always notify admins
-        var adminUsers = await userService.GetAllAdminsAsync();
-        foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
+        try
         {
-            var secondPrimaryEditorNameMessage = project.SecondaryEditorName != null ? $" and <strong>{project.SecondaryEditorName}</strong>" : "";
-            var messageForPrivateNotes = newStatus == ProjectStatus.Delivered && project.NotesForProject.Length > 15 ? $"<br><strong> This Project has private notes:</strong> {project.NotesForProject}" : "";
-            var notificationItem = new NotificationQueueItem
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
+            var readyToReviewText = newStatus == ProjectStatus.Ready_To_Review ? $"Make sure to check it before {project.FormattedDueDate}" : "";
+            // Always notify admins
+            var adminUsers = await userService.GetAllAdminsAsync();
+            foreach (var admin in adminUsers.Where(u => u.Id != updatedByUserId))
             {
-                UserId = admin.Id,
-                Subject = $"The Project {project.ProjectName} has changed status {( newStatus == ProjectStatus.Delivered && project.NotesForProject.Length > 15 ? "to delivered and has private notes" : "" )}",    
-                Message = $@"
+                var secondPrimaryEditorNameMessage = project.SecondaryEditorName != null ? $" and <strong>{project.SecondaryEditorName}</strong>" : "";
+                var messageForPrivateNotes = ( newStatus == ProjectStatus.Delivered && project.NotesForProject != null && project.NotesForProject?.Length > 15 ? $"<br><strong> This Project has private notes:</strong> {project.NotesForProject}" : "" );
+                var notificationItem = new NotificationQueueItem
+                {
+                    UserId = admin.Id,
+                    Subject = $"The Project {project.ProjectName} has changed status {( newStatus == ProjectStatus.Delivered && project.NotesForProject != null && project.NotesForProject?.Length > 15 ? "to delivered and has private notes" : "" )}",
+                    Message = $@"
                             <p>The project for the client <strong>{project.Client.UserName}</strong> edited by <strong>{project.PrimaryEditorName}</strong> <strong>{secondPrimaryEditorNameMessage}</strong> 
                              status changed from <strong>{oldStatus.ToString().Replace('_', ' ')}</strong> to <strong>{newStatus.ToString().Replace('_', ' ')}</strong> on 
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.
                             {readyToReviewText}{messageForPrivateNotes}</p>",
-                CreatedAt = DateTime.UtcNow
-            };
-            AddToQueue(notificationItem);
-        }
-        if (newStatus == ProjectStatus.Revision)
-        {
-            // Notify editors if they exist
-            if (project.PrimaryEditorId != null)
+                    CreatedAt = DateTime.UtcNow
+                };
+                AddToQueue(notificationItem);
+            }
+            if (newStatus == ProjectStatus.Revision)
             {
-                var primaryEditor = await userService.GetUserByIdAsync(project.PrimaryEditorId);
-                if (primaryEditor != null && project.PrimaryEditorId != updatedByUserId)
+                // Notify editors if they exist
+                if (project.PrimaryEditorId != null)
                 {
-                    var notificationItem = new NotificationQueueItem
+                    var primaryEditor = await userService.GetUserByIdAsync(project.PrimaryEditorId);
+                    if (primaryEditor != null && project.PrimaryEditorId != updatedByUserId)
                     {
-                        UserId = primaryEditor.Id,
-                        Subject = $"Project {project.ProjectName} Status Update",
-                        Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    AddToQueue(notificationItem);
+                        var notificationItem = new NotificationQueueItem
+                        {
+                            UserId = primaryEditor.Id,
+                            Subject = $"Project {project.ProjectName} Status Update",
+                            Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        AddToQueue(notificationItem);
+                    }
+                }
+
+                if (project.SecondaryEditorId != null && project.SecondaryEditorId != updatedByUserId)
+                {
+                    var secondaryEditor = await userService.GetUserByIdAsync(project.SecondaryEditorId);
+                    if (secondaryEditor != null)
+                    {
+                        var notificationItem = new NotificationQueueItem
+                        {
+                            UserId = secondaryEditor.Id,
+                            Subject = $"Project {project.ProjectName} Status Update",
+                            Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        AddToQueue(notificationItem);
+                    }
                 }
             }
 
-            if (project.SecondaryEditorId != null && project.SecondaryEditorId != updatedByUserId)
+            // Notify client for specific statuses
+            if (newStatus == ProjectStatus.Scheduled || newStatus == ProjectStatus.Finished)
             {
-                var secondaryEditor = await userService.GetUserByIdAsync(project.SecondaryEditorId);
-                if (secondaryEditor != null)
+                if (project.ClientId != null && project.ClientId != updatedByUserId)
                 {
-                    var notificationItem = new NotificationQueueItem
+                    var client = await userService.GetUserByIdAsync(project.ClientId);
+                    if (client != null)
                     {
-                        UserId = secondaryEditor.Id,
-                        Subject = $"Project {project.ProjectName} Status Update",
-                        Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    AddToQueue(notificationItem);
+                        var notificationItem = new NotificationQueueItem
+                        {
+                            UserId = client.Id,
+                            Subject = $"Your Project {project.ProjectName} has updates ⚡",
+                            Message = $@" <p>The project '<strong>{project.ProjectName}</strong>' has been marked as '<strong>{newStatus}</strong>' on <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        AddToQueue(notificationItem);
+                    }
                 }
             }
-        }
-
-        // Notify client for specific statuses
-        if (newStatus == ProjectStatus.Scheduled || newStatus == ProjectStatus.Finished)
-        {
-            if (project.ClientId != null && project.ClientId != updatedByUserId)
+            if (newStatus == ProjectStatus.Delivered)
             {
-                var client = await userService.GetUserByIdAsync(project.ClientId);
-                if (client != null)
+                if (project.ClientId != null && project.ClientId != updatedByUserId)
                 {
-                    var notificationItem = new NotificationQueueItem
+                    var client = await userService.GetUserByIdAsync(project.ClientId);
+                    if (client != null)
                     {
-                        UserId = client.Id,
-                        Subject = $"Your Project {project.ProjectName} has updates ⚡",
-                        Message = $@" <p>The project '<strong>{project.ProjectName}</strong>' has been marked as '<strong>{newStatus}</strong>' on <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    AddToQueue(notificationItem);
-                }
-            }
-        }
-        if (newStatus == ProjectStatus.Delivered)
-        {
-            if (project.ClientId != null && project.ClientId != updatedByUserId)
-            {
-                var client = await userService.GetUserByIdAsync(project.ClientId);
-                if (client != null)
-                {
-                    var notificationItem = new NotificationQueueItem
-                    {
-                        UserId = client.Id,
-                        Subject = $"You have a new project delivered by Luminary Visuals ⚡",
-                        Message = $@"
+                        var notificationItem = new NotificationQueueItem
+                        {
+                            UserId = client.Id,
+                            Subject = $"You have a new project delivered by Luminary Visuals ⚡",
+                            Message = $@"
 <!DOCTYPE html>
 <html lang='en'>
 <head>
@@ -313,11 +314,16 @@ public class NotificationService : BackgroundService, INotificationService
     </div>
 </body>
 </html>",
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    AddToQueue(notificationItem);
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        AddToQueue(notificationItem);
+                    }
                 }
             }
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError($"{ex}");
         }
     }
     private void AddToQueue(NotificationQueueItem item)
