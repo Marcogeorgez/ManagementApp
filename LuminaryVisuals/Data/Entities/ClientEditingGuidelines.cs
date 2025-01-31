@@ -37,6 +37,9 @@ namespace LuminaryVisuals.Data.Entities
         public string? ClientSamples { get; set; }
         public string? GeneralNotes { get; set; }
 
+        public string? PaidFolderPath { get; set; }
+        public string? PreviewFolderPath { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

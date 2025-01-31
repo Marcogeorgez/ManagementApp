@@ -85,6 +85,14 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddSingleton<DropboxService>(sp =>
+{
+    var refreshToken = Environment.GetEnvironmentVariable("DROPBOX_REFRESH_TOKEN");
+    var appKey = Environment.GetEnvironmentVariable("DROPBOX_APP_KEY");
+    var appSecret = Environment.GetEnvironmentVariable("DROPBOX_APP_SECRET");
+
+    return new DropboxService(refreshToken, appKey, appSecret);
+});
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
