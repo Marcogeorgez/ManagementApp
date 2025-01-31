@@ -27,6 +27,8 @@
                 {
                     <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
                     @bind-Value="preferences.FolderLink" Variant="Variant.Outlined" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+
+
                 }
                 else
                 {
@@ -37,6 +39,13 @@
                 @if (currentUser.IsInRole("Admin")){
                     <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6
                     @bind-Value="preferences.PaidFolderLink" Variant="Variant.Outlined" Placeholder="Link is not assigned yet, please wait while we assign you one." />
+
+
+                    <MudTextField Class="mx-10 my-8" T="string" Clearable=true MaxLines=6 Label="Dropbox Preview Folder Path:"
+                                  @bind-Value="preferences.PreviewFolderPath" Variant="Variant.Outlined" Placeholder="Path to preview dropbox folder. Ex: FirstFolder/SecondFolder/" />
+                    <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6 Label="Dropbox Paid Folder Path:"
+                                  @bind-Value="preferences.PaidFolderPath" Variant="Variant.Outlined" Placeholder="Path to paid dropbox folder. Ex: FirstFolder/SecondFolder/" />
+
                 }
                 else{
                     <TextWithLinks Content="@(string.IsNullOrEmpty(preferences.FolderLink) ? "Link is not assigned yet." :
@@ -380,7 +389,6 @@
             }
             await context.SaveChangesAsync();
             await payoneerSettingsService.UpdateSettingsAsync(payoneerSettings!);
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
             Snackbar.Add($"We have saved your preferences successfully!", Severity.Info);
             var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId); // user which is getting updated notification for (client)
             // _currentUserId: Id of current user (admin/client)
