@@ -48,8 +48,7 @@
                                 </MudText> 
                                 lastUserId = message.UserId; 
                             }
-                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="() => ToggleClick(message.MessageId)"
-                            style="--total-messages:@messages.Count; --message-index:@index;">
+                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" style="--total-messages:@messages.Count; --message-index:@index;">
 
 
                                 <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )" @onclick="() => ToggleClick(message.MessageId)">

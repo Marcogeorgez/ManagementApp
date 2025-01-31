@@ -88,7 +88,6 @@ namespace LuminaryVisuals.Components.Pages
         // quick filter - filter globally across multiple columns with the same input
         protected override async Task OnInitializedAsync()
         {
-            // Get the current user ID
             LoadingService.Subscribe(isVisible =>
             {
                 _loadingIndicator = isVisible;
