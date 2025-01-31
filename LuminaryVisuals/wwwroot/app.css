@@ -503,10 +503,7 @@ th.mud-table-cell.sticky-left:hover {
         height: 100dvh !important;
     }
 
-    .chat-message:active + .message-hover-options,
-    .message-hover-options:active {
-        display: flex !important;
-    }
+    
     div.mud-input-control.mud-input-input-control.outlined-dialog-max-content >
     div.mud-input-control-input-container >
     div.mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input >
@@ -515,6 +512,13 @@ th.mud-table-cell.sticky-left:hover {
         text-align: center;
     }
 
+}
+.message-hover-options.active {
+    display: flex !important;
+}
+
+.message-hover-options {
+    display: none;
 }
 
 .projects-title {
@@ -820,10 +824,7 @@ back-button {
     height: 40px;
     top:2px;
 }
-.chat-message:hover + .message-hover-options,
-.message-hover-options:hover {
-    display: flex !important;
-}
+
 
 @keyframes fadeIn {
     from {
