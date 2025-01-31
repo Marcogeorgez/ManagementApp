@@ -48,11 +48,11 @@
                                 </MudText> 
                                 lastUserId = message.UserId; 
                             }
-                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="ToggleClick"
+                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" @ontouchstart="() => ToggleClick(message.MessageId)"
                             style="--total-messages:@messages.Count; --message-index:@index;">
 
 
-                                <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )">
+                                <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )" @onclick="() => ToggleClick(message.MessageId)">
                                     @foreach (var part in GetMessageWithLinks(message.Content))
                                     {
                                         if (StringHelper.IsLink(part))
@@ -85,7 +85,7 @@
                                 </div>
                                 @if (message.UserId == UserId || isAdminView == true)   
                                 {
-                                    <div class="message-hover-options" style="@(isClicked == true ? "display: flex !important;" : "display:none;")" >
+                                    <div class="message-hover-options @(messageClicks.ContainsKey(message.MessageId) && messageClicks[message.MessageId] ? "active" : "")">
                                         @if (isAdminView)
                                         {
                                             <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"Size="Size.Small"
@@ -97,8 +97,6 @@
                                                 <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
                                                 Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
                                             }
-                                        @* <MudIconButton Icon=@Icons.Material.Filled.MarkAsUnread Color="Color.Default" Size="Size.Small"
-                                        OnClick="() => UnreadMessage(message)"/> *@
                                         }
 
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
@@ -145,6 +143,7 @@
     private bool isClicked = false;
     private string newMessage;
     private List<Message> messages = new List<Message>();
+    private Dictionary<int, bool> messageClicks = new Dictionary<int, bool>();
     private MudTextField<string> messageField = default!;
     private int? HighlightedMessageId;
     private IDisposable _subscription;
@@ -214,9 +213,16 @@
         }
 
     }
-    private void ToggleClick()
+    private void ToggleClick(int messageId)
     {
-        isClicked = !isClicked;
+        if (messageClicks.ContainsKey(messageId))
+        {
+            messageClicks[messageId] = !messageClicks[messageId]; // Toggle state
+        }
+        else
+        {
+            messageClicks[messageId] = true; // Show for new messages
+        }
     }
     private async Task LoadMessages(bool initial = true)
     {
@@ -432,7 +438,7 @@
 
     private async Task MessageInformation(Message message)
     {
-        await DialogService.ShowMessageBox("Info",$"message sent at {message.Timestamp}", yesText: "Close");
+        await DialogService.ShowMessageBox("Info",$"message sent at {message.Timestamp} UTC", yesText: "Close");
         StateHasChanged();
 
     }
