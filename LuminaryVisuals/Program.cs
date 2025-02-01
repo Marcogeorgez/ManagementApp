@@ -104,6 +104,7 @@ builder.Services.AddScoped<SignInManager<ApplicationUser>, CustomSignInManager>(
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<MigratedUser>();
 builder.Services.AddScoped<UserNoteService>();
+builder.Services.AddScoped<QuickMessageService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<LoggingHours>();
 builder.Services.AddScoped<SettingService>();
