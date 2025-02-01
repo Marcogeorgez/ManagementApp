@@ -827,17 +827,21 @@ back-button {
     position: relative;
     background-color: #3b3b3b;
     display: none;
-    border-radius: 5px;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     z-index: 10;
     align-self: inherit;
     transition: all 0.3s ease;
-    height: 40px;
-    top:2px;
+    height: 35px;
+    top:-2px;
 }
-
-
+.message-left > .message-hover-options {
+    left: 5px;
+}
+.message-right > .message-hover-options {
+    right: 5px;
+}
 @keyframes fadeIn {
     from {
         opacity: 0;
