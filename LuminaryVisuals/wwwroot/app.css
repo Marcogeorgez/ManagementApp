@@ -467,6 +467,17 @@ th.mud-table-cell.sticky-left:hover {
 }
 
 @media (max-width: 960px) {
+    .project-item {
+        padding-top: 3px !important;
+        padding-bottom: 3px !important;
+        overflow-y: auto !important;
+        max-height: fit-content;
+        text-align: start !important;
+        align-items: start !important;
+    }
+    .project-container {
+        margin: 5px 15px 5px 60px !important;
+    }
     .projects-panel {
         width: 80vw !important;
     }
@@ -764,11 +775,9 @@ back-button {
 .chat-content {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 15px;
     flex-grow: 1;
     overflow-y: auto;
     overflow-x:hidden;
-    padding: 15px;
     scrollbar-width: thin;
     scrollbar-color: #efefef #012b52;
 }
@@ -801,6 +810,8 @@ back-button {
 .message-username {
     color: #efefef;
     margin-bottom: 5px;
+    margin-left:15px;
+    margin-right:15px;
 }
 
 .message-container {
@@ -810,6 +821,7 @@ back-button {
     opacity: 0;
     animation: slideIn 0.4s ease-out forwards;
     animation-delay: calc(((var(--total-messages)*0.1) - var(--message-index)) * 0.1s);
+    padding:2px 15px;
 }
 .message-hover-options {
     position: relative;
@@ -863,10 +875,11 @@ back-button {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    margin-top: 5px;
-    margin-right: 5px;
     word-wrap: anywhere;
     color: #efefef;
+    text-wrap: nowrap;
+    align-self: start;
+    margin-top: 10px;
 }
 
 .received-icon {
