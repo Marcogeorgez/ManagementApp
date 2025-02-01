@@ -30,7 +30,7 @@
 
                             <MudBadge Style="width:100%;" Icon="@(project.IsPinned ? @Icons.Material.Outlined.PushPin : @Icons.Material.Filled.PushPin)" Origin="Origin.CenterLeft" BadgeClass="@(project.IsPinned ? "pinned-badge" : "")" Bordered=true Color="@(project.IsPinned ? Color.Error:Color.Info)" OnClick="() => PinChat(project)" >
 
-                        <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)">
+                        <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)" Ripple="false">
 
                             <div class="project-content">
 
