@@ -29,7 +29,7 @@
                 <MudItem xs="12" sm="4" Class="d-flex align-center">
                     <MudButton Variant="Variant.Filled" 
                     Color="Color.Primary" 
-                    StartIcon="@Icons.Material.Filled.Link"
+                    StartIcon="@Icons.Material.Filled.Link" Disabled="isLoading"
                     OnClick="GenerateLink"
                     FullWidth="true"
                     Class="ml-2">
@@ -42,8 +42,8 @@
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">Close</MudButton>
-        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">Save</MudButton>
+        <MudButton OnClick="@Cancel" Disabled="isLoading" Color="Color.Error" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">Close</MudButton>
+        <MudButton OnClick="@Save" Disabled="isLoading" Color="Color.Info" Variant="Variant.Outlined" Class="mr-3" Size="Size.Large">Save</MudButton>
 
     </DialogActions>
 
@@ -57,6 +57,7 @@
     private string? Text = "";
     [Inject] private LoadingService LoadingService { get; set; }
     private bool loadingIndicator;
+    bool isLoading;
     [Inject] private DropboxService DropboxService { get; set; }
     private ClientEditingGuidelines? preferences = new();
     [Inject] IDbContextFactory<ApplicationDbContext> DbFactory { get; set; }
@@ -91,35 +92,46 @@
     }
     private async Task GenerateLink()
     {
-
+        if (isLoading)
+        {
+            Snackbar.Add("Currently Generating Link and Moving folder, please wait!", Severity.Warning);
+            return;
+        }
+        isLoading = true;
         LoadingService.ShowLoading();
+        await Task.Delay(100);
         try
         {
-            string previewPath = preferences.PreviewFolderPath;
-            string paidPath = preferences.PaidFolderPath;
-            string projectName = $"{project.FormattedShootDate}-{project.ProjectName}";
 
+            string? previewPath = preferences?.PreviewFolderPath;
+            string? paidPath = preferences?.PaidFolderPath;
+            string projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
+            if (previewPath == null || paidPath == null)
+            {
+                Snackbar.Add("Please set the folder paths in the client editing guidelines first, It's empty!!", Severity.Error);
+                return;
+            }
             // MoveAction will decide if move the folder contents from Preview to Paid or Paid To Preview or do nothing.
             if (MoveAction == MoveOption.ToPaid)
             {
-                DropboxService.MoveFolderContentsAsync(previewPath, paidPath);
+                await DropboxService.MoveFolderContentsAsync(previewPath, paidPath!);
                 project.IsPreview = false;
 
             }
             else if (MoveAction == MoveOption.ToPreview)
             {
-                DropboxService.MoveFolderContentsAsync(paidPath, previewPath);
+                await DropboxService.MoveFolderContentsAsync(paidPath, previewPath!);
                 project.IsPreview = true;
             }
             if (project.IsPreview == null || project.IsPreview == false) // Assume it's in paid folder and enable downloading the link
             {
-                project.Link = DropboxService.CreateSharableDownloadLinkAsync($"{paidPath}/{projectName}");
+                project.Link = DropboxService.CreateSharableDownloadLinkAsync(Path.Combine(paidPath,projectDateName));
                 project.IsPreview = false;
 
             }
             else // If it's in preview folder, enable viewing the link and disable downloading
             {
-                project.Link = DropboxService.CreateViewOnlySharableLinkAsync($"{previewPath}/{projectName}");
+                project.Link = DropboxService.CreateViewOnlySharableLinkAsync(Path.Combine(previewPath,projectDateName));
                 project.IsPreview = true;
             }
             Snackbar.Add("Link Generated", Severity.Success);
@@ -129,7 +141,11 @@
         {
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
-    LoadingService.HideLoading();
+        finally
+        {
+            LoadingService.HideLoading();
+            isLoading = false;
+        }
 
     }
     private async Task Save()
