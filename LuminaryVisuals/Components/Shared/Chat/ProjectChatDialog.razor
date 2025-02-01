@@ -10,21 +10,47 @@
 @inject IMessageNotificationService MessageNotificationService
 @inject CloudflareR2Service CloudflareR2Service
 @inject ProjectState ProjectState
+@inject QuickMessageService QuickMessageService 
+
 <div @ref="chatContainerRef">
-    <MudContainer Class="chat-container" Gutters=false>
+    <MudContainer Class="chat-container" Gutters=false >
         <MudPaper Elevation="4" Class="chat-panel">
             <MudPaper Elevation="3" Class="chat-header" Outlined="true">
                 <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
                 <button @onclick="() => OpenDialogFromChat(Project)">
-                <MudText Typo="Typo.h6" Class="chat-title">
-                    <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
-                    @Project.ProjectName
-                </MudText>
+                    <MudText Typo="Typo.h6" Class="chat-title">
+                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
+                        @Project.ProjectName
+                    </MudText>
                 </button>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
             </MudPaper>
-            <MudContainer Class="chat-content" Gutters="false"  @onscroll="OnScroll">
 
+            <MudContainer Class="chat-content" Gutters="false" @onscroll="OnScroll"
+            @ondragenter="HandleDragEnter" @ondragleave="OnContainerDragLeave">
+
+                <MudFileUpload T="IBrowserFile" 
+                Style="@($"text-align:center;position:sticky;z-index:2; height:100%; width:100%; top:0px; {(IsDragging ? "" : "display:none;")}")"
+                @ref="@_fileUploadReference"
+                FilesChanged="UploadFiles"
+                Hidden="@false"
+                InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
+                InputStyle="opacity:0; transform: translate(-50%,0%)"
+                tabindex="-1"
+                @ondrop="@ClearDragClass"
+                @ondragenter="@SetDragClass"
+                @ondragleave="@ClearDragClass"
+                @ondragend="@ClearDragClass">
+                    <ActivatorContent>
+                        <MudPaper Style="height:95%; width:100%;" 
+                        Outlined="true"
+                        Class="@_dragClass">
+                            <MudText Typo="Typo.h6">
+                                Drag file here
+                            </MudText>
+                        </MudPaper>
+                    </ActivatorContent>
+                </MudFileUpload>
                 <div class="chat-messages">
                     @if (hasMoreMessages)
                     {
@@ -107,21 +133,93 @@
                         }
                     }
                 </div>
-                <LoadingIndicatorChat IsVisible="@_isLoading" />
+                <LoadingIndicatorChat IsVisible="@_isLoading" /> @* loading indicator for the messages section of the chat*@
             </MudContainer>
+
+
             <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
-                <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" Class="d-flex" Accept=".jpg, .jpeg, .png, .gif, .bmp, .tiff, .tif,
-                .svg, .webp, .ico, .heic, .heif, .raw, .psd,.dds, .jp2, .j2k, .jpf, .eps, .ai">
-                    <ActivatorContent>
-                        <MudIconButton Style="color:#efefef"
-                        Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" DropShadow=true Edge="Edge.Start" Ripple=true />
-                    </ActivatorContent>
-                </MudFileUpload>
+                <MudPopover Open="@_openQuickMessage" Fixed="true" Class="pb-4">
+                    <div class="d-flex flex-column">
+                        <MudTabs Outlined="true" Centered="true" Border="true" Rounded="true">
+                            <MudTabPanel Text="Preapproved Messages" Icon="@Icons.Material.Filled.PlaylistAddCheck" IconColor="Color.Info">
+                                @foreach (var item in quickMessages)
+                                {
+                                    @if (item.Preapproved)
+                                    {
+                                        <MudText Class="d-flex mx-4 my-2">
+                                            <ChildContent>
+                                                <span style="cursor:pointer;"  @onclick="() => SendMessage(item!)">@item.Content</span>
+                                                @if (isAdminView)
+                                                {
+                                                    <MudSpacer />
+                                                    <MudIconButton OnClick="() => DeleteQuickMessage(item)"
+                                                    Icon="@Icons.Material.Filled.Delete"
+                                                    Color="Color.Error"
+                                                    Size="Size.Small" />
+                                                }
+                                            </ChildContent>
+                                        </MudText>
+                                    }
+
+                                }
+                            </MudTabPanel>
+                            <MudTabPanel Text="Quick Custom Messages" Icon="@Icons.Material.Filled.EditNote" IconColor="Color.Info" >
+                                @foreach (var item in quickMessages)
+                                {
+                                    @if (!item.Preapproved)
+                                    {
+                                        <MudText Class="d-flex mx-4 my-2" >
+                                            <ChildContent>
+                                                <span style="cursor:pointer;" @onclick="() => newMessage = item.Content!">@item.Content</span>
+                                                @if (isAdminView)
+                                                {
+                                                    <MudSpacer />
+                                                    <MudIconButton OnClick="() => DeleteQuickMessage(item)"
+                                                    Icon="@Icons.Material.Filled.Delete"
+                                                    Color="Color.Error"
+                                                    Size="Size.Small" />
+                                                }
+                                            </ChildContent>
+                                        </MudText>
+                                    }
+                                }
+
+                            </MudTabPanel>
+
+                        </MudTabs>
+                        <div class="d-flex">
+                            @if (isAdminView)
+                            {
+                                <MudButton Color="Color.Success" OnClick="AddNewMessage"
+                                StartIcon="@Icons.Material.Outlined.Add" Variant="Variant.Outlined" Class="mr-auto mb-1 ml-4">Add New Message</MudButton>
+                            }
+                            <MudButton OnClick="OpenQuickMessages" Class="ml-auto mb-1 mr-5" Color="Color.Error" Variant="Variant.Outlined">Close</MudButton>
+                        </div>
+                    </div>
+                </MudPopover>
+                @*Overlay used to close the menu when user clicks anywhere*@
+                <MudOverlay @bind-Visible="isMenuOpen" AutoClose="true" Style="width:100%; height:100%; position:absolute;" />
+
+                <MudMenu Icon="@Icons.Material.Filled.MoreVert" AriaLabel="Open user menu" OpenChanged="() => isMenuOpen = !isMenuOpen"
+                Open="@isMenuOpen"
+                AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter"  >
+                    <MudMenuItem OnClick="@(() => _fileUploadReference.OpenFilePickerAsync())" >
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" />
+                            <MudText Class="ml-2">Upload Image</MudText>
+                        </div>
+                    </MudMenuItem>
+                    @if (!isClientView)
+                    {
+                        <MudMenuItem Label="Quick Messages" OnClick="OpenQuickMessages" />
+                    }
+                </MudMenu>
+
                 <MudTextField @bind-Value="newMessage" Class="flex-grow-1" Placeholder="Type a message..."
                 Variant="Variant.Outlined" Clearable="true" @ref="messageField" Adornment="Adornment.End"
                 AdornmentIcon="@Icons.Material.Filled.Send" OnAdornmentClick="( () => SendMessage(newMessage) )"
-                TextUpdateSuppression=false AutoFocus="true" KeyDownPreventDefault=_preventDefault
-                OnKeyDown="HandleKeyPress" AutoGrow=true MaxLines="6">
+                AutoFocus="true" 
+                KeyDownPreventDefault=_preventDefault OnKeyDown="HandleKeyPress" AutoGrow=true MaxLines="6">
                 </MudTextField>
 
             </MudPaper>
@@ -129,6 +227,8 @@
     </MudContainer>
 </div>
 @code {
+    private bool isMenuOpen;
+    private bool IsDragging;
     [CascadingParameter]
     IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project{ get; set; }
@@ -139,12 +239,10 @@
     [Parameter] public int timezoneOffsetMinutes { get; set; }
     IList<IBrowserFile> _files = new List<IBrowserFile>();
     private string? UploadedFileUrl;
-    private bool isClicked = false;
     private string newMessage;
     private List<Message> messages = new List<Message>();
     private Dictionary<int, bool> messageClicks = new Dictionary<int, bool>();
     private MudTextField<string> messageField = default!;
-    private int? HighlightedMessageId;
     private IDisposable _subscription;
     private const int PAGE_SIZE = 50; 
     private int currentPage = 1;
@@ -152,6 +250,8 @@
     private bool finishedLoading = false;
     private bool _isInitialScrollComplete = false;
     private bool _isLoading;
+    private List<QuickMessage> quickMessages = new List<QuickMessage>();
+    private MudFileUpload<IBrowserFile> _fileUploadReference;
     private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
     ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
@@ -172,6 +272,9 @@
     }
     protected override async Task OnInitializedAsync()
     {
+        if (!isClientView)
+            quickMessages = await QuickMessageService.GetAllMessagesAsync();
+
         ProjectState.OnChange += HandleProjectChange;
         await LoadMessages(true);
         await MarkMessagesAsRead();
@@ -189,7 +292,9 @@
 
             }
         });
-        await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+
+        await Task.Delay(250);
+        await JSRuntime.InvokeVoidAsync("scrollToBottom");
         await JSRuntime.InvokeVoidAsync("setupInitialScrollListener", DotNetObjectReference.Create(this));
         await JSRuntime.InvokeVoidAsync("document.body.classList.add", "chat-open");
 
@@ -199,6 +304,8 @@
         try
         {
             _isLoading = true;
+            IsDragging = false;
+
             UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
             await SendMessage(UploadedFileUrl);
         }
@@ -209,8 +316,86 @@
         }
         finally{
             _isLoading = false;
+            ClearDragClass();
         }
 
+    }
+    private async Task<bool> SendMessage(QuickMessage message)
+    {
+        _isLoading = true;
+        try
+        {
+            if (message.Preapproved)
+            {
+                OpenQuickMessages();
+                await ChatService.AddMessageAsync(Project.ProjectId, UserId, message.Content!, false);
+                await MarkMessagesAsRead();
+                _isLoading = false;
+                return true;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to send message", Severity.Error);
+            Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
+            _isLoading = false;
+            return false;
+        }
+        
+    }
+    private async Task<bool> SendMessage(string messageToSend)
+    {
+        _isLoading = true;
+        newMessage = string.Empty;
+        await messageField.BlurAsync();
+        if (string.IsNullOrWhiteSpace(messageToSend))
+            messageToSend = newMessage;
+
+        await messageField.Clear();
+        await messageField.FocusAsync();
+
+
+        if (string.IsNullOrWhiteSpace(messageToSend))
+        {
+
+            Snackbar.Add("Message cannot be empty", Severity.Warning);
+            _isLoading = false;
+            return false;
+        }
+        try
+        {
+            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, messageToSend, isEditorView);
+            await MarkMessagesAsRead();
+            _isLoading = false;
+            _preventDefault = false;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to send message", Severity.Error);
+            Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
+            _isLoading = false;
+            return false;
+        }
+    }
+    bool _preventDefault;
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+
+        if ( _preventDefault = e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage(newMessage);
+        }
+        if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
+        {
+            await NavigateBack();
+        }
+
+    }
+    private async Task MarkMessagesAsRead()
+    {
+        await ChatService.MarkMessagesAsReadAsync(Project.ProjectId, UserId);
     }
     private void ToggleClick(int messageId)
     {
@@ -222,6 +407,11 @@
         {
             messageClicks[messageId] = true; // Show for new messages
         }
+    }
+    bool _openQuickMessage;
+    private void OpenQuickMessages()
+    {
+        _openQuickMessage = !_openQuickMessage;
     }
     private async Task LoadMessages(bool initial = true)
     {
@@ -293,37 +483,43 @@
 
     }
 
-    private async Task MarkMessagesAsRead()
+    private async Task DeleteQuickMessage(QuickMessage message)
     {
-        await ChatService.MarkMessagesAsReadAsync(Project.ProjectId, UserId);
-    }
-    private async Task<bool> SendMessage(string newMessage)
-    {
-        _isLoading = true;
-        await messageField.BlurAsync();
-        if (string.IsNullOrWhiteSpace(newMessage))
+        try
         {
-            Snackbar.Add("Message cannot be empty", Severity.Warning);
-            return false;
-        }
-        try 
-        {
-            await messageField.Clear();
-
-            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, newMessage, isEditorView);
-            await MarkMessagesAsRead();
-            newMessage = string.Empty;
-            await messageField.FocusAsync();
-            _isLoading = false;
-            return true;
+            await QuickMessageService.DeleteMessageAsync(message.Id);
+            quickMessages.Remove(message);
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Failed to send message", Severity.Error);
-            Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
-            return false;
+            Snackbar.Add("Failed to delete message", Severity.Error);
+            Logger.LogError($"Failed to delete message {ex}");
         }
     }
+    private async Task AddNewMessage()
+    {
+        try
+        {
+            var dialog = await DialogService.ShowAsync<AddQuickMessage>("");
+            var result = await dialog.Result;
+            if (result.Canceled)
+            {
+                return;
+            }
+            else
+            {
+                var message = result.Data as QuickMessage;
+                message = await QuickMessageService.CreateMessageAsync(message);
+                quickMessages.Add(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to delete message", Severity.Error);
+            Logger.LogError($"Failed to delete message {ex}");
+        }
+    }
+
 
     private async Task OnScroll(EventArgs e)
     {
@@ -407,7 +603,6 @@
         }
     }
 
-    private bool _isContextMenuOpen = false;
     private IEnumerable<string> GetMessageWithLinks(string messageContent)
     {
         return StringHelper.GetTextAndLinks(messageContent);
@@ -419,7 +614,7 @@
                 { "Message", "Are you sure you want to delete this message?" }
             };
 
-        var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
         var result = await dialog.Result;
         if (!result!.Canceled)
         {
@@ -459,7 +654,7 @@
             var result = await dialog.Result;
             if (!result.Canceled)
             {
-                var editedContent = (string) result.Data;
+                var editedContent = (string) result.Data!;
                 await ChatService.EditMessageAsync(message, Project.ProjectId, editedContent, isEditorView);
                 await LoadMessages(initial: true);
             }        
@@ -471,27 +666,7 @@
         }
     }
 
-    bool _preventDefault;
-    private async Task HandleKeyPress(KeyboardEventArgs e)
-    {
-
-        if (_preventDefault = e.Key == "Enter" && !e.ShiftKey )
-        {
-            await messageField.BlurAsync();
-            if (!string.IsNullOrWhiteSpace(newMessage))
-            {
-                var result = await SendMessage(newMessage);
-
-                await messageField.Clear();
-                // StateHasChanged();
-                await messageField.FocusAsync();
-            }
-        }
-        if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
-        {
-            await NavigateBack();
-        }
-    }
+    
     private async Task NavigateBack()
     {
         var result = await ShowConfirmationDialog();
@@ -513,7 +688,7 @@
                 { "timezoneOffsetMinutes", timezoneOffsetMinutes },
             };
             ProjectState.SetProject(null);
-            DialogService.Show<ChatProjectListDialog>("", parameters, options);
+            await DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);
 
         }
     }
@@ -536,7 +711,7 @@
                 { "Message", "There is an unsent message. Are you sure you want to close?" }
             };
 
-            var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+            var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
 
             return await dialog.Result;
         }
@@ -557,18 +732,68 @@
             }
         }
     }
+
+
+
+    // Used to open the project brief dialog from the chat
     [Parameter] public EventCallback<Project> OnOpenProjectDialog { get; set; }
     private async Task OpenDialogFromChat(Project project)
     {
         await OnOpenProjectDialog.InvokeAsync(project);
     }
+
+
+    private void HandleDragEnter()
+    {
+        IsDragging = true;
+    }
+
+
+    private async Task OnContainerDragLeave(DragEventArgs e)
+    {
+        try{
+            bool isOverPaper = await JSRuntime.InvokeAsync<bool>(
+                "isMouseOverPaper",
+                chatContainerRef,
+                e.ClientX,
+                e.ClientY
+            );
+
+            if (!isOverPaper)
+            {
+                // Handle the actual drag leave logic here
+                IsDragging = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling drag leave: {ex}");
+        }
+    }
+    private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4";
+    private string _dragClass = DefaultDragClass;
+    private void SetDragClass() => _dragClass = $"{DefaultDragClass} mud-border-primary";
+    private void ClearDragClass() => _dragClass = DefaultDragClass;
 }
 <style>
     .mud-dialog-width-md {
         padding: 0% !important;
     }
+
+    .mud-input-control.mud-file-upload > .mud-input-control-input-container,    
+    .mud-input-control.mud-file-upload > .mud-input-control-input-container * {
+        width:100%;
+        padding:10px;
+        height:98%;
+        overflow:hidden;
+    }
 </style>
 <script>
+        function isMouseOverPaper(paperElement, clientX, clientY) {
+        const elementUnderMouse = document.elementFromPoint(clientX, clientY);
+        return paperElement.contains(elementUnderMouse);
+    }
+
     window.getTimezoneOffset = function () {
         return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
     };
