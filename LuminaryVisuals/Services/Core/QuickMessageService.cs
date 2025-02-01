@@ -23,12 +23,12 @@ public class QuickMessageService
     /// </summary>
     /// <returns>A collection of QuickMessage objects. If an error occurs during retrieval, the exception is logged and rethrown.</returns>
     /// <exception cref="Exception">Thrown when database access fails.</exception>
-    public IEnumerable<QuickMessage> GetAllMessages()
+    public async Task<List<QuickMessage>> GetAllMessagesAsync()
     {
         using var context = _contextFactory.CreateDbContext();
         try
         {
-            return context.QuickMessages.ToList();
+            return   await context.QuickMessages.ToListAsync();
         }
         catch (Exception ex)
         {
@@ -43,18 +43,14 @@ public class QuickMessageService
     /// <param name="isApproved">Boolean indicating whether the message is pre-approved</param>
     /// <returns>A Task representing the asynchronous operation</returns>
     /// <exception cref="Exception">Thrown when message creation or database save fails</exception>
-    public async Task CreateMessageAsync(string content, bool isApproved)
+    public async Task<QuickMessage> CreateMessageAsync(QuickMessage message)
     {
         using var context = _contextFactory.CreateDbContext();
         try
         {
-            var message = new QuickMessage
-            {
-                Content = content,
-                Preapproved = isApproved
-            };
             context.QuickMessages.Add(message);
             await context.SaveChangesAsync();
+            return message;
         }
         catch (Exception ex)
         {

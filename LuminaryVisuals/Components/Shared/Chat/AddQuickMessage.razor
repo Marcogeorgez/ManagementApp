@@ -1,0 +1,47 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudForm @ref="addMessageForm">
+            <MudTextField @bind-Value="newMessageContent" 
+                        Label="Message Content" 
+                        Required="true"
+                        RequiredError="Message content is required"
+                        Variant="Variant.Outlined"
+                        Class="mb-4" />
+            
+            <MudCheckBox @bind-Value="isPreapproved" 
+                       Label="Preapproved" 
+                       Color="Color.Info" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Default">Cancel</MudButton>
+        <MudButton OnClick="Save" Color="Color.Primary">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    private string newMessageContent = string.Empty;
+    private bool isPreapproved;
+    private MudForm addMessageForm;
+
+    private void Cancel() => MudDialog.Close();
+
+    private async Task Save()
+    {
+        await addMessageForm.Validate();
+
+        if (addMessageForm.IsValid)
+        {
+            // Add your logic to save the new message
+            var newMessage = new QuickMessage
+                {
+                    Content = newMessageContent,
+                    Preapproved = isPreapproved
+                };
+
+            MudDialog.Close(DialogResult.Ok(newMessage));
+
+        }
+    }
+}
