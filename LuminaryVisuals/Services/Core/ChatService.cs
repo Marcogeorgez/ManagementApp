@@ -9,16 +9,14 @@ using System.Diagnostics;
 
 public class ChatService
 {
-    private readonly ApplicationDbContext context;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly IMessageNotificationService _messageNotificationService;
     private readonly INotificationService _notificationService;
     private readonly UserManager<ApplicationUser> _userManager;
 
 
-    public ChatService(ApplicationDbContext context, IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService, UserManager<ApplicationUser> userManager)
+    public ChatService(IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService, UserManager<ApplicationUser> userManager)
     {
-        this.context = context;
         _contextFactory = contextFactory;
         _messageNotificationService = messageNotificationService;
         _notificationService = notificationService;
