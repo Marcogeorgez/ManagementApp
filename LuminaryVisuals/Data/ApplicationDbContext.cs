@@ -22,6 +22,8 @@ namespace LuminaryVisuals.Data
         public DbSet<Archive> Archives { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<QuickMessage> QuickMessages { get; set; }
+
         public DbSet<ChatReadStatus> ChatReadStatus { get; set; }
 
         public DbSet<UserNote> UserNote { get; set; }
