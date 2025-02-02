@@ -150,25 +150,47 @@ public class NotificationService : BackgroundService, INotificationService
         }
 
     }
-    public async Task ClientPreferencesUpdated(ApplicationUser User,string UserId)
+    public async Task ClientPreferencesUpdated(ApplicationUser clientUser,string UserId, Dictionary<string, string> newClientPreferences)
     {
         try
         {
             using var scope = _serviceProvider.CreateScope();
             var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
+            var projectService = scope.ServiceProvider.GetRequiredService<ProjectService>();
 
-            var adminUsers = await userService.GetAllAdminsAsync();
+            // Fetch admin users and extract IDs directly
+            var adminUsersIds = ( await userService.GetAllAdminsAsync() )
+                .Select(u => u.Id)
+                .ToHashSet(); // HashSet to ensures uniqueness
 
-            foreach (var admin in adminUsers)
+            // Fetch projects and extract editor IDs for scheduled/working/revision projects
+            var editorIds = ( await projectService.GetProjectsForClients(false, clientUser.Id) )
+                .Where(p => p.Status == ProjectStatus.Scheduled
+                    || p.Status == ProjectStatus.Working
+                    || p.Status == ProjectStatus.Revision)
+                .SelectMany(p => new[] { p.PrimaryEditorId, p.SecondaryEditorId })
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToHashSet();
+
+            // Combine both sets
+            adminUsersIds.UnionWith(editorIds);
+
+            // Convert the result to a list if needed
+            List<string> users = adminUsersIds.ToList();
+
+            foreach (var user in users)
             {
-                if (UserId != admin.Id)
+                if (UserId != user)
                 {
                     var notificationItem = new NotificationQueueItem
                     {
-                        UserId = admin.Id,
-                        Subject = $"Client {User.UserName} Preferences Updated at Synchron ⚡",
+                        UserId = user,
+                        Subject = $"Client {clientUser.UserName} Preferences Updated at Synchron ⚡",
                         Message = $@"
-                            <p>The user <strong>{User.UserName}</strong> with email {User.Email} has updated their preferences.
+                            <p>The user <strong>{clientUser.UserName}</strong> with email {clientUser.Email} has updated their preferences.
+                            <br> The new preferences are: <br> {string.Join("<br>", newClientPreferences.Select(kvp => $"<strong>{kvp.Key}</strong>: {kvp.Value}"))}
+
+
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a> please review to stay up to date.</p>",
                         CreatedAt = DateTime.UtcNow
                     };
@@ -348,7 +370,6 @@ public class NotificationService : BackgroundService, INotificationService
             await ProcessNotificationQueue();
             int delayMinutes = _configuration.GetValue("EMAIL_SEND_DELAY_MINUTES", 30); // Default to 30 minutes if not set
             TimeSpan delayTimeSpan = TimeSpan.FromMinutes(delayMinutes);
-            Console.WriteLine(delayMinutes);
             await Task.Delay(delayTimeSpan, stoppingToken);
         }
     }

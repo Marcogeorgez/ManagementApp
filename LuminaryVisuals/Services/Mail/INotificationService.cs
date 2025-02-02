@@ -4,7 +4,7 @@ namespace LuminaryVisuals.Services.Mail
 {
     public interface INotificationService
     {
-        Task ClientPreferencesUpdated(ApplicationUser User, string UserId);
+        Task ClientPreferencesUpdated(ApplicationUser User, string UserId,Dictionary<string,string> newClientPreferences);
         Task NewUserJoinedNoitifcation(ApplicationUser User);
         Task QueueChatNotification(Project project, Message message);
         Task QueueProjectCreationNotification(Project project);

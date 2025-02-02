@@ -42,9 +42,9 @@
 
 
                     <MudTextField Class="mx-10 my-8" T="string" Clearable=true MaxLines=6 Label="Dropbox Preview Folder Path:"
-                                  @bind-Value="preferences.PreviewFolderPath" Variant="Variant.Outlined" Placeholder="Path to preview dropbox folder. Ex: FirstFolder/SecondFolder/" />
+                    @bind-Value="preferences.PreviewFolderPath" Variant="Variant.Outlined" Placeholder="Path to preview dropbox folder. Ex: FirstFolder/SecondFolder/" />
                     <MudTextField Class="mx-10" T="string" Clearable=true MaxLines=6 Label="Dropbox Paid Folder Path:"
-                                  @bind-Value="preferences.PaidFolderPath" Variant="Variant.Outlined" Placeholder="Path to paid dropbox folder. Ex: FirstFolder/SecondFolder/" />
+                    @bind-Value="preferences.PaidFolderPath" Variant="Variant.Outlined" Placeholder="Path to paid dropbox folder. Ex: FirstFolder/SecondFolder/" />
 
                 }
                 else{
@@ -342,13 +342,14 @@
 
 
     private ClientEditingGuidelines? preferences = new();
+    private ClientEditingGuidelines? originalPreferences = new();
 
     [Inject] PayoneerSettingsService payoneerSettingsService { get; set; }
     private PayoneerSettings? payoneerSettings = new();
 
     [Parameter] public ClaimsPrincipal? currentUser { get; set; }
     private string? _currentUserId; // current user id to check if he is an admin/client
-    
+
     [Parameter] public string userId { get; set; } // userId which is the preferences for
 
     protected override async Task OnInitializedAsync()
@@ -356,6 +357,7 @@
         if (!string.IsNullOrEmpty(userId))
         {
             preferences = await GetPreferences(userId);
+            originalPreferences = preferences is not null ? Clone(preferences) : new();
 
             _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
             payoneerSettings = await payoneerSettingsService.GetSettingsForUserAsync(userId);
@@ -390,9 +392,10 @@
             await context.SaveChangesAsync();
             await payoneerSettingsService.UpdateSettingsAsync(payoneerSettings!);
             Snackbar.Add($"We have saved your preferences successfully!", Severity.Info);
-            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId); // user which is getting updated notification for (client)
-            // _currentUserId: Id of current user (admin/client)
-            await notificationService.ClientPreferencesUpdated(user!, _currentUserId!);
+            var clientUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId); // which is getting updated notification for (client)
+                                                                                     // _currentUserId: Id of current user (admin/client)
+            var changedProperties = GetChangedProperties();
+            await notificationService.ClientPreferencesUpdated(clientUser!, _currentUserId!,changedProperties);
         }
         catch (Exception ex)
         {
@@ -418,9 +421,66 @@
             return new ClientEditingGuidelines();
         }
     }
-    
+
     private void OnValidated()
     {
         Console.WriteLine("Form validated!");
     }
+
+    private ClientEditingGuidelines Clone(ClientEditingGuidelines source)
+    {
+        return new ClientEditingGuidelines
+            {
+                Id = source.Id,
+                UserId = source.UserId,
+                VideoStructure = source.VideoStructure,
+                CrossFades = source.CrossFades,
+                FadeToBlack = source.FadeToBlack,
+                BlackAndWhite = source.BlackAndWhite,
+                DoubleExposure = source.DoubleExposure,
+                MaskingTransitions = source.MaskingTransitions,
+                LensFlares = source.LensFlares,
+                OldFilmLook = source.OldFilmLook,
+                PictureInPicture = source.PictureInPicture,
+                OtherTransitions = source.OtherTransitions,
+                TransitionComments = source.TransitionComments,
+                UseSpeeches = source.UseSpeeches,
+                SpeechComments = source.SpeechComments,
+                SoundDesignEmphasis = source.SoundDesignEmphasis,
+                SoundDesignComments = source.SoundDesignComments,
+                musicLicensingSites = source.musicLicensingSites,
+                SongSamples = source.SongSamples,
+                ColorReferences = source.ColorReferences,
+                FilmReferences = source.FilmReferences,
+                ClientSamples = source.ClientSamples,
+                GeneralNotes = source.GeneralNotes,
+
+            };
+    }
+    private Dictionary<string, string> GetChangedProperties()
+    {
+        var changedProperties = new Dictionary<string, string>();
+
+        if (originalPreferences is null || preferences is null)
+            return changedProperties;
+
+        var properties = typeof(ClientEditingGuidelines).GetProperties();
+        foreach (var property in properties)
+        {
+            if (property.Name is "CreatedAt" or "UpdatedAt" or "Id" or "UserId" or "WebsiteLink" or "FolderLink" or "PaidFolderLink" or "PaidFolderPath" or "PreviewFolderPath")
+                continue; // Skipping metadata fields
+
+            var originalValue = property.GetValue(originalPreferences)?.ToString();
+            var newValue = property.GetValue(preferences)?.ToString();
+
+            if (originalValue != newValue)
+            {
+                var formattedPropertyName = StringHelper.AddSpacesBetweenCapitals(property.Name);
+
+                changedProperties[formattedPropertyName] = newValue ?? string.Empty;
+            }
+        }
+        return changedProperties;
+    }
+
 }
