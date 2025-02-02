@@ -7,6 +7,7 @@ using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Shared;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,10 @@ public class ProjectService
     private readonly CircuitUpdateBroadcaster _broadcaster;
     private readonly INotificationService _notificationService;
     private readonly LoggingHours loggingHours;
+    private bool IsConcurrencyConflict(DbUpdateException ex) => ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
+
+        // Check if the exception is due to a concurrency conflict (e.g., duplicate key)
+    
     public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger,
         CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService, LoggingHours loggingHours)
     {
@@ -595,26 +600,50 @@ public class ProjectService
     {
         using var context = _contextFactory.CreateDbContext();
 
-        var existingPin = await context.UserProjectPins
-            .AsTracking()
-            .FirstOrDefaultAsync(up => up.UserId == userId && up.ProjectId == projectId);
-
-        if (existingPin != null)
+        var retryCount = 3;
+        while (retryCount > 0)
         {
-            existingPin.IsPinned = isPinned; // Update existing entry
-        }
-        else
-        {
-            context.UserProjectPins.Add(new UserProjectPin
+            try
             {
-                UserId = userId,
-                ProjectId = projectId,
-                IsPinned = isPinned
-            });
-        }
+                // Begin a transaction with Serializable isolation level
+                using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
-        await context.SaveChangesAsync();
+                // Check for existing pin
+                var existingPin = await context.UserProjectPins
+                    .AsTracking()
+                    .FirstOrDefaultAsync(up => up.UserId == userId && up.ProjectId == projectId);
+
+                if (existingPin != null)
+                {
+                    existingPin.IsPinned = isPinned; // Update existing entry
+                }
+                else
+                {
+                    context.UserProjectPins.Add(new UserProjectPin
+                    {
+                        UserId = userId,
+                        ProjectId = projectId,
+                        IsPinned = isPinned
+                    });
+                }
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync(); // Commit the transaction
+                break; // Exit the retry loop if successful
+            }
+            catch (DbUpdateException ex) when (IsConcurrencyConflict(ex))
+            {
+                // Handle concurrency conflict
+                retryCount--;
+                if (retryCount == 0)
+                {
+                    throw; // Re-throw the exception if retries are exhausted
+                }
+            }
+        }
     }
+
+
 
     public async Task UpdateProjectBillableHoursAsync(Project project)
     {
