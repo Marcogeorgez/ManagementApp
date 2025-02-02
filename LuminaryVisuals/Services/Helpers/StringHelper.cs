@@ -1,10 +1,37 @@
 ﻿using System;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace LuminaryVisuals.Services.Helpers
 {
     public static class StringHelper
     {
+
+        /// <summary>
+        /// Converts a string to title case by adding empty space between words.
+        /// ex: "HelloWorld" -> "Hello World"
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns>Title Case String</returns>
+        public static string AddSpacesBetweenCapitals(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            var result = new StringBuilder();
+            result.Append(input[0]); // Add the first character
+
+            for (int i = 1; i < input.Length; i++)
+            {
+                if (char.IsUpper(input[i]))
+                {
+                    result.Append(' '); // Add a space before the capital letter
+                }
+                result.Append(input[i]); // Add the current character
+            }
+
+            return result.ToString();
+        }
         /// <summary>
         /// Checks if a given string is a link based on certain patterns.
         /// </summary>
