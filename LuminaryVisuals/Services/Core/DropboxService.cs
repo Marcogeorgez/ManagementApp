@@ -156,6 +156,7 @@ public class DropboxService
         {
             // Uses the SharedLinkSettings constructor to set the visibility
             var settings = new SharedLinkSettings(
+               allowDownload:false,
                expires: null,
                linkPassword: null,
                requestedVisibility: RequestedVisibility.Public.Instance);
