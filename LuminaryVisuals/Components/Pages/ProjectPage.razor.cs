@@ -225,7 +225,7 @@ namespace LuminaryVisuals.Components.Pages
             var dialog = await DialogService.ShowAsync<ColumnPreferencesDialog>("Column Preferences", parameters);
             var result = await dialog.Result;
 
-            if (!result.Canceled)
+            if (!result!.Canceled)
             {
                 if (result.Data is ColumnPreferenceResult presetResult)
                 {
@@ -237,7 +237,7 @@ namespace LuminaryVisuals.Components.Pages
                 }
                 else
                 {
-                    _columnVisibility = (Dictionary<string, bool>) result.Data;
+                    _columnVisibility = (Dictionary<string, bool>) result.Data!;
                 }
                 StateHasChanged();
             }
@@ -473,7 +473,7 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<EditSelected>("Create New Project", dialogParameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
                     var modifiedProjects = result.Data as HashSet<Project>;
                     if (modifiedProjects != null)
@@ -626,7 +626,7 @@ namespace LuminaryVisuals.Components.Pages
                 }
         };
             var options = new DialogOptions { };
-            DialogService.Show<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
+            DialogService.ShowAsync<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
             LoadingService.HideLoading();
 
         }
@@ -652,7 +652,7 @@ namespace LuminaryVisuals.Components.Pages
             { "userId", context.ClientId },
         };
             var options = new DialogOptions { FullScreen = false };
-            DialogService.Show<ViewClientEditingGuidelinesComponent>("Client Preferences", parameters, options);
+            DialogService.ShowAsync<ViewClientEditingGuidelinesComponent>("Client Preferences", parameters, options);
             LoadingService.HideLoading();
 
         }
@@ -798,6 +798,16 @@ namespace LuminaryVisuals.Components.Pages
                 }
                 else if (_isAdminView)
                 {
+                    var editorId = beforeModification.PrimaryEditorId;
+                    if (editorId != project.PrimaryEditorId && editorId == null)
+                    {
+                        bool isConfirm = await ConfirmationService.Confirm($"Do you want to change project status from {project.FormatStatus} to `Scheduled` status?");
+                        if (isConfirm)
+                        {
+                            project.Status = ProjectStatus.Scheduled;
+                        }
+                    }
+                    project = await confirmProjectStatusDelivered(project);
                     await UpdateProjectAsync(project);
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
@@ -815,6 +825,7 @@ namespace LuminaryVisuals.Components.Pages
                                 return;
                             }
                         }
+                        project = await confirmProjectStatusDelivered(project);
                         await UpdateProjectAsync(project);
                         Snackbar.Add($"Successfully updated the project", Severity.Info);
                     }
@@ -1374,9 +1385,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<ClientNameDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    var _project = (Project) result.Data;
+                    var _project = (Project) result.Data!;
                     await UpdateProjectAsync(_project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1406,9 +1417,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<ProjectLink>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    var _project = (Project) result.Data;
+                    var _project = (Project) result.Data!;
                     await UpdateProjectAsync(_project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1436,9 +1447,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<ProgressEditDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.ProgressBar = (int) result.Data;
+                    project.ProgressBar = (int) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1463,9 +1474,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<ShootDateEditDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.ShootDate = (DateTime) result.Data;
+                    project.ShootDate = (DateTime) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1494,9 +1505,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<DueDateDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    (project.DueDate, project.IsUrgent) = ((DateTime, bool)) result.Data;
+                    (project.DueDate, project.IsUrgent) = ((DateTime, bool)) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1524,9 +1535,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<WorkingMonthDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.WorkingMonth = (DateTime) result.Data;
+                    project.WorkingMonth = (DateTime) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1555,16 +1566,17 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<StatusDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.Status = (ProjectStatus) result.Data;
-                    if(project.Status == ProjectStatus.Delivered && _isEditorView)
+                    project.Status = (ProjectStatus) result.Data!;
+                    if (project.Status == ProjectStatus.Delivered && _isEditorView)
                     {
                         if (!await ConfirmationService.Confirm($"Make sure you have summitted the projects deliverables information in the calculator or if it's a non wedding project make sure to write it down to the private notes"))
                         {
                             return;
                         }
                     }
+                    project = await confirmProjectStatusDelivered(project);
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1578,6 +1590,18 @@ namespace LuminaryVisuals.Components.Pages
                 Console.WriteLine($"Error updating status: {ex.Message}");
             }
         }
+        private async Task<Project> confirmProjectStatusDelivered(Project project)
+        {
+            if (project.Status == ProjectStatus.Delivered)
+            {
+                bool isConfirm = await ConfirmationService.Confirm($"Do you want to change payment status from {project.FormatAdminStatus} to `Delivered Not Paid` status?");
+                if (isConfirm)
+                {
+                    project.AdminStatus = AdminProjectStatus.Delivered_Not_Paid;
+                }
+            }
+            return project;
+        }
         private async Task OpenAdminStatusDialog(Project project)
         {
             try
@@ -1590,9 +1614,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<AdminStatusDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.AdminStatus = (AdminProjectStatus) result.Data;
+                    project.AdminStatus = (AdminProjectStatus) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
                 }
@@ -1617,9 +1641,18 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<PrimaryEditorDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.PrimaryEditorId = (string) result.Data;
+                    var editorId = project.PrimaryEditorId;
+                    project.PrimaryEditorId = (string) result.Data!;
+                    if(editorId != project.PrimaryEditorId && editorId == null)
+                    {
+                        bool isConfirm = await ConfirmationService.Confirm($"Do you want to change project status from {project.FormatStatus} to `Scheduled` status?");
+                        if (isConfirm)
+                        {
+                            project.Status = ProjectStatus.Scheduled;
+                        }
+                    }
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1645,9 +1678,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<SecondaryEditorDialog>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.SecondaryEditorId = (string) result.Data;
+                    project.SecondaryEditorId = (string) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1672,9 +1705,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<SecondaryEditorPaymentDate>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.SecondaryEditorDetails.DatePaidEditor = (DateTime?) result.Data;
+                    project.SecondaryEditorDetails.DatePaidEditor = (DateTime?) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1698,9 +1731,9 @@ namespace LuminaryVisuals.Components.Pages
                 var dialog = await DialogService.ShowAsync<PrimaryEditorPaymentDate>("", parameters);
                 var result = await dialog.Result;
 
-                if (!result.Canceled)
+                if (!result!.Canceled)
                 {
-                    project.PrimaryEditorDetails.DatePaidEditor = (DateTime?) result.Data;
+                    project.PrimaryEditorDetails.DatePaidEditor = (DateTime?) result.Data!;
                     await UpdateProjectAsync(project);
                     Snackbar.Add("Saved Successfully", Severity.Success);
 
