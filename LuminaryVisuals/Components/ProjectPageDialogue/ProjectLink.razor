@@ -116,22 +116,24 @@
             {
                 await DropboxService.MoveFolderContentsAsync(previewPath, paidPath!);
                 project.IsPreview = false;
+                Snackbar.Add("Folder has been moved to Paid Folder", Severity.Success);
 
             }
             else if (MoveAction == MoveOption.ToPreview)
             {
                 await DropboxService.MoveFolderContentsAsync(paidPath, previewPath!);
                 project.IsPreview = true;
+                Snackbar.Add("Folder has been moved to Preview Folder", Severity.Success);
             }
             if (project.IsPreview == null || project.IsPreview == false) // Assume it's in paid folder and enable downloading the link
             {
-                project.Link = DropboxService.CreateSharableDownloadLinkAsync(Path.Combine(paidPath,projectDateName));
+                project.Link = DropboxService.CreateSharableDownloadLinkAsync($"{paidPath}/{projectDateName}");
                 project.IsPreview = false;
 
             }
             else // If it's in preview folder, enable viewing the link and disable downloading
             {
-                project.Link = DropboxService.CreateViewOnlySharableLinkAsync(Path.Combine(previewPath,projectDateName));
+                project.Link = DropboxService.CreateViewOnlySharableLinkAsync($"{previewPath}/{projectDateName}");
                 project.IsPreview = true;
             }
             Snackbar.Add("Link Generated", Severity.Success);

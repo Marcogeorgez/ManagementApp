@@ -199,7 +199,7 @@ public class DropboxService
 
             foreach (var item in listResult.Entries)
             {
-                var destinationPath = Path.Combine(toPath, item.Name);
+                var destinationPath = $"{toPath}/{item.Name}";
                 await _client.Files.MoveV2Async(item.PathLower, destinationPath);
             }
         }
