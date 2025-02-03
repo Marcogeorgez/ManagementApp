@@ -1250,3 +1250,17 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
 .mud-chip-outlined.mud-chip-color-success{
     border-width: 2px !important;
 }
+.quick-message {
+    border-width: 2px;
+    border-radius: 8px;
+    border-color: var(--mud-palette-success);
+    color: var(--mud-palette-success);
+    padding: 2px 6px 2px 6px;
+}
+.quick-message:hover {
+    background-color: var(--mud-palette-success);
+    border-color: var(--mud-palette-success);
+    color: white;
+    transition: background-color 250ms cubic-bezier(0.3, 0, 0.2, 1);
+    box-shadow: 0px 5px 5px -3px rgba(0,0,0,.2),0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12);
+}
