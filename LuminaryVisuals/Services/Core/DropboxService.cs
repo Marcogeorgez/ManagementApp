@@ -125,14 +125,35 @@ public class DropboxService
 
         try
         {
-            var sharedLink = _client.Sharing.CreateSharedLinkWithSettingsAsync(path).Result;
-            return sharedLink.Url;
-        }
-        catch (AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsSharedLinkAlreadyExists)
-        {
-            // If a shared link already exists, return the existing link
-            var sharedLinks = _client.Sharing.ListSharedLinksAsync(path).Result;
-            return sharedLinks.Links[0].Url;
+            // Check if a shared link already exists
+            var sharedLinks = _client.Sharing.ListSharedLinksAsync(path, directOnly: true).Result;
+            if (sharedLinks.Links.Count > 0)
+            {
+                foreach (var link in sharedLinks.Links)
+                {
+                    // Check if the existing link allows downloads
+                    if (link.LinkPermissions?.AllowDownload != true)
+                    {
+                        // If it doesn't allow downloads, revoke the link
+                        _client.Sharing.RevokeSharedLinkAsync(link.Url).Wait();
+                    }
+                    else
+                    {
+                        // If it's already downloadable, return the existing link
+                        return link.Url;
+                    }
+                }
+            }
+
+            // Create a new shared link with the desired settings
+            var settings = new SharedLinkSettings(
+                allowDownload: false, // Ensure the new link is non-downloadable
+                expires: null,
+                linkPassword: null,
+                requestedVisibility: RequestedVisibility.Public.Instance);
+
+            var shareResult = _client.Sharing.CreateSharedLinkWithSettingsAsync(path, settings).Result;
+            return shareResult.Url;
         }
         catch (AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsPath)
         {
@@ -140,10 +161,14 @@ public class DropboxService
             throw new FileNotFoundException($"The path '{path}' was not found. Please recheck if the folder is uploaded or " +
                 $"if it's in the correct path.", aex);
         }
+        catch (AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsSettingsError)
+        {
+            throw new Exception("You don't have permission to do this, please check if Dropbox subscription has run-out and contact manager.");
+        }
         catch (Exception ex)
         {
             // Log any other exceptions
-            throw new Exception("Failed to create a view-only sharable link. please contact manager.", ex);
+            throw new Exception("Failed to create a sharable link. Please contact manager.", ex);
         }
     }
 
@@ -154,21 +179,35 @@ public class DropboxService
 
         try
         {
-            // Uses the SharedLinkSettings constructor to set the visibility
+            // Check if a shared link already exists
+            var sharedLinks = _client.Sharing.ListSharedLinksAsync(path, directOnly: true).Result;
+            if (sharedLinks.Links.Count > 0)
+            {
+                foreach (var link in sharedLinks.Links)
+                {
+                    // Check if the existing link allows downloads
+                    if (link.LinkPermissions?.AllowDownload == true)
+                    {
+                        // If it allows downloads, revoke the link
+                        _client.Sharing.RevokeSharedLinkAsync(link.Url).Wait();
+                    }
+                    else
+                    {
+                        // If it's already non-downloadable, return the existing link
+                        return link.Url;
+                    }
+                }
+            }
+
+            // Create a new shared link with the desired settings
             var settings = new SharedLinkSettings(
-               allowDownload:false,
-               expires: null,
-               linkPassword: null,
-               requestedVisibility: RequestedVisibility.Public.Instance);
+                allowDownload: false, // Ensure the new link is non-downloadable
+                expires: null,
+                linkPassword: null,
+                requestedVisibility: RequestedVisibility.Public.Instance);
 
             var shareResult = _client.Sharing.CreateSharedLinkWithSettingsAsync(path, settings).Result;
             return shareResult.Url;
-        }
-        catch (AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsSharedLinkAlreadyExists)
-        {
-            // If a shared link already exists, return the existing link
-            var sharedLinks = _client.Sharing.ListSharedLinksAsync(path).Result;
-            return sharedLinks.Links[0].Url;
         }
         catch (AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsPath)
         {
@@ -176,17 +215,16 @@ public class DropboxService
             throw new FileNotFoundException($"The path '{path}' was not found. Please recheck if the folder is uploaded or " +
                 $"if it's in the correct path.", aex);
         }
-        catch(AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsSettingsError)
+        catch (AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsSettingsError)
         {
             throw new Exception("You don't have permission to do this, please check if Dropbox subscription has run-out and contact manager.");
         }
         catch (Exception ex)
         {
             // Log any other exceptions
-            throw new Exception("Failed to create a view-only sharable link. please contact manager.", ex);
+            throw new Exception("Failed to create a view-only sharable link. Please contact manager.", ex);
         }
     }
-
     // Move the contents of a folder to another folder
     public async Task MoveFolderContentsAsync(string fromPath, string toPath)
     {
