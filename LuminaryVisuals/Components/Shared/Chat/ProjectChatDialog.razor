@@ -148,7 +148,7 @@
                                     {
                                         <MudText Class="d-flex mx-4 my-2">
                                             <ChildContent>
-                                                <span style="cursor:pointer;"  @onclick="() => SendMessage(item!)">@item.Content</span>
+                                                <span class="quick-message" style="cursor:pointer;"  @onclick="() => SendMessage(item!)">@item.Content</span>
                                                 @if (isAdminView)
                                                 {
                                                     <MudSpacer />
@@ -170,7 +170,7 @@
                                     {
                                         <MudText Class="d-flex mx-4 my-2" >
                                             <ChildContent>
-                                                <span style="cursor:pointer;" @onclick="() => newMessage = item.Content!">@item.Content</span>
+                                                <span class="quick-message"  style="cursor:pointer;" @onclick="() => newMessage = item.Content!">@item.Content</span>
                                                 @if (isAdminView)
                                                 {
                                                     <MudSpacer />
