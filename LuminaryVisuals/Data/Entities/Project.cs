@@ -74,7 +74,7 @@ public class Project
     public bool IsPaymentVisible { get; set; } = false;
     public bool IsUrgent { get; set; } = false;
     public bool IsUrgentDueDate { get; set; } = false;
-    public bool? IsPreview { get; set; }
+    public bool IsPreview { get; set; } = false;
     public SubmissionStatus SubmissionStatus { get; set; } = SubmissionStatus.Pending;
 
 

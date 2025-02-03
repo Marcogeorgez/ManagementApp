@@ -4,38 +4,56 @@
 
         <MudStack Spacing="4">
             <!-- Preview Toggle -->
-            <MudCheckBox T="bool?" Label="Preview Mode" 
-            TriState="true" @bind-Value="@project.IsPreview"
-            Color="Color.Info" Class="mb-2" />
+            <MudText> Is the folder inside Preview Folder? </MudText>
+            <MudCheckBox T="bool" Label="@(project.IsPreview ? "Yes" : "No")" 
+            @bind-Value="@project.IsPreview"
+            Color="Color.Info" Class="mb-2 mt-n4" />
 
-            <!-- Movement Options -->
-            <MudRadioGroup @bind-Value="@MoveAction" Name="Transfer Options:" Class="mb-2" >
-                <MudRadio Value="@MoveOption.None">Don't Move</MudRadio>
-                <MudRadio Value="@MoveOption.ToPaid"  Disabled="@(project.IsPreview == false)">Preview → Paid</MudRadio>
-                <MudRadio Value="@MoveOption.ToPreview" Disabled="@(project.IsPreview == true)">Paid → Preview</MudRadio>
-            </MudRadioGroup>
-
-            <!-- Link Generation -->
-            <MudGrid>
-                <MudItem xs="12" sm="8">
-                    <MudTextField Label="Project Link" 
-                    Variant="Variant.Outlined"
-                    @bind-Value="@project.Link"
-                    AdornmentText="@((project.IsPreview ?? false) ? "🔗" : "")"
-                    AdornmentIcon="@((project.IsPreview ?? false) ? Icons.Material.Filled.Link : null)"
-                    AdornmentAriaLabel="Project link"
-                    Class="flex-grow-1" />
-                </MudItem>
+            <!-- Actions -->
+            <MudText >Actions</MudText>
+            <MudGrid Spacing="3">
                 <MudItem xs="12" sm="4" Class="d-flex align-center">
-                    <MudButton Variant="Variant.Filled" 
-                    Color="Color.Primary" 
+                    <MudButton Variant="Variant.Outlined"
+                    Color="Color.Success"
                     StartIcon="@Icons.Material.Filled.Link" Disabled="isLoading"
                     OnClick="GenerateLink"
                     FullWidth="true"
-                    Class="ml-2">
+                    Class="">
                         Generate
                     </MudButton>
                 </MudItem>
+                <MudItem xs="12" sm="4" Class="align-center">
+                    <MudButton Variant="Variant.Outlined"
+                    Color="Color.Info"
+                    Disabled="isLoading"
+                    OnClick="async () => await MoveFolder(paid)"
+                    FullWidth="true"
+                    Class="">
+                        Move to Paid
+                    </MudButton>
+                </MudItem>
+                <MudItem xs="12" sm="4" Class="align-center">
+                    <MudButton Variant="Variant.Outlined" 
+                    Color="Color.Error" Style="text-wrap: nowrap;"
+                    Disabled="isLoading"
+                    OnClick="async () => await MoveFolder(preview)"
+                    FullWidth="true">
+                        Move to Preview
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+            <!-- Link Generation -->
+            <MudGrid>
+                <MudItem xs="12" sm="12">
+                    <MudTextField Label="Project Link" 
+                    Variant="Variant.Outlined"
+                    @bind-Value="@project.Link"
+                    AdornmentText="🔗"
+                    AdornmentIcon="@Icons.Material.Filled.Link"
+                    AdornmentAriaLabel="Project link"
+                    Class="flex-grow-1" />
+                </MudItem>
+
             </MudGrid>
         </MudStack>
 
@@ -50,8 +68,6 @@
 </MudDialog>
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
-    enum MoveOption { None, ToPaid, ToPreview }
-    MoveOption MoveAction { get; set; } = MoveOption.None;
     [Parameter]
     public Project project { get; set; }
     private string? Text = "";
@@ -62,6 +78,14 @@
     private ClientEditingGuidelines? preferences = new();
     [Inject] IDbContextFactory<ApplicationDbContext> DbFactory { get; set; }
     [Inject] ISnackbar Snackbar { get; set; }
+    [Inject] IConfirmationService ConfirmationService { get; set; }
+
+    private string paid = "Paid";
+    private string preview = "Preview";
+    string? previewPath;
+    string? paidPath;
+    string projectDateName;
+
     protected override async Task OnInitializedAsync()
     {
         LoadingService.Subscribe(isVisible =>
@@ -71,6 +95,9 @@
         });
 
         preferences = await GetPreferences(project.ClientId);
+        previewPath = preferences?.PreviewFolderPath;
+        paidPath = preferences?.PaidFolderPath;
+        projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
     }
 
     private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
@@ -90,42 +117,82 @@
             return new ClientEditingGuidelines();
         }
     }
-    private async Task GenerateLink()
+    private async Task MoveFolder(string folder)
     {
-        if (isLoading)
-        {
-            Snackbar.Add("Currently Generating Link and Moving folder, please wait!", Severity.Warning);
-            return;
-        }
-        isLoading = true;
-        LoadingService.ShowLoading();
-        await Task.Delay(100);
         try
         {
+            if (isLoading)
+            {
+                return;
+            }
+            isLoading = true;
+            LoadingService.ShowLoading();
+            if (previewPath == null || paidPath == null)
+            {
+                if (!await ConfirmationService.Confirm($"The project is on the clients Paid folder. By choosing yes it will move it to their preview folder an they won't be able download it anymore!"))
+                {
+                    return;
+                }
 
-            string? previewPath = preferences?.PreviewFolderPath;
-            string? paidPath = preferences?.PaidFolderPath;
-            string projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
+                Snackbar.Add("Please set the folder paths in the client editing guidelines first, It's empty!!", Severity.Error);
+                return;
+            }
+
+            await Task.Delay(10);
+            if(folder == "Preview")
+            {
+                project.IsPreview = true;
+                await DropboxService.MoveFolderContentsAsync(paidPath, previewPath);
+            }
+
+            if(folder == "Paid")
+            {
+                if (!await ConfirmationService.Confirm($"Please make sure the client has paid for this project as it will be accessible by them to download. Do you want to proceed?"))
+                {
+                    return;
+                }
+                await DropboxService.MoveFolderContentsAsync(previewPath, paidPath);
+            }
+            Snackbar.Add($"Folder has been moved to {folder} Folder", Severity.Success);
+
+            if (!await ConfirmationService.Confirm($"Would you like to also generate the  new link with new setting?"))
+            {
+                return;
+            }
+            else
+            {
+                await GenerateLink();
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            LoadingService.HideLoading();
+            isLoading = false;
+        }
+    }
+    private async Task GenerateLink()
+    {
+
+        try
+        {
+            if (isLoading)
+            {
+                return;
+            }
+            isLoading = true;
+            LoadingService.ShowLoading();
+            await Task.Delay(10);
             if (previewPath == null || paidPath == null)
             {
                 Snackbar.Add("Please set the folder paths in the client editing guidelines first, It's empty!!", Severity.Error);
                 return;
             }
-            // MoveAction will decide if move the folder contents from Preview to Paid or Paid To Preview or do nothing.
-            if (MoveAction == MoveOption.ToPaid)
-            {
-                await DropboxService.MoveFolderContentsAsync(previewPath, paidPath!);
-                project.IsPreview = false;
-                Snackbar.Add("Folder has been moved to Paid Folder", Severity.Success);
-
-            }
-            else if (MoveAction == MoveOption.ToPreview)
-            {
-                await DropboxService.MoveFolderContentsAsync(paidPath, previewPath!);
-                project.IsPreview = true;
-                Snackbar.Add("Folder has been moved to Preview Folder", Severity.Success);
-            }
-            if (project.IsPreview == null || project.IsPreview == false) // Assume it's in paid folder and enable downloading the link
+            if (project.IsPreview == false) // Assume it's in paid folder and enable downloading the link
             {
                 project.Link = DropboxService.CreateSharableDownloadLinkAsync($"{paidPath}/{projectDateName}");
                 project.IsPreview = false;
