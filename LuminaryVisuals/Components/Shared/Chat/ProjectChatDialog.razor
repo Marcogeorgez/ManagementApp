@@ -29,29 +29,51 @@
             <MudContainer Class="chat-content" Gutters="false" @onscroll="OnScroll"
             @ondragenter="HandleDragEnter" @ondragleave="OnContainerDragLeave">
 
-                <MudFileUpload T="IBrowserFile" 
-                Style="@($"text-align:center;position:sticky;z-index:2; height:100%; width:100%; top:0px; {(IsDragging ? "" : "display:none;")}")"
-                @ref="@_fileUploadReference"
-                FilesChanged="UploadFiles"
-                Hidden="@false"
-                InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
-                InputStyle="opacity:0; transform: translate(-50%,0%)"
-                tabindex="-1"
-                @ondrop="@ClearDragClass"
-                @ondragenter="@SetDragClass"
-                @ondragleave="@ClearDragClass"
-                @ondragend="@ClearDragClass">
-                    <ActivatorContent>
-                        <MudPaper Style="height:95%; width:100%;" 
-                        Outlined="true"
-                        Class="@_dragClass">
-                            <MudText Typo="Typo.h6">
-                                Drag file here
-                            </MudText>
-                        </MudPaper>
-                    </ActivatorContent>
-                </MudFileUpload>
-                <div class="chat-messages">
+
+                <MudStack Style="@($"width:100%; height: 100%; z-index:10 {(IsDragging == true || _currentFile != null ? "" : "display:none;")}")">
+                    <MudFileUpload T="IBrowserFile" 
+                    Style="@($"text-align:center;position:sticky;z-index:2; height:100%; width:100%; top:0px; {(IsDragging ? "" : "display:none;")}")"
+                    @ref="@_fileUploadReference"
+                    OnFilesChanged="HandleFileChanged"
+                    MaximumFileCount="1"
+                    Hidden="@false"
+                    InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
+                    InputStyle="opacity:0; transform: translate(-50%,0%)"
+                    tabindex="-1"
+                    @ondrop="@ClearDragClass"
+                    @ondragenter="@SetDragClass"
+                    @ondragleave="@ClearDragClass"
+                    @ondragend="@ClearDragClass">
+                        <ActivatorContent>
+                            @if (_currentFile != null)
+                            {
+                                <MudPaper Style="height:97%; width:100%;" Outlined="true" Class="@_dragClass">
+                                    <MudImage Src="@_filePreviewUrl" Alt="File Preview" Fluid="true" Class="mb-4" />
+                                </MudPaper>
+                            }
+                            else
+                            {
+                                <MudPaper Style="height:95%; width:100%;"
+                                Outlined="true"
+                                Class="@_dragClass">
+                                    <MudText Typo="Typo.h6">
+                                        Drag file here
+                                    </MudText>
+                                </MudPaper>
+                            }
+                        </ActivatorContent>
+                    </MudFileUpload>
+                    @if(_currentFile != null)
+                    {
+                        <MudToolBar Gutters="@false" Class="relative d-flex justify-end gap-4 mx-5">
+                            <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Send"
+                            OnClick="Upload" Variant="Variant.Outlined" Disabled="@_isLoading">Send</MudButton>
+                            <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Cancel" 
+                            OnClick="ResetUpload" Variant="Variant.Outlined" Disabled="@_isLoading">Cancel</MudButton>
+                        </MudToolBar>
+                    }
+                </MudStack>
+                <div class="chat-messages" style="@($"{(IsDragging == true || _currentFile != null ? "display:none;" : "" )}")">
                     @if (hasMoreMessages)
                     {
                         <MudProgressCircular Color="Color.Info" Indeterminate="true" Style="margin-top:0px!important;align-self:center;position:relative;   "/>
@@ -229,17 +251,17 @@
 @code {
     private bool isMenuOpen;
     private bool IsDragging;
-    [CascadingParameter]
-    IMudDialogInstance MudDialog { get; set; }
+    [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project{ get; set; }
     [Parameter] public string UserId { get; set; }
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
     [Parameter] public int timezoneOffsetMinutes { get; set; }
-    IList<IBrowserFile> _files = new List<IBrowserFile>();
     private string? UploadedFileUrl;
     private string newMessage;
+    private string _filePreviewUrl;
     private List<Message> messages = new List<Message>();
     private Dictionary<int, bool> messageClicks = new Dictionary<int, bool>();
     private MudTextField<string> messageField = default!;
@@ -299,6 +321,46 @@
         await JSRuntime.InvokeVoidAsync("document.body.classList.add", "chat-open");
 
     }
+    private async Task<string?> GeneratePreviewUrl(IBrowserFile file)
+    {
+        var format = file.ContentType.Split('/')[0];
+        if (format == "image")
+        {
+            // Open the stream and read it fully
+            using var stream = file.OpenReadStream();
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
+            var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
+            return $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+        }
+        return null;
+    }
+    private void Upload()
+    {
+        UploadFiles(_currentFile);
+        ResetUpload();
+    }
+    private IBrowserFile _currentFile;
+    private async Task ResetUpload()
+    {
+        IsDragging = false;
+        _currentFile = null;
+        _filePreviewUrl = null;
+        StateHasChanged();
+        await Task.Delay(250);
+        await JSRuntime.InvokeVoidAsync("scrollToBottom");
+
+    }
+    private async Task HandleFileChanged(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            _currentFile = e.File;
+            _filePreviewUrl = await GeneratePreviewUrl(_currentFile);
+            IsDragging = true;
+        }
+    }
+
     private async Task UploadFiles(IBrowserFile file)
     {
         try
@@ -485,6 +547,11 @@
 
     private async Task DeleteQuickMessage(QuickMessage message)
     {
+        if (!await ConfirmationService.Confirm($"Are you sure you'd like to delete this quick message? It will be deleted for all users."))
+        {
+            return;
+        }
+
         try
         {
             await QuickMessageService.DeleteMessageAsync(message.Id);
@@ -609,6 +676,7 @@
     }
     private async Task DeleteMessage(Message message)
     {
+
         var parameters = new DialogParameters
             {
                 { "Message", "Are you sure you want to delete this message?" }
@@ -783,8 +851,8 @@
     .mud-input-control.mud-file-upload > .mud-input-control-input-container,    
     .mud-input-control.mud-file-upload > .mud-input-control-input-container * {
         width:100%;
-        padding:10px;
-        height:98%;
+        padding:4px;
+        height:100%;
         overflow:hidden;
     }
 </style>
