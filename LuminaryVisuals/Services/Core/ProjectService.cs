@@ -349,7 +349,6 @@ public class ProjectService
                 .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
             if (_project != null)
             {
-                var isChanged = false;
                 var oldStatus = _project.Status;
 
                 if (_project.ClientId != project.ClientId)
@@ -376,7 +375,6 @@ public class ProjectService
                 if (_project.PrimaryEditorId != project.PrimaryEditorId && _project.PrimaryEditorId == null)
                 {
                     _project.PrimaryEditorId = project.PrimaryEditorId;
-                    isChanged = true;
                 }
                 bool hasPrimaryEditorChanged = _project.PrimaryEditorId != null && _project.PrimaryEditorId != project.PrimaryEditorId;
                 bool isNewPrimaryEditorNull = project.PrimaryEditorId == null;
@@ -394,14 +392,6 @@ public class ProjectService
                     _project.SecondaryEditorId = project.SecondaryEditorId;
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
-                if (oldStatus != project.Status && project.Status == ProjectStatus.Delivered)
-                {
-                    _project.AdminStatus = AdminProjectStatus.Delivered_Not_Paid;
-                }
-                if (isChanged)
-                {
-                    _project.Status = ProjectStatus.Scheduled;
-                }
                 if (project.PrimaryEditorDetails != null)
                 {
                     context.Entry(_project.PrimaryEditorDetails).CurrentValues.SetValues(project.PrimaryEditorDetails);
