@@ -147,19 +147,19 @@
 
             if(folder == "Paid")
             {
+                project.IsPreview = false;
+
                 if (!await ConfirmationService.Confirm($"Please make sure the client has paid for this project as it will be accessible by them to download. Do you want to proceed?"))
                 {
                     return;
                 }
                 await DropboxService.MoveFolderContentsAsync(previewPath, paidPath);
+
             }
             Snackbar.Add($"Folder has been moved to {folder} Folder", Severity.Success);
 
-            if (!await ConfirmationService.Confirm($"Would you like to also generate the  new link with new setting?"))
-            {
-                return;
-            }
-            else
+            bool isGenerateLink = await ConfirmationService.Confirm($"Would you like to also generate the  new link with new setting?");
+            if (isGenerateLink)
             {
                 await GenerateLink();
             }
@@ -180,10 +180,6 @@
 
         try
         {
-            if (isLoading)
-            {
-                return;
-            }
             isLoading = true;
             LoadingService.ShowLoading();
             await Task.Delay(10);

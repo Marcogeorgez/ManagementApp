@@ -147,9 +147,6 @@ public class DropboxService
 
             // Create a new shared link with the desired settings
             var settings = new SharedLinkSettings(
-                allowDownload: false, // Ensure the new link is non-downloadable
-                expires: null,
-                linkPassword: null,
                 requestedVisibility: RequestedVisibility.Public.Instance);
 
             var shareResult = _client.Sharing.CreateSharedLinkWithSettingsAsync(path, settings).Result;
