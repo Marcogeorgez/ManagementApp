@@ -176,6 +176,10 @@ public class DropboxService
             throw new FileNotFoundException($"The path '{path}' was not found. Please recheck if the folder is uploaded or " +
                 $"if it's in the correct path.", aex);
         }
+        catch(AggregateException ex) when (ex.InnerException is ApiException<CreateSharedLinkWithSettingsError> aex && aex.ErrorResponse.IsSettingsError)
+        {
+            throw new Exception("You don't have permission to do this, please check if Dropbox subscription has run-out and contact manager.");
+        }
         catch (Exception ex)
         {
             // Log any other exceptions
