@@ -467,6 +467,10 @@ th.mud-table-cell.sticky-left:hover {
 }
 
 @media (max-width: 960px) {
+    .projects-list {
+        padding-top: 40px !important;
+        padding-left:5px !important;
+    }
     .project-item {
         padding-top: 3px !important;
         padding-bottom: 3px !important;
@@ -541,12 +545,12 @@ th.mud-table-cell.sticky-left:hover {
 .project-container {
     display: flex;
     align-items: center;
-    margin: 5px 5%;
-    flex: 1 1 auto;
+    margin: calc(3% - 12px) 5%;
     min-width: 0;
     max-width: 100%;
     transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
+
 .project-container.slide-enter, .project-container.slide-leave-to {
     transform: translateX(-100%);
     opacity: 0;
@@ -569,6 +573,7 @@ th.mud-table-cell.sticky-left:hover {
     overflow-y: auto;
     gap: clamp(5px, 5px, 10%);
     padding: 10px 0;
+    flex: 1 1;
 }
 
 .project-item {
@@ -579,7 +584,7 @@ th.mud-table-cell.sticky-left:hover {
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     position: relative;
     margin: 0px 15px 0px 10px;
-    max-height: 45px;
+    height: calc(8vh - 21px) !important;
     flex: 1 1 auto;
 }
 
