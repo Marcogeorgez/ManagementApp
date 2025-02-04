@@ -17,7 +17,7 @@
     <MudAppBar Elevation="2" Dense="true" Style="margin-left: 0px !important; position:relative; margin-bottom:10px;">
         <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
             <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " Style="margin-left:35vw" />
+            <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " />
         </MudHidden>
 
         <MudSpacer />
@@ -33,9 +33,8 @@ OpenMiniOnHover="true"  Elevation="0" >
         <div class="mud-nav-item" style="justify-content:center !important;" >
             <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
                 <MudIconButton style="margin-left:5px;" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-                <div aria-hidden="true" style="flex-grow:.42 !important"></div>
                 </MudHidden>
-            <MudImage Style="margin:8px 9px 2px 14px;" Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-2" />
+            <MudImage Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-5 mt-3" />
             <MudSpacer />
 
             <div class="mud-nav-link-text" style="margin:13px -10px 1px 1px;padding-left:4px; display:none;"></div>

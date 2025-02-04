@@ -30,17 +30,17 @@
 
                             <MudBadge Style="width:100%;" Icon="@(project.IsPinned ? @Icons.Material.Outlined.PushPin : @Icons.Material.Filled.PushPin)" Origin="Origin.CenterLeft" BadgeClass="@(project.IsPinned ? "pinned-badge" : "")" Bordered=true Color="@(project.IsPinned ? Color.Error:Color.Info)" OnClick="() => PinChat(project)" >
 
-                        <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)" Ripple="false">
+                                <MudListItem @key="project.ProjectId" Class="@classText" OnClick="() => OpenProjectChat(project)" Ripple="false">
 
-                            <div class="project-content">
+                                    <div class="project-content">
 
-                                <MudText style="max-width:90%;" Typo="Typo.body1">@(isAdminView || isEditorView ? $"{project.Client.UserName} | {project.ProjectName}" : project.ProjectName)</MudText>
-                                <MudText Typo="Typo.caption" Class="message-timestamp">
-                                    @ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
-                                </MudText>
-                            </div>
-                        </MudListItem>
-                        </MudBadge>
+                                        <MudText style="max-width:90%;" Typo="Typo.body1">@(isAdminView || isEditorView ? $"{project.Client.UserName} | {project.ProjectName}" : project.ProjectName)</MudText>
+                                        <MudText Typo="Typo.caption" Class="message-timestamp">
+                                            @ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
+                                        </MudText>
+                                    </div>
+                                </MudListItem>
+                            </MudBadge>
                         </MudBadge>
                     </div>
                 }
@@ -53,9 +53,16 @@
             </MudList>
 
         }
+        else if(!finishLoading)
+        {
+            <div class="d-flex align-center align-content-center justify-center ">
+                <MudText Typo="Typo.h5" Color="Color.Info" Class="ma-5">Currently Loading Your Chats. Please wait for few seconds.</MudText>
+                <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+            </div>
+        }
         else
         {
-            <MudAlert Severity="Severity.Normal" Class="no-projects-alert">No projects found.</MudAlert>
+            <MudAlert Severity="Severity.Normal" Class="no-projects-alert mx-3">Sorry, You've no projects found.</MudAlert>
         }
     </MudPaper>
 </MudContainer>
@@ -73,6 +80,7 @@
     private int currentPage = 1;
     private List<Project> projects = new List<Project>(); 
     private string MessageRequireApproval = "";
+    private bool finishLoading;
     protected override async Task OnInitializedAsync()
     {
         try
@@ -90,13 +98,13 @@
                     project.MessageRequireApprovalCount = unreadMessageData.Item3;
                 }
 
-      
+
                 projects = projects
                     .OrderByDescending(p => p.IsPinned)
                     .ThenByDescending(p => p.countUnreadMessages) // sort by unread messages
                     .ThenByDescending(p => p.LastSentMessage) // then by last message sent
                     .ToList();
-                
+
             }
         }
         catch (Exception ex)
@@ -105,6 +113,8 @@
         }
         finally
         {
+            await Task.Delay(5000);
+            finishLoading = true;
             StateHasChanged();
         }
     }
