@@ -133,8 +133,7 @@ public partial class ProjectPage : ComponentBase
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
             await LoadProjects();
-
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
 
         }
 
