@@ -82,6 +82,14 @@ th.mud-table-cell.sticky-left:hover {
 }
 @media (max-width:960px)
 {
+    .mud-table-toolbar{
+        padding-inline-start: 0px !important;
+        margin-left:0px!important;
+    }
+    .mud-icon-size-large
+    {
+        font-size: 2rem !important;
+    }
     .sticky-left, .outlined-dialog-xl-content.mud-table-cell sticky-left, .mud-table-cell.sticky-left {
         background-color: #0d0e19 !important;
         left: auto !important;

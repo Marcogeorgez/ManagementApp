@@ -44,12 +44,11 @@
 
             <ToolBarContent>
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
-                <MudText Typo="Typo.h4" Class="mr-2">Your Projects</MudText>
+                <MudText Typo="Typo.h4" Class="mr-3">Your Projects</MudText>
                 </MudHidden>
-                <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" 
-                Label="Actions" AriaLabel="Projects Options" Class="mt-1 mx-1"
-                LockScroll=true DropShadow=true  @ref=_menuRef
-                AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
+
+                <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" Label="Actions" AriaLabel="Projects Options" Class="mt-1"
+                LockScroll=true DropShadow=true  @ref=_menuRef AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
                     <MudMenuItem  OnClick="ResetState">
                         Reset State
                     </MudMenuItem>
@@ -110,7 +109,7 @@
 
                 </MudMenu>
                 <MudTooltip ShowOnClick=false Text="Scroll to Bottom" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
-                    <MudIconButton Class="pa-1 mt-1 mx-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
+                    <MudIconButton Class="pa-1 mt-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
                     OnClick="OnClick" Size="Size.Large">
                     </MudIconButton>
                 </MudTooltip>
@@ -120,7 +119,7 @@
                 {
                     <MudTooltip ShowOnClick=false Text="Batch Editing" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
                         <MudIconButton OnClick="@(() => SelectedItems(SelectedProjects))"
-                        Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1 mx-1" >
+                        Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1" >
 
                         </MudIconButton>
                     </MudTooltip>
@@ -138,7 +137,7 @@
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
                         Color="Color.Info"
                         Size="Size.Large" 
-                        Class="mt-1 mx-2"
+                        Class="mt-1"
                         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
 
@@ -157,7 +156,7 @@
 
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
                         Color="Color.Info"
-                        Size="Size.Large"
+                                       Size="Size.Large"
                         Class="mt-1 mx-2"
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
