@@ -48,7 +48,7 @@
                             @if (_currentFile != null)
                             {
                                 <MudPaper Style="height:97%; width:100%;" Outlined="true" Class="@_dragClass">
-                                    <MudImage Src="@_filePreviewUrl" Alt="File Preview" Fluid="true" Class="mb-4" />
+                                    <MudImage src="@_filePreviewUrl" Alt="File Preview" Fluid="true" Class="mb-4" />
                                 </MudPaper>
                             }
                             else
@@ -323,17 +323,37 @@
     }
     private async Task<string?> GeneratePreviewUrl(IBrowserFile file)
     {
-        var format = file.ContentType.Split('/')[0];
-        if (format == "image")
-        {
-            // Open the stream and read it fully
-            using var stream = file.OpenReadStream();
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
-            var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
-            return $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+        try
+        {   
+            var format = file.ContentType.Split('/')[0];
+            if (format == "image")
+            {
+                // Open the stream and read it fully
+                using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 10 ); // 10 MB
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
+                var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
+                return $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            }
+            else
+            {
+                Snackbar.Add("Unsupported Format. Please upload an image file", Severity.Warning);
+                await ResetUpload();
+                return null;
+            }
         }
-        return null;
+        catch (InvalidOperationException ex) when (ex.Message.Contains("exceeds"))
+        {
+            Snackbar.Add("File size exceeds the maximum allowed size (10MB). Please upload it externally and attach link.");
+            await ResetUpload();
+            return null;
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add("An Error occurred while uploading the file. Please try again later", Severity.Error);
+            await ResetUpload();
+            return null;
+        }
     }
     private void Upload()
     {
@@ -356,8 +376,9 @@
         if (e.FileCount > 0)
         {
             _currentFile = e.File;
-            _filePreviewUrl = await GeneratePreviewUrl(_currentFile);
             IsDragging = true;
+            _filePreviewUrl = await GeneratePreviewUrl(_currentFile);
+
         }
     }
 
