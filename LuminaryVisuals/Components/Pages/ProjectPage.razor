@@ -160,7 +160,18 @@
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
                 }
+                @if(_isAdminView || _isEditorView)
+                {
+                    <MudTooltip ShowOnClick=false Text="@undoSwapText" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom"
+                    Color=Color.Info @onmouseover="UpdateUndoRedoTexts">
+                        <MudIconButton Disabled="string.IsNullOrEmpty(undoSwapText)" Icon=@Icons.Material.Filled.Undo Color="Color.Info" Size="Size.Large" Class="mt-1 ma-1" OnClick="Undo" />
+                    </MudTooltip>
+                    <MudTooltip ShowOnClick=false Text="@redoSwapText" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom"
+                    Color=Color.Info @onmouseover="UpdateUndoRedoTexts">
+                        <MudIconButton Disabled="string.IsNullOrEmpty(redoSwapText)" Icon=@Icons.Material.Filled.Redo Color="Color.Info" Size="Size.Large" Class="mt-1 ma-1" OnClick="Redo"/>
+                        </MudTooltip>
 
+                }
                 <MudSpacer />
                 <MudTextField @bind-Value="_searchString" Placeholder="Search..." Adornment="Adornment.Start"
                 Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
