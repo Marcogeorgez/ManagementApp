@@ -149,7 +149,6 @@ OpenMiniOnHover="true"  Elevation="0" >
             await InvokeAsync(StateHasChanged);
             await UpdateLayoutForScreenSize();
             await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
-            finishRendering = false;
             StateHasChanged();
 
 

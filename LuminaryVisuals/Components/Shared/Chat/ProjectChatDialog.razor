@@ -160,7 +160,7 @@
 
 
             <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
-                <MudPopover Open="@_openQuickMessage" Fixed="true" Class="pb-4">
+                <MudPopover Open="@_openQuickMessage" Fixed="true" Class="pb-4" Delay="100" Duration="150" >
                     <div class="d-flex flex-column">
                         <MudTabs Outlined="true" Centered="true" Border="true" Rounded="true">
                             <MudTabPanel Text="Preapproved Messages" Icon="@Icons.Material.Filled.PlaylistAddCheck" IconColor="Color.Info">
@@ -209,7 +209,7 @@
                             </MudTabPanel>
 
                         </MudTabs>
-                        <div class="d-flex">
+                        <div class="d-flex mt-6">
                             @if (isAdminView)
                             {
                                 <MudButton Color="Color.Success" OnClick="AddNewMessage"
