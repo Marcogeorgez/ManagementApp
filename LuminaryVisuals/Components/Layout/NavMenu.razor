@@ -33,7 +33,7 @@ OpenMiniOnHover="true"  Elevation="0" >
         <div class="mud-nav-item" style="justify-content:center !important;" >
             <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
                 <MudIconButton style="margin-left:5px;" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-                </MudHidden>
+            </MudHidden>
             <MudImage Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-5 mt-3" />
             <MudSpacer />
 
@@ -200,9 +200,10 @@ OpenMiniOnHover="true"  Elevation="0" >
         StateHasChanged();
     }
 
-    void DrawerToggle()
+    private async Task DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+        await InvokeAsync(StateHasChanged); // Ensures it's called on the UI thread
     }
     private async Task profileDialog()
     {
