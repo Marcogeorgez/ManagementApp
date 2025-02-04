@@ -223,7 +223,7 @@ public class DropboxService
         }
     }
     // Move the contents of a folder to another folder
-    public async Task MoveFolderContentsAsync(string fromPath, string toPath)
+    public async Task MoveFolderContentsAsync(string fromPath, string toPath,string projectName)
     {
         EnsureValidAccessToken();
 
@@ -234,8 +234,11 @@ public class DropboxService
 
             foreach (var item in listResult.Entries)
             {
-                var destinationPath = $"{toPath}/{item.Name}";
-                await _client.Files.MoveV2Async(item.PathLower, destinationPath);
+                if(item.Name == projectName)
+                {
+                    var destinationPath = $"{toPath}/{item.Name}";
+                    await _client.Files.MoveV2Async(item.PathLower, destinationPath);
+                }
             }
         }
         catch (Exception ex)
