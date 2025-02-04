@@ -4,8 +4,8 @@
 
         <MudStack Spacing="4">
             <!-- Preview Toggle -->
-            <MudText> Is the folder inside Preview Folder? </MudText>
-            <MudCheckBox T="bool" Label="@(project.IsPreview ? "Yes" : "No")" 
+            <MudText Inline="true"> Is the folder inside Preview Folder? </MudText>
+            <MudCheckBox T="bool" Label="Yes" 
             @bind-Value="@project.IsPreview"
             Color="Color.Info" Class="mb-2 mt-n4" />
 
@@ -158,11 +158,8 @@
             }
             Snackbar.Add($"Folder has been moved to {folder} Folder", Severity.Success);
 
-            bool isGenerateLink = await ConfirmationService.Confirm($"Would you like to also generate the  new link with new setting?");
-            if (isGenerateLink)
-            {
-                await GenerateLink();
-            }
+            await GenerateLink();
+            
 
         }
         catch (Exception ex)
