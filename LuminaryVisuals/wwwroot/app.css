@@ -480,7 +480,7 @@ th.mud-table-cell.sticky-left:hover {
         align-items: start !important;
     }
     .project-container {
-        margin: 5px 15px 5px 60px !important;
+        margin: 5px 15px 5px 90px !important;
     }
     .projects-panel {
         width: 80vw !important;
@@ -545,7 +545,7 @@ th.mud-table-cell.sticky-left:hover {
 .project-container {
     display: flex;
     align-items: center;
-    margin: calc(3% - 12px) 5%;
+    margin: max(calc(1.8% - 12px), 5px) 5%;
     min-width: 0;
     max-width: 100%;
     transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
@@ -584,7 +584,7 @@ th.mud-table-cell.sticky-left:hover {
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     position: relative;
     margin: 0px 15px 0px 10px;
-    height: calc(8vh - 21px) !important;
+    height: max(calc(8vh - 21px), 40px) !important;
     flex: 1 1 auto;
 }
 
@@ -1275,4 +1275,13 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
 }
 .mud-input > textarea.mud-input-root-outlined {
     mask-image: none !important;
+}
+.fit-image {
+    left: 50%;
+    transform: translate(-50%, 0);
+    position: absolute;
+}
+.mud-appbar.mud-appbar-dense.mud-appbar-fixed-top.mud-elevation-2
+{
+    width:100%;
 }

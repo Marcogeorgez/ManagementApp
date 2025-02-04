@@ -4,11 +4,14 @@
 
         <MudStack Spacing="4">
             <!-- Preview Toggle -->
-            <MudText Inline="true"> Is the folder inside Preview Folder? </MudText>
-            <MudCheckBox T="bool" Label="Yes" 
-            @bind-Value="@project.IsPreview"
-            Color="Color.Info" Class="mb-2 mt-n4" />
-
+            <div class="d-flex flex-row">
+            <MudText Inline="true" Style="align-contents:center;"> Is the folder inside Preview Folder?
+ 
+            </MudText>
+                <MudCheckBox T="bool" Label="Yes" Class="ml-5"
+                             @bind-Value="@project.IsPreview"
+                             Color="Color.Info" />
+            </div>
             <!-- Actions -->
             <MudText >Actions</MudText>
             <MudGrid Spacing="3">
