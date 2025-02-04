@@ -573,6 +573,7 @@ public partial class ProjectPage : ComponentBase
             newProject.MusicPreference = project.MusicPreference;
             newProject.ShootDate = DateTime.UtcNow;
             newProject.DueDate = DateTime.UtcNow.AddDays(28);
+            newProject.WorkingMonth = DateTime.UtcNow.Date;
             newProject.MusicPreference = project.MusicPreference;
 
             newProject.ProjectSpecifications = project.ProjectSpecifications;
