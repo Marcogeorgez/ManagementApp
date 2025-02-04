@@ -142,7 +142,7 @@
             if(folder == "Preview")
             {
                 project.IsPreview = true;
-                await DropboxService.MoveFolderContentsAsync(paidPath, previewPath);
+                await DropboxService.MoveFolderContentsAsync(paidPath, previewPath, projectDateName);
             }
 
             if(folder == "Paid")
@@ -153,7 +153,7 @@
                 {
                     return;
                 }
-                await DropboxService.MoveFolderContentsAsync(previewPath, paidPath);
+                await DropboxService.MoveFolderContentsAsync(previewPath, paidPath, projectDateName);
 
             }
             Snackbar.Add($"Folder has been moved to {folder} Folder", Severity.Success);
