@@ -98,6 +98,10 @@ th.mud-table-cell.sticky-left:hover {
     .mud-popover.mud-popover-open.mud-popover-top-left.mud-popover-anchor-top-left.mud-popover-overflow-flip-always.mud-paper.mud-elevation-8.pb-4 {
         width: 100vw !important;
     }
+    .mud-drawer.mud-drawer-fixed.mud-drawer-pos-top.mud-drawer--open.mud-drawer-md.mud-drawer-clipped-never.mud-elevation-0.mud-drawer-temporary {
+        height:auto !important;
+    }
+
     .navmenu {
         display: flex !important;
         height: 100%;
