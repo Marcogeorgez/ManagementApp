@@ -87,13 +87,25 @@ th.mud-table-cell.sticky-left:hover {
         left: auto !important;
         position: relative !important;
     }
-
+    .mud-popover.mud-popover-open.mud-popover-top-left.mud-popover-anchor-top-left.mud-popover-overflow-flip-always.mud-paper.mud-elevation-8.pb-4 {
+        width: 100vw !important;
+    }
+    .navmenu {
+        display: flex !important;
+        height: 100%;
+        align-content: center;
+        align-items: center;
+        align-self: center;
+    }
     th.mud-table-cell.sticky-left {
         background-color: #0d0e19 !important;
         position: sticky !important;
         z-index: 12 !important;
         top: 0 !important;
     }
+}
+.navmenu{
+    display:none;
 }
 
 @media (max-width: 960px) {
@@ -687,7 +699,7 @@ th.mud-table-cell.sticky-left:hover {
     bottom: 0px;
     right: 0px;
     z-index: 1500;
-    width: 45vw;
+    width: 50vw;
     max-height: 100vh;
     height: 100vh;
     scroll-behavior: smooth;
@@ -1285,3 +1297,4 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
 {
     width:100%;
 }
+
