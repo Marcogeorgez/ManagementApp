@@ -13,27 +13,26 @@
 @implements IAsyncDisposable
 @implements IBrowserViewportObserver
 @* Main Top Bar *@
+<MudThemeProvider IsDarkMode=true Theme="_theme" />
+
 <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
     <MudAppBar Elevation="2" Dense="true" Style="margin-left: 0px !important; position:relative; margin-bottom:10px;">
-        <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
-            <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <div class="navmenu">
+            <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@(async ()  => await DrawerToggle())" />
             <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " />
-        </MudHidden>
+        </div>
 
         <MudSpacer />
     </MudAppBar>
 </MudHidden>
 
 
-<MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="@_anchor" Fixed="@isFixed" Variant="@drawer" ClipMode="@_clipMode" 
+<MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="@_anchor" Fixed="@isFixed" Variant="@drawer" ClipMode="@_clipMode" Height="@(isLargeScreen ? "100%":"50%")"
 OpenMiniOnHover="true"  Elevation="0" >
-    <MudThemeProvider IsDarkMode=true Theme="_theme" />
 
     <MudNavMenu Style="display: flex; flex-direction: column; height:100vh; ">
         <div class="mud-nav-item" style="justify-content:center !important;" >
-            <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
-                <MudIconButton style="margin-left:5px;" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            </MudHidden>
+            <MudIconButton Class="navmenu" style="margin-left:5px;" Icon="@Icons.Material.Filled.Menu"  Color="Color.Tertiary" Edge="Edge.Start" OnClick="@(async ()  => await DrawerToggle())" />
             <MudImage Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-5 mt-3" />
             <MudSpacer />
 
@@ -140,17 +139,20 @@ OpenMiniOnHover="true"  Elevation="0" >
         }
         totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
         SetupPeriodicRefresh();
-        Console.WriteLine($"User opened a tab {currentUser!.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!}");
-
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
 
         if (firstRender)
         {
+
+            await InvokeAsync(StateHasChanged);
             await UpdateLayoutForScreenSize();
             await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
-            await base.OnAfterRenderAsync(firstRender);
+            finishRendering = false;
+            StateHasChanged();
+
+
         }
     }
     private async Task UpdateLayoutForScreenSize()
@@ -199,11 +201,11 @@ OpenMiniOnHover="true"  Elevation="0" >
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
-
     private async Task DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
-        await InvokeAsync(StateHasChanged); // Ensures it's called on the UI thread
+        StateHasChanged();
+
     }
     private async Task profileDialog()
     {
