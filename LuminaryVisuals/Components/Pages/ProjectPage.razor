@@ -27,7 +27,7 @@
     {
         @if(notificationList.Count > 0)
         {
-            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" ShowCloseIcon="true" CloseIconClicked="@( () => NotificationClosed(notificationList[0]) )">
+            <MudAlert Severity="Severity.Warning" class="mb-3" Variant="Variant.Outlined" ShowCloseIcon="true" CloseIconClicked="@( () => NotificationClosed(notificationList[0]) )">
 
             @foreach (var part in StringHelper.GetTextAndLinks(notificationList[0].Message))
             {
