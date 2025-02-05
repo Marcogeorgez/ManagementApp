@@ -114,6 +114,7 @@ builder.Services.AddScoped<ColumnPreferenceService>();
 builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
 builder.Services.AddScoped<PayoneerSettingsService>();
 builder.Services.AddScoped<UndoRedoService>();
+builder.Services.AddScoped<UserNotificationService>();
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>

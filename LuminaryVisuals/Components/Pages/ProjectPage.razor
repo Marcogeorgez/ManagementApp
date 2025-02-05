@@ -25,6 +25,23 @@
     }
     else
     {
+        @if(notificationList.Count > 0)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" ShowCloseIcon="true" CloseIconClicked="@( () => NotificationClosed(notificationList[0]) )">
+
+            @foreach (var part in StringHelper.GetTextAndLinks(notificationList[0].Message))
+            {
+                @if (StringHelper.IsLink(part))
+                {
+                    <a class="link" href="@part" target="_blank">@part</a>
+                }
+                else
+                {
+                    @part
+                }
+            }
+            </MudAlert>
+        }
         <LoadingIndicator IsVisible="@_loadingIndicator" />
         <MudDataGrid @ref=_dataGrid T="Project" Items="@projects" SortMode="SortMode.Single" @key=_gridKey
         Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.75); transform-style: flat;" 

@@ -29,193 +29,226 @@
     }
     else
     {
-
-        @if (!string.IsNullOrEmpty(_updateMessage))
-        {
-            <MudAlert Severity="@(_updateMessageClass == "alert-success" ? Severity.Success : Severity.Error)"
-            Variant="Variant.Outlined"
-            ShowCloseIcon="true"
-            CloseIconClicked="@(() => {_updateMessage = null;})"
-            OnClick="@(() => { _updateMessage = null; })">
-                @_updateMessage
-            </MudAlert>
-        }
+        <MudTabs Outlined="false" Rounded="true" SliderAnimation="true" Style="width:100%;">
+            <MudTabPanel Text="Users Dashboard" Icon="@Icons.Material.Filled.Api" >
 
 
-        <MudDataGrid T="UserRoleViewModel" Bordered=false Hover="true" CanCancelEdit=true MultiSelection=true
-        Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.73); transform-style: preserve-3d;"
-                     FixedHeader="true" Height="126vh;" Virtualize=true RowsPerPage=50
-        SelectedItems="SelectedItems" @ref=_dataGrid QuickFilter="_quickFilter"
-        Breakpoint="Breakpoint.None"
-        Items="@AllUsers" SortMode="SortMode.Multiple"
-        FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
-        DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
-        EditMode="DataGridEditMode.Form"
-        EditTrigger="DataGridEditTrigger.Manual"
-        ReadOnly=false
-        StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItemAsync" 
-        CommittedItemChanges="@CommittedItemChanges">
+                @if (!string.IsNullOrEmpty(_updateMessage))
+                {
+                    <MudAlert Severity="@(_updateMessageClass == "alert-success" ? Severity.Success : Severity.Error)"
+                    Variant="Variant.Outlined"
+                    ShowCloseIcon="true"
+                    CloseIconClicked="@(() => {_updateMessage = null;})"
+                    OnClick="@(() => { _updateMessage = null; })">
+                        @_updateMessage
+                    </MudAlert>
+                }
 
-            <ToolBarContent>
-                <MudText Typo="Typo.h4">Admin Dashboard</MudText>
-                <MudMenu Label="Options" Variant="Variant.Outlined" Class="mx-3" Color="Color.Primary"
-                     PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
-                    
-                        <MudNumericField T="decimal?"
-                                         @bind-value="storedValue"
-                                         Label="USD to LEK"
-                                         Min="0.0M"
-                                         Required="true"
-                                         RequiredError="Please enter a positive number"
-                                         Variant="Variant.Outlined"
-                                         Class="w-100"
-                                         DebounceInterval="2000" />
 
-                    <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Error"
-                                   OnClick="@(() => OpenDialog())"
-                                   Class="mt-2 w-100">
-                            Migrate Selected Users
-                        </MudButton>
-                </MudMenu>
-                <div style="flex-grow: 5;"></div>
-                <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
-                Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
-                Class="mt-0" style="flex-grow:5" />
-            </ToolBarContent>
+                <MudDataGrid T="UserRoleViewModel" Bordered=false Hover="true" CanCancelEdit=true MultiSelection=true
+                Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.73); transform-style: preserve-3d;"
+                FixedHeader="true" Height="126vh;" Virtualize=true RowsPerPage=50
+                SelectedItems="SelectedItems" @ref=_dataGrid QuickFilter="_quickFilter"
+                Breakpoint="Breakpoint.None"
+                Items="@AllUsers" SortMode="SortMode.Multiple"
+                FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
+                DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
+                EditMode="DataGridEditMode.Form"
+                EditTrigger="DataGridEditTrigger.Manual"
+                ReadOnly=false
+                StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItemAsync" 
+                CommittedItemChanges="@CommittedItemChanges">
 
-            <ColGroup>
-                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
-                    <col style="width: 1vw;" /><!-- # -->
-                    <col style="width: 1vw;" /><!-- # -->
-                    <col style="width: 10vw;" /><!--User Name-->
-                    <col style="width: 3vw;" /><!--User Email-->
-                    <col style="width: 2vw;" /><!-- Current Role -->
-                    <col style="width: 1vw;" /><!-- Rate $ -->
-                    <col style="width: 1vw;" /><!-- Rate Lek -->
-                    <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
-                    <col style="width: 30vw;" /><!-- Private notes -->
-                    <col style="width: 1vw;" /><!-- Client Preferneces -->
-                    <col style="width: 1vw;" /><!-- Edit button -->
-                </MudHidden>
-            </ColGroup>
-            <Columns>
-                <SelectColumn T="UserRoleViewModel"   />
-                <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;" Editable=false>
-                    <CellTemplate Context="cell">
-                        @{
-                            var index = AllUsers.ToList().IndexOf(cell.Item) + 1;
-                            @index
-                        }
-                    </CellTemplate>
-                </TemplateColumn>
-                <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name"
-                CellClass="outlined-dialog-max-content" CellStyle="text-align: center" Editable=true>
-                    <CellTemplate>
-                        <MudTextField T="string"
-                        Class="outlined-dialog-max-content"
-                        Value="context.Item.UserName"
-                        ReadOnly="true"
-                        Immediate="true" Adornment="Adornment.End"
-                        AdornmentIcon="@Icons.Material.Filled.OpenInFull" Variant=Variant.Outlined 
-                        MaxLines="4"
-                        OnAdornmentClick="@(() => OpenAgencyList(context.Item.UserId))">
-                            <MudTooltip Text="Expand">
-                                <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
-                            </MudTooltip>
-                        </MudTextField>
-                    </CellTemplate>
-                </PropertyColumn>
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h4">Admin Dashboard</MudText>
+                        <MudMenu Label="Options" Variant="Variant.Outlined" Class="mx-3" Color="Color.Primary"
+                        PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
 
-                <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="Email" CellStyle="text-align: center" Editable=false>
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.SelectedRole" Title="Role" HeaderStyle="text-align:center;"
-                Style="min-width: 150px;" CellStyle="text-align: center" >
-                    <EditTemplate >
-                        <MudSelect @bind-Value="context.Item.SelectedRole" 
-                        Required Variant="Variant.Outlined"
-                        RequiredError="You must select a Role!!!"
-                        Margin="@Margin.Dense">
-                            @foreach (var role in _allAvailableRoles)
-                            {
-                                <MudSelectItem Value="@role">@role</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </EditTemplate>
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.HourlyRate" Title="Hourly Rate" HeaderStyle="text-align:center;"
-                CellStyle="text-align: center" Format="$#,##0.00"
-                ShowFilterIcon="false">
-                    <EditTemplate>
-                        <MudNumericField T="decimal?"
-                        @bind-Value="context.Item.HourlyRate"
-                        @bind-Value:event="oninput"
-                        ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)" Variant="Variant.Outlined"
-                        Label="Hourly Rate in US$"
-                        Format="N" Immediate=true
-                        Adornment="Adornment.Start"
-                        AdornmentText="$" />
-                    </EditTemplate>
-                </PropertyColumn>
+                            <MudNumericField T="decimal?"
+                            @bind-value="storedValue"
+                            Label="USD to LEK"
+                            Min="0.0M"
+                            Required="true"
+                            RequiredError="Please enter a positive number"
+                            Variant="Variant.Outlined"
+                            Class="w-100"
+                            DebounceInterval="2000" />
 
-                <PropertyColumn Property="x => x.HourlyRateInLek" HeaderStyle="text-align:center;" Title="Rate Lek"
-                CellStyle="text-align: center"
-                ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0.00">
-                    <EditTemplate>
-                        <MudNumericField T="decimal?"
-                        @bind-Value="context.Item.HourlyRateInLek"
-                        @bind-Value:event="oninput"
-                        ValueChanged="(newValue) => UpdateHourlyRateInLekWrapper(context.Item, newValue)"
+                            <MudButton Variant="Variant.Outlined"
+                            Color="Color.Error"
+                            OnClick="@(() => OpenDialog())"
+                            Class="mt-2 w-100">
+                                Migrate Selected Users
+                            </MudButton>
+                        </MudMenu>
+                        <div style="flex-grow: 5;"></div>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
+                        Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                        Class="mt-0 mr-5" style="flex-grow:5;" />
+                    </ToolBarContent>
+
+                    <ColGroup>
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
+                            <col style="width: 1vw;" /><!-- # -->
+                            <col style="width: 1vw;" /><!-- # -->
+                            <col style="width: 10vw;" /><!--User Name-->
+                            <col style="width: 3vw;" /><!--User Email-->
+                            <col style="width: 2vw;" /><!-- Current Role -->
+                            <col style="width: 1vw;" /><!-- Rate $ -->
+                            <col style="width: 1vw;" /><!-- Rate Lek -->
+                            <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
+                            <col style="width: 30vw;" /><!-- Private notes -->
+                            <col style="width: 1vw;" /><!-- Client Preferneces -->
+                            <col style="width: 1vw;" /><!-- Edit button -->
+                        </MudHidden>
+                    </ColGroup>
+                    <Columns>
+                        <SelectColumn T="UserRoleViewModel"   />
+                        <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;" Editable=false>
+                            <CellTemplate Context="cell">
+                                @{
+                                    var index = AllUsers.ToList().IndexOf(cell.Item) + 1;
+                                    @index
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name"
+                        CellClass="outlined-dialog-max-content" CellStyle="text-align: center" Editable=true>
+                            <CellTemplate>
+                                <MudTextField T="string"
+                                Class="outlined-dialog-max-content"
+                                Value="context.Item.UserName"
+                                ReadOnly="true"
+                                Immediate="true" Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInFull" Variant=Variant.Outlined 
+                                MaxLines="4"
+                                OnAdornmentClick="@(() => OpenAgencyList(context.Item.UserId))">
+                                    <MudTooltip Text="Expand">
+                                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                                    </MudTooltip>
+                                </MudTextField>
+                            </CellTemplate>
+                        </PropertyColumn>
+
+                        <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="Email" CellStyle="text-align: center" Editable=false>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.SelectedRole" Title="Role" HeaderStyle="text-align:center;"
+                        Style="min-width: 150px;" CellStyle="text-align: center" >
+                            <EditTemplate >
+                                <MudSelect @bind-Value="context.Item.SelectedRole" 
+                                Required Variant="Variant.Outlined"
+                                RequiredError="You must select a Role!!!"
+                                Margin="@Margin.Dense">
+                                    @foreach (var role in _allAvailableRoles)
+                                    {
+                                        <MudSelectItem Value="@role">@role</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </EditTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.HourlyRate" Title="Hourly Rate" HeaderStyle="text-align:center;"
+                        CellStyle="text-align: center" Format="$#,##0.00"
+                        ShowFilterIcon="false">
+                            <EditTemplate>
+                                <MudNumericField T="decimal?"
+                                @bind-Value="context.Item.HourlyRate"
+                                @bind-Value:event="oninput"
+                                ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)" Variant="Variant.Outlined"
+                                Label="Hourly Rate in US$"
+                                Format="N" Immediate=true
+                                Adornment="Adornment.Start"
+                                AdornmentText="$" />
+                            </EditTemplate>
+                        </PropertyColumn>
+
+                        <PropertyColumn Property="x => x.HourlyRateInLek" HeaderStyle="text-align:center;" Title="Rate Lek"
+                        CellStyle="text-align: center"
+                        ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0.00">
+                            <EditTemplate>
+                                <MudNumericField T="decimal?"
+                                @bind-Value="context.Item.HourlyRateInLek"
+                                @bind-Value:event="oninput"
+                                ValueChanged="(newValue) => UpdateHourlyRateInLekWrapper(context.Item, newValue)"
+                                Variant="Variant.Outlined"
+                                Label="Hourly Rate in Lek"
+                                Format="N"
+                                Adornment="Adornment.Start"
+                                AdornmentText="L"/>
+                            </EditTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.WeeksToDueDateDefault" HeaderStyle="text-align:center;" Title="Weeks Due Date Default"
+                        CellStyle="text-align: center" Required=false
+                        ShowFilterIcon="false" ShowColumnOptions="false">
+
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Note" CellClass="outlined-dialog-max-content" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
+                            <CellTemplate>
+                                <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
+                                Immediate="true"
+                                Value="@(UserRoleViewModel.StripHtmlTags(context.Item.Note))"
+                                Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
+                                ReadOnly="true" />
+
+                            </CellTemplate>
+                            <EditTemplate >
+                                <MudText Style="display:none;" />
+                            </EditTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn>
+                            <CellTemplate>
+                                <MudStack Row=true Spacing="0">
+                                    <MudTooltip Text="Change Client Preference">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Edit">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Delete user">
+                                        <MudIconButton Color="Color.Error"
+                                        Size="Size.Medium"
+                                        OnClick="@(() => OpenDeleteUserDialog(context.Item))"
+                                        Icon="@Icons.Material.Filled.Delete"
+                                        Class="" />
+                                    </MudTooltip>
+
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            </MudTabPanel>
+            <MudTabPanel Text="Settings" Icon="@Icons.Material.Filled.Build" >
+                <MudPaper Elevation="4" Padding="20px" Margin="20px">
+                    <MudText Typo="Typo.h5">Settings</MudText>
+                    <MudDivider />
+                    <MudCard Class="pa-4">
+                        <MudText Typo="Typo.h6" Class="mb-4">Add New Notification Alert:</MudText>
+
+                        <MudTextField @bind-Value="notification.Message" Required="true"
+                        Label="Notification Message"
                         Variant="Variant.Outlined"
-                        Label="Hourly Rate in Lek"
-                        Format="N"
-                        Adornment="Adornment.Start"
-                        AdornmentText="L"/>
-                    </EditTemplate>
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.WeeksToDueDateDefault" HeaderStyle="text-align:center;" Title="Weeks Due Date Default"
-                CellStyle="text-align: center" Required=false
-                ShowFilterIcon="false" ShowColumnOptions="false">
+                        Lines="3"
+                        Class="mb-4" />
 
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.Note" CellClass="outlined-dialog-max-content" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
-                    <CellTemplate>
-                        <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
-                        Immediate="true"
-                        Value="@(UserRoleViewModel.StripHtmlTags(context.Item.Note))"
-                        Adornment="Adornment.End"
-                        AdornmentIcon="@Icons.Material.Filled.OpenInFull"
-                        OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
-                        ReadOnly="true" />
-
-                    </CellTemplate>
-                    <EditTemplate >
-                        <MudText Style="display:none;" />
-                    </EditTemplate>
-                </PropertyColumn>
-                <TemplateColumn>
-                    <CellTemplate>
-                        <MudStack Row=true Spacing="0">
-                            <MudTooltip Text="Change Client Preference">
-                                <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
-                            </MudTooltip>
-                            <MudTooltip Text="Edit">
-                                <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
-                            </MudTooltip>
-                            <MudTooltip Text="Delete user">
-                                <MudIconButton Color="Color.Error"
-                                Size="Size.Medium"
-                                OnClick="@(() => OpenDeleteUserDialog(context.Item))"
-                                Icon="@Icons.Material.Filled.Delete"
-                                Class="" />
-                            </MudTooltip>
-
-                        </MudStack>
-                    </CellTemplate>
-                </TemplateColumn>
-            </Columns>
-        </MudDataGrid>
-
+                        <MudSelect T="string" @bind-Value="notification.TargetRole" Required="true" Label="Target Audience" Variant="Variant.Outlined" Class="mb-4">
+                            <MudSelectItem Value="@("Everyone")">Everyone</MudSelectItem>
+                            <MudSelectItem Value="@("Admin")">Admins (only)</MudSelectItem>
+                            <MudSelectItem Value="@("Editors")">Editors (only)</MudSelectItem>
+                            <MudSelectItem Value="@("Clients")">Clients (only)</MudSelectItem>
+                        </MudSelect>
+                        f
+                        <MudButton Variant="Variant.Filled"
+                        Color="Color.Primary"
+                        FullWidth="true"
+                        OnClick="CreateNotification">
+                            Send Notification
+                        </MudButton>
+                    </MudCard>
+                </MudPaper>
+            </MudTabPanel>
+        </MudTabs>
 
 
         @if (ProjectState.CurrentProject != null)
@@ -276,6 +309,7 @@
     [Inject]
     private IConfirmationService ConfirmationService { get; set; } = default!;
     private MudDataGrid<UserRoleViewModel> _dataGrid = default!;
+    private Notification notification = new Notification();
     private async Task OpenDialog()
     {
         if (!SelectedItems.Any())
@@ -741,6 +775,25 @@
         }
 
 
+    }
+    [Inject] private UserNotificationService UserNotificationService { get; set; }
+    private async Task CreateNotification()
+    {
+        try
+        {
+            if (notification.Message == null || notification.TargetRole == null)
+            {
+                Snackbar.Add("Please fill in all the fields first!", Severity.Warning);
+                return;
+            }
+            await UserNotificationService.CreateNotification(notification.Message, notification.TargetRole);
+            Snackbar.Add($"The notification has been added successfully!", Severity.Success);
+            notification = new Notification();
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add($"An error has occured: {ex}", Severity.Error);
+        }
     }
 }
 <style>

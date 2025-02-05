@@ -82,6 +82,23 @@ public partial class ProjectPage : ComponentBase
         new ColumnDefinition { Name = "ClientPaymentToggle", DisplayName = "Client Payment Toggle" },
 
     };
+    private List<Notification> notificationList = new();
+    [Inject] private UserNotificationService UserNotificationService { get; set; }
+    private async Task NotificationClosed(Notification notification)
+    {
+        await UserNotificationService.DismissNotification(_currentUserId, notification.Id);
+        notificationList.Remove(notification);
+        StateHasChanged();
+    }
+    private async Task GetUserNotifications()
+    {
+        if (_currentUserId == null)
+        {
+            return;
+        }
+
+        notificationList = await UserNotificationService.GetActiveNotificationsForUser(_currentUserId, _currentRole);
+    }
     private void HandleProjectStateChange()
     {
         InvokeAsync(StateHasChanged);
@@ -122,6 +139,7 @@ public partial class ProjectPage : ComponentBase
             _isClientView = true;
             _isAdminView = false;
         }
+        await GetUserNotifications();
         CircuitId = Guid.NewGuid().ToString();
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
         _loading = false;
@@ -310,6 +328,7 @@ public partial class ProjectPage : ComponentBase
         _currentRole = "Admin";
         isSelectorVisible = true;
         await LoadProjects();
+        await GetUserNotifications();
         LoadingService.HideLoading();
     }
     private async Task EditorToggle()
@@ -322,6 +341,8 @@ public partial class ProjectPage : ComponentBase
         _currentRole = "Editor";
         isSelectorVisible = false;
         await LoadProjects();
+        await GetUserNotifications();
+
         LoadingService.HideLoading();
     }
     private async Task ClientToggle()
@@ -334,6 +355,7 @@ public partial class ProjectPage : ComponentBase
         _currentRole = "Client";
         isSelectorVisible = false;
         await LoadProjects();
+        await GetUserNotifications();
         LoadingService.HideLoading();
     }
 

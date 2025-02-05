@@ -32,6 +32,9 @@ namespace LuminaryVisuals.Data
         public DbSet<CalculationOption> CalculationOption { get; set; }
         public DbSet<ClientEditingGuidelines> ClientEditingGuidelines { get; set; }
         public DbSet<EditorLoggingHours> EditorLoggingHours { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<UserNotificationStatus> UserNotificationStatuses { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -248,6 +251,16 @@ namespace LuminaryVisuals.Data
 
                 entity.Property(crs => crs.ReadTimestamp)
                       .IsRequired();
+            });
+            builder.Entity<UserNotificationStatus>(entity =>
+            {
+                entity.HasKey( n => new { n.NotificationId, n.UserId });
+                entity.HasOne( n => n.Notification)
+                      .WithMany( n => n.UserNotificationStatuses)
+                      .HasForeignKey(n => n.NotificationId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(n => new {n.UserId, n.Dismissed})
+                        .HasDatabaseName("IX_UserNotificationStatuses_UserId_Dismissed");
             });
 
 
