@@ -237,6 +237,7 @@ public class ProjectService
             {
                 project.ClientId = user.Id;  // Ensure ClientId is assigned to the project
                                              // Ensure that no two projects if created concurrently will have the same InternalOrder
+                project.ProjectName = project.ProjectName.Trim();
                 lock (_orderLock)
                 {
                     _logger.LogInformation("Lock acquired for InternalOrder assignment.");
