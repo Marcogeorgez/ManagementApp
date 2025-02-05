@@ -29,7 +29,7 @@
     }
     else
     {
-        <MudTabs Outlined="false" Rounded="true" SliderAnimation="true" Style="width:100%;">
+        <MudTabs Outlined="false" Rounded="true" SliderAnimation="true" Class="pb-3" Style="width:100%;">
             <MudTabPanel Text="Users Dashboard" Icon="@Icons.Material.Filled.Api" >
 
 
@@ -220,8 +220,8 @@
                 </MudDataGrid>
             </MudTabPanel>
             <MudTabPanel Text="Settings" Icon="@Icons.Material.Filled.Build" >
-                <MudPaper Elevation="4" Padding="20px" Margin="20px">
-                    <MudText Typo="Typo.h5">Settings</MudText>
+                <MudPaper Elevation="4">
+                    <MudText class="ml-3" Typo="Typo.h5">Settings</MudText>
                     <MudDivider />
                     <MudCard Class="pa-4">
                         <MudText Typo="Typo.h6" Class="mb-4">Add New Notification Alert:</MudText>
@@ -803,5 +803,8 @@
 
     .mud-popover.mud-popover-open.mud-popover-top-left.mud-popover-anchor-bottom-left.mud-popover-overflow-flip-onopen.mud-paper.mud-elevation-8.pa-4 {
         background-color: #151726 !important;
+    }
+    .mud-tabs-tabbar.mud-tabs-rounded{
+        padding-bottom: 12px !important;
     }
 </style>
