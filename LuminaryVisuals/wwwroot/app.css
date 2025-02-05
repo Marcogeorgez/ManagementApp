@@ -193,10 +193,10 @@ th.mud-table-cell.sticky-left:hover {
     color: #1ce6e6 !important;
 }
 .link {
-    color: rgb(28, 230, 230) ;
+    color: rgb(219, 215, 163);
 }
 .link:hover {
-    color: rgb(24, 221, 253) !important;
+    color: rgb(243, 234, 119) !important;
 }
 .mud-list {
     background: #151726 !important;
