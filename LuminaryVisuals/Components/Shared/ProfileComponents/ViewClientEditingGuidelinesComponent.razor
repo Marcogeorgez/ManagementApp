@@ -4,7 +4,7 @@
 <MudDialog>
     <DialogContent>
 
-        <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanels MultiExpansion="true" Elevation="0">
             <MudText Typo="Typo.h5" Class="mb-5">Client: @clientName || Last Updated at: @lastUpdatedDate</MudText>
 
             <MudText Typo="Typo.h5" Class="mb-5">Preferences Checklist:</MudText>
@@ -40,7 +40,6 @@
                 </MudExpansionPanel>
                 <MudExpansionPanel Text="Highlights Film">
                     <!-- Video Structure -->
-                    <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
                         <MudText Typo="Typo.h6">
                             How you like to structure the videos:
                         </MudText>
@@ -50,7 +49,6 @@
                                 <MudRadio Color="Color.Info" Dense=true Value="@structure">@structure.ToString()</MudRadio>
                             }
                         </MudStack>
-                    </MudRadioGroup>
 
                     <!-- Transitions Checklist -->
                     <MudText Typo="Typo.h6" Class="mt-3">
