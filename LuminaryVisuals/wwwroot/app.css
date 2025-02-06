@@ -178,6 +178,9 @@ th.mud-table-cell.sticky-left:hover {
     }
 }
 
+.mud-navmenu {
+    height: 100%;
+}
 
 .mud-direction-desc, .mud-direction-desc:hover {
     color: #3d73f2 !important;
