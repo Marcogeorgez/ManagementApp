@@ -273,7 +273,7 @@
                 {
 
                     <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true
-                    HeaderStyle="@(isSelectorVisible ? "left:75px; z-index:5" : "z-index:5; left:50px;")"
+                    HeaderStyle="@(isSelectorVisible ? "min-width:120px; left:75px; z-index:5" : "min-width:120px; z-index:5; left:50px;")"
                     CellStyle="@(isSelectorVisible ? "left:75px; text-align:center;" : "text-align:center;left:50px;")">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
@@ -340,7 +340,7 @@
                 {
                     <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" 
                     Hideable="false"
-                    HeaderStyle="@(isSelectorVisible ? "left:190px; z-index:4" : !_isClientView ? "left:165px; z-index:4;" : "z-index:4;")"
+                    HeaderStyle="@(isSelectorVisible ? "min-width:316.4px; left:190px; z-index:4" : !_isClientView ? "left:165px; z-index:4;" : "z-index:4; min-width:300px;")"
                     CellStyle="@(isSelectorVisible ? "left:190px;" : "left:165px;")" CellClass="outlined-dialog-xl-content"
                     Groupable="false" Editable=false Required=false>
                         <CellTemplate>
