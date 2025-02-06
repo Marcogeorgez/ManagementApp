@@ -12,10 +12,9 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using System.Security.Claims;
 using System.Text.Json;
-using static LuminaryVisuals.Services.Core.UndoRedoService;
 namespace LuminaryVisuals.Components.Pages;
 
-public partial class ProjectPage : ComponentBase
+public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
 {
     private bool _loading = true;
     private bool _loadingIndicator;
@@ -139,10 +138,8 @@ public partial class ProjectPage : ComponentBase
             _isClientView = true;
             _isAdminView = false;
         }
-        await GetUserNotifications();
         CircuitId = Guid.NewGuid().ToString();
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
-        _loading = false;
 
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -150,9 +147,9 @@ public partial class ProjectPage : ComponentBase
         if (firstRender)
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
-            await LoadProjects();
-            await InvokeAsync(StateHasChanged);
-
+            await GetUserNotifications();
+            _loading = false;
+            StateHasChanged();
         }
 
     }
@@ -260,8 +257,12 @@ public partial class ProjectPage : ComponentBase
             StateHasChanged();
         }
     }
-
-
+    private Task OnSearch(string text)
+    {
+        _searchString = text;
+        return _dataGrid.ReloadServerData();
+    }
+  
     // Quick Global Filter which is used to search in the entire grid
     private Func<Project, bool> _quickFilter => x =>
     {
@@ -277,17 +278,17 @@ public partial class ProjectPage : ComponentBase
         // Combine all fields with null checks
         var searchableText = string.Join(" ", new string[]
         {
-    x.Link,
-    x.FormatStatus,
-    x.FormatAdminStatus,
-    x.ClientName,
-    x.PrimaryEditorName,
-    x.SecondaryEditorName,
-    x.FormattedShootDate,
-    x.FormattedDueDate,
-    x.NotesForProject,
-    x.FormattedWorkingMonth,
-            }.Where(s => s != null));
+            x.Link,
+            x.FormatStatus,
+            x.FormatAdminStatus,
+            x.ClientName,
+            x.PrimaryEditorName,
+            x.SecondaryEditorName,
+            x.FormattedShootDate,
+            x.FormattedDueDate,
+            x.NotesForProject,
+            x.FormattedWorkingMonth,
+        }.Where(s => s != null));
 
         return searchableText.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
     };
@@ -313,6 +314,7 @@ public partial class ProjectPage : ComponentBase
         await InvokeAsync(async () =>
         {
             await LoadProjects();
+            await _dataGrid.ReloadServerData();
             StateHasChanged();
         });
     }
@@ -416,6 +418,7 @@ public partial class ProjectPage : ComponentBase
             }
             else if (_isEditorView && isAdminView == false)
                 await LoadProjectsForEditors();
+            await _dataGrid.ReloadServerData();
             StateHasChanged();
             _shouldScroll = true;
         }
@@ -1835,5 +1838,78 @@ public partial class ProjectPage : ComponentBase
     {
         UndoRedoService.AddSwap(projectId, projectName, targetName, sourceId, targetId);
     }
+    private async Task<GridData<Project>> ServerDataFunc(GridStateVirtualize<Project> gridState, CancellationToken token)
+    {
+        try
+        {
+            var result = projects;
+            await Task.Delay(25);
+            if(projects.Count == 0 )
+            {
+                await LoadProjects();
+                Console.WriteLine("Called ServerDataFunc  again");
 
+            }
+            if (result.Count == 0 || result.Count != projects.Count)
+            {
+                result = projects;
+            }
+
+            result = result.Where(project =>
+            {
+                if (string.IsNullOrWhiteSpace(_searchString))
+                    return true;
+
+                if (project.ProjectName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+                    return true;
+                if (project.Description?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+                    return true;
+
+                if (( $"{project.Link ?? ""} {project.FormatStatus ?? ""} {project.FormatAdminStatus ?? ""} {project.ClientName ?? ""} " +
+                     $"{project.PrimaryEditorName ?? ""} {project.SecondaryEditorName ?? ""} {project.FormattedShootDate ?? ""} " +
+                     $"{project.FormattedDueDate ?? ""} {project.NotesForProject ?? ""} {project.FormattedWorkingMonth ?? ""}" )
+                    .Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                return false;
+            }).ToList();
+            if (gridState.SortDefinitions.Count > 0)
+            {
+                var firstSort = gridState.SortDefinitions.First();
+                result = firstSort.Descending
+                    ? result.OrderByDescending(firstSort.SortFunc).ToList()
+                    : result.OrderBy(firstSort.SortFunc).ToList();
+            }
+
+            if (gridState.FilterDefinitions.Any())
+            {
+                var filterFunctions = gridState.FilterDefinitions.Select(x => x.GenerateFilterFunction());
+                result = result
+                    .Where(x => filterFunctions.All(f => f(x)))
+                    .ToList();
+            }
+
+            var totalNumberOfFilteredItems = result.Count;
+
+            result = result
+                .Skip(gridState.StartIndex)
+                .Take(gridState.Count)
+                .ToList();
+
+
+            return new GridData<Project>
+            {
+                Items = result,
+                TotalItems = totalNumberOfFilteredItems
+            };
+        }
+        catch (TaskCanceledException)
+        {
+            return new GridData<Project>
+            {
+                Items = [],
+                TotalItems = 0
+            };
+        }
+    }
 }
