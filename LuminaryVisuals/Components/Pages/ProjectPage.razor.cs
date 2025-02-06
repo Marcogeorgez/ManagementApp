@@ -1849,14 +1849,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             if(projects.Count == 0 )
             {
                 await LoadProjects();
-                Console.WriteLine("Called ServerDataFunc  again");
 
             }
             if (result.Count == 0 || result.Count != projects.Count)
             {
                 result = projects;
             }
-
             result = result.Where(project =>
             {
                 if (string.IsNullOrWhiteSpace(_searchString))
@@ -1885,7 +1883,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
 
             if (gridState.FilterDefinitions.Any())
             {
-                var filterFunctions = gridState.FilterDefinitions.Select(x => x.GenerateFilterFunction());
+                var filterOptions = new FilterOptions
+                {
+                    FilterCaseSensitivity = DataGridFilterCaseSensitivity.CaseInsensitive
+                };
+
+                var filterFunctions = gridState.FilterDefinitions.Select(x => x.GenerateFilterFunction(filterOptions));
                 result = result
                     .Where(x => filterFunctions.All(f => f(x)))
                     .ToList();
