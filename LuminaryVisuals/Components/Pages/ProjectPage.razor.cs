@@ -105,6 +105,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     // quick filter - filter globally across multiple columns with the same input
     protected override async Task OnInitializedAsync()
     {
+        _loading = true;
         LoadingService.Subscribe(isVisible =>
         {
             _loadingIndicator = isVisible;
@@ -1842,8 +1843,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         try
         {
+            _loading = true;
             var result = projects;
-            await Task.Delay(25);
+            await Task.Delay(500);
             if(projects.Count == 0 )
             {
                 await LoadProjects();
@@ -1910,6 +1912,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 Items = [],
                 TotalItems = 0
             };
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 }

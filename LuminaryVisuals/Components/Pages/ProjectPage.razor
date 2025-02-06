@@ -36,6 +36,7 @@
             }
             </MudAlert>
         }
+        
         <LoadingIndicator IsVisible="@_loadingIndicator" />
         <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey
         Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.75); transform-style: flat;" 
@@ -126,6 +127,7 @@
                     </MudIconButton>
                 </MudTooltip>
 
+                
 
                 @if (isAdminView)
                 {
@@ -196,6 +198,7 @@
                 </MudHidden>
             </ColGroup>
             <Columns>
+
                 @if (_isAdminView)
                 {
                     {
@@ -1241,7 +1244,7 @@
         </RowLoadingContent>
         <LoadingContent>
               <tr class="mud-table-row">
-                  @for(int i = 0; i < 10; i++)
+                  @for(int i = 0; i < 20; i++)
                   {
                     <td class="mud-table-cell" colspan="1000">
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="53px" Width="100%" Class="my-1" />
