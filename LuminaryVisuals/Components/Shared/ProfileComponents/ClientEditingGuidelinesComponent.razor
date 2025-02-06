@@ -4,7 +4,7 @@
 @inject INotificationService notificationService
 @inject CloudflareR2Service cloudflareR2Service
 <MudContainer Gutters=false>
-    <MudExpansionPanels MultiExpansion="true">
+    <MudExpansionPanels MultiExpansion="true" Elevation="0">
         <MudText Style="margin-top:5px;" class="ml-3 mt-3" Typo="Typo.h5">Preferences Checklist:</MudText>
         <MudForm @ref="form" Model="@preferences">
             <MudExpansionPanel Text="General Notes" Class="">
@@ -54,7 +54,6 @@
             </MudExpansionPanel>
             <MudExpansionPanel Text="Highlights Film">
                 <!-- Video Structure -->
-                <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
                     <MudText Typo="Typo.h6">
                         How you like to structure the videos:
                     </MudText>
@@ -64,7 +63,6 @@
                             <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                         }
                     </MudStack>
-                </MudRadioGroup>
 
                 <!-- Transitions Checklist -->
                 <MudText Typo="Typo.h6" Class="mt-3">
@@ -194,7 +192,7 @@
                     <MudText Typo="Typo.h6" Class="mt-3 mb-3">
                         Do you like to use speeches from the day in the highlights film:
                     </MudText>
-                    <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=true>
+                    <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=false>
                         @foreach (var speech in speeches)
                         {
                             <MudRadio Color="Color.Info" Value="@speech">@speech.ToString()</MudRadio>
@@ -202,7 +200,7 @@
                     </MudStack>
                 </MudRadioGroup>
                 <MudText Class="ml-10 mt-2" Typo=" Typo.body1">
-                    Comments on the use of speeches:                :
+                    Comments on the use of speeches:
                 </MudText>
                 <MudTextField Class="ml-10 mr-10" T="string" Clearable=true MaxLines=6  @bind-Value="preferences.SpeechComments" Variant="Variant.Outlined" Placeholder="">
                 </MudTextField>
@@ -211,7 +209,7 @@
                     <MudText Typo="Typo.h6" Class="mt-3 mb-3">
                         Emphasis on sound design:
                     </MudText>
-                    <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=true>
+                    <MudStack Spacing="0" Class="ml-10 mb-2" AlignItems="AlignItems.Start"  Row=false>
                         @foreach (var _soundDesign in soundDesign)
                         {
                             <MudRadio Color="Color.Info" Value="@_soundDesign">@_soundDesign.ToString()</MudRadio>

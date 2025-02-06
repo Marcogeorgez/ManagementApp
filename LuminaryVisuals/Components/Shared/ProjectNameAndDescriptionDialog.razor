@@ -115,6 +115,7 @@
                                 {
                                     foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
                                     {
+                                        <MudExpansionPanels MultiExpansion=false Elevation="0">
                                         <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
                                             <TitleContent>
                                                 <div class="d-flex align-center">
@@ -133,9 +134,10 @@
                                                 </div>
                                             </TitleContent>
                                             <ChildContent>
-                                                <MudHtmlViewer Html="@revision.Content" />
+                                                <MudHtmlViewer class="allow-border" Html="@revision.Content" />
                                             </ChildContent>
                                         </MudExpansionPanel>
+                                        </MudExpansionPanels>
                                     }
                                 }
                                 else
@@ -233,7 +235,7 @@ The Bride was married like I said before, so this wedding was quite special beca
 
                         @if (context.Revisions != null)
                         {                           
-                            <MudExpansionPanels MultiExpansion=false>
+                            <MudExpansionPanels MultiExpansion=false Elevation="0">
                                 @foreach (var revision in context.Revisions.OrderBy(r => r.RevisionDate))
                                 {
                                     <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
@@ -418,11 +420,6 @@ The Bride was married like I said before, so this wedding was quite special beca
     }
 }
 <style>
-    .mud-expand-panel .mud-expand-panel-header
-    {
-        background: #1b1b24;
-    }
-
     .mud-expand-panel.mud-panel-expanded.editing {
         margin:0px 0px 15px 0px !important;
     }

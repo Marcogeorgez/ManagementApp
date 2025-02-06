@@ -67,7 +67,10 @@
     position: sticky !important;
     top: -20px !important;
     width: 100%;
-    background: #0d0e19;
+    background: inherit;
+}
+.mud-dialog {
+    border-radius: 20px !important;
 }
 .mud-dialog mud-dialog-width-md{
     min-width:300px;
@@ -1026,15 +1029,23 @@ text-decoration: underline;
 
 
 
+.allow-border{
+    border: 1px solid var(--mud-palette-lines-default);
+    margin: 5px 25px;
+    border-radius: 12px;
+}
 
-
+.mud-expand-panel-header {
+    background: #1f2133;
+    margin: 5px 5px;
+}
 .description-error {
     border: rgb(244,47,70)
 }
 .html-editor-label {
     top: -10px;
     left: 15px;
-    width:fit-content;
+    width: fit-content;
     font-size: 12px;
     position: relative;
     background: #0d0e19;
@@ -1045,7 +1056,6 @@ text-decoration: underline;
     letter-spacing: .00938em;
     z-index: 0;
     pointer-events: none;
-    background-color: var(--mud-palette-surface);
     padding: 0px 5px !important;
     transform-origin: top left;
     white-space: nowrap;
