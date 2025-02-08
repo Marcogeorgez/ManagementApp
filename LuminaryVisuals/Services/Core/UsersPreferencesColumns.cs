@@ -68,4 +68,25 @@ public class ColumnPreferenceService
             .FirstOrDefaultAsync();
         return preset.Name!;
     }
+    public async Task DeletePreference(ColumnPreset Preset)
+    {
+        try
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var preset = await context.ColumnPresets.AsTracking().FirstOrDefaultAsync(p => p.Id == Preset.Id);
+            if (preset == null)
+                return;
+            else
+            {
+                context.ColumnPresets.Remove(preset);
+                await context.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            throw new Exception("Failed to delete preset, contact management");
+        }
+
+    }
 }

@@ -5,6 +5,7 @@ using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using System.Diagnostics;
 
 public class UserNotificationService
@@ -17,7 +18,7 @@ public class UserNotificationService
     }
 
     // Creates a new notification
-    public async Task CreateNotification(string message, string? targetRole)
+    public async Task CreateNotification(string message, string? targetRole, Severity Severity)
     {
         using var _context = _contextFactory.CreateDbContext();
 
@@ -25,7 +26,8 @@ public class UserNotificationService
         {
             Message = message,
             CreatedAt = DateTime.UtcNow,
-            TargetRole = targetRole
+            TargetRole = targetRole,
+            SeverityColor = Severity
         };
         if(notification.TargetRole == "Everyone")
         {

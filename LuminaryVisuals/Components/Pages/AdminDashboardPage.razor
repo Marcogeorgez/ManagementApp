@@ -232,18 +232,60 @@
                         Lines="3"
                         Class="mb-4" />
 
-                        <MudSelect T="string" @bind-Value="notification.TargetRole" Required="true" Label="Target Audience" Variant="Variant.Outlined" Class="mb-4">
-                            <MudSelectItem Value="@("Everyone")">Everyone</MudSelectItem>
-                            <MudSelectItem Value="@("Admin")">Admins (only)</MudSelectItem>
-                            <MudSelectItem Value="@("Editor")">Editors (only)</MudSelectItem>
-                            <MudSelectItem Value="@("Clients")">Clients (only)</MudSelectItem>
-                        </MudSelect>
-                        <MudButton Variant="Variant.Filled"
-                        Color="Color.Primary"
-                        FullWidth="true"
-                        OnClick="CreateNotification">
-                            Send Notification
-                        </MudButton>
+                        <MudItem xs="12">
+                            <MudSelect T="Severity" @bind-Value="notification.SeverityColor" Required="true" Label="Type of Alert" Variant="Variant.Outlined" Class="mb-4">
+                                <MudSelectItem Value="Severity.Warning">
+                                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                                        Warning
+                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(Default)</MudText>
+                                    </MudAlert>
+                                </MudSelectItem>
+                                <MudSelectItem Value="Severity.Normal">
+                                    <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Dense="true">Normal</MudAlert>
+                                </MudSelectItem>
+                                <MudSelectItem Value="Severity.Success">
+                                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">Success</MudAlert>
+                                </MudSelectItem>
+                                <MudSelectItem Value="Severity.Info">
+                                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">Info</MudAlert>
+                                </MudSelectItem>
+
+                                <MudSelectItem Value="Severity.Error">
+                                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">Error</MudAlert>
+                                </MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudStack Row="true" AlignItems="AlignItems.Center"  Justify="Justify.SpaceBetween" >
+                            <MudItem xs="4">
+                                <MudSelect T="string" @bind-Value="notification.TargetRole" Required="true" Label="Target Audience" Variant="Variant.Outlined" Class="mb-4">
+                                    <MudSelectItem Value="@("Everyone")">Everyone</MudSelectItem>
+                                    <MudSelectItem Value="@("Admin")">
+                                        Admins
+                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                    </MudSelectItem>
+                                    <MudSelectItem Value="@("Editor")">Editors 
+                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                    </MudSelectItem>
+                                    <MudSelectItem Value="@("Clients")">Clients 
+                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                    </MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="2">
+                                <MudButton Variant="Variant.Outlined" Disabled="@_processing" Color="Color.Info" FullWidth="true" OnClick="CreateNotification">
+                                    @if (_processing)
+                                    {
+                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                        <MudText Class="ms-2">Processing</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>Send Notification</MudText>
+                                    }
+                                </MudButton>
+                            </MudItem>
+                        </MudStack>
                     </MudCard>
                 </MudPaper>
             </MudTabPanel>
@@ -776,22 +818,28 @@
 
     }
     [Inject] private UserNotificationService UserNotificationService { get; set; }
+    private bool _processing = false;
     private async Task CreateNotification()
     {
         try
         {
+            _processing = true;
             if (notification.Message == null || notification.TargetRole == null)
             {
                 Snackbar.Add("Please fill in all the fields first!", Severity.Warning);
                 return;
             }
-            await UserNotificationService.CreateNotification(notification.Message, notification.TargetRole);
+            await UserNotificationService.CreateNotification(notification.Message, notification.TargetRole, notification.SeverityColor);
             Snackbar.Add($"The notification has been added successfully!", Severity.Success);
             notification = new Notification();
         }
         catch(Exception ex)
         {
             Snackbar.Add($"An error has occured: {ex}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
         }
     }
 }
@@ -810,4 +858,9 @@
     td.mud-table-cell > div.mud-input-control.mud-input-control-boolean-input{
         align-items:center;
     }
+
+    .mud-input.mud-input-outlined.mud-input-outlined-with-label.mud-input-adorned-end.mud-shrink.mud-typography-subtitle1.mud-select-input > .mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end.mud-select-input {
+        height:30px;
+    }
+
 </style>
