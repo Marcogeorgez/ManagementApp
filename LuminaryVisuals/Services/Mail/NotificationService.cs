@@ -28,7 +28,7 @@ public class NotificationService : BackgroundService, INotificationService
             var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
 
             var projectUsers = await userService.GetAllUsersAssociatedWithProjectAsync(project);
-
+            var projectName = project.ProjectId > 0 ? $"project {project.ProjectName}" : $"private chat with {project.Client.UserName}";
             if (message.IsApproved)
             {
                 var usersToNotify = projectUsers.Where(u => u.Id != message.UserId);
@@ -39,7 +39,7 @@ public class NotificationService : BackgroundService, INotificationService
                     {
                         UserId = user.Id,
                         Subject = "You have a new message on Synchron ⚡",
-                        Message = $"Hello there, you have received a new message on the project {project.ProjectName}.\n Please reply when you can!",
+                        Message = $"Hello there, you have received a new message on the project {projectName}.\n Please reply when you can!",
                         CreatedAt = DateTime.UtcNow,
                         MessageId = message.MessageId,
                         ProjectId = project.ProjectId
@@ -56,13 +56,48 @@ public class NotificationService : BackgroundService, INotificationService
                     {
                         UserId = user.Id,
                         Subject = "You have a new message approval request on Synchron ⚡",
-                        Message = $"Hello there, you have received a new message approval request  on the project {project.ProjectName} by editor {project.PrimaryEditor}. Review asap!",
+                        Message = $"Hello there, you have received a new message approval request  on the project {projectName} by editor {project.PrimaryEditor}. Review asap!",
                         CreatedAt = DateTime.UtcNow,
                         MessageId = message.MessageId,
                         ProjectId = project.ProjectId
                     };
                     await AddToQueueWithReadCheck(notificationItem);
                 }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while queuing chat notification.");
+        }
+    }
+    public async Task QueuePrivateChatNotification(string userId, Message message, Chat chat)
+    {
+        try
+        {
+            _logger.LogInformation($"Starting to queue chat notification. MessageId: {message.MessageId}, private chat , Sender: {message.UserId}");
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
+
+            List<ApplicationUser> projectUsers = await userService.GetAllAdminsAsync();
+            var user = await userService.GetUserByIdAsync(chat.UserId!); // owner of the chat ( the one who's not an admin )
+
+            var projectName = userId == user.Id
+                ? $"private chat with {user.UserName}"
+                : "Management Chat";
+            projectUsers.Add(user);
+            var usersToNotify = projectUsers.Where(u => u.Id != message.UserId);
+            _logger.LogInformation($"Found {usersToNotify.Count()} users to notify for message {message.UserId} which is an approved message");
+            foreach (var _user in usersToNotify)
+            {
+                var notificationItem = new NotificationQueueItem
+                {
+                    UserId = _user.Id,
+                    Subject = "You have a new message on Synchron ⚡",
+                    Message = $"Hello there, you have received a new message on the {projectName}.\n Please reply when you can!",
+                    CreatedAt = DateTime.UtcNow,
+                    MessageId = message.MessageId,
+                };
+                await AddToQueueWithReadCheck(notificationItem);
             }
         }
         catch (Exception ex)

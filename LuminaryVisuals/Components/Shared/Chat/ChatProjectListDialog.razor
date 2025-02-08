@@ -78,7 +78,7 @@
     [Parameter] public Project SelectedProject { get; set; }
     private int pageSize = 10;
     private int currentPage = 1;
-    private List<Project> projects = new List<Project>(); 
+    private List<Project?> projects = new List<Project?>(); 
     private string MessageRequireApproval = "";
     private bool finishLoading;
     protected override async Task OnInitializedAsync()
