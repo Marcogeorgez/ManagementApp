@@ -198,12 +198,75 @@ th.mud-table-cell.sticky-left:hover {
 .mud-link.mud-link-underline-hover, .html-content-wrapper a {
     color: #1ce6e6 !important;
 }
+
+
+
+
 .link {
     color: rgb(219, 215, 163);
 }
 .link:hover {
     color: rgb(243, 234, 119) !important;
 }
+
+
+/* Normal (Default) */
+.mud-alert .mud-alert-message a {
+    color: rgb(86, 169, 242);
+}
+
+.mud-alert .mud-alert-message a:hover {
+    color: rgb(15, 142, 255) !important;
+}
+
+/* Success */
+.mud-alert.mud-alert-outlined-success .mud-alert-message a {
+    color: rgb(180, 237, 180);
+}
+
+.mud-alert.mud-alert-outlined-success .mud-alert-message a:hover {
+  color: rgb(52, 190, 67) !important;
+
+}
+
+/* Warning */
+.mud-alert.mud-alert-outlined-warning .mud-alert-message a {
+    color: rgb(219, 215, 163);
+}
+
+.mud-alert.mud-alert-outlined-warning .mud-alert-message a:hover {
+    color: rgb(243, 234, 119) !important;
+}
+
+/* Error */
+.mud-alert.mud-alert-outlined-error .mud-alert-message a {
+    color: rgb(255, 187, 193);
+}
+
+.mud-alert.mud-alert-outlined-error .mud-alert-message a:hover {
+    color: rgb(255, 98, 112) !important;
+}
+
+/* Info */
+.mud-alert.mud-alert-outlined-info .mud-alert-message a {
+    color: rgb(32, 199, 236);
+}
+
+.mud-alert.mud-alert-outlined-info .mud-alert-message a:hover {
+    color:rgb(135, 233, 255) !important;
+}
+
+
+.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end.mud-select-input
+.mud-select-option-delete {
+    display: none;
+}
+
+
+
+
+
+
 .mud-list {
     background: #151726 !important;
 }

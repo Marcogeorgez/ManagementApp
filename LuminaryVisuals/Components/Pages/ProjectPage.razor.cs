@@ -226,7 +226,20 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Snackbar.Add($"Error loading preset. please contact support!", Severity.Error);
         }
     }
-
+    private async Task DeletePreset(ColumnPreset Preset)
+    {
+        try
+        {
+            if (_selectedPresetName == Preset.Name)
+                _selectedPresetName = string.Empty;
+            _columnPresets.Remove(Preset);
+            await columnPreferenceService.DeletePreference(Preset);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message,Severity.Error);
+        } 
+    }
     // Open Dialog to Saves the visibility state as a new preset 
     // which can be loaded for fast access to the columns
     private async Task OpenColumnPreferencesDialog()

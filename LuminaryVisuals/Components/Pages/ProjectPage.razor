@@ -21,7 +21,7 @@
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
         @if(notificationList.Count > 0)
         {
-            <MudAlert Severity="Severity.Warning" class="mb-3" Variant="Variant.Outlined" ShowCloseIcon="true" CloseIconClicked="@( () => NotificationClosed(notificationList[0]) )">
+            <MudAlert Severity="notificationList[0].SeverityColor" class="mb-3" Variant="Variant.Outlined" ShowCloseIcon="true" CloseIconClicked="@( () => NotificationClosed(notificationList[0]) )">
 
             @foreach (var part in StringHelper.GetTextAndLinks(notificationList[0].Message))
             {
@@ -96,20 +96,36 @@
                         </MudMenuItem>
 
                         <MudStack Spacing="0" Class="mb-3">
-                            <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset" AnchorOrigin="Origin.BottomCenter" Dense=true
-                            TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined" @bind-Value="_selectedPresetName"
-                            SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)" Clearable=true>
-                                <MudSelectItem Value='"createNewPreset"'>
-                                    <div class="d-flex align-center" style="color: #0baa7a;">
-                                        <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Add" Color="Color.Success" Variant=Variant.Outlined Class="mr-2" />
-                                        <strong>Create New Preset</strong>
+                        <MudSelect T="string" Class="mx-5 my-2 menu-select" Label="Select Preset"
+                                   AnchorOrigin="Origin.BottomCenter" Dense=true
+                                   TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined"
+                                   @bind-Value="_selectedPresetName"
+                                   SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)"
+                                   Clearable=true>
+
+                            <MudSelectItem Value='"createNewPreset"'>
+                                <div class="d-flex align-center" style="color: #0baa7a;">
+                                    <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Add"
+                                             Color="Color.Success" Variant=Variant.Outlined Class="mr-2" />
+                                    <strong>Create New Preset</strong>
+                                </div>
+                            </MudSelectItem>
+
+                            @foreach (var preset in _columnPresets)
+                            {
+                                <MudSelectItem Value="@preset.Name">
+                                    <div class="d-flex align-center justify-space-between" style="width: 100%;">
+                                        <span>@preset.Name</span>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Color="Color.Error"
+                                                       Size="Size.Small"
+                                                       OnClick="async () => await DeletePreset(preset)" 
+                                                       Class="mud-select-option-delete"/>
+
                                     </div>
-                                </MudSelectItem> 
-                                @foreach (var preset in _columnPresets)
-                                {
-                                    <MudSelectItem Value="@preset.Name">@preset.Name</MudSelectItem>
-                                }
-                            </MudSelect>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
                             <MudSwitch T="bool" style="width:100%;"  Class="mb-1" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
                             <MudText Class="ml-5">View as</MudText>
                             <MudStack Row=true Style="background:#151726;" Class="mx-2" Spacing="1">
