@@ -626,7 +626,9 @@ th.mud-table-cell.sticky-left:hover {
     height: max(calc(8vh - 21px), 40px) !important;
     flex: 1 1 auto;
 }
-
+.private-border {
+    border: 2px solid #e6b371 !important;
+}
 
 
 .project-item:hover {
