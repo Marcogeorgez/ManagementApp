@@ -6,6 +6,7 @@ using LuminaryVisuals.Services.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 public class ChatService
 {
@@ -45,28 +46,57 @@ public class ChatService
     public async Task<Message> AddMessageAsync(int projectId, string userId, string message, bool isEditor)
     {
         using var context = _contextFactory.CreateDbContext();
-        var chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
+        Chat? chat;
+        Message newMessage;
+        if (projectId < 0)
+        {
+            chat = await context.Chats.FirstOrDefaultAsync(c => c.ChatId == -projectId);
+            // Create new message
+            newMessage = new Message
+            {
+                ChatId = chat.ChatId,    // Link the message to the existing chat
+                UserId = userId,
+                Content = message,
+                Timestamp = DateTime.UtcNow,
+                IsApproved = true,  // private messages are approved
+                IsDeleted = false
+            };
+
+            context.Messages.Add(newMessage);
+        }
+        else
+        {
+            chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
+            // Create new message
+            newMessage = new Message
+            {
+                ChatId = chat.ChatId,    // Link the message to the existing chat
+                UserId = userId,
+                Content = message,
+                Timestamp = DateTime.UtcNow,
+                IsApproved = !isEditor,  // Editor messages are not approved by default
+                IsDeleted = false
+            };
+
+            context.Messages.Add(newMessage);
+        }
         if (chat == null)
         {
             throw new Exception("Chat for the project not found.");
         }
 
-        // Create new message
-        var newMessage = new Message
-        {
-            ChatId = chat.ChatId,    // Link the message to the existing chat
-            UserId = userId,
-            Content = message,
-            Timestamp = DateTime.UtcNow,
-            IsApproved = !isEditor,  // Editor messages are not approved by default
-            IsDeleted = false
-        };
-
-        context.Messages.Add(newMessage);
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
-        var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
-        _ = Task.Run(() => _notificationService.QueueChatNotification(project!, newMessage));
+        if (projectId > 0)
+        {
+            var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
+            _ = Task.Run(() => _notificationService.QueueChatNotification(project!, newMessage));
+        }
+        else
+        {
+            _ = Task.Run(() => _notificationService.QueuePrivateChatNotification(userId,newMessage,chat));
+
+        }
         return newMessage;
     }
 
@@ -92,8 +122,7 @@ public class ChatService
 
     }
 
-    // Get chat messages for a project
-
+    // Get messages for a project chat
 
     public async Task<List<Message>> GetMessagesAsync(int projectId, bool isClient, int pageNumber = 1, int pageSize = 50)
     {
@@ -114,39 +143,72 @@ public class ChatService
         messages.Reverse();
         return messages;
     }
-    // Creates Chat if it is empty 
+    // Creates Chat if it is empty only for non-admin chats.
     private async Task<Chat> GetOrCreateChatAsync(int projectId)
     {
-        using var context = _contextFactory.CreateDbContext();
-        var chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
-
-        if (chat == null)
+        if (projectId > 0)
         {
-            chat = new Chat
+            using var context = _contextFactory.CreateDbContext();
+            var chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
+
+            if (chat == null)
             {
-                ProjectId = projectId,
-                Messages = new List<Message>()
-            };
+                chat = new Chat
+                {
+                    ProjectId = projectId,
+                    Messages = new List<Message>()
+                };
 
-            context.Chats.Add(chat);
-            await context.SaveChangesAsync();
+                context.Chats.Add(chat);
+                await context.SaveChangesAsync();
+            }
+
+            return chat;
         }
-
-        return chat;
+        // If projectId < 0, that's mean it's an admin-chat therefore the id of the projectId is the same as chatId but the non-negative value of it.
+        else
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var chat = await context.Chats.FirstOrDefaultAsync(c => c.ChatId == -projectId);
+            if (chat == null)
+            {
+                chat = new Chat
+                {
+                    ChatId = -projectId,
+                    Messages = new List<Message>()
+                };
+                context.Chats.Add(chat);
+                await context.SaveChangesAsync();
+            }
+            return chat;
+        }
     }
 
     // Track message read status
     public async Task MarkMessagesAsReadAsync(int projectId, string userId)
     {
         using var context = _contextFactory.CreateDbContext();
-        var unreadMessages = await context.Messages
-            .Where(message => message.Chat.ProjectId == projectId &&
+        List<Message> unreadMessages;
+        if (projectId > 0)
+        {
+             unreadMessages = await context.Messages
+                .Where(message => message.Chat.ProjectId == projectId &&
+                                 !context.ChatReadStatus
+                                     .Where(crs => crs.UserId == userId)
+                                     .Select(crs => crs.MessageId)
+                                     .Contains(message.MessageId))
+                .ToListAsync();
+        }
+        else
+        {
+            unreadMessages = await context.Messages
+            .Where(message => message.ChatId == -projectId &&
                              !context.ChatReadStatus
                                  .Where(crs => crs.UserId == userId)
                                  .Select(crs => crs.MessageId)
                                  .Contains(message.MessageId))
             .ToListAsync();
-
+        }
         var readStatuses = unreadMessages.Select(message => new ChatReadStatus
         {
             MessageId = message.MessageId,
@@ -170,10 +232,18 @@ public class ChatService
                 .Where(crs => crs.UserId == userId)
                 .Select(crs => crs.MessageId)
                 .ToListAsync();
+            IQueryable<Message> query;
+            if (projectId > 0)
+            {
+                 query = context.Messages
+                    .Where(message => message.Chat.ProjectId == projectId);
 
-            var query = context.Messages
-                .Where(message => message.Chat.ProjectId == projectId);
-
+            }
+            else
+            {
+                query = context.Messages
+                    .Where(message => message.ChatId == -projectId);
+            }
             // Get unread message count
             var unreadMessageCount = await query
                 .Where(message => !readMessageIds.Contains(message.MessageId))
@@ -200,51 +270,71 @@ public class ChatService
     }
     public async Task<int> GetUnreadMessageCount(string userId)
     {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return 0;
+        }
+
         try
         {
             using var context = _contextFactory.CreateDbContext();
+            var isAdmin = await _userManager.IsInRoleAsync(
+                await _userManager.FindByIdAsync(userId),
+                "Admin"
+            );
+
+            // Get all read message IDs for the user
             var readMessageIds = await context.ChatReadStatus
                 .Where(crs => crs.UserId == userId)
-                .Join(context.Messages, crs => crs.MessageId, message => message.MessageId, (crs, message) => new { crs, message })
-                .Join(context.Chats, combined => combined.message.ChatId, chat => chat.ChatId, (combined, chat) => new { combined.crs, chat })
-                .Join(context.Projects, combined => combined.chat.ProjectId, project => project.ProjectId, (combined, project) => new { combined.crs, project })
-                .Where(x => !x.project.IsArchived)
-                .Select(x => x.crs.MessageId)
+                .Select(crs => crs.MessageId)
                 .ToListAsync();
 
-            // Check if user is admin
-            if(string.IsNullOrEmpty(userId))
-            {
-                return 0;
-            }
-            var isAdmin = await _userManager.IsInRoleAsync(await _userManager.FindByIdAsync(userId), "Admin");
+            // Start with base query for messages
+            var query = context.Messages
+                .Join(context.Chats,
+                    message => message.ChatId,
+                    chat => chat.ChatId,
+                    (message, chat) => new { message, chat });
 
-            if (readMessageIds.Count > 0)
-            {
-                var unreadMessageCount = await context.Messages
-                    .Join(context.Chats, message => message.ChatId, chat => chat.ChatId, (message, chat) => new { message, chat })
-                    .Join(context.Projects, combined => combined.chat.ProjectId, project => project.ProjectId, (combined, project) => new { combined.message, project })
-                    .Where(x =>
-                        !readMessageIds.Contains(x.message.MessageId) &&
-                        !x.project.IsArchived &&
-                        ( x.project.PrimaryEditorId == userId ||
-                         x.project.SecondaryEditorId == userId ||
-                         x.project.ClientId == userId ||
-                         isAdmin ))
-                    .CountAsync();
+            // Split query based on chat type
+            var projectMessagesQuery = query
+                .Where(x => x.chat.ProjectId != null)
+                .Join(context.Projects,
+                    combined => combined.chat.ProjectId,
+                    project => project.ProjectId,
+                    (combined, project) => new { combined.message, project })
+                .Where(x =>
+                    !x.project.IsArchived &&
+                    ( x.project.PrimaryEditorId == userId ||
+                     x.project.SecondaryEditorId == userId ||
+                     x.project.ClientId == userId ||
+                     isAdmin ));
 
-                return unreadMessageCount;
-            }
-            return 0;
+            var adminChatMessagesQuery = query
+                .Where(x =>
+                    x.chat.IsAdminChat &&
+                    ( x.chat.UserId == userId || isAdmin ));
+
+            // Combine both queries
+            var unreadMessageCount = await projectMessagesQuery
+                .Select(x => x.message.MessageId)
+                .Union(
+                    adminChatMessagesQuery
+                        .Select(x => x.message.MessageId)
+                )
+                .Where(messageId => !readMessageIds.Contains(messageId))
+                .CountAsync();
+
+            return unreadMessageCount;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine($"Error getting unread message count for user {userId}: {ex.Message}");
-            throw;
+            return 0;
         }
     }
 
     // Unsend message (logical delete)
+    // Uses projectId to notify the chat participants of the change
     public async Task UnsendMessageAsync(int projectId, int messageId)
     {
         using var context = _contextFactory.CreateDbContext();
@@ -278,5 +368,45 @@ public class ChatService
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
 
+    }
+
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Ensures that the admin chat exists for the user and only 1 such chat exists.
+    /// </summary>
+    /// <param name="userId">Id of current user that is logged-in</param>
+    /// <returns></returns>
+    public async Task EnsureAdminChat(string userId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var isAdmin = await _userManager.IsInRoleAsync(await _userManager.FindByIdAsync(userId), "Admin");
+
+            if (!isAdmin)
+            {
+                var existingAdminChat = await context.Chats
+                    .FirstOrDefaultAsync(c => c.IsAdminChat && c.UserId == userId);
+
+                if (existingAdminChat == null)
+                {
+                    var newAdminChat = new Chat
+                    {
+                        IsAdminChat = true,
+                        UserId = userId,
+                        Messages = new List<Message>()
+                    };
+
+                    context.Chats.Add(newAdminChat);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
     }
 }

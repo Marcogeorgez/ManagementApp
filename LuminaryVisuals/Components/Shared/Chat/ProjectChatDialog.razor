@@ -212,7 +212,7 @@
                         <div class="d-flex mt-6">
                             @if (isAdminView)
                             {
-                                <MudButton Color="Color.Success" OnClick="AddNewMessage"
+                                <MudButton Color="Color.Success" OnClick="AddNewQuickMessage"
                                 StartIcon="@Icons.Material.Outlined.Add" Variant="Variant.Outlined" Class="mr-auto mb-1 ml-4">Add New Message</MudButton>
                             }
                             <MudButton OnClick="OpenQuickMessages" Class="ml-auto mb-1 mr-5" Color="Color.Error" Variant="Variant.Outlined">Close</MudButton>
@@ -425,7 +425,7 @@
             _isLoading = false;
             return false;
         }
-        
+
     }
     private async Task<bool> SendMessage(string messageToSend)
     {
@@ -509,7 +509,7 @@
 
                 // First load - clear existing messages
                 messages.Clear();
-                await Task.Delay(500);
+                await Task.Delay(100);
                 await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
             }
             else
@@ -545,11 +545,8 @@
         }
 
         finally{
-            if (initial)
-            {
-                await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
-            }
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
+            await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
             finishedLoading = true;
 
         }
@@ -565,7 +562,7 @@
         });
 
     }
-
+    // Quick Messages adding and deleting methods
     private async Task DeleteQuickMessage(QuickMessage message)
     {
         if (!await ConfirmationService.Confirm($"Are you sure you'd like to delete this quick message? It will be deleted for all users."))
@@ -584,7 +581,7 @@
             Logger.LogError($"Failed to delete message {ex}");
         }
     }
-    private async Task AddNewMessage()
+    private async Task AddNewQuickMessage()
     {
         try
         {
@@ -708,7 +705,7 @@
         if (!result!.Canceled)
         {
             StateHasChanged();
-            await ChatService.UnsendMessageAsync(Project.ProjectId, message.MessageId);
+            await ChatService.UnsendMessageAsync(Project.ProjectId, message.MessageId); // uses projectId to notify users of the change
             await LoadMessages(initial: true);
         }
 
@@ -741,7 +738,7 @@
             };  
             var dialog = await DialogService.ShowAsync<EditMessageDialog>("", parameters);
             var result = await dialog.Result;
-            if (!result.Canceled)
+            if (!result!.Canceled)
             {
                 var editedContent = (string) result.Data!;
                 await ChatService.EditMessageAsync(message, Project.ProjectId, editedContent, isEditorView);
@@ -755,7 +752,7 @@
         }
     }
 
-    
+
     private async Task NavigateBack()
     {
         var result = await ShowConfirmationDialog();
@@ -802,7 +799,7 @@
 
             var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
 
-            return await dialog.Result;
+            return await dialog.Result!;
         }
 
         return DialogResult.Ok(true); 
@@ -828,7 +825,14 @@
     [Parameter] public EventCallback<Project> OnOpenProjectDialog { get; set; }
     private async Task OpenDialogFromChat(Project project)
     {
-        await OnOpenProjectDialog.InvokeAsync(project);
+        if(project.ProjectId > 0) // i.e: chat has project, otherwise it's a management chat.
+        {
+            await OnOpenProjectDialog.InvokeAsync(project);
+        }
+        else
+        {
+            return;
+        }
     }
 
 

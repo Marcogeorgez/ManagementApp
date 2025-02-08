@@ -19,17 +19,19 @@ public class ProjectService
     private readonly CircuitUpdateBroadcaster _broadcaster;
     private readonly INotificationService _notificationService;
     private readonly LoggingHours loggingHours;
+    private readonly ChatService chatService;
     private bool IsConcurrencyConflict(DbUpdateException ex) => ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
 
         // Check if the exception is due to a concurrency conflict (e.g., duplicate key)
     
-    public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger,
+    public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger, ChatService chatService,
         CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService, LoggingHours loggingHours)
     {
         _contextFactory = context;
         _logger = logger;
         _broadcaster = projectUpdateService;
         _notificationService = notificationService;
+        this.chatService = chatService;
         this.loggingHours = loggingHours;
     }
 
@@ -181,9 +183,10 @@ public class ProjectService
             return projects;
         }
     }
-    // For chats:
+    // For fetching chats
     public async Task<List<Project?>> GetProjectsForChat(bool isArchived, string userId,bool isAdminView, bool isEditorView, bool isClientView)
     {
+        await chatService.EnsureAdminChat(userId); // creates a 1 admin chat if it doesn't exist for each user that isn't admin.
         using (var context = _contextFactory.CreateDbContext())
         {
             // Query projects with pinned status for the user
@@ -205,7 +208,6 @@ public class ProjectService
                     IsPinned = p.PinnedByUsers.Any(up => up.UserId == userId && up.IsPinned)
                 })
                 .ToListAsync();
-
             // Map the results to include the IsPinned property
             var result = projects.Select(x =>
             {
@@ -213,7 +215,46 @@ public class ProjectService
                 return x.Project;
             }).ToList();
 
-            return result;
+            if (isAdminView)
+            {
+                // For admins, also get all user-admin chats as pseudo-projects
+                List<Project>? adminChats = await context.Chats
+                    .Where(c => c.IsAdminChat)
+                    .Include(c => c.User)
+                    .Select(c => new Project
+                    {
+                        ProjectId = -c.ChatId, // Using negative IDs to avoid conflicts
+                        ProjectName = $"Management Chat",   
+                        ClientId = c.UserId,
+                        Client = c.User,
+                    })
+                    .ToListAsync();
+
+
+                var finalList = result;
+                finalList.InsertRange(0, adminChats);
+                return finalList;
+            }
+            else
+            {
+                // For users to get their admin chat as pseudo-projects
+                List<Project>? adminChat = await context.Chats
+                    .Where(c => c.IsAdminChat && c.UserId == userId)
+                    .Include(c => c.User)
+                    .Select(c => new Project
+                    {
+                        ProjectId = -c.ChatId, // Using negative IDs to avoid conflicts
+                        ProjectName = $"Management Chat",
+                        ClientId = c.UserId,
+                        Client = c.User,
+                    })
+                    .ToListAsync();
+
+
+                var finalList = result;
+                finalList.InsertRange(0, adminChat);
+                return finalList;
+            }
         }
     }
     // Lock to handle concurrency issue
