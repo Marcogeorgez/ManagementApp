@@ -1259,6 +1259,7 @@ th.mud-table-cell.sticky-left {
 .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-subtitle1.mud-input-auto-grow >
 textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end {
     white-space: pre;
+    overflow-y:hidden;
     height: 55px !important;
     max-height: 55px !important;
     transform: translateZ(0);
@@ -1269,7 +1270,7 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
     backface-visibility: hidden;
 }
 div.mud-input-control.mud-input-input-control.outlined-dialog-xl-content {
-    overflow-x: auto;
+    overflow-x: scroll;
     overflow-y: hidden !important;
     resize: horizontal !important;
 }
