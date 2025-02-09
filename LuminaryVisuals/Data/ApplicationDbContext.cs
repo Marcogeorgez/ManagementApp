@@ -2,6 +2,7 @@ using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Reflection.Emit;
 
 namespace LuminaryVisuals.Data
@@ -300,7 +301,24 @@ namespace LuminaryVisuals.Data
                 new CalculationOption { Id = 14, CalculationParameterId = 4, OptionName = "Excellent", Multiplier = 0.9m }
 
             );
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(new ValueConverter<DateTime, DateTime>(
+                            v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+
+                        property.SetValueConverter(new ValueConverter<DateTime?, DateTime?>(
+                            v => v.HasValue ? ( v.Value.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) ) : v,
+                            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v));
+                    }
+                }
+            }
         }
+
     }
 
 }

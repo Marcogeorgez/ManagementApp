@@ -20,8 +20,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     private bool _loading = true;
     private bool _loadingIndicator;
     private bool isSelectorVisible;
-    [CascadingParameter]
-    public ClaimsPrincipal? currentUser { get; set; }
+    [CascadingParameter] public ClaimsPrincipal? currentUser { get; set; }
     private MudDataGrid<Project> _dataGrid = new();
     private List<Project?> projects = new List<Project?>();
     private Project? projectToDelete;

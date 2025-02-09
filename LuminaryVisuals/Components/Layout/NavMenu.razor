@@ -49,13 +49,20 @@ OpenMiniOnHover="true"  Elevation="0" >
         </AuthorizeView>
         <AuthorizeView Roles="Admin,Client,Editor">
             <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
-            <MudBadge Content="@totalUnreadMessages" Color="Color.Error" Origin="Origin.TopRight" Overlap="true" 
-            Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
-                <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email"IconColor="Color.Tertiary"
-                Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
-            </MudBadge>
         </AuthorizeView>
 
+        <AuthorizeView Roles="Admin,Editor">
+            <MudNavLink Href="Calendar" Icon="@Icons.Material.Filled.CalendarMonth" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Calender</MudNavLink>
+        </AuthorizeView>
+
+
+        <AuthorizeView Roles="Admin,Client,Editor">
+            <MudBadge Content="@totalUnreadMessages" Color="Color.Error" Origin="Origin.TopRight" Overlap="true"
+                      Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
+                <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email" IconColor="Color.Tertiary"
+                            Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
+            </MudBadge>
+        </AuthorizeView>
         <MudSpacer />
         <MudNavLink Href="https://forms.gle/jiJsFEJKNdyRzWfw7" Target="_blank"  
         Icon="@Icons.Material.Filled.BugReport" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Report bug</MudNavLink>
