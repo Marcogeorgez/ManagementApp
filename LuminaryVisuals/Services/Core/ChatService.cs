@@ -42,6 +42,32 @@ public class ChatService
         }
     }
 
+    public async Task AddMessageAsync(string userId, string message)
+    {
+        await EnsureAdminChat(userId);
+        using var context = _contextFactory.CreateDbContext();
+        var chat = await context.Chats.FirstOrDefaultAsync(c => c.UserId == userId);
+        // Create new message
+        var newMessage = new Message
+        {
+            ChatId = chat.ChatId,    // Link the message to the existing chat
+            UserId = userId,
+            Content = message,
+            Timestamp = DateTime.UtcNow,
+            IsApproved = true,  // private messages are approved
+            IsDeleted = false
+        };
+
+        context.Messages.Add(newMessage);
+        
+        if (chat == null)
+        {
+            throw new Exception("Chat for the project not found.");
+        }
+
+        await context.SaveChangesAsync();
+    }
+
     // Add a new message to the chat
     public async Task<Message> AddMessageAsync(int projectId, string userId, string message, bool isEditor)
     {

@@ -584,7 +584,12 @@ public class ProjectService
                     _project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
                         ? userNames[project.SecondaryEditorId]!
                         : null;
-                    
+
+                    string messageToSend = $"Project {_project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {_project.Status.ToString().Replace('_', ' ')}.";
+                    if (oldStatus == ProjectStatus.Ready_To_Review)
+                        messageToSend.Replace("Ready To Review", "Working");
+                    if(_project.Status == ProjectStatus.Ready_To_Review)
+                    _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, messageToSend) );
                     _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId));
                 }
                 _ = Task.Run(() =>  _broadcaster.NotifyAllAsync());
@@ -673,7 +678,9 @@ public class ProjectService
                         : null;
                 }
 
-          
+
+                string messageToSend = $"Project {project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_',' ')} to {project.Status.ToString().Replace('_', ' ')}.";
+                _ = Task.Run(() => chatService.AddMessageAsync(project.Client.Id, messageToSend));
                 _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(project, oldStatus, newStatus, updatedByUserId));
             }
 
