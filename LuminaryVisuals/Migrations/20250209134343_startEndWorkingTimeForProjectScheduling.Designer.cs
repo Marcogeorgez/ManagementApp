@@ -3,6 +3,7 @@ using System;
 using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250209134343_startEndWorkingTimeForProjectScheduling")]
+    partial class startEndWorkingTimeForProjectScheduling
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1021,7 +1024,7 @@ namespace LuminaryVisuals.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("DATE");
 
-                    b.Property<DateTime?>("EndDate")
+                    b.Property<DateTime?>("EndWorkingTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("ExternalOrder")
@@ -1074,7 +1077,7 @@ namespace LuminaryVisuals.Migrations
                     b.Property<DateTime>("ShootDate")
                         .HasColumnType("DATE");
 
-                    b.Property<DateTime?>("StartDate")
+                    b.Property<DateTime?>("StartWorkingTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")

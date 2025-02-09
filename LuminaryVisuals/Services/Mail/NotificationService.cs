@@ -155,7 +155,36 @@ public class NotificationService : BackgroundService, INotificationService
             AddToQueue(notificationItem);
         }
     }
+    public async Task QueueProjectScheduleUpdated(Project project, string UserId)
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<UserServices>();
 
+            var adminUsers = await userService.GetAllAdminsAsync();
+            var user = await userService.GetUserByIdAsync(UserId);
+
+            foreach (var admin in adminUsers)
+            {
+                var notificationItem = new NotificationQueueItem
+                {
+                    UserId = admin.Id,
+                    Subject = $"The project {project.ProjectName} Schedule has been modified by {user.UserName}⚡",
+                    Message = $@"
+                            <p>The project for the client <strong>{project.Client.UserName}</strong> Schedule has been changed to<strong>Start Date:  {project.StartDate?.Date.ToString("MM-dd-yyyy")} and End Date:  {project.EndDate?.Date.ToString("MM-dd-yyyy")} </strong> on 
+                            <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                AddToQueue(notificationItem);
+            }
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError($"{ex}");
+        }
+    }
     public async Task NewUserJoinedNoitifcation(ApplicationUser User)
     {
         try

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using LuminaryVisuals.Models;
+using MudBlazor;
 
 public class Project
 {
@@ -57,6 +58,17 @@ public class Project
     [DataType(DataType.Date)]
     [Display(Name = "Due Date")]
     public DateTime? DueDate { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    [NotMapped]
+    public DateRange? Range {
+    get => new(StartDate, EndDate);
+        set
+        {
+            StartDate = value?.Start;
+            EndDate = value?.End;
+        }
+    }
 
     [Range(0, 100)]
     [Display(Name = "Progress")]

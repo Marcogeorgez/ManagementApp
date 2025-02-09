@@ -7,10 +7,12 @@ using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Shared;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using Npgsql;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static LuminaryVisuals.Components.Pages.CalenderPage;
 
 public class ProjectService
 {
@@ -76,6 +78,35 @@ public class ProjectService
             }
 
             await context.SaveChangesAsync();
+            return projects;
+        }
+    }
+    public async Task<List<Project>> GetProjectsDateRangeCalenderAsync(bool isArchived, DateRange dateRange, bool isAdmin,string userId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var projects = await context.Projects
+                .Where(p => p.IsArchived == isArchived &&
+                    (
+                        ( dateRange.Start == null || p.ShootDate >= dateRange.Start ) &&
+                        ( dateRange.End == null || p.ShootDate <= dateRange.End ) ||
+                        ( dateRange.Start == null || p.DueDate >= dateRange.Start ) &&
+                        ( dateRange.End == null || p.DueDate <= dateRange.End ) ||
+                        ( dateRange.Start == null || p.StartDate >= dateRange.Start ) &&
+                        ( dateRange.End == null || p.StartDate <= dateRange.End ) ||
+                        ( dateRange.Start == null || p.EndDate >= dateRange.Start ) &&
+                        ( dateRange.End == null || p.EndDate <= dateRange.End )
+                    )
+                )
+                .Include(p => p.Client)
+                .Include(p => p.PrimaryEditor)
+                .Include(p => p.SecondaryEditor)
+                .ToListAsync();
+            if(!isAdmin)
+            {
+                projects = projects.Where(p => p.PrimaryEditor?.Id == userId || p.SecondaryEditor?.Id == userId).ToList();
+            }
+
             return projects;
         }
     }
@@ -376,7 +407,29 @@ public class ProjectService
             }
         }
     }
+    public async Task UpdateProjectAsync(ExtendedCalendarItem calendarItem, string updatedByUserId, bool isAdmin)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var _project = await context.Projects
+                .AsTracking()
+                .Include(p => p.PrimaryEditorDetails)
+                .Include(p => p.SecondaryEditorDetails)
+                .Include(p => p.Client)
+                .FirstOrDefaultAsync(p => p.ProjectId == calendarItem.ProjectId);
 
+            _project.StartDate = calendarItem.Start;
+            _project.EndDate = calendarItem.End;
+
+            await context.SaveChangesAsync();
+
+            if (isAdmin == false)
+                _ = Task.Run(() => _notificationService.QueueProjectScheduleUpdated(_project, updatedByUserId));
+
+
+        }
+
+    }
     public async Task UpdateProjectAsync(Project project, string updatedByUserId)
     {
         using (var context = _contextFactory.CreateDbContext())

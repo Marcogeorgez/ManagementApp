@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection()
                 .UseCryptographicAlgorithms(
@@ -214,6 +215,8 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdminClientEditor", policy =>
         policy.RequireRole("Admin", "Client", "Editor"));
+    options.AddPolicy("RequireAdminEditor", policy =>
+        policy.RequireRole("Admin", "Editor"));
     options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
     options.AddPolicy("RequireEditorRole", policy => policy.RequireRole("Editor"));
     options.AddPolicy("RequireClientRole", policy => policy.RequireRole("Client"));
