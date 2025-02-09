@@ -63,7 +63,7 @@
             {
                 <MudTabs Outlined="true" Centered="true" Color="Color.Dark" PanelClass="flex-column" Rounded="true" Elevation="2" SliderAnimation="true"
                 Ripple="true">
-                    <MudTabPanel Text="Projects Chats" Icon="@Icons.Material.Filled.Group" Style="min-width:178px !important;"
+                    <MudTabPanel Text="Projects Chats" Icon="@Icons.Material.Filled.Group" Style="min-width:200px !important;"
                     BadgeData="@(GetTotalUnreadMessages(false) > 0 ? GetTotalUnreadMessages(false).ToString() : null)"
                     BadgeColor="Color.Error" >
                     <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
@@ -88,7 +88,7 @@
                     </MudList>
                 </MudTabPanel>
 
-                    <MudTabPanel Icon="@Icons.Material.Filled.PersonAddAlt1" Text="Direct Chats" Style="min-width:178px !important;"
+                    <MudTabPanel Icon="@Icons.Material.Filled.PersonAddAlt1" Text="Direct Chats" Style="min-width:200px !important;"
                     BadgeData="@(GetTotalUnreadMessages(true) > 0 ? GetTotalUnreadMessages(true).ToString() : null)"
                     BadgeColor="Color.Error" >
                     <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
