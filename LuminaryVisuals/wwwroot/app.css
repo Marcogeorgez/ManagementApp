@@ -1351,6 +1351,18 @@ div.mud-input-control.mud-input-input-control.outlined-dialog-xl-content {
     overflow-y: hidden !important;
     resize: horizontal !important;
 }
+/* Scrollbar Track */
+::-webkit-scrollbar {
+    width: 10px; /* Width for vertical scrollbar */
+    height: 10px; /* Height for horizontal scrollbar */
+}
+
+/* Handle (Draggable part) */
+::-webkit-resizer {
+    background-color: #333339;
+}
+
+
 .mud-button-outlined {
     border-width: 2px !important;
 }
