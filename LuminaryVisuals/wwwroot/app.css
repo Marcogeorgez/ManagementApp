@@ -10,7 +10,10 @@
 
 }
 
-
+.mud-tabs-tabbar,
+.mud-paper.mud-paper-outlined.chat-header {
+    border-radius: 8px !important;
+}
 .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input, .mud-input.mud-input-outlined.mud-input-adorned-end.mud-shrink.mud-typography-input {
     border-radius: 8px !important;
 } 
