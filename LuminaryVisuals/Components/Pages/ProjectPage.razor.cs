@@ -12,6 +12,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using System.Security.Claims;
 using System.Text.Json;
+using static MudBlazor.CategoryTypes;
 namespace LuminaryVisuals.Components.Pages;
 
 public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
@@ -1227,7 +1228,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     private Project? draggedProject;
     private Project? dropTarget;
     private bool isDragging;
-
+    private int isDragOver = 0;
 
 
     private string GetRowClass(Project project, int rowNumber)
@@ -1262,6 +1263,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
 
     private void HandleDragEnter(Project target)
     {
+        isDragOver = target.ProjectId;
         if (draggedProject == null || target == null)
             return;
         if (draggedProject?.ProjectId != target.ProjectId)
@@ -1273,6 +1275,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
 
     private void HandleDragLeave(Project target)
     {
+        isDragOver = 0;
         if (draggedProject == null || target == null)
             return;
         if (target != null && dropTarget?.ProjectId == target.ProjectId)
@@ -1287,7 +1290,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         try
         {
             LoadingService.ShowLoading();
-
+            isDragOver = 0;
             if (draggedProject == null || targetProject == null)
                 return;
 
@@ -1363,30 +1366,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         StateHasChanged();
     }
 
-    private async Task ToggleUrgentVisibility(Project project)
-    {
-        try
-        {
-            LoadingService.ShowLoading();
-
-            var newValue = !project.IsUrgent;
-            project.IsUrgent = newValue;
-            await UpdateProjectAsync(project);
-            if (newValue == true)
-            { Snackbar.Add($"Warning is visible now.", Severity.Success); }
-            else
-            {
-                Snackbar.Add($"Warning is hidden now.", Severity.Info);
-            }
-            LoadingService.HideLoading();
-
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add("Failed to add warning!", Severity.Error);
-            Console.WriteLine($"Error updating warning urgent visibility: {ex.Message}");
-        }
-    }
     private async Task TogglePaymentVisibility(Project project)
     {
         try
