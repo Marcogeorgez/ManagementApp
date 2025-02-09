@@ -38,6 +38,7 @@
         }
         
         <LoadingIndicator IsVisible="@_loadingIndicator" />
+
         <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey
         Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.75); transform-style: flat;" 
         Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None" 
@@ -52,7 +53,7 @@
         CommittedItemChanges="@CommittedItemChanges" ItemSize="52.1f" 
         FixedHeader="true" Height="126vh;" Virtualize="true" OverscanCount="6" Loading="@_loading"
         VirtualizeServerData="ServerDataFunc" 
-        RowClassFunc="@GetRowClass">
+        RowClassFunc="@GetRowClass" >
 
 
             <ToolBarContent>
@@ -231,7 +232,9 @@
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
                                 <div style="height:30px;"
-                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") flex-row  justify-center align-center ml-n3 "
+                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") 
+                                    @(isDragOver == context.Item.ProjectId ? "border-2 mud-border-primary border-dashed" : "")
+                                    flex-row  justify-center align-center ml-n3 "
                                 draggable="true"
                                 @ondragstart="@(() => HandleDragStart(context.Item))"
                                 @ondragover:preventDefault
@@ -732,12 +735,12 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("SecondaryEditor"))
                 {
-                    <PropertyColumn Property="x => x.SecondaryEditorName" Title="2nd Editor" Hideable="true" Hidden="@(GetColumnVisibility("SecondaryEditorName"))"
+                <PropertyColumn Property="x => x.SecondaryEditorName" Title="Second Editor" Hideable="true" Hidden="@(GetColumnVisibility("SecondaryEditorName"))"
                     Groupable="true" Editable=false Required=false CellStyle="text-align:center;">
 
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.SecondaryEditorName" 
-                            Class=@($"outlined-dialog-name-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
+                            Class=@($"outlined-dialog-name-content {(context.Item.SecondaryEditor?.UserName == null ? "grey-border" : "yellow-border")} {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenSecondaryEditorDialog(context.Item)) : null )"
                             ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
                         </CellTemplate>
@@ -1283,38 +1286,6 @@
 </MudMainContent>
 
 
-<style>
-.cursor-move {
-    cursor: grab;
-}
-    
-.being-dragged {
-    opacity: 0.6;
-    cursor: grabbing;
-    background-color: var(--mud-palette-success);
-}
-    
-.drop-target {
-    border-top: 2px solid var(--mud-palette-primary);
-
-}
-    
-.drag-handle {
-    display: flex;
-    align-items: center;
-    cursor: grab;
-}
-    
-.drag-handle:hover {
-    background-color: var(--mud-palette-background-grey);
-    border-radius: 4px;
-}
-.drag-handle.grabbing {
-    cursor: grabbing;
-}
-
-
-</style>
 <script>
         window.copyToClipboard = (text) => {
         navigator.clipboard.writeText(text).then(() => {

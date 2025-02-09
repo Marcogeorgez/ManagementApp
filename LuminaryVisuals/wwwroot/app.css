@@ -74,10 +74,15 @@
     background: inherit;
 }
 .mud-dialog {
-    border-radius: 20px !important;
+    border-radius: 16px ;
 }
-.mud-dialog mud-dialog-width-md{
-    min-width:300px;
+.mud-dialog.mud-dialog-width-md
+{
+    border-radius: 0px !important;
+}
+
+.mud-dialog mud-dialog-width-md {
+    min-width: 300px;
 }
 
 /* When the <tr> is hovered, apply inherit to .sticky-left cells */
@@ -858,11 +863,14 @@ th.mud-table-cell.sticky-left:hover {
     scrollbar-color: #efefef #012b52; /* Thumb and track colors */
 }
 
-
+.mud-tab-badge {
+}
 .chat-header {
     background-color: #012b52;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1300,7 +1308,7 @@ th.mud-table-cell:nth-child(1):not([class*="Id"]):not([data-label="Id"]) {
         z-index: 2;
     }
     .mud-table-row > .mud-table-cell:first-child:not([class*="Id"]):not([data-label="Id"]):has(+ .mud-table-cell.sticky-left) {
-        background-color: #191920 !important;
+        background-color: #191920 ;
 
     }
     /* Default state: black background */
@@ -1402,4 +1410,37 @@ div.mud-input-control.mud-input-input-control.outlined-dialog-xl-content {
 .mud-appbar.mud-appbar-dense.mud-appbar-fixed-top.mud-elevation-2
 {
     width:100%;
+}
+
+
+.cursor-move {
+    cursor: grab;
+}
+
+tr.mud-table-row.being-dragged > td, .being-dragged{
+    opacity: 0.8;
+    background-color: var(--mud-palette-success) !important;
+}
+tr.mud-table-row.drop-target > td, .drop-target {
+    background: linear-gradient(45deg, rgba(var(--mud-palette-primary-rgb), 0.1) 49.5%, rgba(var(--mud-palette-primary-rgb), 0.2) 49.5%, rgba(var(--mud-palette-primary-rgb), 0.2) 50.5%, rgba(var(--mud-palette-primary-rgb), 0.1) 50.5%) !important;
+    background-size: 8px 8px !important;
+    opacity: 1;
+    cursor: grabbing;
+}
+.drag-handle {
+    display: flex;
+    align-items: center;
+    cursor: grab;
+}
+
+.drag-handle.grabbing {
+    cursor: grabbing;
+}
+.not-draggable {
+    pointer-events: none !important;
+}
+.mud-drop-item[draggable="false"] {
+    transform: none !important;
+    touch-action: auto !important;
+    cursor: default !important;
 }
