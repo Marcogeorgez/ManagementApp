@@ -42,30 +42,37 @@ public class ChatService
         }
     }
 
-    public async Task AddMessageAsync(string userId, string message)
+    public async Task AddMessageAsync(string userId, string updatedByUserId, string message)
     {
-        await EnsureAdminChat(userId);
-        using var context = _contextFactory.CreateDbContext();
-        var chat = await context.Chats.FirstOrDefaultAsync(c => c.UserId == userId);
-        // Create new message
-        var newMessage = new Message
+        try
         {
-            ChatId = chat.ChatId,    // Link the message to the existing chat
-            UserId = userId,
-            Content = message,
-            Timestamp = DateTime.UtcNow,
-            IsApproved = true,  // private messages are approved
-            IsDeleted = false
-        };
+            await EnsureAdminChat(userId);
+            using var context = _contextFactory.CreateDbContext();
+            var chat = await context.Chats.FirstOrDefaultAsync(c => c.UserId == userId);
+            // Create new message
+            var newMessage = new Message
+            {
+                ChatId = chat.ChatId,    // Link the message to the existing chat
+                UserId = updatedByUserId,
+                Content = message,
+                Timestamp = DateTime.UtcNow,
+                IsApproved = true,  // private messages are approved
+                IsDeleted = false
+            };
+            Console.WriteLine(updatedByUserId);
+            context.Messages.Add(newMessage);
 
-        context.Messages.Add(newMessage);
-        
-        if (chat == null)
-        {
-            throw new Exception("Chat for the project not found.");
+            if (chat == null)
+            {
+                throw new Exception("Chat for the project not found.");
+            }
+
+            await context.SaveChangesAsync();
         }
-
-        await context.SaveChangesAsync();
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
     }
 
     // Add a new message to the chat
