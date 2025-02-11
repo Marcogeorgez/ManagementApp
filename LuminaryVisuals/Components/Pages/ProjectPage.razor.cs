@@ -200,7 +200,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             {
                 _columnVisibility[column.Name] = column.isHidden;
             }
-            Snackbar.Add("You've removed the filter", Severity.Info);
             return;
         }
         try
@@ -218,7 +217,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             _columnVisibility = preferences;
 
             StateHasChanged();
-            Snackbar.Add($"Preset '{presetName}' loaded successfully", Severity.Success);
         }
         catch (Exception ex)
         {

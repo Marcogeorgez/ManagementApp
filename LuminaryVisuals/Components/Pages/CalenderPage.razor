@@ -1,23 +1,25 @@
 ﻿@attribute [Authorize(Policy = "RequireAdminEditor")]
 @page "/Calendar"
+@using LuminaryVisuals.Components.ProjectPageDialogue
 
 <PageTitle>Calendar</PageTitle>
 
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
     <MudPaper>
-        <MudCalendar Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" 
-            EnableDragItems="true" EnableResizeItems="true" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged" >
+        <MudCalendar @ref=_calender Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" 
+            EnableDragItems="true" EnableResizeItems="true" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged"  ItemClicked="ShowCalenderProject" >
             <ToolbarContent>
 
                 <MudStack Row="true">
                     <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Small" Class="mx-1 my-2" Variant="Variant.Outlined">
+                        <MudAutocomplete T="Project" Label="Select Project"
+                                         @bind-Value="selectedProject"
+                                         SearchFunc="@Search1"
+                                         ToStringFunc="@(p => p?.ProjectName ?? "")"
+                                         ResetValueOnEmptyText="true"
+                                         CoerceText="true"
+                                         CoerceValue="true" />
 
-                            <MudSelect class="mb-3" T="Project" Label="Select Project" @bind-Value="selectedProject" >
-                                @foreach (var project in filteredProjects)
-                            {
-                                <MudSelectItem Value="@project">@project.ProjectName</MudSelectItem>
-                            }
-                        </MudSelect>
                         @if (selectedProject != null)
                         {
                             <MudDateRangePicker   @bind-DateRange="@selectedProject.Range" Margin="Margin.Dense" Clearable="true"
@@ -32,10 +34,10 @@
 
 
 
-                    <MudSelect T="ProjectStatus" Label="Status Filter" ValueChanged="OnStatusFilterChanged" Class=""  style="min-width:150px;">
+                    <MudSelect T="string" Label="Status Filter" Value="@_statusFilterString" ValueChanged="OnStatusFilterChanged" Class="" style="min-width:150px;">
                         @foreach (var status in GetUniqueStatuses())
                         {
-                            <MudSelectItem Value="@status">@status.ToString().Replace('_',' ')</MudSelectItem>
+                            <MudSelectItem Value="@status.ToString()">@status.ToString().Replace('_',' ')</MudSelectItem>
                         }
                     </MudSelect>
 
@@ -61,14 +63,14 @@
                     if (extendedItem.DueDate == false)
                     {
                         <div class="d-flex gap-1 not-draggable">
-                            <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Info" Size="Size.Small" />
+                            <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Info" Size="Size.Small" />
                             <div>@context.Text </div>
                         </div>
                     }
                     else
                     {
                         <div class="d-flex gap-1 not-draggable">
-                            <MudIcon Icon="@Icons.Material.Filled.Circle" Color="@(extendedItem.IsUrgent ? Color.Warning : Color.Default)" Size="Size.Small" />
+                            <MudIcon Icon="@Icons.Material.Rounded.CameraRoll" Color="@(extendedItem.IsUrgent ? Color.Warning : Color.Default)" Size="Size.Small" />
                             <div>@context.Text </div>
                         </div>
                     }
@@ -91,7 +93,7 @@
     private List<Project> filteredProjects = new();
     private ProjectStatus? statusFilter;
     private string? editorFilter;
-    private Project? selectedProject {get; set; } = new() ;
+    private Project? selectedProject = new() ;
     public class ExtendedCalendarItem : CalendarItem
     {
         public bool IsDot { get; set; } = false;
@@ -103,6 +105,8 @@
     string _currentUserId;
     string _userName;
     bool isAdmin;
+    DateRange date;
+    string _statusFilterString;
     protected override Task OnInitializedAsync()
     {
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
@@ -117,7 +121,7 @@
         _events.Clear();
 
         allProjects = await projectService.GetProjectsDateRangeCalenderAsync(false, dateRange, isAdmin, _currentUserId);
-
+        date = dateRange;
         await ApplyFilters();
 
         await JS.InvokeVoidAsync("updateDraggable");
@@ -125,7 +129,7 @@
     }
     private async Task ApplyFilters()
     {
-        foreach (var project in allProjects)
+        try
         {
             filteredProjects = allProjects.ToList();
             if (statusFilter != null)
@@ -134,16 +138,20 @@
             }
             if (!string.IsNullOrEmpty(editorFilter))
             {
-                filteredProjects = filteredProjects.Where(p => 
+                filteredProjects = filteredProjects.Where(p =>
                     (p.PrimaryEditor != null && p.PrimaryEditor.UserName == editorFilter)
-                  ||(p.SecondaryEditor != null && p.SecondaryEditor.UserName == editorFilter)
+                    || (p.SecondaryEditor != null && p.SecondaryEditor.UserName == editorFilter)
                 ).ToList();
 
             }
             UpdateEvents();
             await JS.InvokeVoidAsync("updateDraggable");
-
         }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+
     }
     private void UpdateEvents()
     {
@@ -160,7 +168,9 @@
                         IsDot = true,
                         AllDay = false,
                         Text = project.ProjectName,
-                        IsUrgent = false
+                        IsUrgent = false,
+                            ProjectId = project.ProjectId
+
                     });
             }
 
@@ -174,7 +184,9 @@
                         IsDot = true,
                         DueDate = true,
                         Text = project.ProjectName,
-                        IsUrgent = project.IsUrgent
+                        IsUrgent = project.IsUrgent,
+                            ProjectId = project.ProjectId
+
                     });
             }
 
@@ -195,9 +207,10 @@
         }
 
     }
-    private void OnStatusFilterChanged(ProjectStatus status)
+    private void OnStatusFilterChanged(string status)
     {
-        statusFilter = status;
+        _statusFilterString = status;
+        statusFilter = (ProjectStatus)Enum.Parse(typeof(ProjectStatus), _statusFilterString);
         ApplyFilters();
         StateHasChanged();
     }
@@ -212,6 +225,7 @@
     // Clear filters
     private void ClearFilters()
     {
+        _statusFilterString = "";
         statusFilter = null;
         editorFilter = null;
         ApplyFilters();
@@ -244,7 +258,6 @@
         {
 
             await projectService.UpdateProjectAsync(extendedItem, _currentUserId, isAdmin);
-            Snackbar.Add($"Project: {changedItem.Text} Date has been updated successfully.", Severity.Success);
 
         }
         else
@@ -255,13 +268,50 @@
 
         await Task.CompletedTask;
     }
+    [Inject]
+    private IDialogService DialogService { get; set; }
+    private async Task ShowCalenderProject(CalendarItem item)
+    {
+        var clickedItem = (ExtendedCalendarItem)item;
+        var project = filteredProjects.FirstOrDefault(p => p.ProjectId == clickedItem.ProjectId);
+        var parameters = new DialogParameters
+        {
+            ["project"] = project
+        };
+
+        var dialog = await DialogService.ShowAsync<CalendarDialog>("", parameters);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            if (result.Data is Project _project)
+            {
+                ExtendedCalendarItem extendedItem = new();
+                if (_project.StartDate != null)
+                {
+                    extendedItem.Start = _project.StartDate!.Value;
+                    extendedItem.End = _project.EndDate;
+                    extendedItem.ProjectId = _project.ProjectId;
+                }
+                await DateChanged(extendedItem);
+                await ApplyFilters();
+            }
+            StateHasChanged();
+        }
+
+    }
+
 
     [Inject] IJSRuntime JS { get; set; }
+    private MudCalendar _calender;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+
+            _calender.Refresh();
             await JS.InvokeVoidAsync("updateDraggable");
+
+
         }
     }
     [Inject] ISnackbar Snackbar { get; set; }
@@ -282,7 +332,18 @@
             }
         }
     }
+    private async Task<IEnumerable<Project>> Search1(string value, CancellationToken token)
+    {
+        if (filteredProjects == null)
+            return new List<Project>();
 
+        if (string.IsNullOrWhiteSpace(value))
+            return filteredProjects.ToList();  // Return all projects when search is empty
+
+        return filteredProjects.Where(x =>
+            x.ProjectName?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false
+        );
+    }
     private void Cancel()
     {
         selectedProject = null;
