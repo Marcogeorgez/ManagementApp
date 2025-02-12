@@ -1486,8 +1486,6 @@ tr.mud-table-row.drop-target > td, .drop-target {
     background-color: #2196f3;
     position: relative;
     cursor: pointer;
-    margin-bottom: 60px;
-    margin-right: 3px;
     transform: rotate(180deg);
     
 }
@@ -1498,7 +1496,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
     position: absolute;
     cursor: pointer;
     bottom: 40px;
-    right: 19px;
+    right: 20px;
 }
 .arrow-top div, .arrow-bottom div {
     position: absolute;
@@ -1515,4 +1513,9 @@ tr.mud-table-row.drop-target > td, .drop-target {
 }
 .arrow-bottom div {
     transform: translate(-50%, -50%);
+}
+
+.mud-scroll-to-top:hover *, .arrow-bottom:hover {
+    background-color: #008eff !important;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
