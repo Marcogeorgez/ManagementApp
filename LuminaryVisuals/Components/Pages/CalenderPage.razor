@@ -7,7 +7,7 @@
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
     <MudPaper>
         <MudCalendar @ref=_calender Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" ButtonVariant="Variant.Outlined" Color="Color.Info"
-                     EnableDragItems="true" EnableResizeItems="true" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged" ItemClicked="ShowCalenderProject" >
+                     EnableDragItems="@canDrag" EnableResizeItems="@canDrag" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged" ItemClicked="ShowCalenderProject">
             <ToolbarContent>
 
                 <MudStack Row="true">
@@ -94,6 +94,7 @@
     private ProjectStatus? statusFilter;
     private string? editorFilter;
     private Project? selectedProject = new() ;
+    private bool canDrag => BreakpointService.CurrentBreakpoint >= Breakpoint.Md;
     public class ExtendedCalendarItem : CalendarItem
     {
         public bool IsDot { get; set; } = false;
@@ -102,6 +103,13 @@
         public int ProjectId = 0;
     }
     [CascadingParameter] public ClaimsPrincipal? currentUser { get; set; }
+    [Inject] private BreakpointService BreakpointService { get; set; }
+
+    public void Dispose()
+    {
+        BreakpointService.OnChange -= StateHasChanged;
+    }
+
     string _currentUserId;
     string _userName;
     bool isAdmin;
@@ -112,6 +120,7 @@
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
         _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
         isAdmin = currentUser.IsInRole("Admin");
+        BreakpointService.OnChange += StateHasChanged;
         return base.OnInitializedAsync();
     }
 

@@ -99,6 +99,7 @@ OpenMiniOnHover="true"  Elevation="0" >
     private System.Timers.Timer _refreshTimer;
     [Inject] private IBrowserViewportService BrowserViewportService { get; set; }
     private Breakpoint _start;
+    [Inject] private BreakpointService BreakpointService { get; set; }
     Guid IBrowserViewportObserver.Id { get; } = Guid.NewGuid();
     ResizeOptions IBrowserViewportObserver.ResizeOptions { get; } = new()
     {
@@ -111,12 +112,14 @@ OpenMiniOnHover="true"  Elevation="0" >
         if (browserViewportEventArgs.IsImmediate)
         {
             _start = browserViewportEventArgs.Breakpoint;
+            BreakpointService.CurrentBreakpoint = _start;
         }
         else
         {
             if (_start != browserViewportEventArgs.Breakpoint)
             {
                 _start = browserViewportEventArgs.Breakpoint;
+                BreakpointService.CurrentBreakpoint = _start;
                 InvokeAsync(() => UpdateLayoutForScreenSize());
             }
         }

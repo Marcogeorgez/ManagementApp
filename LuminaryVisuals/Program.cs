@@ -116,6 +116,8 @@ builder.Services.AddSingleton<CircuitUpdateBroadcaster>();
 builder.Services.AddScoped<PayoneerSettingsService>();
 builder.Services.AddScoped<UndoRedoService>();
 builder.Services.AddScoped<UserNotificationService>();
+builder.Services.AddScoped<BreakpointService>();
+
 builder.Services.AddHttpClient();
 // Google Authentication 
 builder.Services.AddAuthentication().AddGoogle(googleOptions =>
