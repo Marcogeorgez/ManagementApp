@@ -1,12 +1,15 @@
 ﻿<MudDialog>
     <DialogContent>
-        <MudTextField Label="Project Name" Variant="Variant.Outlined" T="string" Value="@project.ProjectName" ReadOnly="true" />
-        <MudTextField Label="Primary Editor" Variant="Variant.Outlined" T="string" Value="@project.PrimaryEditor?.UserName" ReadOnly="true" />
-        <MudTextField Label="Secondary Editor" Variant="Variant.Outlined" T="string" Value="@project.SecondaryEditor?.UserName" ReadOnly="true" />
-        <MudTextField Label="Shoot Date" Variant="Variant.Outlined" T="DateTime?" Value="@project.ShootDate" ReadOnly="true" />
-        <MudTextField Label="Due Date" Variant="Variant.Outlined" T="DateTime?" Value="@project.DueDate" ReadOnly="true" />
+        <MudGrid Class="mt-5" Style="flex-direction:column;" >
+        <MudTextField Label="Project Name" Variant="Variant.Outlined" T="string" Value="@project.ProjectName" ReadOnly="!isAdmin" />
+        <MudTextField Label="Client Name" Variant="Variant.Outlined" T="string" Value="@project.Client.UserName" ReadOnly="!isAdmin" />
+        <MudTextField Label="Primary Editor" Variant="Variant.Outlined" T="string" Value="@project.PrimaryEditor?.UserName" ReadOnly="!isAdmin" />
+        <MudTextField Label="Secondary Editor" Variant="Variant.Outlined" T="string" Value="@project.SecondaryEditor?.UserName" ReadOnly="!isAdmin" />
+        <MudTextField Label="Shoot Date" Variant="Variant.Outlined" T="DateTime?" Value="@project.ShootDate" ReadOnly="!isAdmin" />
+        <MudTextField Label="Due Date" Variant="Variant.Outlined" T="DateTime?" Value="@project.DueDate" ReadOnly="!isAdmin" />
         <MudDateRangePicker @bind-DateRange="@project.Range" Margin="Margin.Dense" Clearable="true"
-        PlaceholderStart="Start Date" PlaceholderEnd="End Date" Label="Date Range" />
+        PlaceholderStart="Start Date" PlaceholderEnd="End Date" Label="Date Range"Variant="Variant.Outlined" />
+        </MudGrid>
     </DialogContent>
     <DialogActions>
         <MudButton Color=Color.Error Variant="Variant.Outlined" OnClick="Cancel">Cancel</MudButton>
@@ -17,6 +20,8 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project project { get; set; } = new();
+    [Parameter] public bool isAdmin { get; set; }
+
 
     private void Submit()
     {
