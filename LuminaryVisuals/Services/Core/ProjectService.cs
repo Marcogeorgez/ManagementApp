@@ -233,6 +233,7 @@ public class ProjectService
                 .Include(p => p.SecondaryEditor)
                 .Include(p => p.Revisions)
                 .OrderBy(p => p.InternalOrder)
+                .Include(p => p.Chat)
                 .Select(p => new
                 {
                     Project = p,

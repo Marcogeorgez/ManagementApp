@@ -15,7 +15,7 @@
 <div @ref="chatContainerRef">
     <MudContainer Class="chat-container" Gutters=false >
         <MudPaper Elevation="4" Class="chat-panel">
-            <MudPaper Elevation="3" Class="chat-header" Outlined="true">
+            <MudPaper Elevation="3" Class="@GetChatHeader()" Outlined="true">
                 <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
                 <button @onclick="() => OpenDialogFromChat(Project)">
                     <MudText Typo="Typo.h6" Class="chat-title">
@@ -159,7 +159,7 @@
             </MudContainer>
 
 
-            <MudPaper Class="chat-input-area d-flex justify-center" Elevation="0" style="align-items:center;">
+            <MudPaper Class="@GetClassNames()" Elevation="0" style="align-items:center;">
                 <MudPopover Open="@_openQuickMessage" Fixed="true" Class="pb-4" Delay="100" Duration="150" >
                     <div class="d-flex flex-column">
                         <MudTabs Outlined="true" Centered="true" Border="true" Rounded="true">
@@ -249,6 +249,10 @@
     </MudContainer>
 </div>
 @code {
+    private string GetClassNames() =>
+        $"chat-input-area d-flex justify-center {(isPrivateChat ? "private-chat" : "")}";
+    private string GetChatHeader() => 
+        $"chat-header {(isPrivateChat ? "private-chat" : "")}";
     private bool isMenuOpen;
     private bool IsDragging;
     [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;
@@ -274,6 +278,8 @@
     private bool _isLoading;
     private List<QuickMessage> quickMessages = new List<QuickMessage>();
     private MudFileUpload<IBrowserFile> _fileUploadReference;
+    private bool isPrivateChat;
+
     private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
     ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
@@ -296,7 +302,7 @@
     {
         if (!isClientView)
             quickMessages = await QuickMessageService.GetAllMessagesAsync();
-
+        isPrivateChat = Project.ProjectId < 0 ? true : false ;
         ProjectState.OnChange += HandleProjectChange;
         await LoadMessages(true);
         await MarkMessagesAsRead();

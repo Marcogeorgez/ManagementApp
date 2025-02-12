@@ -1456,3 +1456,63 @@ tr.mud-table-row.drop-target > td, .drop-target {
     touch-action: auto !important;
     cursor: default !important;
 }
+
+.private-chat {
+    background-color: #745031;
+}
+.chat-header.private-chat:hover {
+    background-color: rgb(142, 99, 62);
+}
+.private-chat .mud-input-outlined-border {
+    border-color: white !important;
+}
+.private-chat .mud-button-root.mud-icon-button.mud-ripple.mud-ripple-icon.mud-menu-icon-button-activator{
+    
+    color: white !important;
+}
+.private-chat .mud-input-adornment-icon-button,
+.private-chat .mud-icon-button {
+    color: white !important;
+    fill: white !important; /* Ensures the SVG icon inside turns white */
+}
+.private-chat .mud-input > textarea.mud-input-root::placeholder
+{
+    opacity: 0.92 !important;
+}
+
+.arrow-top {
+    width: 50px;
+    height: 30px;
+    background-color: #2196f3;
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 60px;
+    margin-right: 3px;
+    transform: rotate(180deg);
+    
+}
+.arrow-bottom {
+    width: 50px;
+    height: 30px;
+    background-color: #2196f3;
+    position: absolute;
+    cursor: pointer;
+    bottom: 40px;
+    right: 19px;
+}
+.arrow-top div, .arrow-bottom div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 12px solid white;
+}
+.arrow-top div {
+    transform: translate(-50%, -50%);
+}
+.arrow-bottom div {
+    transform: translate(-50%, -50%);
+}

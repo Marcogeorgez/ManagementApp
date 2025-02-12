@@ -19,24 +19,7 @@
 
 
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
-        @if(notificationList.Count > 0)
-        {
-            <MudAlert Severity="notificationList[0].SeverityColor" class="mb-3" Variant="Variant.Outlined" ShowCloseIcon="true" CloseIconClicked="@( () => NotificationClosed(notificationList[0]) )">
 
-            @foreach (var part in StringHelper.GetTextAndLinks(notificationList[0].Message))
-            {
-                @if (StringHelper.IsLink(part))
-                {
-                    <a class="link" href="@part" target="_blank">@part</a>
-                }
-                else
-                {
-                    @part
-                }
-            }
-            </MudAlert>
-        }
-        
         <LoadingIndicator IsVisible="@_loadingIndicator" />
 
         <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey
@@ -138,11 +121,7 @@
                     }
 
                 </MudMenu>
-                <MudTooltip ShowOnClick=false Text="Scroll to Bottom" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
-                    <MudIconButton Class="pa-1 mt-1" Icon="@Icons.Material.Sharp.ArrowCircleDown" Color="Color.Tertiary"
-                    OnClick="OnClick" Size="Size.Large">
-                    </MudIconButton>
-                </MudTooltip>
+
 
                 
 
@@ -1283,6 +1262,23 @@
                 IsClientView="@_isClientView" isEditorView="@_isEditorView"
                 TimezoneOffsetMinutes="@timezoneOffsetMinutes" /> </div>
         }
+            <MudScrollToTop TopOffset="100" 
+                            Selector=".mud-table-container"
+                            VisibleCssClass="visible absolute"
+                            HiddenCssClass="invisible" ScrollBehavior="ScrollBehavior.Smooth" >
+
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div class="arrow-top" >
+                        <div />
+                    </div>
+                </div>
+            </MudScrollToTop>
+
+
+                <div class="arrow-bottom" @onclick="OnClick">
+                    <div @onclick="OnClick"/>
+                </div>
+
 </MudMainContent>
 
 
