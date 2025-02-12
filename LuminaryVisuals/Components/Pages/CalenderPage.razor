@@ -34,7 +34,7 @@
 
 
 
-                    <MudSelect T="string" Label="Status Filter" Value="@_statusFilterString" ValueChanged="OnStatusFilterChanged" Class="" style="min-width:150px;">
+                    <MudSelect T="string" Label="Status Filter" Value="@_statusFilterString" ValueChanged="OnStatusFilterChanged" Class="mb-3" style="min-width:150px;">
                         @foreach (var status in GetUniqueStatuses())
                         {
                             <MudSelectItem Value="@status.ToString()">@status.ToString().Replace('_',' ')</MudSelectItem>
@@ -43,7 +43,7 @@
 
                     @if(isAdmin)
                     {
-                        <MudSelect T="string" Label="Editor Filter" Value="@editorFilter" style="min-width:150px;" 
+                        <MudSelect T="string" Label="Editor Filter" Value="@editorFilter" style="min-width:150px;"  Class="mb-3" 
                         ValueChanged="OnEditorFilterChanged">
                             @foreach (var editor in GetUniqueEditors())
                             {
