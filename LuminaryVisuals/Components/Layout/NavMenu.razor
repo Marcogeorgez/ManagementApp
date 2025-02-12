@@ -58,9 +58,9 @@ OpenMiniOnHover="true"  Elevation="0" >
 
         <AuthorizeView Roles="Admin,Client,Editor">
             <MudBadge Content="@totalUnreadMessages" Color="Color.Error" Origin="Origin.TopRight" Overlap="true"
-                      Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
+            Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
                 <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email" IconColor="Color.Tertiary"
-                            Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
+                Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
             </MudBadge>
         </AuthorizeView>
         <MudSpacer />
@@ -127,24 +127,7 @@ OpenMiniOnHover="true"  Elevation="0" >
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
-        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-        if (currentUser.IsInRole("Admin"))
-        {
-            _currentRole = "Admin";
-            isAdminView = true;
-        }
-        else if (currentUser.IsInRole("Editor"))
-        {
-            _currentRole = "Editor";
-            isEditorView = true;
 
-        }
-        else if (currentUser.IsInRole("Client"))
-        {
-            _currentRole = "Client";
-            isClientView = true;
-        }
-        totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
         SetupPeriodicRefresh();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -156,6 +139,25 @@ OpenMiniOnHover="true"  Elevation="0" >
             await InvokeAsync(StateHasChanged);
             await UpdateLayoutForScreenSize();
             await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+            if (_currentUserId == null) return;
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            if (currentUser.IsInRole("Admin"))
+            {
+                _currentRole = "Admin";
+                isAdminView = true;
+            }
+            else if (currentUser.IsInRole("Editor"))
+            {
+                _currentRole = "Editor";
+                isEditorView = true;
+
+            }
+            else if (currentUser.IsInRole("Client"))
+            {
+                _currentRole = "Client";
+                isClientView = true;
+            }
+            totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
             StateHasChanged();
 
 
@@ -184,6 +186,23 @@ OpenMiniOnHover="true"  Elevation="0" >
 
     private void OpenChatPopup()
     {
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        if (currentUser.IsInRole("Admin"))
+        {
+            _currentRole = "Admin";
+            isAdminView = true;
+        }
+        else if (currentUser.IsInRole("Editor"))
+        {
+            _currentRole = "Editor";
+            isEditorView = true;
+
+        }
+        else if (currentUser.IsInRole("Client"))
+        {
+            _currentRole = "Client";
+            isClientView = true;
+        }
         var options = new DialogOptions
             {
                 CloseButton = true,
@@ -192,6 +211,7 @@ OpenMiniOnHover="true"  Elevation="0" >
             };
         var parameters = new DialogParameters<ChatProjectListDialog>
         {
+
             { "userId" , _currentUserId },
             { "isAdminView" , isAdminView },
             { "isEditorView" , isEditorView },

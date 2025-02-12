@@ -1,0 +1,99 @@
+﻿<MudDialog>
+    <DialogContent>
+        @foreach(var notification in notificationList)
+        {
+            <MudAlert Severity="notification.SeverityColor"
+            Variant="Variant.Outlined"
+            Class="my-5">
+                @foreach (var part in StringHelper.GetTextAndLinks(notification.Message))
+                {
+                    @if (StringHelper.IsLink(part))
+                    {
+                        <a class="link" href="@part" target="_blank">@part</a>
+                    }
+                    else
+                    {
+                        @part
+                    }
+                }
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDialog" Variant="Variant.Outlined" Color="Color.Default" Disabled="@isCloseDisabled">Close  @(remainingTime > 0 ? $"({remainingTime}s)" : "")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<Notification> notificationList { get; set; }
+    [Parameter] public string _currentUserId { get; set; }
+    [Parameter] public bool isAdmin { get; set; }
+    [Inject] private UserNotificationService UserNotificationService { get; set; }
+    private int remainingTime = 10;
+    private bool isCloseDisabled = true;
+    private System.Threading.Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        if (notificationList.Count > 0)
+        {
+            StartCloseTimer();
+        }
+    }
+
+    private void StartCloseTimer()
+    {
+        timer = new System.Threading.Timer(async _ =>
+       {
+           if (remainingTime > 0)
+           {
+               remainingTime--;
+               await InvokeAsync(StateHasChanged);
+           }
+           else
+           {
+               isCloseDisabled = false;
+               timer?.Dispose(); // Stop the timer
+               await InvokeAsync(StateHasChanged);
+
+           }
+       }, null, 0, 1000); // Fire every second
+    }
+
+    private async Task CloseDialog()
+    {
+        if (!isCloseDisabled)
+        {
+            await NotificationClosed();
+            timer?.Dispose();
+            MudDialog.Close();
+        }
+    }
+    private async Task NotificationClosed()
+    {
+        foreach (var _notification in notificationList)
+        {
+            await SendNotificationToChat(_notification);
+            await UserNotificationService.DismissNotification(_currentUserId, _notification.Id);
+        }
+    }
+    [Inject] ChatService chatService { get; set; }
+    [Inject] UserServices userService { get; set; }
+    public async Task SendNotificationToChat(Notification notification)
+    {
+        if (isAdmin) return;
+        var adminUsers = await userService.GetAllAdminsAsync();
+        if (adminUsers.Count <= 0) return;
+        string messageToSend = $"You've dismissed this alert: {notification.Message} ";
+        await chatService.AddMessageAsync(_currentUserId, adminUsers[0].Id, messageToSend);
+
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+ 
+}

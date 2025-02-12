@@ -83,20 +83,32 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     };
     private List<Notification> notificationList = new();
     [Inject] private UserNotificationService UserNotificationService { get; set; }
-    private async Task NotificationClosed(Notification notification)
-    {
-        await UserNotificationService.DismissNotification(_currentUserId, notification.Id);
-        notificationList.Remove(notification);
-        StateHasChanged();
-    }
     private async Task GetUserNotifications()
     {
         if (_currentUserId == null)
         {
             return;
         }
-
         notificationList = await UserNotificationService.GetActiveNotificationsForUser(_currentUserId, _currentRole);
+
+        if (notificationList.Count > 0)
+        {
+            var parameters = new DialogParameters
+            {
+                ["notificationList"] = notificationList,
+                ["_currentUserId"] = _currentUserId,
+                ["isAdmin"] = isAdminView
+            };
+            var dialogOptions = new DialogOptions
+            {
+                CloseButton = false
+            };
+            var dialog = await DialogService.ShowAsync<AlertDialog>("", parameters, dialogOptions);
+        }
+        else
+        {
+            return;
+        }
     }
     private void HandleProjectStateChange()
     {
@@ -148,9 +160,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         if (firstRender)
         {
             timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
-            await GetUserNotifications();
             _loading = false;
             StateHasChanged();
+            await GetUserNotifications();
+
         }
 
     }
