@@ -29,7 +29,6 @@
             <MudContainer Class="chat-content" Gutters="false" @onscroll="OnScroll"
             @ondragenter="HandleDragEnter" @ondragleave="OnContainerDragLeave">
 
-
                 <MudStack Style="@($"width:100%; height: 100%; z-index:10 {(IsDragging == true || _currentFile != null ? "" : "display:none;")}")">
                     <MudFileUpload T="IBrowserFile" 
                     Style="@($"text-align:center;position:sticky;z-index:2; height:100%; width:100%; top:0px; {(IsDragging ? "" : "display:none;")}")"
@@ -78,6 +77,11 @@
                     {
                         <MudProgressCircular Color="Color.Info" Indeterminate="true" Style="margin-top:0px!important;align-self:center;position:relative;   "/>
                     }
+
+                    <div class="chat-pinned-text" style="@(isPrivateChat == true ? "display:none;" : isClientView ? "" : "display:none;")">
+                        Discuss here all details related to this project expect payment issues. <br/> 
+                        <span style="text-align: center;   display: block;">For those go to the direct chat with the administrator.</span>
+                    </div>
 
                     @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
                     {
