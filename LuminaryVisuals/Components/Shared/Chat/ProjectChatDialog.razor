@@ -14,7 +14,7 @@
 
 <div @ref="chatContainerRef">
     <MudContainer Class="chat-container" Gutters=false >
-        <MudPaper Elevation="4" Class="chat-panel">
+        <MudPaper Elevation="4" Class="@GetChatPanel()">
             <MudPaper Elevation="3" Class="@GetChatHeader()" Outlined="true">
                 <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
                 <button @onclick="() => OpenDialogFromChat(Project)">
@@ -64,7 +64,7 @@
                     </MudFileUpload>
                     @if(_currentFile != null)
                     {
-                        <MudToolBar Gutters="@false" Class="relative d-flex justify-end gap-4 mx-5">
+                        <MudToolBar Gutters="@false" Class="relative d-flex justify-end gap-4 mx-5" Style="z-index:1000;">
                             <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Send"
                             OnClick="Upload" Variant="Variant.Outlined" Disabled="@_isLoading">Send</MudButton>
                             <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Cancel" 
@@ -257,6 +257,8 @@
         $"chat-input-area d-flex justify-center {(isPrivateChat ? "private-chat" : "")}";
     private string GetChatHeader() => 
         $"chat-header {(isPrivateChat ? "private-chat" : "")}";
+    private string GetChatPanel() =>
+     $"chat-panel {(isPrivateChat ? "private-chat" : "")}";
     private bool isMenuOpen;
     private bool IsDragging;
     [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;

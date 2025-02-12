@@ -6,8 +6,8 @@
 
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
     <MudPaper>
-        <MudCalendar @ref=_calender Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" ButtonVariant="Variant.Outlined" Color="Color.Info" 
-            EnableDragItems="true" EnableResizeItems="true" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged"  ItemClicked="ShowCalenderProject" >
+        <MudCalendar @ref=_calender Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" ButtonVariant="Variant.Outlined" Color="Color.Info"
+                     EnableDragItems="true" EnableResizeItems="true" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged" ItemClicked="ShowCalenderProject" >
             <ToolbarContent>
 
                 <MudStack Row="true">
@@ -270,14 +270,19 @@
     }
     [Inject]
     private IDialogService DialogService { get; set; }
+    [Inject] UserManager<ApplicationUser> _userManager { get; set; }
+    public List<ApplicationUser>? Editors { get; set; }
+
     private async Task ShowCalenderProject(CalendarItem item)
     {
         var clickedItem = (ExtendedCalendarItem)item;
         var project = filteredProjects.FirstOrDefault(p => p.ProjectId == clickedItem.ProjectId);
+        Editors = (await _userManager.GetUsersInRoleAsync("Editor")).ToList();
         var parameters = new DialogParameters
         {
             ["project"] = project,
-            ["isAdmin"] = isAdmin
+            ["isAdmin"] = isAdmin,
+            ["Editors"] = Editors
         };
 
         var dialog = await DialogService.ShowAsync<CalendarDialog>("", parameters);
@@ -292,6 +297,11 @@
                     extendedItem.Start = _project.StartDate!.Value;
                     extendedItem.End = _project.EndDate;
                     extendedItem.ProjectId = _project.ProjectId;
+                }
+                if(isAdmin && project != null)
+                {
+                    await projectService.UpdateProjectAsync(project ,_currentUserId);
+
                 }
                 await DateChanged(extendedItem);
                 await ApplyFilters();
