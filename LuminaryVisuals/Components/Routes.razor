@@ -8,7 +8,7 @@
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData"
-                            DefaultLayout="@typeof(Layout.MainLayout)">
+        DefaultLayout="@typeof(Layout.MainLayout)">
             <NotAuthorized>
                 <RedirectToHome />
             </NotAuthorized>
@@ -40,6 +40,10 @@
             {
                 NavManager.NavigateTo("/guest", replace: true);
                 return;
+            }
+            if(currentPath == "/")
+            {
+                NavManager.NavigateTo("/project", replace: true);
             }
 
         }
