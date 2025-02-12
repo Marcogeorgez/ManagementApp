@@ -127,7 +127,25 @@ OpenMiniOnHover="true"  Elevation="0" >
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        if (_currentUserId == null) return;
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        if (currentUser.IsInRole("Admin"))
+        {
+            _currentRole = "Admin";
+            isAdminView = true;
+        }
+        else if (currentUser.IsInRole("Editor"))
+        {
+            _currentRole = "Editor";
+            isEditorView = true;
 
+        }
+        else if (currentUser.IsInRole("Client"))
+        {
+            _currentRole = "Client";
+            isClientView = true;
+        }
+        totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
         SetupPeriodicRefresh();
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -139,23 +157,26 @@ OpenMiniOnHover="true"  Elevation="0" >
             await InvokeAsync(StateHasChanged);
             await UpdateLayoutForScreenSize();
             await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
-            if (_currentUserId == null) return;
-            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-            if (currentUser.IsInRole("Admin"))
+            if (_currentUserId == null)
             {
-                _currentRole = "Admin";
-                isAdminView = true;
-            }
-            else if (currentUser.IsInRole("Editor"))
-            {
-                _currentRole = "Editor";
-                isEditorView = true;
+                _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+                if (_currentUserId == null) return;
+                if (currentUser.IsInRole("Admin"))
+                {
+                    _currentRole = "Admin";
+                    isAdminView = true;
+                }
+                else if (currentUser.IsInRole("Editor"))
+                {
+                    _currentRole = "Editor";
+                    isEditorView = true;
 
-            }
-            else if (currentUser.IsInRole("Client"))
-            {
-                _currentRole = "Client";
-                isClientView = true;
+                }
+                else if (currentUser.IsInRole("Client"))
+                {
+                    _currentRole = "Client";
+                    isClientView = true;
+                }
             }
             totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
             StateHasChanged();
@@ -186,22 +207,25 @@ OpenMiniOnHover="true"  Elevation="0" >
 
     private void OpenChatPopup()
     {
-        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-        if (currentUser.IsInRole("Admin"))
+        if (_currentUserId is null)
         {
-            _currentRole = "Admin";
-            isAdminView = true;
-        }
-        else if (currentUser.IsInRole("Editor"))
-        {
-            _currentRole = "Editor";
-            isEditorView = true;
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            if (currentUser.IsInRole("Admin"))
+            {
+                _currentRole = "Admin";
+                isAdminView = true;
+            }
+            else if (currentUser.IsInRole("Editor"))
+            {
+                _currentRole = "Editor";
+                isEditorView = true;
 
-        }
-        else if (currentUser.IsInRole("Client"))
-        {
-            _currentRole = "Client";
-            isClientView = true;
+            }
+            else if (currentUser.IsInRole("Client"))
+            {
+                _currentRole = "Client";
+                isClientView = true;
+            }
         }
         var options = new DialogOptions
             {

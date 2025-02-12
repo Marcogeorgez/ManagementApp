@@ -1519,3 +1519,12 @@ tr.mud-table-row.drop-target > td, .drop-target {
     background-color: #008eff !important;
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
+.chat-pinned-text {
+    display: block;
+    margin: 20px;
+    position: sticky;
+    top: 20px;
+    align-self: center;
+    z-index: 10;
+    text-shadow: 1px 1px 2px rgb(223, 147, 134);
+}
