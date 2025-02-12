@@ -6,12 +6,12 @@
 
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
     <MudPaper>
-        <MudCalendar @ref=_calender Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" 
+        <MudCalendar @ref=_calender Items="_events" ShowDay="false" ShowWeek="false" MonthCellMinHeight="115" Height="700" ButtonVariant="Variant.Outlined" Color="Color.Info" 
             EnableDragItems="true" EnableResizeItems="true" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged"  ItemClicked="ShowCalenderProject" >
             <ToolbarContent>
 
                 <MudStack Row="true">
-                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Small" Class="mx-1 my-2" Variant="Variant.Outlined">
+                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2" Variant="Variant.Outlined">
                         <MudAutocomplete T="Project" Label="Select Project"
                                          @bind-Value="selectedProject"
                                          SearchFunc="@Search1"
@@ -63,14 +63,14 @@
                     if (extendedItem.DueDate == false)
                     {
                         <div class="d-flex gap-1 not-draggable">
-                            <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Info" Size="Size.Small" />
+                            <MudIcon Icon="@Icons.Material.Filled.CameraRoll" Color="Color.Info" Size="Size.Small" />
                             <div>@context.Text </div>
                         </div>
                     }
                     else
                     {
                         <div class="d-flex gap-1 not-draggable">
-                            <MudIcon Icon="@Icons.Material.Rounded.CameraRoll" Color="@(extendedItem.IsUrgent ? Color.Warning : Color.Default)" Size="Size.Small" />
+                            <MudIcon Icon="@Icons.Material.Rounded.Flag" Color="@(extendedItem.IsUrgent ? Color.Warning : Color.Default)" Size="Size.Small" />
                             <div>@context.Text </div>
                         </div>
                     }
@@ -276,7 +276,8 @@
         var project = filteredProjects.FirstOrDefault(p => p.ProjectId == clickedItem.ProjectId);
         var parameters = new DialogParameters
         {
-            ["project"] = project
+            ["project"] = project,
+            ["isAdmin"] = isAdmin
         };
 
         var dialog = await DialogService.ShowAsync<CalendarDialog>("", parameters);
