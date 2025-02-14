@@ -89,7 +89,9 @@
 @code {
     [Inject] private ProjectService projectService { get; set;}
     private List<ExtendedCalendarItem> _events = new();
+    private List<Project>? allProjectsInDateRange = new();
     private List<Project>? allProjects = new();
+
     private List<Project> filteredProjects = new();
     private ProjectStatus? statusFilter;
     private string? editorFilter;
@@ -115,13 +117,19 @@
     bool isAdmin;
     DateRange date;
     string _statusFilterString;
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
         _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
         isAdmin = currentUser.IsInRole("Admin");
+        if(isAdmin)
+        {
+            allProjects = await projectService.GetProjectsAsync(false);
+        }
+        else{
+            allProjects = allProjectsInDateRange;
+        }
         BreakpointService.OnChange += StateHasChanged;
-        return base.OnInitializedAsync();
     }
 
     private async Task DateRangeChanged(DateRange dateRange)
@@ -129,7 +137,7 @@
         // Clear previous events if needed
         _events.Clear();
 
-        allProjects = await projectService.GetProjectsDateRangeCalenderAsync(false, dateRange, isAdmin, _currentUserId);
+        allProjectsInDateRange = await projectService.GetProjectsDateRangeCalenderAsync(false, dateRange, isAdmin, _currentUserId);
         date = dateRange;
         await ApplyFilters();
 
@@ -140,7 +148,7 @@
     {
         try
         {
-            filteredProjects = allProjects.ToList();
+            filteredProjects = allProjectsInDateRange.ToList();
             if (statusFilter != null)
             {
                 filteredProjects = filteredProjects.Where(p => p.Status == statusFilter).ToList();
@@ -242,16 +250,16 @@
     }
     private IEnumerable<ProjectStatus> GetUniqueStatuses()
     {
-        return allProjects.Select(p => p.Status).Distinct();
+        return allProjectsInDateRange.Select(p => p.Status).Distinct();
     }
 
     private IEnumerable<string> GetUniqueEditors()
     {
-        var primaryEditors = allProjects
+        var primaryEditors = allProjectsInDateRange
             .Where(p => p.PrimaryEditor != null)
             .Select(p => p.PrimaryEditor!.UserName);
 
-        var secondaryEditors = allProjects
+        var secondaryEditors = allProjectsInDateRange
             .Where(p => p.SecondaryEditor != null)
             .Select(p => p.SecondaryEditor!.UserName);
 
@@ -342,6 +350,13 @@
             if(selectedProject.Range?.Start != null && selectedProject.Range?.End != null)
             {
                 await projectService.UpdateProjectAsync(selectedProject, _currentUserId);
+                var projectToUpdate = allProjectsInDateRange.FirstOrDefault(p => p.ProjectId == selectedProject.ProjectId);
+                if (projectToUpdate != null)
+                {
+                    projectToUpdate.StartDate = selectedProject.StartDate;
+                    projectToUpdate.EndDate = selectedProject.EndDate;
+                    projectToUpdate.Range = selectedProject.Range;
+                }
                 Snackbar.Add("It have been saved successfully.", Severity.Success);
                 await ApplyFilters();
             }
@@ -354,13 +369,13 @@
     }
     private async Task<IEnumerable<Project>> Search1(string value, CancellationToken token)
     {
-        if (filteredProjects == null)
+        if (allProjects == null)
             return new List<Project>();
 
         if (string.IsNullOrWhiteSpace(value))
-            return filteredProjects.ToList();  // Return all projects when search is empty
+            return allProjects.ToList();  // Return all projects when search is empty
 
-        return filteredProjects.Where(x =>
+        return allProjects.Where(x =>
             x.ProjectName?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false
         );
     }
