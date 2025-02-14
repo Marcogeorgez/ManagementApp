@@ -992,7 +992,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         filteredItems = _dataGrid.FilteredItems.ToList();
                     }
                     var csvContent = await GenerateCsvContentFilteredPayoneer(filteredItems);
-                    var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_YYYY}.csv";
+                    var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_yyyy}.csv";
                     await DownloadFile(filename, csvContent);
                 
             }
@@ -1190,7 +1190,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
                 settings.Currency,
                 EscapeCsvValueDescritpion(projectDescription),
-                DateTime.Now.AddDays(7).ToString("dd-MM-yyyy")
+                DateTime.Now.AddDays(7).ToString("dd/MM/yyyy")
             ));
         }
         return csv.ToString();

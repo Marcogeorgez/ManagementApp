@@ -798,7 +798,6 @@ public class ProjectService
                 _project.SubmissionStatus = project.SubmissionStatus;
                 context.Projects.Update(_project);
                 await context.SaveChangesAsync();
-                await _broadcaster.NotifyAllAsync();
             }
             else
             {
@@ -1071,7 +1070,6 @@ public class ProjectService
             {
                 var project = await context.Projects
                     .AsTracking()
-                    .Where(p => p.ProjectId == _project.ProjectId)
                     .Include(p => p.Client)
                     .Include(p => p.PrimaryEditor)
                     .Include(p => p.SecondaryEditor)
@@ -1094,6 +1092,7 @@ public class ProjectService
                     context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;
                 }
 
+
                 // Calculate secondary editor details
                 if (project.SecondaryEditor != null && project.SecondaryEditorDetails.BillableHours != null)
                 {
@@ -1103,7 +1102,9 @@ public class ProjectService
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                await _broadcaster.NotifyAllAsync();
+
+                _ = Task.Run(() => _broadcaster.NotifyAllAsync());
+
             }
             catch (Exception ex)
             {
