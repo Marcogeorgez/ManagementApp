@@ -10,8 +10,8 @@
                      EnableDragItems="@canDrag" EnableResizeItems="@canDrag" DateRangeChanged="DateRangeChanged" ItemChanged="DateChanged" ItemClicked="ShowCalenderProject">
             <ToolbarContent>
 
-                <MudStack Row="true">
-                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2" Variant="Variant.Outlined">
+                <MudStack Row="true" style="align-items:center;">
+                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2"  Variant="Variant.Outlined">
                         <MudAutocomplete T="Project" Label="Select Project"
                                          @bind-Value="selectedProject"
                                          SearchFunc="@Search1"
@@ -51,6 +51,17 @@
                             }
                         </MudSelect>
                     }
+                    <MudIconButton Icon="@Icons.Material.Rounded.Flag"
+                               OnClick="toggleFlag" Size="Size.Medium"
+                               Variant="Variant.Filled"
+                               Color="@(showFlag ? Color.Primary : Color.Default)">
+                    </MudIconButton>
+
+                    <MudIconButton Icon="@Icons.Material.Filled.CameraRoll"
+                               OnClick="toggleCameraRoll"
+                                   Variant="Variant.Filled" Size="Size.Medium"
+                               Color="@(showCameraRoll ? Color.Primary : Color.Default)">
+                    </MudIconButton>
                     <MudButton OnClick="ClearFilters" Class="mx-1 my-2" Variant="Variant.Outlined">Clear Filters</MudButton>
                 </MudStack>
             </ToolbarContent>
@@ -60,14 +71,14 @@
                 }
                 @if (extendedItem?.IsDot == true)
                 {
-                    if (extendedItem.DueDate == false)
+                    if (extendedItem.DueDate == false && showCameraRoll == true)
                     {
                         <div class="d-flex gap-1 not-draggable">
                             <MudIcon Icon="@Icons.Material.Filled.CameraRoll" Color="Color.Info" Size="Size.Small" />
                             <div>@context.Text </div>
                         </div>
                     }
-                    else
+                    else if(extendedItem.DueDate == true && showFlag == true)
                     {
                         <div class="d-flex gap-1 not-draggable">
                             <MudIcon Icon="@Icons.Material.Rounded.Flag" Color="@(extendedItem.IsUrgent ? Color.Warning : Color.Default)" Size="Size.Small" />
@@ -91,7 +102,8 @@
     private List<ExtendedCalendarItem> _events = new();
     private List<Project>? allProjectsInDateRange = new();
     private List<Project>? allProjects = new();
-
+    bool showCameraRoll = true;
+    bool showFlag = true;
     private List<Project> filteredProjects = new();
     private ProjectStatus? statusFilter;
     private string? editorFilter;
@@ -131,6 +143,10 @@
         }
         BreakpointService.OnChange += StateHasChanged;
     }
+    private void toggleFlag() => showFlag = !showFlag;
+    private void toggleCameraRoll() => showCameraRoll = !showCameraRoll;
+
+
 
     private async Task DateRangeChanged(DateRange dateRange)
     {
@@ -245,6 +261,8 @@
         _statusFilterString = "";
         statusFilter = null;
         editorFilter = null;
+        showCameraRoll = true;
+        showFlag = true;
         ApplyFilters();
         StateHasChanged();
     }
