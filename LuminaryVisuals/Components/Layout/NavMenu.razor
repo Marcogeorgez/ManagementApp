@@ -130,8 +130,10 @@ OpenMiniOnHover="true"  Elevation="0" >
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
+        SetupPeriodicRefresh();
         if (_currentUserId == null) return;
-        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
         if (currentUser.IsInRole("Admin"))
         {
             _currentRole = "Admin";
@@ -148,8 +150,7 @@ OpenMiniOnHover="true"  Elevation="0" >
             _currentRole = "Client";
             isClientView = true;
         }
-        totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
-        SetupPeriodicRefresh();
+
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
