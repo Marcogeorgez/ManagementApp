@@ -589,7 +589,7 @@ public class ProjectService
                     string messageToSend = $"Project {_project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {_project.Status.ToString().Replace('_', ' ')}.";
                     if (oldStatus == ProjectStatus.Ready_To_Review)
                         messageToSend.Replace("Ready To Review", "Working");
-                    if (_project.Status != ProjectStatus.Ready_To_Review)
+                    if (_project.Status != ProjectStatus.Ready_To_Review && _project.Status != ProjectStatus.Ready_To_Edit)
                     {
                         _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, updatedByUserId, messageToSend));
                     }
@@ -691,7 +691,7 @@ public class ProjectService
                 string messageToSend = $"Project {project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {project.Status.ToString().Replace('_', ' ')}.";
                 if (oldStatus == ProjectStatus.Ready_To_Review)
                     messageToSend.Replace("Ready To Review", "Working");
-                if (project.Status != ProjectStatus.Ready_To_Review)
+                if (project.Status != ProjectStatus.Ready_To_Review && project.Status != ProjectStatus.Ready_To_Edit)
                 {
                     _ = Task.Run(() => chatService.AddMessageAsync(project.Client.Id, updatedByUserId, messageToSend));
                 }
