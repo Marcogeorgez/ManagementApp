@@ -287,6 +287,7 @@
                             </MudItem>
                         </MudStack>
                     </MudCard>
+                    <MudButton class="pa-3 ml-4" Variant="Variant.Outlined" Color="Color.Info" OnClick="EnsureChatExist">Create Private Chats for All Users</MudButton>
                 </MudPaper>
             </MudTabPanel>
         </MudTabs>
@@ -840,6 +841,14 @@
         finally
         {
             _processing = false;
+        }
+    }
+    [Inject] ChatService chatService { get; set; }
+    private async Task EnsureChatExist()
+    {
+        foreach(var user in _users)
+        {
+            await chatService.EnsureAdminChat(user.UserId);
         }
     }
 }
