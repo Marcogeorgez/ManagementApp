@@ -20,7 +20,7 @@
                 <button @onclick="() => OpenDialogFromChat(Project)">
                     <MudText Typo="Typo.h6" Class="chat-title">
                         <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
-                        @Project.ProjectName
+                        @( isAdminView && Project.ProjectId < 0 ? Project.Client.UserName : Project.ProjectName)
                     </MudText>
                 </button>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />

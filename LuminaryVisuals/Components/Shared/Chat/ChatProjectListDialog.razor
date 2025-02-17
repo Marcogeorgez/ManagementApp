@@ -22,7 +22,7 @@
 
         @if (FilteredProjects().Any())
         {
-
+            
 
             @if(!isAdminView)
             {
@@ -67,7 +67,7 @@
                     BadgeData="@(GetTotalUnreadMessages(false) > 0 ? GetTotalUnreadMessages(false).ToString() : null)"
                     BadgeColor="Color.Error" >
                     <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
-                            @foreach (var project in GetPaginatedProjectsForAdmins(false))
+                        @foreach (var project in GetPaginatedProjectsForAdmins(false))
                         {
                             <ProjectListItem Project="project" 
                                            IsAdminView="isAdminView" 
@@ -92,7 +92,7 @@
                     BadgeData="@(GetTotalUnreadMessages(true) > 0 ? GetTotalUnreadMessages(true).ToString() : null)"
                     BadgeColor="Color.Error" >
                     <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
-                            @foreach (var project in GetPaginatedProjectsForAdmins(true))
+                        @foreach (var project in GetPaginatedProjectsForAdmins(true))
                         {
                             <ProjectListItem Project="project" 
                                            IsAdminView="isAdminView" 
@@ -241,7 +241,7 @@
             .ToList();
 
         return filtered
-            .Skip(( publicCurrentPage - 1 ) * pageSize)
+            .Skip(( (isPrivate == false ? publicCurrentPage : privateCurrentPage ) - 1 ) * pageSize)
             .Take(pageSize);
     }
     private int GetPageCount(bool isPrivate = false)
