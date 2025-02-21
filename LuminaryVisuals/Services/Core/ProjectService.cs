@@ -587,15 +587,20 @@ public class ProjectService
                         : null;
 
                     string messageToSend = $"Project {_project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {_project.Status.ToString().Replace('_', ' ')}.";
-                    if (oldStatus == ProjectStatus.Ready_To_Review)
-                        messageToSend.Replace("Ready To Review", "Working");
-                    if (_project.Status != ProjectStatus.Ready_To_Review && _project.Status != ProjectStatus.Ready_To_Edit)
+                    if (_project.Status != ProjectStatus.Ready_To_Review && _project.Status != ProjectStatus.Ready_To_Edit && oldStatus != ProjectStatus.Ready_To_Edit && oldStatus != ProjectStatus.Ready_To_Review)
                     {
                         _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, updatedByUserId, messageToSend));
                     }
+                    else if (
+                        ( _project.Status == ProjectStatus.Ready_To_Edit || _project.Status == ProjectStatus.Ready_To_Review || _project.Status == ProjectStatus.Working )
+                        && ( oldStatus == ProjectStatus.Ready_To_Edit || oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
+                    {
+                        // Do nothing since we don't want to send info the user at all (intentionally left blank)
+                    }
                     else
                     {
-                        messageToSend.Replace("Ready To Review", "Working");
+                        messageToSend = messageToSend.Replace("Ready To Edit", "Working");
+                        messageToSend = messageToSend.Replace("Ready To Review", "Working");
                         _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, updatedByUserId, messageToSend));
 
                     }
@@ -689,15 +694,20 @@ public class ProjectService
 
 
                 string messageToSend = $"Project {project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {project.Status.ToString().Replace('_', ' ')}.";
-                if (oldStatus == ProjectStatus.Ready_To_Review)
-                    messageToSend.Replace("Ready To Review", "Working");
-                if (project.Status != ProjectStatus.Ready_To_Review && project.Status != ProjectStatus.Ready_To_Edit)
+                if (project.Status != ProjectStatus.Ready_To_Review && project.Status != ProjectStatus.Ready_To_Edit && oldStatus != ProjectStatus.Ready_To_Edit && oldStatus != ProjectStatus.Ready_To_Review)
                 {
                     _ = Task.Run(() => chatService.AddMessageAsync(project.Client.Id, updatedByUserId, messageToSend));
                 }
+                else if (
+                    ( project.Status == ProjectStatus.Ready_To_Edit || project.Status == ProjectStatus.Ready_To_Review || project.Status == ProjectStatus.Working )
+                    && ( oldStatus == ProjectStatus.Ready_To_Edit || oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
+                {
+                    // Do nothing since we don't want to send info the user at all (intentionally left blank)
+                }
                 else
                 {
-                    messageToSend.Replace("Ready To Review", "Working");
+                    messageToSend = messageToSend.Replace("Ready To Edit", "Working");
+                    messageToSend = messageToSend.Replace("Ready To Review", "Working");
                     _ = Task.Run(() => chatService.AddMessageAsync(project.Client.Id, updatedByUserId, messageToSend));
 
                 }
