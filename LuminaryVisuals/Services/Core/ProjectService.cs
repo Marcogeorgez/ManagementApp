@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Npgsql;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using static LuminaryVisuals.Components.Pages.CalenderPage;
@@ -217,6 +218,8 @@ public class ProjectService
     // For fetching chats
     public async Task<List<Project?>> GetProjectsForChat(bool isArchived, string userId,bool isAdminView, bool isEditorView, bool isClientView)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         await chatService.EnsureAdminChat(userId); // creates a 1 admin chat if it doesn't exist for each user that isn't admin.
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -227,11 +230,9 @@ public class ProjectService
                         ( isAdminView ? true :
                          isEditorView ? ( p.PrimaryEditorId == userId || p.SecondaryEditorId == userId ) :
                          isClientView ? p.ClientId == userId : false ))
-                .Include(p => p.Archive)
                 .Include(p => p.Client)
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
-                .Include(p => p.Revisions)
                 .OrderBy(p => p.InternalOrder)
                 .Include(p => p.Chat)
                 .Select(p => new
@@ -240,15 +241,22 @@ public class ProjectService
                     IsPinned = p.PinnedByUsers.Any(up => up.UserId == userId && up.IsPinned)
                 })
                 .ToListAsync();
+            Console.WriteLine($"Fetched Projects Query - {stopwatch.ElapsedMilliseconds} ms");
+            stopwatch.Restart();
+
             // Map the results to include the IsPinned property
             var result = projects.Select(x =>
             {
                 x.Project.IsPinned = x.IsPinned; // Set the IsPinned property
                 return x.Project;
             }).ToList();
+            Console.WriteLine(value: $"Mapping done for pinned property - {stopwatch.ElapsedMilliseconds} ms");
 
             if (isAdminView)
             {
+                Console.WriteLine($"Fetched Projects Query - {stopwatch.ElapsedMilliseconds} ms");
+                stopwatch.Restart();
+
                 // For admins, also get all user-admin chats as pseudo-projects
                 List<Project>? adminChats = await context.Chats
                     .Where(c => c.IsAdminChat)
@@ -264,7 +272,13 @@ public class ProjectService
 
 
                 var finalList = result;
+                Console.WriteLine($"Create the pseudo projects ## - {stopwatch.ElapsedMilliseconds} ms");
+                stopwatch.Restart();
+
                 finalList.InsertRange(0, adminChats);
+                Console.WriteLine($"Inserting final list  - {stopwatch.ElapsedMilliseconds} ms");
+                stopwatch.Stop();
+
                 return finalList;
             }
             else
@@ -285,6 +299,7 @@ public class ProjectService
 
                 var finalList = result;
                 finalList.InsertRange(0, adminChat);
+                stopwatch.Stop();
                 return finalList;
             }
         }

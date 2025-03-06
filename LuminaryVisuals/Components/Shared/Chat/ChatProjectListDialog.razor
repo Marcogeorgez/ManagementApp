@@ -1,4 +1,5 @@
-﻿@inject ProjectService ProjectService
+﻿@using System.Diagnostics
+@inject ProjectService ProjectService
 @inject ChatService ChatService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -150,18 +151,32 @@
     {
         try
         {
+
+            var stopwatch = Stopwatch.StartNew();
+            Console.WriteLine($"Copy From Here To End:");
+
             ProjectState.OnChange += StateHasChanged;
-            projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView,isEditorView,isClientView);
+            Console.WriteLine($"Subscribed to ProjectState.OnChange - {stopwatch.ElapsedMilliseconds} ms");
+
+            stopwatch.Restart();
+            projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView, isEditorView, isClientView);
+            Console.WriteLine($"Fetched projects - {stopwatch.ElapsedMilliseconds} ms");
 
             if (projects.Count > 0)
             {
+                stopwatch.Restart();
+
                 foreach (var project in projects)
                 {
                     var unreadMessageData = await ChatService.GetUnreadMessageCountAndLastMessageTimeAsync(project.ProjectId, userId);
+
                     project.countUnreadMessages = unreadMessageData.Item1;
                     project.LastSentMessage = unreadMessageData.Item2;
                     project.MessageRequireApprovalCount = unreadMessageData.Item3;
                 }
+                Console.WriteLine($"Fetched unread messages for Projects - {stopwatch.ElapsedMilliseconds} ms");
+                
+                stopwatch.Restart();
 
 
                 projects = projects
@@ -169,8 +184,11 @@
                     .ThenByDescending(p => p.countUnreadMessages) // sort by unread messages
                     .ThenByDescending(p => p.LastSentMessage) // then by last message sent
                     .ToList();
-
+                Console.WriteLine($"Sorted projects - {stopwatch.ElapsedMilliseconds} ms");
             }
+
+            stopwatch.Stop();
+
         }
         catch (Exception ex)
         {
