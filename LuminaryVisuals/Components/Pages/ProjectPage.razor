@@ -1238,23 +1238,6 @@
                     }
                 }        
             </Columns>
-        <RowLoadingContent>
-                <tr class="mud-table-row">
-                    <td class="mud-table-cell" colspan="1000">
-                    <MudSkeleton  SkeletonType="SkeletonType.Rectangle" Height="53px" Width="100%" Class="my-1" />
-                    </td>
-                </tr>
-        </RowLoadingContent>
-        <LoadingContent>
-              <tr class="mud-table-row">
-                  @for(int i = 0; i < 20; i++)
-                  {
-                    <td class="mud-table-cell" colspan="1000">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="53px" Width="100%" Class="my-1" />
-                    </td>
-                  }
-                </tr>
-        </LoadingContent>
         </MudDataGrid>
         @if (ProjectState.CurrentProject != null )
         {

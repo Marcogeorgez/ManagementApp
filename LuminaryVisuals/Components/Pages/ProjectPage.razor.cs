@@ -1845,9 +1845,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         try
         {
-            _loading = true;
             var result = projects;
-            await Task.Delay(500);
             if(projects.Count == 0 )
             {
                 await LoadProjects();
@@ -1917,10 +1915,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 Items = [],
                 TotalItems = 0
             };
-        }
-        finally
-        {
-            _loading = false;
         }
     }
 }
