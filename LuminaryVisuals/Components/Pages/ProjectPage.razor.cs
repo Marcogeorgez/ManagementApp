@@ -165,7 +165,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             await GetUserNotifications();
 
         }
-
     }
     public void Dispose()
     {

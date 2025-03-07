@@ -157,7 +157,6 @@ OpenMiniOnHover="true"  Elevation="0" >
 
         if (firstRender)
         {
-
             await InvokeAsync(StateHasChanged);
             await UpdateLayoutForScreenSize();
             await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
@@ -209,7 +208,7 @@ OpenMiniOnHover="true"  Elevation="0" >
         }
     }
 
-    private void OpenChatPopup()
+    private async Task OpenChatPopup()
     {
         if (_currentUserId is null)
         {
@@ -244,11 +243,10 @@ OpenMiniOnHover="true"  Elevation="0" >
             { "isAdminView" , isAdminView },
             { "isEditorView" , isEditorView },
             { "isClientView" , isClientView },
-            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
 
         };
-        DialogService.Show<ChatProjectListDialog>("", parameters, options);
-        DrawerToggle();
+        await DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);
+        await DrawerToggle();
     }
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {

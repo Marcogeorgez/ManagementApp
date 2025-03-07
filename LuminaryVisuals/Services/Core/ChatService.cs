@@ -6,6 +6,7 @@ using LuminaryVisuals.Services.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 public class ChatService
@@ -255,49 +256,110 @@ public class ChatService
     }
 
     // Get unread message count
-    public async Task<Tuple<int, DateTime?, int>> GetUnreadMessageCountAndLastMessageTimeAsync(int projectId, string userId)
+    /*    public async Task<Tuple<int, DateTime?, int>> GetUnreadMessageCountAndLastMessageTimeAsync(int projectId, string userId)
+        {
+            try
+            {
+                using var context = _contextFactory.CreateDbContext();
+
+                var readMessageIds = await context.ChatReadStatus
+                    .Where(crs => crs.UserId == userId)
+                    .Select(crs => crs.MessageId)
+                    .ToListAsync();
+                IQueryable<Message> query;
+                if (projectId > 0)
+                {
+                     query = context.Messages
+                        .Where(message => message.Chat.ProjectId == projectId);
+
+                }
+                else
+                {
+                    query = context.Messages
+                        .Where(message => message.ChatId == -projectId);
+                }
+                // Get unread message count
+                var unreadMessageCount = await query
+                    .Where(message => !readMessageIds.Contains(message.MessageId))
+                    .CountAsync();
+
+                // Get unapproved message count
+                var unapprovedMessageCount = await query
+                    .Where(message => message.IsApproved == false && !message.IsDeleted)
+                    .CountAsync();
+
+                // Get the last sent message timestamp (the most recent one)
+                var lastSentMessageTimestamp = await query
+                    .OrderByDescending(message => message.Timestamp)
+                    .Select(message => message.Timestamp)
+                    .FirstOrDefaultAsync();
+
+                return new Tuple<int, DateTime?, int>(unreadMessageCount, lastSentMessageTimestamp, unapprovedMessageCount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}: {ex.Message}");
+                throw;
+            }
+        }
+    */
+
+    public async Task<Dictionary<int, Tuple<int, DateTime?, int>>> GetUnreadMessageDataForProjectsAsync(List<int> projectIds, string userId)
     {
         try
         {
             using var context = _contextFactory.CreateDbContext();
-
+            
+            // Get read message IDs for this user once
             var readMessageIds = await context.ChatReadStatus
                 .Where(crs => crs.UserId == userId)
                 .Select(crs => crs.MessageId)
                 .ToListAsync();
-            IQueryable<Message> query;
-            if (projectId > 0)
+
+            // Get all messages for all projects in a single query
+            var allProjectMessages = await context.Messages
+                .Where(message => message.Chat.ProjectId.HasValue && projectIds.Contains(message.Chat.ProjectId.Value))
+                .Select(m => new
+                {
+                    m.MessageId,
+                    m.Chat.ProjectId,
+                    m.Timestamp,
+                    m.IsApproved,
+                    m.IsDeleted
+                })
+                .ToListAsync();
+
+            // Group by project ID first to avoid repeated filtering
+            var messagesByProject = allProjectMessages.GroupBy(m => m.ProjectId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var result = new Dictionary<int, Tuple<int, DateTime?, int>>();
+
+            // Process each project's data
+            foreach (var projectId in projectIds)
             {
-                 query = context.Messages
-                    .Where(message => message.Chat.ProjectId == projectId);
+                if (messagesByProject.TryGetValue(projectId, out var projectMessages))
+                {
+                    int unreadCount = projectMessages.Count(m => !readMessageIds.Contains(m.MessageId));
+                    int unapprovedCount = projectMessages.Count(m => m.IsApproved == false && !m.IsDeleted);
+                    DateTime? lastMessageTime = projectMessages.Any()
+                        ? projectMessages.Max(m => m.Timestamp)
+                        : null;
 
+                    result[projectId] = new Tuple<int, DateTime?, int>(unreadCount, lastMessageTime, unapprovedCount);
+                }
+                else
+                {
+                    // Handle case where project has no messages
+                    result[projectId] = new Tuple<int, DateTime?, int>(0, null, 0);
+                }
             }
-            else
-            {
-                query = context.Messages
-                    .Where(message => message.ChatId == -projectId);
-            }
-            // Get unread message count
-            var unreadMessageCount = await query
-                .Where(message => !readMessageIds.Contains(message.MessageId))
-                .CountAsync();
 
-            // Get unapproved message count
-            var unapprovedMessageCount = await query
-                .Where(message => message.IsApproved == false && !message.IsDeleted)
-                .CountAsync();
-
-            // Get the last sent message timestamp (the most recent one)
-            var lastSentMessageTimestamp = await query
-                .OrderByDescending(message => message.Timestamp)
-                .Select(message => message.Timestamp)
-                .FirstOrDefaultAsync();
-
-            return new Tuple<int, DateTime?, int>(unreadMessageCount, lastSentMessageTimestamp, unapprovedMessageCount);
+            return result;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}: {ex.Message}");
+            Console.WriteLine($"Error getting unread message data: {ex.Message}");
             throw;
         }
     }
