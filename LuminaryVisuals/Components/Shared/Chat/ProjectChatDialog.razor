@@ -268,7 +268,8 @@
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
-    [Parameter] public int timezoneOffsetMinutes { get; set; }
+    
+    private int timezoneOffsetMinutes { get; set; }
     private string? UploadedFileUrl;
     private string newMessage;
     private string _filePreviewUrl;
@@ -306,6 +307,7 @@
     }
     protected override async Task OnInitializedAsync()
     {
+        timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
         if (!isClientView)
             quickMessages = await QuickMessageService.GetAllMessagesAsync();
         isPrivateChat = Project.ProjectId < 0 ? true : false ;
@@ -783,7 +785,6 @@
                 { "isAdminView", isAdminView },
                 { "isEditorView", isEditorView },
                 { "isClientView", isClientView },
-                { "timezoneOffsetMinutes", timezoneOffsetMinutes },
             };
             ProjectState.SetProject(null);
             await DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);

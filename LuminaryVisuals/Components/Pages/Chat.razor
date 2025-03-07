@@ -30,9 +30,8 @@
             { "isAdminView" , isAdminView },
             { "isEditorView" , isEditorView },
             { "isClientView" , isClientView },
-            { "timezoneOffsetMinutes" , timezoneOffsetMinutes },
 
         };
-        DialogService.Show<ChatProjectListDialog>("", parameters, options);
+        DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);
     }
 }

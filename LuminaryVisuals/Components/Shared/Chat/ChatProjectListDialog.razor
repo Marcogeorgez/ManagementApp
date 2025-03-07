@@ -23,7 +23,7 @@
 
         @if (FilteredProjects().Any())
         {
-            
+
 
             @if(!isAdminView)
             {
@@ -43,7 +43,7 @@
 
                                             <MudText style="max-width:90%;" Typo="Typo.body1">@(isAdminView || isEditorView ? $"{project.Client.UserName} | {project.ProjectName}" : project.ProjectName)</MudText>
                                             <MudText Typo="Typo.caption" Class="message-timestamp">
-                                                @ConvertLocal.ConvertToLocalTime(project.LastSentMessage, timezoneOffsetMinutes)
+                                                @project.LastSentMessage
                                             </MudText>
                                         </div>
                                     </MudListItem>
@@ -67,54 +67,54 @@
                     <MudTabPanel Text="Projects Chats" Icon="@Icons.Material.Filled.Group" Style="min-width:200px !important;"
                     BadgeData="@(GetTotalUnreadMessages(false) > 0 ? GetTotalUnreadMessages(false).ToString() : null)"
                     BadgeColor="Color.Error" >
-                    <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
-                        @foreach (var project in GetPaginatedProjectsForAdmins(false))
-                        {
-                            <ProjectListItem Project="project" 
-                                           IsAdminView="isAdminView" 
-                                           IsEditorView="isEditorView" 
-                                           OnPinChat="PinChat" 
-                                           OnOpenChat="OpenProjectChat" />
-                        }
-                        @if (GetPageCount(false) > 1)
-                        {
-                            <MudSpacer />
-                            <MudPagination Class="d-flex justify-center mb-5" 
-                                          ShowFirstButton="true" 
-                                          ShowLastButton="true" 
-                                          Rectangular=true
-                                          Count="@GetPageCount(false)" 
-                                          SelectedChanged="PublicPageChanged" />
-                        }
-                    </MudList>
-                </MudTabPanel>
+                        <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
+                            @foreach (var project in GetPaginatedProjectsForAdmins(false))
+                            {
+                                <ProjectListItem Project="project" 
+                                IsAdminView="isAdminView" 
+                                IsEditorView="isEditorView" 
+                                OnPinChat="PinChat" 
+                                OnOpenChat="OpenProjectChat" />
+                            }
+                            @if (GetPageCount(false) > 1)
+                            {
+                                <MudSpacer />
+                                <MudPagination Class="d-flex justify-center mb-5" 
+                                ShowFirstButton="true" 
+                                ShowLastButton="true" 
+                                Rectangular=true
+                                Count="@GetPageCount(false)" 
+                                SelectedChanged="PublicPageChanged" />
+                            }
+                        </MudList>
+                    </MudTabPanel>
 
                     <MudTabPanel Icon="@Icons.Material.Filled.PersonAddAlt1" Text="Direct Chats" Style="min-width:200px !important;"
                     BadgeData="@(GetTotalUnreadMessages(true) > 0 ? GetTotalUnreadMessages(true).ToString() : null)"
                     BadgeColor="Color.Error" >
-                    <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
-                        @foreach (var project in GetPaginatedProjectsForAdmins(true))
-                        {
-                            <ProjectListItem Project="project" 
-                                           IsAdminView="isAdminView" 
-                                           IsEditorView="isEditorView" 
-                                           timezoneOffsetMinutes="timezoneOffsetMinutes"
-                                           OnPinChat="PinChat" 
-                                           OnOpenChat="OpenProjectChat" />
-                        }
-                        @if (GetPageCount(true) > 1)
-                        {
-                            <MudSpacer />
-                            <MudPagination Class="d-flex justify-center mb-5" 
-                                          ShowFirstButton="true" 
-                                          ShowLastButton="true" 
-                                          Rectangular=true
-                                          Count="@GetPageCount(true)" 
-                                          SelectedChanged="PrivatePageChanged" />
-                        }
-                    </MudList>
-                </MudTabPanel>
-        </MudTabs>
+                        <MudList T="Project" Class="projects-list" Padding=true Gutters=true>
+                            @foreach (var project in GetPaginatedProjectsForAdmins(true))
+                            {
+                                <ProjectListItem Project="project" 
+                                IsAdminView="isAdminView" 
+                                IsEditorView="isEditorView" 
+                                timezoneOffsetMinutes="timezoneOffsetMinutes"
+                                OnPinChat="PinChat" 
+                                OnOpenChat="OpenProjectChat" />
+                            }
+                            @if (GetPageCount(true) > 1)
+                            {
+                                <MudSpacer />
+                                <MudPagination Class="d-flex justify-center mb-5" 
+                                ShowFirstButton="true" 
+                                ShowLastButton="true" 
+                                Rectangular=true
+                                Count="@GetPageCount(true)" 
+                                SelectedChanged="PrivatePageChanged" />
+                            }
+                        </MudList>
+                    </MudTabPanel>
+                </MudTabs>
 
             }
         }
@@ -139,7 +139,6 @@
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
-    [Parameter] public int timezoneOffsetMinutes { get; set; }
     [Parameter] public Project SelectedProject { get; set; }
     private int pageSize = 10;
     private int publicCurrentPage = 1;
@@ -147,11 +146,16 @@
     private List<Project?> projects = new List<Project?>(); 
     private string MessageRequireApproval = "";
     private bool finishLoading;
+    [Inject] IJSRuntime JS { get; set; }
+    private int timezoneOffsetMinutes { get; set; }
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            timezoneOffsetMinutes = await JS.InvokeAsync<int>("getTimezoneOffset");
+            TimeSpan timeSpan = TimeSpan.FromMinutes(timezoneOffsetMinutes);
 
+            Console.WriteLine(timezoneOffsetMinutes);
             var stopwatch = Stopwatch.StartNew();
             Console.WriteLine($"Copy From Here To End:");
 
@@ -161,21 +165,31 @@
             stopwatch.Restart();
             projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView, isEditorView, isClientView);
             Console.WriteLine($"Fetched projects - {stopwatch.ElapsedMilliseconds} ms");
-
+            stopwatch.Restart();
+            List<int> projectIds = projects.Select(p => p.ProjectId).ToList();
             if (projects.Count > 0)
             {
                 stopwatch.Restart();
-
+                var messageDataByProject = await ChatService.GetUnreadMessageDataForProjectsAsync(projectIds, userId);
                 foreach (var project in projects)
                 {
-                    var unreadMessageData = await ChatService.GetUnreadMessageCountAndLastMessageTimeAsync(project.ProjectId, userId);
-
-                    project.countUnreadMessages = unreadMessageData.Item1;
-                    project.LastSentMessage = unreadMessageData.Item2;
-                    project.MessageRequireApprovalCount = unreadMessageData.Item3;
+                    if (messageDataByProject.TryGetValue(project.ProjectId, out var data))
+                    {
+                        // 'data' is the Tuple<int, DateTime?, int> for this project
+                        project.countUnreadMessages = data.Item1;
+                        project.LastSentMessage = data.Item2.HasValue ? data.Item2.Value.Add(timeSpan) : null;
+                        project.MessageRequireApprovalCount = data.Item3;
+                    }
+                    else
+                    {
+                        // Handle case where no data was found for this project
+                        project.countUnreadMessages = 0;
+                        project.LastSentMessage = null;
+                        project.MessageRequireApprovalCount = 0;
+                    }
                 }
                 Console.WriteLine($"Fetched unread messages for Projects - {stopwatch.ElapsedMilliseconds} ms");
-                
+
                 stopwatch.Restart();
 
 
