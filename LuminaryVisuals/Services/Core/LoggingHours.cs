@@ -166,7 +166,7 @@ namespace LuminaryVisuals.Services.Core
                 // Fetch all EditorLoggingHours
                 var loggedHours = await context.EditorLoggingHours
                     .Where(e => e.ProjectId == EditorLoggingHours.ProjectId && e.UserId == EditorLoggingHours.UserId)
-                    .SumAsync(e => e.EditorWorkingHours ?? 0);
+                    .SumAsync(e => e.EditorWorkingHours);
 
 
                 // Fetch projects and update their BillableHours

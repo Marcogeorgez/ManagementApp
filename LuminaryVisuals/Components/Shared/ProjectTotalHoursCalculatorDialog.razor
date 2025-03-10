@@ -13,7 +13,7 @@
                     Class="d-flex justify-center mud-width-full mb-2"> @newProject.ProjectName </MudText>
                 </MudItem>
                 <MudItem xs="12" sm="12">
-                    <MudNumericField T="decimal?" Required=true
+                    <MudNumericField T="decimal" Required=true
                     @bind-Value="newProject.CalculationDetails.ClientDiscount"
                     Label="Client Discount"
                     Variant=Variant.Outlined
@@ -49,7 +49,7 @@
                     Class="d-flex justify-center mud-width-full" />
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudTextField T="decimal?" Required=true
+                    <MudTextField T="decimal" Required=true
                     @bind-Value="newProject.CalculationDetails.FootageSize"
                     Label="Raw footage size"
                     Variant=Variant.Outlined
@@ -58,7 +58,7 @@
                     Class="d-flex justify-center mud-width-full"  />
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudTextField T="decimal?" Required=true
+                    <MudTextField T="decimal" Required=true
                     @bind-Value="newProject.CalculationDetails.Misc"
                     Label="Misc (managmenet, footage handeling, feedback)"
                     Adornment="Adornment.End"
@@ -125,13 +125,13 @@
                         @if (newProject.SecondaryEditor != null)
                         {
                             <MudItem xs="4">
-                                <MudNumericField T="decimal?" @bind-Value="@newProject.SecondaryEditorDetails.AdjustmentHours"
+                                <MudNumericField T="decimal" @bind-Value="@newProject.SecondaryEditorDetails.AdjustmentHours"
                                 Label="Secondary Editor Adjustment Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
                             </MudItem>
                         }
                     </MudGrid>
                     <MudItem xs="12">
-                        <MudNumericField T="decimal?" Min="0.0M"
+                        <MudNumericField T="decimal" Min="0.0M"
                         @bind-Value="@newProject.CalculationDetails.FinalProjectBillableHours"
                         Label="Total Hours"
                         Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
@@ -147,7 +147,7 @@
                         @if (newProject.SecondaryEditor != null)
                         {
                             <MudItem xs="4">
-                                <MudTextField T="decimal?"  @bind-Value="@newProject.SecondaryEditorDetails.FinalBillableHours"
+                                <MudTextField T="decimal"  @bind-Value="@newProject.SecondaryEditorDetails.FinalBillableHours"
                                 Label="Secondary Editor Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
                             </MudItem>
                         }
@@ -225,11 +225,11 @@
 
             _originalProject = CloneProject(newProject);
             textRoleBased = _isAdminView == true ? "Approve" : "Submit For Review";
-            if (newProject.PrimaryEditorDetails.AdjustmentHours is null && newProject.PrimaryEditor != null)
+            if (newProject.PrimaryEditorDetails.AdjustmentHours == 0 && newProject.PrimaryEditor != null)
             {
                 newProject.PrimaryEditorDetails.AdjustmentHours = 0;
             }
-            if (newProject.SecondaryEditorDetails.AdjustmentHours is null && newProject.SecondaryEditor != null)
+            if (newProject.SecondaryEditorDetails.AdjustmentHours == 0 && newProject.SecondaryEditor != null)
             {
                 newProject.SecondaryEditorDetails.AdjustmentHours = 0;
             }
@@ -249,17 +249,17 @@
                 primaryEditorHours = primaryEditorHours + newProject.PrimaryEditorDetails.AdjustmentHours;
                 secondaryEditorHours = secondaryEditorHours + newProject.SecondaryEditorDetails.AdjustmentHours;
 
-                newProject.PrimaryEditorDetails.FinalBillableHours = primaryEditorHours.HasValue ? Math.Round(primaryEditorHours.Value, 2) : (decimal?) null;
-                newProject.SecondaryEditorDetails.FinalBillableHours = secondaryEditorHours.HasValue ? Math.Round(secondaryEditorHours.Value, 2) : (decimal?) null;
+                newProject.PrimaryEditorDetails.FinalBillableHours = Math.Round(primaryEditorHours, 2);
+                newProject.SecondaryEditorDetails.FinalBillableHours = Math.Round(secondaryEditorHours, 2);
                 // Total project hours would be the sum
                 newProject.CalculationDetails.FinalProjectBillableHours =
-                    Math.Round(( primaryEditorHours + secondaryEditorHours ).GetValueOrDefault(), 2);
+                    Math.Round(( primaryEditorHours + secondaryEditorHours ), 2);
             }
             else
             {
 
-                decimal? cameraValue = CalculateCameraValue();
-                decimal? footageSize = CalculateFootageSize();
+                decimal cameraValue = CalculateCameraValue();
+                decimal footageSize = CalculateFootageSize();
                 decimal miscMinutes = CalculateMiscMinutes();
                 decimal prePartsDuration = CalculatePrePartsDuration();
                 decimal documentaryMulticameraDuration = CalculateDocumentaryMulticameraDuration();
@@ -275,20 +275,18 @@
                 SetFinalBillableHours(adjustedValue);
                 if(newProject.PrimaryEditor != null && newProject.SecondaryEditor == null)
                 {
-                    newProject.PrimaryEditorDetails.FinalBillableHours = newProject.CalculationDetails.FinalProjectBillableHours.HasValue? 
-                    Math.Round(newProject.CalculationDetails.FinalProjectBillableHours.Value,2) : (decimal?) null;
-                    newProject.SecondaryEditorDetails.FinalBillableHours = null;
-                    newProject.SecondaryEditorDetails.AdjustmentHours = null;
-                    newProject.SecondaryEditorDetails.Overtime = null;
+                    newProject.PrimaryEditorDetails.FinalBillableHours = Math.Round(newProject.CalculationDetails.FinalProjectBillableHours,2);
+                    newProject.SecondaryEditorDetails.FinalBillableHours = 0;
+                    newProject.SecondaryEditorDetails.AdjustmentHours = 0;
+                    newProject.SecondaryEditorDetails.Overtime = 0;
 
                 }
                 else if (newProject.PrimaryEditor == null && newProject.SecondaryEditor != null)
                 {
-                    newProject.SecondaryEditorDetails.FinalBillableHours = newProject.CalculationDetails.FinalProjectBillableHours.HasValue ?
-                    Math.Round(newProject.CalculationDetails.FinalProjectBillableHours.Value, 2) : (decimal?) null;
-                    newProject.PrimaryEditorDetails.FinalBillableHours = null;
-                    newProject.PrimaryEditorDetails.AdjustmentHours = null;
-                    newProject.PrimaryEditorDetails.Overtime = null;
+                    newProject.SecondaryEditorDetails.FinalBillableHours = Math.Round(newProject.CalculationDetails.FinalProjectBillableHours, 2);
+                    newProject.PrimaryEditorDetails.FinalBillableHours = 0;
+                    newProject.PrimaryEditorDetails.AdjustmentHours = 0;
+                    newProject.PrimaryEditorDetails.Overtime = 0;
                 }
             }
 
@@ -299,7 +297,7 @@
             HandleCalculationError(e);
         }
     }
-    private decimal? CalculatePrimaryEditorHours()
+    private decimal CalculatePrimaryEditorHours()
     {
         decimal highlightsDuration = CalculateHighlightsDuration();
         decimal socialMediaDuration = CalculateSocialMediaDuration();
@@ -311,10 +309,10 @@
         return ApplyDiscount(totalDuration, qualityMultiplier,0);
     }
 
-    private decimal? CalculateSecondaryEditorHours()
+    private decimal CalculateSecondaryEditorHours()
     {
-        decimal? cameraValue = CalculateCameraValue();
-        decimal? footageSize = CalculateFootageSize();
+        decimal cameraValue = CalculateCameraValue();
+        decimal footageSize = CalculateFootageSize();
         decimal miscMinutes = CalculateMiscMinutes();
         decimal prePartsDuration = CalculatePrePartsDuration();
         decimal documentaryMulticameraDuration = CalculateDocumentaryMulticameraDuration();
@@ -338,13 +336,13 @@
         calculationDetails.FootageQuality = selectedMultipliers[3];
     }
 
-    private decimal? CalculateCameraValue()
+    private decimal CalculateCameraValue()
     {
         decimal CameraNumber = EvaluateExpression(newProject.CalculationDetails.CameraNumber!);
         return CameraNumber <= 2 && CameraNumber >= 0 ? 1 : ( ( CameraNumber - 2 ) * 0.03m ) + 1;
     }
 
-    private decimal? CalculateFootageSize()
+    private decimal CalculateFootageSize()
     {
         var footageSize = newProject.CalculationDetails.FootageSize;
         return footageSize > 300 ? ( footageSize - 300m ) * 0.4m : 0;
@@ -353,7 +351,7 @@
     private decimal CalculateMiscMinutes()
     {
 
-        return newProject.CalculationDetails.Misc!.Value * 60;
+        return newProject.CalculationDetails.Misc! * 60;
     }
 
     private decimal CalculatePrePartsDuration()
@@ -399,7 +397,7 @@
         return EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration) * 30;
     }
 
-    private decimal? CalculateTotalDuration(decimal? footageSize, decimal prePartsDuration,
+    private decimal CalculateTotalDuration(decimal footageSize, decimal prePartsDuration,
         decimal documentaryMulticameraDuration, decimal highlightsDuration, decimal socialMediaDuration)
     {
         return footageSize  + prePartsDuration + documentaryMulticameraDuration + highlightsDuration + socialMediaDuration;
@@ -422,7 +420,7 @@
     /// <param name="totalDuration"></param>
     /// <param name="qualityMultiplier"></param>
     /// <returns></returns>
-    private decimal? ApplyDiscount(decimal? totalDuration, decimal qualityMultiplier, decimal miscMinutes)
+    private decimal ApplyDiscount(decimal totalDuration, decimal qualityMultiplier, decimal miscMinutes)
     {
         var clientDiscount = 1 - ( newProject.CalculationDetails.ClientDiscount / 100 );
         return (( totalDuration * qualityMultiplier * clientDiscount ) + miscMinutes);
@@ -552,14 +550,14 @@
                     Resolution = project.CalculationDetails?.Resolution,
                     FootageQuality = project.CalculationDetails?.FootageQuality,
                     CameraNumber = project.CalculationDetails?.CameraNumber,
-                    FootageSize = project.CalculationDetails?.FootageSize,
-                    Misc = project.CalculationDetails?.Misc,
+                    FootageSize = project.CalculationDetails?.FootageSize ?? 0,
+                    Misc = project.CalculationDetails?.Misc ?? 0,
                     PrePartsDuration = project.CalculationDetails?.PrePartsDuration,
                     DocumentaryMulticameraDuration = project.CalculationDetails?.DocumentaryMulticameraDuration,
                     DocumentaryMulticameraDurationHours = project.CalculationDetails?.DocumentaryMulticameraDurationHours,
                     HighlightsDuration = project.CalculationDetails?.HighlightsDuration,
                     SocialMediaDuration = project.CalculationDetails?.SocialMediaDuration,
-                    FinalProjectBillableHours = project.CalculationDetails?.FinalProjectBillableHours
+                    FinalProjectBillableHours = project.CalculationDetails!.FinalProjectBillableHours
                 },
                 ClientBillableHours = project.ClientBillableHours
             };

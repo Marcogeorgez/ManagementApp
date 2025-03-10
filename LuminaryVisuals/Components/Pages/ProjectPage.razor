@@ -828,17 +828,9 @@
 
                         <PropertyColumn Property="x => x.PrimaryEditorDetails.BillableHours" Title="P.Logged Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorLoggedHours"))">
                             <CellTemplate>
-                                @if(@context.Item.PrimaryEditorDetails.BillableHours >= 0)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.BillableHours.ToString()" 
+                            <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.BillableHours.ToString("0.#")"
                                     ReadOnly="true" Variant="Variant.Outlined" Class="grey-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="grey-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
@@ -846,17 +838,9 @@
                         </PropertyColumn>
                         <PropertyColumn Property="x => x.PrimaryEditorDetails.Overtime" Title="P.Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorOvertime"))" >
                             <CellTemplate>
-                                @if(@context.Item.PrimaryEditorDetails.Overtime != null)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.Overtime.ToString()" 
+                                    <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.Overtime.ToString("0.#")" 
                                     ReadOnly="true" Variant="Variant.Outlined" Class="green-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="green-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
@@ -864,17 +848,9 @@
                         </PropertyColumn>
                         <PropertyColumn Property="x => x.PrimaryEditorDetails.AdjustmentHours" Title="P.Adjust" Sortable=false Hideable="true" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorAdjustment"))">
                             <CellTemplate>
-                                @if(@context.Item.PrimaryEditorDetails.AdjustmentHours >= 0)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.AdjustmentHours.ToString()" 
+                                    <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.AdjustmentHours.ToString("0.#")" 
                                     ReadOnly="true" Variant="Variant.Outlined" Class="yellow-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true"  
-                                    Variant="Variant.Outlined" Class="yellow-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
@@ -883,17 +859,9 @@
 
                         <PropertyColumn Property="x => x.PrimaryEditorDetails.FinalBillableHours" Title="P.Billable Hours" Groupable=false Filterable="false" Hideable="true" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("PrimaryEditorFinalBillableHours"))" >
                             <CellTemplate>
-                                @if(@context.Item.PrimaryEditorDetails.FinalBillableHours >= 0)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.FinalBillableHours.ToString()" 
+                            <MudTextField T="string" Value="@context.Item.PrimaryEditorDetails.FinalBillableHours.ToString("0.#")"
                                     ReadOnly="true" Variant="Variant.Outlined" Class="grey-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="grey-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
@@ -945,20 +913,11 @@
                                 }
                             </EditTemplate>
                         </PropertyColumn>
-
                         <PropertyColumn Property="x => x.SecondaryEditorDetails.BillableHours" Title="Sec Logged Hours" Groupable=false Hideable="true" Editable=false Filterable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorLoggedHours"))">
                             <CellTemplate>
-                                @if(context.Item.SecondaryEditorDetails.BillableHours != null)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.BillableHours.ToString()" 
+                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.BillableHours.ToString("0.#")" 
                                     ReadOnly="true" Variant="Variant.Outlined" Class="grey-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="grey-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
@@ -967,61 +926,34 @@
 
                         <PropertyColumn Property="x => x.SecondaryEditorDetails.Overtime" Title="Sec Editor Overtime" Groupable=false Hideable="true" Filterable="false" Editable=false CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorOvertime"))" >
                             <CellTemplate>
-                                @if(context.Item.SecondaryEditorDetails.Overtime != null)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.Overtime.ToString()" 
+                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.Overtime.ToString("0.#")" 
                                     ReadOnly="true" Variant="Variant.Outlined" Class="green-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="green-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-
                         <PropertyColumn Property="x => x.SecondaryEditorDetails.AdjustmentHours" Title="Sec Adjust" Hideable="true" Sortable="false" Required=false Groupable=false Editable=true CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorAdjustment"))">
                             <CellTemplate>
-                                @if(context.Item.SecondaryEditorDetails.AdjustmentHours != null)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.AdjustmentHours.ToString()" 
+                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.AdjustmentHours.ToString("0.#")" 
                                     ReadOnly="true" Variant="Variant.Outlined" Class="yellow-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="yellow-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-
                         <PropertyColumn Property="x => x.SecondaryEditorDetails.FinalBillableHours" Title="Sec.Editor Billable Hours" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorFinalBillableHours"))">
                             <CellTemplate>
-                                @if(context.Item.SecondaryEditorDetails.FinalBillableHours >= 0)
-                                {
-                                    <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.FinalBillableHours.ToString()" 
+                            <MudTextField T="string" Value="@context.Item.SecondaryEditorDetails.FinalBillableHours.ToString("0.#")"
                                     ReadOnly="true" Variant="Variant.Outlined" Class="grey-border" 
                                     Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else
-                                {
-                                    <MudTextField T="string" Text="N/A" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="grey-border" />
-                                }
                             </CellTemplate>
                             <EditTemplate>
                                 <MudText Style="display:none;" />
                             </EditTemplate>
                         </PropertyColumn>
-
                         <PropertyColumn Property="x => x.SecondaryEditorDetails.PaymentAmount" Title="Sec.Editor Payment" Groupable=false Hideable="true" Editable=false Filterable="false" CellStyle="text-align:center;" Hidden="@(GetColumnVisibility("SecondaryEditorPayment"))">
                             <CellTemplate>
                                 @if (context.Item?.SecondaryEditorDetails?.PaymentAmount >= 0)
@@ -1062,69 +994,40 @@
                         </TemplateColumn>
                         <TemplateColumn Title="Logged Hours" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                             <CellTemplate>
-                                @{decimal? _BillableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours : null );
+                                @{decimal _BillableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.BillableHours
+                                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.BillableHours : 0 );
                                 }
-                                @if(_BillableHours  == null)
-                                {
-                                    <MudTextField T=string Text="N/A" ReadOnly="true"
-                                    Variant="Variant.Outlined" Class="grey-border"/>                             
-                                }
-                                else{
-                                    <MudTextField Value="_BillableHours" ReadOnly="true"
+                                    <MudTextField Value='_BillableHours.ToString("0.#")' ReadOnly="true"
                                     Variant="Variant.Outlined" Class="grey-border" Adornment="Adornment.End" AdornmentText="h" />
-                                }
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Editor Overtime" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                             <CellTemplate>
-                                @{decimal? _overtime = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime : null );
+                                @{decimal _overtime = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.Overtime
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.Overtime : 0 );
                                 }
-                                @if(_overtime  == null)
-                                {
-                                    <MudTextField T=string Text="N/A" ReadOnly="true"
-                                    Variant="Variant.Outlined" Class="green-border" />
-                                }
-                                else{
-                                    <MudTextField Value=_overtime ReadOnly="true"
+                                    <MudTextField Value='_overtime.ToString("0.#")' ReadOnly="true"
                                     Variant="Variant.Outlined" Class="green-border" Adornment="Adornment.End" AdornmentText="h" />
-                                }
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Adjustment" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                             <CellTemplate>
                                 @{
-                                    decimal? _adjustment = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
-                            : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours : null );
+                                    decimal _adjustment = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.AdjustmentHours
+                            : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.AdjustmentHours : 0 );
                                 }
-                                @if(_adjustment == null)
-                                {
-                                    <MudTextField T=string Text="N/A" ReadOnly="true"
-                                    Variant="Variant.Outlined" Class="yellow-border"/>                           
-                                }
-                                else{
-                                    <MudTextField Value=_adjustment ReadOnly="true"
+                                
+                                    <MudTextField Value='_adjustment.ToString("0.#")' ReadOnly="true"
                                     Variant="Variant.Outlined" Class="yellow-border"  Adornment="Adornment.End" AdornmentText="h" />                                
-                                }
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Billable Hours" Sortable="true" Filterable="true" Groupable="false" Hideable="true">
                             <CellTemplate>
-                                @{decimal? _billableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
-                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours : null );
+                                @{decimal _billableHours = context.Item.PrimaryEditorId == _currentUserId ? context.Item.PrimaryEditorDetails.FinalBillableHours
+                    : ( context.Item.SecondaryEditorId == _currentUserId ? context.Item.SecondaryEditorDetails.FinalBillableHours : 0 );
                                 }
-
-                                @if(_billableHours >= 0)
-                                {
-                                    <MudTextField Value="_billableHours" ReadOnly="true" 
-                                    Variant="Variant.Outlined" Class="grey-border" Adornment="Adornment.End" AdornmentText="h" />
-                                }
-                                else if (_billableHours == null)
-                                {
-                                    <MudTextField T=string Text="N/A" ReadOnly="true"
+                                    <MudTextField T=string Value='_billableHours.ToString("0.#")' ReadOnly="true"
                                     Variant="Variant.Outlined" Class="grey-border" />
-                                }
                             </CellTemplate>
                         </TemplateColumn>
                         <TemplateColumn Title="Payment" Sortable="true" Filterable="true" Groupable="false" Hideable="true">

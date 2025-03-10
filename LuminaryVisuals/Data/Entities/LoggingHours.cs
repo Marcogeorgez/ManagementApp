@@ -21,7 +21,7 @@ namespace LuminaryVisuals.Data.Entities
         [Required]
         public DateTime Date { get; set; }
 
-        public decimal? EditorWorkingHours { get; set; } = 0;
+        public decimal EditorWorkingHours { get; set; } = 0;
         public virtual ApplicationUser User { get; set; }
         public virtual Project Project { get; set; }
 
