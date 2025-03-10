@@ -607,14 +607,13 @@ public class ProjectService
                         _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, updatedByUserId, messageToSend));
                     }
                     else if (
-                        ( _project.Status == ProjectStatus.Ready_To_Edit || _project.Status == ProjectStatus.Ready_To_Review || _project.Status == ProjectStatus.Working )
-                        && ( oldStatus == ProjectStatus.Ready_To_Edit || oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
+                        (  _project.Status == ProjectStatus.Ready_To_Review || _project.Status == ProjectStatus.Working )
+                        && (oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
                     {
                         // Do nothing since we don't want to send info the user at all (intentionally left blank)
                     }
                     else
                     {
-                        messageToSend = messageToSend.Replace("Ready To Edit", "Working");
                         messageToSend = messageToSend.Replace("Ready To Review", "Working");
                         _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, updatedByUserId, messageToSend));
 
@@ -714,14 +713,13 @@ public class ProjectService
                     _ = Task.Run(() => chatService.AddMessageAsync(project.Client.Id, updatedByUserId, messageToSend));
                 }
                 else if (
-                    ( project.Status == ProjectStatus.Ready_To_Edit || project.Status == ProjectStatus.Ready_To_Review || project.Status == ProjectStatus.Working )
-                    && ( oldStatus == ProjectStatus.Ready_To_Edit || oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
+                    ( project.Status == ProjectStatus.Ready_To_Review || project.Status == ProjectStatus.Working )
+                    && ( oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
                 {
                     // Do nothing since we don't want to send info the user at all (intentionally left blank)
                 }
                 else
                 {
-                    messageToSend = messageToSend.Replace("Ready To Edit", "Working");
                     messageToSend = messageToSend.Replace("Ready To Review", "Working");
                     _ = Task.Run(() => chatService.AddMessageAsync(project.Client.Id, updatedByUserId, messageToSend));
 

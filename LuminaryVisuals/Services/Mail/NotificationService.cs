@@ -524,12 +524,12 @@ public class NotificationService : BackgroundService, INotificationService
 
 }
 public class NotificationQueueItem
-    {
-        public string UserId { get; set; }
-        public string Subject { get; set; }
-        public string Message { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public int? MessageId { get; set; }
-        public int? ProjectId { get; set; }
+{
+    public string UserId { get; set; }
+    public string Subject { get; set; }
+    public string Message { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public int? MessageId { get; set; }
+    public int? ProjectId { get; set; }
 
-    }
+}
