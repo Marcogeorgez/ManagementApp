@@ -246,6 +246,27 @@ public class DropboxService
             throw new Exception("Failed to move folder contents.", ex);
         }
     }
+    public async Task<string> GetOrCreateSharedLink(string path)
+    {
+        try
+        {
+            // Try to get an existing shared link
+            var existingLinks = await _client.Sharing.ListSharedLinksAsync(path);
+            if (existingLinks.Links.Count > 0)
+            {
+                return existingLinks.Links[0].Url;
+            }
+
+            // If no link exists, create a new one
+            var sharedLink = await _client.Sharing.CreateSharedLinkWithSettingsAsync(path);
+            return sharedLink.Url;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            return string.Empty;
+        }
+    }
 }
 
 

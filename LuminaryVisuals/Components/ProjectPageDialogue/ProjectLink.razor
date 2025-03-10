@@ -4,13 +4,15 @@
 
         <MudStack Spacing="4">
             <!-- Preview Toggle -->
+            <MudLink Href="@projectFolderPath" Target="_blank">Folder Link</MudLink>
+
             <div class="d-flex flex-row">
-            <MudText Inline="true" Style="align-content:center;"> Is the folder inside Preview Folder?
- 
-            </MudText>
+                <MudText Inline="true" Style="align-content:center;"> Is the folder inside Preview Folder?
+
+                </MudText>
                 <MudCheckBox T="bool" Label="Yes" Class="ml-5"
-                             @bind-Value="@project.IsPreview"
-                             Color="Color.Info" />
+                @bind-Value="@project.IsPreview"
+                Color="Color.Info" />
             </div>
             <!-- Actions -->
             <MudText >Actions</MudText>
@@ -87,7 +89,8 @@
     private string preview = "Preview";
     string? previewPath;
     string? paidPath;
-    string projectDateName;
+    string? projectDateName;
+    string? projectFolderPath; 
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,8 +104,24 @@
         previewPath = preferences?.PreviewFolderPath;
         paidPath = preferences?.PaidFolderPath;
         projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
+        if(previewPath != null)
+        {
+            projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegment(previewPath));
+        }
+        else if (paidPath != null)
+        {
+            projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegment(paidPath));
+        }
+        else
+        {
+            projectFolderPath = preferences?.PaidFolderLink;
+        }
     }
-
+    static string RemoveLastSegment(string path)
+    {
+        int lastSlash = path.LastIndexOf('/');
+        return lastSlash != -1 ? path.Substring(0, lastSlash) : path;
+    }
     private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
     {
         using var context = DbFactory.CreateDbContext();
