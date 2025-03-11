@@ -31,11 +31,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     private bool _isEditorView;
     private bool _isClientView;
     private bool _groupByClientName;
-    private int timezoneOffsetMinutes; // Gets User local time to pass it to change timing of chat-messages etc according to his own.
     private string _searchString = "";
     private string _currentUserId = "";
     private string _currentRole = "";
-    private string _userName = "";
     private string EditTemplateCss => _currentRole == "Client" ? "d-none" : "d-block";
     private string? CircuitId;
     private List<UserRoleViewModel.UserProjectViewModel> Editors = new List<UserRoleViewModel.UserProjectViewModel>();
@@ -857,7 +855,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         project.Status = ProjectStatus.Scheduled;
                     }
                 }
-                project = await confirmProjectStatusDelivered(project);
+                project = await confirmProjectStatusDelivered(project, beforeModification.Status);
                 await UpdateProjectAsync(project);
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
                 Snackbar.Add($"Successfully updated the project", Severity.Info);
@@ -875,7 +873,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                             return;
                         }
                     }
-                    project = await confirmProjectStatusDelivered(project);
+                    project = await confirmProjectStatusDelivered(project, beforeModification.Status);
                     await UpdateProjectAsync(project);
                     Snackbar.Add($"Successfully updated the project", Severity.Info);
                 }
@@ -1058,12 +1056,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             var clientBillableHours = project.ClientBillableHours?.ToString("0.##") ?? "0";
             var clientBillableAmount = project.ClientBillableAmount?.ToString("0.##") ?? "0";
 
-            var primaryEditorBillableHours = project.PrimaryEditorDetails?.BillableHours?.ToString("0.##") ?? "0";
-            var primaryEditorOvertime = project.PrimaryEditorDetails?.Overtime?.ToString("0.##") ?? "0";
+            var primaryEditorBillableHours = project.PrimaryEditorDetails?.BillableHours.ToString("0.##") ?? "0";
+            var primaryEditorOvertime = project.PrimaryEditorDetails?.Overtime.ToString("0.##") ?? "0";
             var primaryEditorPaymentAmount = project.PrimaryEditorDetails?.PaymentAmount?.ToString("0.##") ?? "0";
 
-            var secondaryEditorBillableHours = project.SecondaryEditorDetails?.BillableHours?.ToString("0.##") ?? "0";
-            var secondaryEditorOvertime = project.SecondaryEditorDetails?.Overtime?.ToString("0.##") ?? "0";
+            var secondaryEditorBillableHours = project.SecondaryEditorDetails?.BillableHours.ToString("0.##") ?? "0";
+            var secondaryEditorOvertime = project.SecondaryEditorDetails?.Overtime.ToString("0.##") ?? "0";
             var secondaryEditorPaymentAmount = project.SecondaryEditorDetails?.PaymentAmount?.ToString("0.##") ?? "0";
             var revisions = project.Revisions != null && project.Revisions.Any()
             ? project.Revisions.Select(r =>
@@ -1606,7 +1604,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         return;
                     }
                 }
-                project = await confirmProjectStatusDelivered(project);
+                project = await confirmProjectStatusDelivered(project, beforeModification.Status);
                 await UpdateProjectAsync(project);
                 Snackbar.Add("Saved Successfully", Severity.Success);
 
@@ -1620,9 +1618,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Console.WriteLine($"Error updating status: {ex.Message}");
         }
     }
-    private async Task<Project> confirmProjectStatusDelivered(Project project)
+    private async Task<Project> confirmProjectStatusDelivered(Project project, ProjectStatus oldStatus)
     {
-        if (project.Status == ProjectStatus.Delivered)
+        if (project.Status == ProjectStatus.Delivered && (project.AdminStatus != AdminProjectStatus.Sent_Invoice && project.AdminStatus != AdminProjectStatus.Paid) && (oldStatus != ProjectStatus.Revision))
         {
             bool isConfirm = await ConfirmationService.Confirm($"Do you want to change payment status from {project.FormatAdminStatus} to `Delivered Not Paid` status?");
             if (isConfirm)
