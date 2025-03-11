@@ -60,7 +60,6 @@ public class ChatService
                 IsApproved = true,  // private messages are approved
                 IsDeleted = false
             };
-            Console.WriteLine(updatedByUserId);
             context.Messages.Add(newMessage);
 
             if (chat == null)
@@ -256,104 +255,47 @@ public class ChatService
     }
 
     // Get unread message count
-    /*    public async Task<Tuple<int, DateTime?, int>> GetUnreadMessageCountAndLastMessageTimeAsync(int projectId, string userId)
-        {
-            try
-            {
-                using var context = _contextFactory.CreateDbContext();
-
-                var readMessageIds = await context.ChatReadStatus
-                    .Where(crs => crs.UserId == userId)
-                    .Select(crs => crs.MessageId)
-                    .ToListAsync();
-                IQueryable<Message> query;
-                if (projectId > 0)
-                {
-                     query = context.Messages
-                        .Where(message => message.Chat.ProjectId == projectId);
-
-                }
-                else
-                {
-                    query = context.Messages
-                        .Where(message => message.ChatId == -projectId);
-                }
-                // Get unread message count
-                var unreadMessageCount = await query
-                    .Where(message => !readMessageIds.Contains(message.MessageId))
-                    .CountAsync();
-
-                // Get unapproved message count
-                var unapprovedMessageCount = await query
-                    .Where(message => message.IsApproved == false && !message.IsDeleted)
-                    .CountAsync();
-
-                // Get the last sent message timestamp (the most recent one)
-                var lastSentMessageTimestamp = await query
-                    .OrderByDescending(message => message.Timestamp)
-                    .Select(message => message.Timestamp)
-                    .FirstOrDefaultAsync();
-
-                return new Tuple<int, DateTime?, int>(unreadMessageCount, lastSentMessageTimestamp, unapprovedMessageCount);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting unread message count for project {projectId} and user {userId}: {ex.Message}");
-                throw;
-            }
-        }
-    */
-
     public async Task<Dictionary<int, Tuple<int, DateTime?, int>>> GetUnreadMessageDataForProjectsAsync(List<int> projectIds, string userId)
     {
         try
         {
             using var context = _contextFactory.CreateDbContext();
-            
-            // Get read message IDs for this user once
-            var readMessageIds = await context.ChatReadStatus
-                .Where(crs => crs.UserId == userId)
-                .Select(crs => crs.MessageId)
-                .ToListAsync();
 
-            // Get all messages for all projects in a single query
-            var allProjectMessages = await context.Messages
-                .Where(message => message.Chat.ProjectId.HasValue && projectIds.Contains(message.Chat.ProjectId.Value))
-                .Select(m => new
+            // Convert read message IDs to a HashSet for fast lookups
+            var readMessageIds = new HashSet<int>(
+                await context.ChatReadStatus
+                    .Where(crs => crs.UserId == userId)
+                    .Select(crs => crs.MessageId)
+                    .ToListAsync()
+            );
+
+            // Separate positive and negative project IDs
+            var positiveProjectIds = projectIds.Where(id => id > 0).ToList();
+            var negativeChatIds = projectIds.Where(id => id < 0).Select(id => -id).ToList();
+
+            // Fetch relevant messages in one query and perform grouping in SQL
+            var messagesData = await context.Messages
+                .Where(m =>
+                    ( m.Chat.ProjectId.HasValue && positiveProjectIds.Contains(m.Chat.ProjectId.Value) ) ||
+                    ( negativeChatIds.Contains(m.ChatId) )
+                )
+                .GroupBy(m => m.Chat.ProjectId.HasValue ? m.Chat.ProjectId.Value : -m.ChatId)
+                .Select(g => new
                 {
-                    m.MessageId,
-                    m.Chat.ProjectId,
-                    m.Timestamp,
-                    m.IsApproved,
-                    m.IsDeleted
+                    ProjectId = g.Key,
+                    UnreadCount = g.Count(m => !readMessageIds.Contains(m.MessageId)),
+                    LastMessageTime = g.Max(m => m.Timestamp), // Get max timestamp directly in SQL
+                    UnapprovedCount = g.Count(m => !m.IsApproved && !m.IsDeleted)
                 })
-                .ToListAsync();
+                .ToDictionaryAsync(g => g.ProjectId);
 
-            // Group by project ID first to avoid repeated filtering
-            var messagesByProject = allProjectMessages.GroupBy(m => m.ProjectId)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            var result = new Dictionary<int, Tuple<int, DateTime?, int>>();
-
-            // Process each project's data
-            foreach (var projectId in projectIds)
-            {
-                if (messagesByProject.TryGetValue(projectId, out var projectMessages))
-                {
-                    int unreadCount = projectMessages.Count(m => !readMessageIds.Contains(m.MessageId));
-                    int unapprovedCount = projectMessages.Count(m => m.IsApproved == false && !m.IsDeleted);
-                    DateTime? lastMessageTime = projectMessages.Any()
-                        ? projectMessages.Max(m => m.Timestamp)
-                        : null;
-
-                    result[projectId] = new Tuple<int, DateTime?, int>(unreadCount, lastMessageTime, unapprovedCount);
-                }
-                else
-                {
-                    // Handle case where project has no messages
-                    result[projectId] = new Tuple<int, DateTime?, int>(0, null, 0);
-                }
-            }
+            // Construct result dictionary ensuring all projectIds are present
+            var result = projectIds.ToDictionary(
+                projectId => projectId,
+                projectId => messagesData.TryGetValue(projectId, out var data)
+                    ? new Tuple<int, DateTime?, int>(data.UnreadCount, data.LastMessageTime, data.UnapprovedCount)
+                    : new Tuple<int, DateTime?, int>(0, null, 0)
+            );
 
             return result;
         }
@@ -363,6 +305,7 @@ public class ChatService
             throw;
         }
     }
+
     public async Task<int> GetUnreadMessageCount(string userId)
     {
         if (string.IsNullOrEmpty(userId))
