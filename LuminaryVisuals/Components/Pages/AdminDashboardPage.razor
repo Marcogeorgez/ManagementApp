@@ -384,7 +384,6 @@
     private bool isAdminView;
     private bool _isEditorView;
     private bool _isClientView;
-    private int timezoneOffsetMinutes;
     private string _currentUserId;
     private string _currentRole;
     // Global filter for the grid
@@ -416,7 +415,6 @@
                 storedValue = _storedValue.ConversionRateUSToLek;
                 lastSavedValue = storedValue;
             }
-            _allAvailableRoles = await GetAvailableRoles();
             AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
             _users = AllUsers.ToList();
             await LoadUserNotes();
@@ -437,6 +435,7 @@
                 _currentRole = "Client";
                 _isClientView = true;
             }
+
             _loading = false;
             _timer = new System.Timers.Timer(Delay);
             _timer.Elapsed += OnTimedEvent;
@@ -451,11 +450,15 @@
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+
         if (firstRender)
         {
-            var offset = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
+            _allAvailableRoles = await GetAvailableRoles();
         }
     }
+
+
+
     private void HandleProjectStateChange()
     {
         InvokeAsync(StateHasChanged);
