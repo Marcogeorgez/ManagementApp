@@ -123,7 +123,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         });
         ProjectState.OnChange += HandleProjectStateChange;
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
         foreach (var column in _availableColumns)
         {
             _columnVisibility[column.Name] = column.isHidden;
@@ -157,10 +156,11 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         if (firstRender)
         {
-            timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
             _loading = false;
             StateHasChanged();
             await GetUserNotifications();
+            await LoadProjects();
+
 
         }
     }
@@ -316,13 +316,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     };
 
 
-    private async Task OnClick()
-    {
-        await ScrollManager.ScrollToBottomAsync(".mud-table-container", ScrollBehavior.Smooth);
-    }
-    private bool _shouldScroll = false;
-
-
     private async Task OnRowClick(Project project)
     {
         StateHasChanged();
@@ -442,7 +435,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 await LoadProjectsForEditors();
             await _dataGrid.ReloadServerData();
             StateHasChanged();
-            _shouldScroll = true;
         }
         finally
         {
@@ -1623,6 +1615,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         if (project.Status == ProjectStatus.Delivered && (project.AdminStatus != AdminProjectStatus.Sent_Invoice && project.AdminStatus != AdminProjectStatus.Paid) && (oldStatus != ProjectStatus.Revision))
         {
             bool isConfirm = await ConfirmationService.Confirm($"Do you want to change payment status from {project.FormatAdminStatus} to `Delivered Not Paid` status?");
+            Console.WriteLine($"Status of project right now is {project.Status} and status before modification is {oldStatus}");
+
             if (isConfirm)
             {
                 project.AdminStatus = AdminProjectStatus.Delivered_Not_Paid;
