@@ -1612,7 +1612,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     }
     private async Task<Project> confirmProjectStatusDelivered(Project project, ProjectStatus oldStatus)
     {
-        if (project.Status == ProjectStatus.Delivered && (project.AdminStatus != AdminProjectStatus.Sent_Invoice && project.AdminStatus != AdminProjectStatus.Paid) && (oldStatus != ProjectStatus.Revision))
+        if (project.Status == ProjectStatus.Delivered && (project.AdminStatus != AdminProjectStatus.Sent_Invoice && project.AdminStatus != AdminProjectStatus.Paid))
         {
             bool isConfirm = await ConfirmationService.Confirm($"Do you want to change payment status from {project.FormatAdminStatus} to `Delivered Not Paid` status?");
             Console.WriteLine($"Status of project right now is {project.Status} and status before modification is {oldStatus}");
