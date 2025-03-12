@@ -1152,23 +1152,6 @@
                 IsAdminView="@isAdminView"
                 IsClientView="@_isClientView" isEditorView="@_isEditorView"/> </div>
         }
-            <MudScrollToTop TopOffset="100"  Style="bottom:75px !important; right:20px !important;"
-                            Selector=".mud-table-container"
-                            VisibleCssClass="visible absolute"
-                            HiddenCssClass="invisible" ScrollBehavior="ScrollBehavior.Smooth" >
-
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                    <div class="arrow-top" >
-                        <div />
-                    </div>
-                </div>
-            </MudScrollToTop>
-
-
-                <div class="arrow-bottom" @onclick="OnClick">
-                    <div @onclick="OnClick"/>
-                </div>
-
 </MudMainContent>
 
 
