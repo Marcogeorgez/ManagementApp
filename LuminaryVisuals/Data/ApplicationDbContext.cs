@@ -64,6 +64,7 @@ namespace LuminaryVisuals.Data
                 .HasOne(ps => ps.User)
                 .WithOne(u => u.PayoneerSettings)
                 .HasForeignKey<PayoneerSettings>(ps => ps.UserId);
+
             builder.Entity<Entities.ColumnPreset>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -74,6 +75,7 @@ namespace LuminaryVisuals.Data
                       .WithMany()
                       .HasForeignKey(e => e.UserId);
             });
+
             // Configure composite primary key
             builder.Entity<UserProjectPin>()
                     .HasKey(up => new { up.UserId, up.ProjectId });
@@ -150,7 +152,11 @@ namespace LuminaryVisuals.Data
                 entity.HasOne(c => c.Project)
                       .WithOne(p => p.Chat)  // Project has one Chat (one-to-one relationship)
                       .HasForeignKey<Chat>(c => c.ProjectId)
-                      .OnDelete(DeleteBehavior.Cascade); 
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(c => c.User)
+                .WithMany(u => u.Chats)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             });
             // Configure Chat Messages
             builder.Entity<Message>(entity =>
