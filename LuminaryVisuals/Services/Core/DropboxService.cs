@@ -264,7 +264,7 @@ public class DropboxService
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
-            return string.Empty;
+            throw;
         }
     }
 }
