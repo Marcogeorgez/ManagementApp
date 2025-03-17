@@ -94,34 +94,54 @@
 
     protected override async Task OnInitializedAsync()
     {
-        LoadingService.Subscribe(isVisible =>
+        try
         {
-            loadingIndicator = isVisible;
-            StateHasChanged();
-        });
+            LoadingService.Subscribe(isVisible =>
+            {
+                loadingIndicator = isVisible;
+                StateHasChanged();
+            });
 
-        preferences = await GetPreferences(project.ClientId);
-        previewPath = preferences?.PreviewFolderPath;
-        paidPath = preferences?.PaidFolderPath;
-        projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
-        if(previewPath != null)
-        {
-            projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegment(previewPath));
+            preferences = await GetPreferences(project.ClientId);
+            previewPath = preferences?.PreviewFolderPath;
+            paidPath = preferences?.PaidFolderPath;
+            projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
+            if(previewPath != null)
+            {
+                projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegmentAndAddSlashAtBeginning(previewPath));
+            }
+            else if (paidPath != null)
+            {
+                projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegmentAndAddSlashAtBeginning(paidPath));
+            }
+            else
+            {
+                projectFolderPath = preferences?.PaidFolderLink;
+            }
         }
-        else if (paidPath != null)
+        catch(ArgumentOutOfRangeException ex) when (ex.ParamName == "path")
         {
-            projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegment(paidPath));
+            Snackbar.Add("The Preview/Paid folder path is invalid, please check the path in the client editing guidelines", Severity.Error);
         }
-        else
-        {
-            projectFolderPath = preferences?.PaidFolderLink;
-        }
+
     }
-    static string RemoveLastSegment(string path)
+    static string RemoveLastSegmentAndAddSlashAtBeginning(string path)
     {
+        if (string.IsNullOrWhiteSpace(path))
+            return path; 
+
         int lastSlash = path.LastIndexOf('/');
-        return lastSlash != -1 ? path.Substring(0, lastSlash) : path;
+
+        if (lastSlash != -1)
+            path = path.Substring(0, lastSlash); // Remove last segment
+
+        // Ensure the path starts with '/'
+        if (!path.StartsWith("/"))
+            path = "/" + path;
+
+        return path;
     }
+
     private async Task<ClientEditingGuidelines> GetPreferences(string _userId)
     {
         using var context = DbFactory.CreateDbContext();
