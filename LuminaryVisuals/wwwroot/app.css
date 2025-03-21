@@ -598,8 +598,11 @@ th.mud-table-cell.sticky-left:hover {
 
 @media (max-width: 960px) {
     .projects-list {
-        padding-top: 40px !important;
-        padding-left:5px !important;
+        padding-top: 10px !important;
+        padding-left: 0px !important;
+    }
+    .chat-header {
+        margin-left: 10px;
     }
     .project-item {
         padding-top: 3px !important;
@@ -610,7 +613,7 @@ th.mud-table-cell.sticky-left:hover {
         align-items: start !important;
     }
     .project-container {
-        margin: 5px 15px 5px 90px !important;
+        margin: 5px 15px 5px 70px !important;
     }
     .projects-panel {
         width: 80vw !important;
