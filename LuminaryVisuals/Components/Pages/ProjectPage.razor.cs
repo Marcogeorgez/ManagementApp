@@ -12,7 +12,6 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using System.Security.Claims;
 using System.Text.Json;
-using static MudBlazor.CategoryTypes;
 namespace LuminaryVisuals.Components.Pages;
 
 public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
@@ -159,7 +158,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             _loading = false;
             await GetUserNotifications();
             await LoadProjects();
-            ToggleFinishedProjects(HideFinishedProjects);
+            _showFinishedProjects = await LocalStorage.GetItemAsync<bool>("showFinishedProjects");
+            ToggleFinishedProjects(_showFinishedProjects);
             StateHasChanged();
         }
     }
@@ -407,6 +407,14 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         LoadingService.ShowLoading();
         _isArchived = !_isArchived;
+        if (_isArchived == true)
+        {
+            _dataGrid.FilterDefinitions.Clear();
+        }
+        else
+        {
+            ToggleFinishedProjects(_showFinishedProjects);  
+        }
         SelectedProjects = new();
         await LoadProjects();
         LoadingService.HideLoading();
@@ -549,6 +557,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         await projectServices.UpdateProjectsInBatchAsync(modifiedProjects, _currentUserId);
                         Snackbar.Add("Saved all projects successfully", Severity.Success);
                     }
+                    SelectedProjects = new();
                 }
             }
             else
@@ -567,6 +576,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         await projectServices.ArchiveProjectsAsync(archivedProjects.ArchivedProjects, archivedProjects.ArchiveReason);
                         Snackbar.Add("Archived all projects successfully", Severity.Success);
                     }
+                    SelectedProjects = new();
+
                 }
             }
         }
@@ -1950,22 +1961,18 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         UndoRedoService.AddSwap(projectId, projectName, targetName, sourceId, targetId);
     }
 
-    private bool _hideFinishedProjects;
-    private bool HideFinishedProjects
+    private bool _showFinishedProjects ;
+    [Inject] Blazored.LocalStorage.ILocalStorageService LocalStorage { get; set; }
+    private async void ToggleFinishedProjects(bool hideFinished)
     {
-        get => _isClientView ? false : _hideFinishedProjects;
-    }
-
-    private void ToggleFinishedProjects(bool hideFinished)
-    {
-        _hideFinishedProjects = hideFinished;
-
-        if (_dataGrid != null && (_isAdminView || _isEditorView))
+        _showFinishedProjects = hideFinished;
+        await LocalStorage.SetItemAsync("showFinishedProjects", _showFinishedProjects);
+        if (_dataGrid != null && (!_isArchived))
         {
             // Clear existing filters first
             _dataGrid.FilterDefinitions.Clear();
 
-            if (_hideFinishedProjects)
+            if (_showFinishedProjects)
             {
                 // Add filter to exclude Finished status
                 _dataGrid.FilterDefinitions.Add(new FilterDefinition<Project>
@@ -1975,9 +1982,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                     Value = ProjectStatus.Finished.ToString()
                 });
             }
-
             // Apply the filters
-            _dataGrid.ReloadServerData();
+            //await _dataGrid.ReloadServerData();
+            StateHasChanged();
         }
     }
 }
