@@ -596,12 +596,12 @@ th.mud-table-cell.sticky-left:hover {
     scrollbar-color: #efefef #012b52;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 760px) {
     .projects-list {
         padding-top: 10px !important;
         padding-left: 0px !important;
     }
-    .chat-header {
+    .projects-title {
         margin-left: 10px;
     }
     .project-item {

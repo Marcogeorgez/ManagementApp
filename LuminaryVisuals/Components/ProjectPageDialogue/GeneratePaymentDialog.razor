@@ -58,7 +58,7 @@
         </MudStack>
         }
         <MudStack AlignItems="AlignItems.Start">
-            <MudGrid Spacing="3">
+            <MudGrid Spacing="6">
                 <MudItem xs="12" sm="12" lg="4" Style="display: flex; align-items:center;">
                     <MudText>Working Month Range:</MudText>
                 </MudItem>
@@ -85,7 +85,7 @@
                 </MudItem>
             </MudGrid>
         </MudStack>
-        <MudDivider/>
+        <MudDivider Class="mb-2"/>
         <MudStack Row AlignItems="AlignItems.Center">
 
             <MudItem sm="4">
@@ -103,15 +103,15 @@
                             @if(isAdmin && ViewClient == "clients")
                             {
                             <span>
-                                <span style="color:#b0dfe8; ">@(project.ClientBillableHours ?? 0)h</span>
-                                <span style="color:#74c85f"> @(project.ClientBillableAmount ?? 0)$</span>
+                                <span style="color:#b0dfe8; ">@(Math.Round(project.ClientBillableHours ?? 0,1))h</span>
+                                <span style="color:#74c85f"> @(Math.Round(project.ClientBillableAmount ?? 0, 1))$</span>
                             </span>
                             }
                             else if(isAdmin && ViewClient == "editors"){
                                 <span>
-                                    <span style="color:#b0dfe8">@(project.PrimaryEditorDetails.FinalBillableHours + project.SecondaryEditorDetails.FinalBillableHours)h</span>
+                                    <span style="color:#b0dfe8">@(Math.Round((project.PrimaryEditorDetails.FinalBillableHours + project.SecondaryEditorDetails.FinalBillableHours),1))h</span>
                                     <span style="color:#74c85f">
-                                        @((project.PrimaryEditorDetails?.PaymentAmount ?? 0) + (project.SecondaryEditorDetails?.PaymentAmount ?? 0))$
+                                        @(Math.Round((project.PrimaryEditorDetails?.PaymentAmount ?? 0) + (project.SecondaryEditorDetails?.PaymentAmount ?? 0),1))$
                                     </span>
                                 </span>
 
@@ -125,10 +125,10 @@
                                     project.SecondaryEditorDetails.FinalBillableHours : 0))h
                                     </span>
                                     <span style="color:#74c85f">
-                                        @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
-                                    project.PrimaryEditorDetails.PaymentAmount : 0)
-                                    + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
-                                    project.SecondaryEditorDetails.PaymentAmount : 0))$
+                                    @((Math.Round((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
+                                    project.PrimaryEditorDetails.PaymentAmount ?? 0m : 0m),1))
+                                    + (Math.Round((project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                    project.SecondaryEditorDetails.PaymentAmount ?? 0m : 0m),1)))$
                                     </span>
                                 </span>
                             }
@@ -139,7 +139,7 @@
                 </MudSelect>
             </MudItem>
         </MudStack>
-        <MudStack Row AlignItems="AlignItems.Center" Style="mt-3">
+        <MudStack Row AlignItems="AlignItems.Center" Class="mt-4">
             <MudText>Editor Payment Status</MudText>
             <MudSpacer />
             <MudRadioGroup @bind-Value="editorPaid">
@@ -201,11 +201,11 @@
                 {
                     @foreach (var editor in editorTotals)
                     {
-                        <li>@editor.EditorName: <span style="color:#b0dfe8">@editor.TotalHours h</span> <span style="color:#74c85f">@editor.TotalPayment $</span></li>
+                        <li>@editor.EditorName: <span style="color:#b0dfe8">@(Math.Round(editor.TotalHours,1))h</span> <span style="color:#74c85f">@Math.Round(editor.TotalPayment,1)$</span></li>
                     }
                 }
                 <MudText>
-                    Total: <span style="color:#b0dfe8">@(totalHours)h</span> <span style="color:#74c85f"> @(totalPayment)$</span>
+                    Total: <span style="color:#b0dfe8">@(Math.Round(totalHours, 1))h</span> <span style="color:#74c85f"> @(Math.Round(totalPayment,1))$</span>
                 </MudText>
 
             }
@@ -226,7 +226,7 @@
                 ) ?? 0;
 
                 <MudText>
-                    Total: <span style="color:#b0dfe8">@(totalHours)h</span> <span style="color:#74c85f"> @(totalPayment)$</span>
+                    Total: <span style="color:#b0dfe8">@(Math.Round(totalHours, 1))h</span> <span style="color:#74c85f"> @(Math.Round(totalPayment,1))$</span>
                 </MudText>
             }
         }
