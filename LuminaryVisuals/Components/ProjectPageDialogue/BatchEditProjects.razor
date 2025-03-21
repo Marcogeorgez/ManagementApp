@@ -6,66 +6,66 @@
         <MudContainer Style="max-height: 70vh;min-width:600px; overflow-y: auto;">
             <MudTreeView Class="ml-n3 pa-0" T="string" ReadOnly>
                 <MudTreeViewItem Text="@($"Batch Edit Selected Projects ({SelectedProjects?.Count})")">
-                    @foreach (var project in SelectedProjects)
+                    @foreach (var project in SelectedProjects!)
                     {
                         <MudTreeViewItem Text="@project.ProjectName" />
                     }
                 </MudTreeViewItem>
             </MudTreeView>
             <!-- Status -->
-            <MudSelect T="ProjectStatus" Label="Project Status" Variant="Variant.Outlined"
+            <MudSelect T="ProjectStatus?" Label="Project Status" Variant="Variant.Outlined" Clearable="true" 
             @bind-Value="editModel.Status" Class="my-2">
-                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                @foreach (ProjectStatus? status in Enum.GetValues(typeof(ProjectStatus)))
                 {
-                    <MudSelectItem Value="@status">@status.ToString().Replace("_"," ")</MudSelectItem>
+                    <MudSelectItem T="ProjectStatus?" Value="@status">@status?.ToString()?.Replace("_", " ")</MudSelectItem>
                 }
             </MudSelect>
 
 
             <!-- Client Payment Status -->
-            <MudSelect T="AdminProjectStatus" Label="Client Payment Status" Variant="Variant.Outlined"
+            <MudSelect T="AdminProjectStatus?" Label="Client Payment Status" Variant="Variant.Outlined"
             @bind-Value="editModel.PaymentStatus" Class="mb-4">
-                @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+                @foreach (AdminProjectStatus? status in Enum.GetValues(typeof(AdminProjectStatus)))
                 {
-                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                    <MudSelectItem T="AdminProjectStatus?" Value="@status">@status?.ToString().Replace("_", " ")</MudSelectItem>
                 }
             </MudSelect>
 
             <!-- Editor Payment Dates -->
             <MudDatePicker Label="Working Month" Variant="Variant.Outlined"
             FixDay="1" DateFormat="MM/yyyy"
-            @bind-Date="editModel.WorkingMonth" />
+            @bind-Date="editModel.WorkingMonth" Clearable="true" />
 
             <MudDatePicker Label="Primary Editor Payment Date" Variant="Variant.Outlined"
-            @bind-Date="editModel.PrimaryEditorDatePaid" />
+            @bind-Date="editModel.PrimaryEditorDatePaid" Clearable="true" />
             <MudDatePicker Label="Sec Editor Payment Date" Variant="Variant.Outlined"
-            @bind-Date="editModel.SecondaryEditorDatePaid" />
+            @bind-Date="editModel.SecondaryEditorDatePaid" Clearable="true" />
             <!-- Progress -->
-            <MudSelect T="ProgressBarValue"
+            <MudSelect T="ProgressBarValue?"
             Label="Progress"
             Class="mt-3"
-            AnchorOrigin="Origin.BottomCenter"
-            Value="@((ProgressBarValue)editModel.Progress)"
-            ValueChanged="@(newValue => editModel.Progress = (int)newValue)"
+            AnchorOrigin="Origin.BottomCenter" Clearable="true" 
+            Value="@(editModel.Progress.HasValue ? (ProgressBarValue?)editModel.Progress : null)"
+            ValueChanged="@(newValue => editModel.Progress = (int?)newValue)"
             Variant="Variant.Outlined">
-                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
-                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
-                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
-                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
-                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
-                <MudSelectItem Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+                <MudSelectItem T="ProgressBarValue?" Class="mt-1" Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                <MudSelectItem T="ProgressBarValue?" Class="mt-1" Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                <MudSelectItem T="ProgressBarValue?" Class="mt-1" Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                <MudSelectItem T="ProgressBarValue?" Class="mt-1" Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                <MudSelectItem T="ProgressBarValue?" Class="mt-1" Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                <MudSelectItem T="ProgressBarValue?" Class="mt-1" Value="ProgressBarValue.Hundred">100%</MudSelectItem>
             </MudSelect>
 
 
             <MudItem sm="6">
                 <!-- Payment Visible -->
-                <MudCheckBox @bind-Value="editModel.IsPaymentVisible"
+                <MudCheckBox @bind-Value="editModel.IsPaymentVisible" TriState
                 Label="Payment Visible to Client" Class="mb-2" />
             </MudItem>
             <MudItem sm="6">
 
                 <!-- Urgent Warning -->
-                <MudCheckBox @bind-Value="editModel.IsUrgent"
+                <MudCheckBox @bind-Value="editModel.IsUrgent" TriState
                 Label="Mark as Urgent" Class="mb-2" />
             </MudItem>
 
@@ -88,9 +88,9 @@
     private class EditModel
     {
         private AdminProjectStatus? _paymentStatus;
-        public AdminProjectStatus PaymentStatus
+        public AdminProjectStatus? PaymentStatus
         {
-            get => _paymentStatus ?? default;
+            get => _paymentStatus ?? null;
             set
             {
                 if (_paymentStatus != value)
@@ -150,9 +150,9 @@
             }
         }
         private int? _progress;
-        public int Progress
+        public int? Progress
         {
-            get => _progress ?? default;
+            get => _progress ?? null;
             set
             {
                 if (_progress != value)
@@ -164,9 +164,9 @@
         }
 
         private ProjectStatus? _status;
-        public ProjectStatus Status
+        public ProjectStatus? Status
         {
-            get => _status ?? default;
+            get => _status ?? null;
             set
             {
                 if (_status != value)
@@ -178,9 +178,9 @@
         }
 
         private bool? _isPaymentVisible;
-        public bool IsPaymentVisible
+        public bool? IsPaymentVisible
         {
-            get => _isPaymentVisible ?? default;
+            get => _isPaymentVisible ?? null;
             set
             {
                 if (_isPaymentVisible != value)
@@ -192,9 +192,9 @@
         }
 
         private bool? _IsUrgent;
-        public bool IsUrgent
+        public bool? IsUrgent
         {
-            get => _IsUrgent ?? default;
+            get => _IsUrgent ?? null;
             set
             {
                 if (_IsUrgent != value)
@@ -235,30 +235,30 @@
     {
             foreach (var project in SelectedProjects)
             {
-                if (modifiedProperties.Contains(nameof(EditModel.PaymentStatus)))
-                    project.AdminStatus = editModel.PaymentStatus;
+                if (modifiedProperties.Contains(nameof(EditModel.PaymentStatus)) && editModel.PaymentStatus != null)
+                    project.AdminStatus = editModel.PaymentStatus.Value;
 
 
-                if (modifiedProperties.Contains(nameof(EditModel.WorkingMonth)))
+                if (modifiedProperties.Contains(nameof(EditModel.WorkingMonth)) && editModel.WorkingMonth != null)
                     project.WorkingMonth = editModel.WorkingMonth;
 
-                if (modifiedProperties.Contains(nameof(EditModel.PrimaryEditorDatePaid)))
+                if (modifiedProperties.Contains(nameof(EditModel.PrimaryEditorDatePaid)) && editModel.PrimaryEditorDatePaid != null)
                     project.PrimaryEditorDetails.DatePaidEditor = editModel.PrimaryEditorDatePaid;
 
-                if (modifiedProperties.Contains(nameof(EditModel.SecondaryEditorDatePaid)))
+                if (modifiedProperties.Contains(nameof(EditModel.SecondaryEditorDatePaid)) && editModel.SecondaryEditorDatePaid != null)
                     project.SecondaryEditorDetails.DatePaidEditor = editModel.SecondaryEditorDatePaid;
 
-                if (modifiedProperties.Contains(nameof(EditModel.Progress)))
-                    project.ProgressBar = editModel.Progress;
+                if (modifiedProperties.Contains(nameof(EditModel.Progress)) && editModel.Progress != null )
+                    project.ProgressBar = editModel.Progress.Value;
 
-                if (modifiedProperties.Contains(nameof(EditModel.Status)))
-                    project.Status = editModel.Status;
+                if (modifiedProperties.Contains(nameof(EditModel.Status)) && editModel.Status != null)
+                    project.Status = editModel.Status.Value;
 
-                if (modifiedProperties.Contains(nameof(EditModel.IsPaymentVisible)))
-                    project.IsPaymentVisible = editModel.IsPaymentVisible;
+                if (modifiedProperties.Contains(nameof(EditModel.IsPaymentVisible)) && editModel.IsPaymentVisible != null)
+                    project.IsPaymentVisible = editModel.IsPaymentVisible.Value;
 
-                if (modifiedProperties.Contains(nameof(EditModel.IsUrgent)))
-                    project.IsUrgent = editModel.IsUrgent;
+                if (modifiedProperties.Contains(nameof(EditModel.IsUrgent)) && editModel.IsUrgent != null)
+                    project.IsUrgent = editModel.IsUrgent.Value;
             }
             MudDialog.Close(DialogResult.Ok(SelectedProjects));
     }

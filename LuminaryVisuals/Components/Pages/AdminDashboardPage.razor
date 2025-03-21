@@ -10,12 +10,14 @@
 @inject SettingService SettingService
 @inject NavigationManager NavigationManager
 @inject ProjectState ProjectState
+@inject UserManager<ApplicationUser> _userManager;
+
 @implements IDisposable
 
 @attribute [Authorize(Policy = "RequireAdminRole")]
 
 <PageTitle>Admin Dashboard</PageTitle>
-<MudMainContent Class="main-content-sm" Style="height:auto; overflow: hidden; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
+<MudMainContent Class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
 
 @if (_loading)
     {
@@ -29,7 +31,7 @@
     }
     else
     {
-        <MudTabs Outlined="false" Rounded="true" SliderAnimation="true" Class="pb-3" Style="width:100%;">
+        <MudTabs Outlined="false" Rounded="true" SliderAnimation="true" Class="pb-3" Style="width:100%; max-height:70vh" PanelClass="vh-70">
             <MudTabPanel Text="Users Dashboard" Icon="@Icons.Material.Filled.Api" >
 
 
@@ -130,7 +132,7 @@
                             </CellTemplate>
                         </PropertyColumn>
 
-                        <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="Email" CellStyle="text-align: center" Editable=false>
+                        <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="Email" CellStyle="text-align: center" Editable=true>
                         </PropertyColumn>
                         <PropertyColumn Property="x => x.SelectedRole" Title="Role" HeaderStyle="text-align:center;"
                         Style="min-width: 150px;" CellStyle="text-align: center" >
@@ -221,73 +223,79 @@
             </MudTabPanel>
             <MudTabPanel Text="Settings" Icon="@Icons.Material.Filled.Build" >
                 <MudPaper Elevation="4">
-                    <MudText class="ml-3" Typo="Typo.h5">Settings</MudText>
+                    <MudText class="ml-8 mb-2" Typo="Typo.h5">Settings</MudText>
                     <MudDivider />
-                    <MudCard Class="pa-4">
-                        <MudText Typo="Typo.h6" Class="mb-4">Add New Notification Alert:</MudText>
+                    <MudExpansionPanels Outlined="false" Elevation="0" Class="ma-7">
+                        <MudExpansionPanel Text="Alerts">
+                            <MudCard Class="pa-4">
+                                <MudText Typo="Typo.h6" Class="mb-4">Add New Notification Alert:</MudText>
 
-                        <MudTextField @bind-Value="notification.Message" Required="true"
-                        Label="Notification Message"
-                        Variant="Variant.Outlined"
-                        Lines="3"
-                        Class="mb-4" />
+                                <MudTextField @bind-Value="notification.Message" Required="true" Label="Notification Message" Variant="Variant.Outlined"
+                                Lines="3" Class="mb-4" />
 
-                        <MudItem xs="12">
-                            <MudSelect T="Severity" @bind-Value="notification.SeverityColor" Required="true" Label="Type of Alert" Variant="Variant.Outlined" Class="mb-4">
-                                <MudSelectItem Value="Severity.Warning">
-                                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
-                                        Warning
-                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(Default)</MudText>
-                                    </MudAlert>
-                                </MudSelectItem>
-                                <MudSelectItem Value="Severity.Normal">
-                                    <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Dense="true">Normal</MudAlert>
-                                </MudSelectItem>
-                                <MudSelectItem Value="Severity.Success">
-                                    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">Success</MudAlert>
-                                </MudSelectItem>
-                                <MudSelectItem Value="Severity.Info">
-                                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">Info</MudAlert>
-                                </MudSelectItem>
+                                <MudItem xs="12">
+                                    <MudSelect T="Severity" @bind-Value="notification.SeverityColor" Required="true" Label="Type of Alert" Variant="Variant.Outlined" Class="mb-4">
+                                        <MudSelectItem Value="Severity.Warning">
+                                            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                                                Warning
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(Default)</MudText>
+                                            </MudAlert>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="Severity.Normal">
+                                            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Dense="true">Normal</MudAlert>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="Severity.Success">
+                                            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">Success</MudAlert>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="Severity.Info">
+                                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">Info</MudAlert>
+                                        </MudSelectItem>
 
-                                <MudSelectItem Value="Severity.Error">
-                                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">Error</MudAlert>
-                                </MudSelectItem>
-                            </MudSelect>
-                        </MudItem>
+                                        <MudSelectItem Value="Severity.Error">
+                                            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">Error</MudAlert>
+                                        </MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
 
-                        <MudStack Row="true" AlignItems="AlignItems.Center"  Justify="Justify.SpaceBetween" >
-                            <MudItem xs="4">
-                                <MudSelect T="string" @bind-Value="notification.TargetRole" Required="true" Label="Target Audience" Variant="Variant.Outlined" Class="mb-4">
-                                    <MudSelectItem Value="@("Everyone")">Everyone</MudSelectItem>
-                                    <MudSelectItem Value="@("Admin")">
-                                        Admins
-                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
-                                    </MudSelectItem>
-                                    <MudSelectItem Value="@("Editor")">Editors 
-                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
-                                    </MudSelectItem>
-                                    <MudSelectItem Value="@("Client")">Clients 
-                                        <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
-                                    </MudSelectItem>
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="2">
-                                <MudButton Variant="Variant.Outlined" Disabled="@_processing" Color="Color.Info" FullWidth="true" OnClick="CreateNotification">
-                                    @if (_processing)
-                                    {
-                                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                                        <MudText Class="ms-2">Processing</MudText>
-                                    }
-                                    else
-                                    {
-                                        <MudText>Send Notification</MudText>
-                                    }
-                                </MudButton>
-                            </MudItem>
-                        </MudStack>
-                    </MudCard>
-                    <MudButton class="pa-3 ml-4" Variant="Variant.Outlined" Color="Color.Info" OnClick="EnsureChatExist">Create Private Chats for All Users</MudButton>
+                                <MudStack Row="true" AlignItems="AlignItems.Center"  Justify="Justify.SpaceBetween" >
+                                    <MudItem xs="4">
+                                        <MudSelect T="string" @bind-Value="notification.TargetRole" Required="true" Label="Target Audience" Variant="Variant.Outlined" Class="mb-4">
+                                            <MudSelectItem Value="@("Everyone")">Everyone</MudSelectItem>
+                                            <MudSelectItem Value="@("Admin")">
+                                                Admins
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                            </MudSelectItem>
+                                            <MudSelectItem Value="@("Editor")">Editors 
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                            </MudSelectItem>
+                                            <MudSelectItem Value="@("Client")">Clients 
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                            </MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="2">
+                                        <MudButton Variant="Variant.Outlined" Disabled="@_processing" Color="Color.Info" FullWidth="true" OnClick="CreateNotification">
+                                            @if (_processing)
+                                            {
+                                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                                <MudText Class="ms-2">Processing</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudText>Send Notification</MudText>
+                                            }
+                                        </MudButton>
+                                    </MudItem>
+                                </MudStack>
+                            </MudCard>  
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Text="Blocked Words For Chat">
+                            <LuminaryVisuals.Components.Shared.BlockedWord.BlockedWordsList />
+                        </MudExpansionPanel>
+
+                    </MudExpansionPanels>
+                    <MudButton class="pa-3 ml-8 mb-3" Variant="Variant.Outlined" Color="Color.Info" OnClick="EnsureChatExist">Create Private Chats for All Users</MudButton>
+
                 </MudPaper>
             </MudTabPanel>
         </MudTabs>
@@ -301,7 +309,7 @@
                 UserId="@_currentUserId"
                 IsAdminView="@isAdminView"
                 IsClientView="@_isClientView" isEditorView="@_isEditorView"
-                 />
+                />
             </div>
 
         }
@@ -377,7 +385,7 @@
 
         if (!result.Canceled)
         {
-            AllUsers = await UserManagementService.GetAllUsersAsync(storedValue); // Refresh the grid after update
+            AllUsers = await UserManagementService.GetAllUsersForAdminDashboardAsync(storedValue); // Refresh the grid after update
         }
     }
 
@@ -415,7 +423,7 @@
                 storedValue = _storedValue.ConversionRateUSToLek;
                 lastSavedValue = storedValue;
             }
-            AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
+            AllUsers = await UserManagementService.GetAllUsersForAdminDashboardAsync(storedValue);
             _users = AllUsers.ToList();
             await LoadUserNotes();
             _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
@@ -453,6 +461,7 @@
 
         if (firstRender)
         {
+            await Task.Delay(250);
             _allAvailableRoles = await GetAvailableRoles();
         }
     }
@@ -778,7 +787,7 @@
         Snackbar.Clear();
         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
         Snackbar.Add($"Successfully saved conversation rate to {storedValue}", Severity.Info);
-        AllUsers = await UserManagementService.GetAllUsersAsync(storedValue);
+        AllUsers = await UserManagementService.GetAllUsersForAdminDashboardAsync(storedValue);
         StateHasChanged();
     }
 
@@ -788,6 +797,7 @@
     private decimal? _originalHourlyRate;
     int? _originalWeeksToDueDateDefault;
     string _originalName;
+    string _originalEmail;
     void StartedEditingItem(UserRoleViewModel user)
     {
         // Store the original values before editing
@@ -795,6 +805,8 @@
         _originalHourlyRate = user.HourlyRate;
         _originalWeeksToDueDateDefault = user.WeeksToDueDateDefault;
         _originalName = user.UserName;
+        _originalEmail = user.UserEmail;
+
     }
     private async Task CanceledEditingItemAsync(UserRoleViewModel user)
     {
@@ -806,6 +818,7 @@
         bool roleChanged = user.SelectedRole != _originalRole;
         bool hourlyRateChanged = user.HourlyRate != _originalHourlyRate;
         bool isNameChanged = user.UserName != _originalName;
+        bool isEmailChanged = user.UserEmail != _originalEmail;
         if (roleChanged)
             await UpdateSelectedRole(user, user.SelectedRole);
         if (hourlyRateChanged || WeeksToDueDateDefault || isNameChanged)
@@ -818,6 +831,19 @@
                 Snackbar.Add(result, Severity.Error);
             StateHasChanged();
         }
+        if(isEmailChanged)
+        {
+            var _user = await _userManager.FindByIdAsync(user.UserId);
+            if(_user != null)
+            {
+                await _userManager.SetEmailAsync(_user, user.UserEmail);
+                Snackbar.Add("Email has been changed successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("User not found", Severity.Error);
+            }
+        }   
 
 
     }

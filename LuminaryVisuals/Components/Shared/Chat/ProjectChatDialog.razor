@@ -1,4 +1,5 @@
 ﻿@namespace Chats
+@using LuminaryVisuals.Components.ProjectPageDialogue
 @using LuminaryVisuals.Components.Shared.Chat
 @inject ChatService ChatService
 @inject ISnackbar Snackbar
@@ -262,13 +263,14 @@
     private bool isMenuOpen;
     private bool IsDragging;
     [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;
+    [Inject] private WordFilter WordFilter { get; set; }
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public Project Project{ get; set; }
     [Parameter] public string UserId { get; set; }
     [Parameter] public bool isAdminView { get; set; }
     [Parameter] public bool isEditorView { get; set; }
     [Parameter] public bool isClientView { get; set; }
-    
+
     private int timezoneOffsetMinutes { get; set; }
     private string? UploadedFileUrl;
     private string newMessage;
@@ -286,6 +288,7 @@
     private List<QuickMessage> quickMessages = new List<QuickMessage>();
     private MudFileUpload<IBrowserFile> _fileUploadReference;
     private bool isPrivateChat;
+    private List<string> blockedWords = new(); // populate it on after render and if it's not private chat.
 
     private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -404,7 +407,9 @@
             IsDragging = false;
 
             UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
-            await SendMessage(UploadedFileUrl);
+            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, UploadedFileUrl, isEditorView, false);
+            await MarkMessagesAsRead();
+
         }
         catch (Exception ex)
         {
@@ -425,7 +430,7 @@
             if (message.Preapproved)
             {
                 OpenQuickMessages();
-                await ChatService.AddMessageAsync(Project.ProjectId, UserId, message.Content!, false);
+                await ChatService.AddMessageAsync(Project.ProjectId, UserId, message.Content!, false, false);
                 await MarkMessagesAsRead();
                 _isLoading = false;
                 return true;
@@ -444,11 +449,14 @@
     private async Task<bool> SendMessage(string messageToSend)
     {
         _isLoading = true;
-        newMessage = string.Empty;
         await messageField.BlurAsync();
-        if (string.IsNullOrWhiteSpace(messageToSend))
-            messageToSend = newMessage;
-
+        messageToSend = newMessage;
+        bool requireApproval = false;
+        if (!isPrivateChat && !WordFilter.IsMessageAllowed(messageToSend))
+        {
+            Snackbar.Add("This message might include payment related info that MUST be disscussed only on Managememnt chat.", Severity.Error);
+            requireApproval = true;
+        }
         await messageField.Clear();
         await messageField.FocusAsync();
 
@@ -462,7 +470,7 @@
         }
         try
         {
-            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, messageToSend, isEditorView);
+            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, messageToSend, isEditorView, requireApproval);
             await MarkMessagesAsRead();
             _isLoading = false;
             _preventDefault = false;
@@ -474,6 +482,10 @@
             Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
             _isLoading = false;
             return false;
+        }
+        finally{
+            newMessage = string.Empty;
+            messageToSend = string.Empty;
         }
     }
     bool _preventDefault;
@@ -516,7 +528,7 @@
         {
             finishedLoading = false;
             int pageToLoad = initial ? 1 : currentPage;
-            var loadedMessages = await ChatService.GetMessagesAsync(Project.ProjectId, isClientView, pageNumber: currentPage, pageSize: PAGE_SIZE);
+            var loadedMessages = await ChatService.GetMessagesAsync(Project.ProjectId, isAdminView, UserId, pageNumber: currentPage, pageSize: PAGE_SIZE);
 
             if (initial)
             {
@@ -823,6 +835,11 @@
     {
         if (firstRender)
         {
+            // Get the list of blocked words only for non-private chat, as private chat doesn't have blocked words
+            if(!isPrivateChat)
+            {
+                blockedWords = await ChatService.GetBlockedWordsAsync();
+            }
             await JSRuntime.InvokeVoidAsync("initializeFocusTrap", chatContainerRef);
             // Focus the message input field
             if (messageField != null)

@@ -3,8 +3,8 @@
         <MudDatePicker Label="Sec Editor Payment Date"
                        Variant="Variant.Outlined"
                        Date="@(_SecondaryEditorPaymentDate)"
-                       DateChanged="@(date => _SecondaryEditorPaymentDate = date.Value)"
-                       Class="mt-3"
+                       DateChanged="@(date => _SecondaryEditorPaymentDate = date ?? null )"
+                       Class="mt-3" Clearable="true"
                        Required="false" />
     </DialogContent>
     <DialogActions>
@@ -19,8 +19,8 @@
 
     private void Submit()
     {
-        var dateToSave = _SecondaryEditorPaymentDate ?? DateTime.Today;
-        MudDialog.Close(DialogResult.Ok(DateTime.SpecifyKind(dateToSave, DateTimeKind.Utc)));
+        MudDialog.Close(DialogResult.Ok(_SecondaryEditorPaymentDate.HasValue
+                    ? DateTime.SpecifyKind(_SecondaryEditorPaymentDate.Value, DateTimeKind.Utc) : (DateTime?)null));
     }
 
     private void Cancel() => MudDialog.Cancel();

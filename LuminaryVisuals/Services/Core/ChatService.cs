@@ -76,7 +76,7 @@ public class ChatService
     }
 
     // Add a new message to the chat
-    public async Task<Message> AddMessageAsync(int projectId, string userId, string message, bool isEditor)
+    public async Task<Message> AddMessageAsync(int projectId, string userId, string message, bool isEditor, bool requireApproval)
     {
         using var context = _contextFactory.CreateDbContext();
         Chat? chat;
@@ -99,6 +99,7 @@ public class ChatService
         }
         else
         {
+            
             chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
             // Create new message
             newMessage = new Message
@@ -107,7 +108,7 @@ public class ChatService
                 UserId = userId,
                 Content = message,
                 Timestamp = DateTime.UtcNow,
-                IsApproved = !isEditor,  // Editor messages are not approved by default
+                IsApproved = !(isEditor || requireApproval),  // Editor messages are not approved by default, requireApproval not approved 
                 IsDeleted = false
             };
 
@@ -157,7 +158,7 @@ public class ChatService
 
     // Get messages for a project chat
 
-    public async Task<List<Message>> GetMessagesAsync(int projectId, bool isClient, int pageNumber = 1, int pageSize = 50)
+    public async Task<List<Message>> GetMessagesAsync(int projectId,bool isAdminView, string currentUser, int pageNumber = 1, int pageSize = 50)
     {
         var chat = await GetOrCreateChatAsync(projectId);
 
@@ -167,12 +168,13 @@ public class ChatService
         var messages = await context.Messages
             .Where(m => m.ChatId == chat.ChatId &&
                         !m.IsDeleted &&
-                        ( isClient ? m.IsApproved : true ))
+                        (isAdminView || m.IsApproved || m.UserId == currentUser ))
             .OrderByDescending(m => m.Timestamp)
             .Include(m => m.User)
             .Skip(( pageNumber - 1 ) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+
         messages.Reverse();
         return messages;
     }
@@ -261,6 +263,9 @@ public class ChatService
         {
             using var context = _contextFactory.CreateDbContext();
 
+            var user = await _userManager.FindByIdAsync(userId);
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
             // Convert read message IDs to a HashSet for fast lookups
             var readMessageIds = new HashSet<int>(
                 await context.ChatReadStatus
@@ -283,7 +288,9 @@ public class ChatService
                 .Select(g => new
                 {
                     ProjectId = g.Key,
-                    UnreadCount = g.Count(m => !readMessageIds.Contains(m.MessageId)),
+                    UnreadCount = isAdmin
+                    ? g.Count(m => !readMessageIds.Contains(m.MessageId))
+                    : g.Count(m => !readMessageIds.Contains(m.MessageId) && m.IsApproved),
                     LastMessageTime = g.Max(m => m.Timestamp), // Get max timestamp directly in SQL
                     UnapprovedCount = g.Count(m => !m.IsApproved && !m.IsDeleted)
                 })
@@ -333,7 +340,10 @@ public class ChatService
                     message => message.ChatId,
                     chat => chat.ChatId,
                     (message, chat) => new { message, chat });
-
+            if (!isAdmin)
+            {
+                query = query.Where(x => x.message.IsApproved);
+            }
             // Split query based on chat type
             var projectMessagesQuery = query
                 .Where(x => x.chat.ProjectId != null)
@@ -409,7 +419,14 @@ public class ChatService
     }
 
 
-
+    public async Task<List<string>> GetBlockedWordsAsync()
+    {
+        using var context = _contextFactory.CreateDbContext();
+        var blockedWords = await context.BlockedWords
+            .Select(bw => bw.Word)
+            .ToListAsync();
+        return blockedWords;
+    }
 
 
 

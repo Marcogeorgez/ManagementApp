@@ -143,6 +143,9 @@ namespace LuminaryVisuals.Services.Core
                         context.EditorLoggingHours.RemoveRange(loggedHours);
 
                         await context.SaveChangesAsync();
+                        // Reset calculations for the project
+                        var tempEntry = new EditorLoggingHours() { Id = -1, UserId = currentUserId, ProjectId = projectId };
+                        await CalculateAndSaveBillableHoursAsync(tempEntry);
 
                         return true; // Deletion successful
                     }
@@ -179,6 +182,7 @@ namespace LuminaryVisuals.Services.Core
                 {
                     throw new Exception("Project not found.");
                 }
+
                 if (project.PrimaryEditor?.Id == EditorLoggingHours.UserId)
                 {
                     project.PrimaryEditorDetails.BillableHours = loggedHours;
@@ -192,6 +196,43 @@ namespace LuminaryVisuals.Services.Core
                 {
                     throw new Exception("CalculateAndSaveBillableHoursAsync can't find PrimaryeditorId or SecondaryEditorId");
                 }
+
+                // Save changes to the database
+                await context.SaveChangesAsync();
+                _logger.LogInformation("BillableHours updated successfully for all projects.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error calculating and saving billable hours.", ex);
+                return false;
+            }
+        }
+        public async Task<bool> CalculateAndSaveBillableHoursForProjectAsync(int projectId)
+        {
+            try
+            {
+                using var context = _contextFactory.CreateDbContext();
+                var project = await context.Projects
+                .AsTracking()
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+                if (project == null)
+                {
+                    throw new Exception("Project not found.");
+                }
+
+                // Fetch all EditorLoggingHours
+                var primaryloggedHours = await context.EditorLoggingHours
+                    .Where(e => e.ProjectId == project.ProjectId && e.UserId == project.PrimaryEditorId)
+                    .SumAsync(e => e.EditorWorkingHours);
+
+                var secondaryloggedHours = await context.EditorLoggingHours
+                    .Where(e => e.ProjectId == project.ProjectId && e.UserId == project.SecondaryEditorId)
+                    .SumAsync(e => e.EditorWorkingHours);
+
+                project.PrimaryEditorDetails.BillableHours = primaryloggedHours;
+                project.SecondaryEditorDetails.BillableHours = secondaryloggedHours;
 
                 // Save changes to the database
                 await context.SaveChangesAsync();

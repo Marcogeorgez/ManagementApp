@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
+using static Dropbox.Api.TeamLog.EventCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection()
@@ -319,6 +320,11 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<NotificationService>();
 builder.Services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<NotificationService>());
 builder.Services.AddHostedService(sp => sp.GetRequiredService<NotificationService>());
+
+
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<LuminaryVisuals.Services.Helpers.WordFilter>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

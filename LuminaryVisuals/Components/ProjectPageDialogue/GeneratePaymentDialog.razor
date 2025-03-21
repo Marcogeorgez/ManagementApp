@@ -1,0 +1,401 @@
+﻿@inject IDbContextFactory<ApplicationDbContext> _contextFactory;
+<MudDialog>
+    <DialogContent>
+        @if (isAdmin)
+        {
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudText>Select target users</MudText>
+                <MudSpacer/>
+                <MudRadioGroup @bind-Value="ViewClient">
+                    <MudRadio Value="@("clients")" Color="Color.Info" Dense="true">Clients</MudRadio>
+                    <MudRadio Value="@("editors")" Color="Color.Info" Dense="true">Editors</MudRadio>
+                </MudRadioGroup>
+            </MudStack>
+
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudText>Users</MudText>
+                <MudSpacer />
+                <MudSelect T="ApplicationUser" SelectAll="true" Label="Select User" Variant="Variant.Outlined" Dense="true" MultiSelection="true" 
+                @bind-SelectedValues="selectedUsers">
+                    @if (ViewClient == "clients")
+                    {
+                        foreach (var client in _clients)
+                        {
+                            <MudSelectItem Value="@client">@client.UserName</MudSelectItem>
+                        }
+                    }
+                    else
+                    {
+                        foreach (var editor in _editors)
+                        {
+                            <MudSelectItem Value="@editor">@editor.UserName</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudStack>
+        }
+        <MudStack Row AlignItems="AlignItems.Center">
+            <MudText>Working Status</MudText>
+            <MudSpacer />
+            <MudSelect T="ProjectStatus" MultiSelectionTextFunc="@((values)=> GetMultiSelectionTextForStatus(values))" @bind-SelectedValues="selectedStatuses" SelectAll="true" Label="Select Status" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
+                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                {
+                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                }
+            </MudSelect>
+        </MudStack>
+        @if(isAdmin)
+        {
+        <MudStack Row AlignItems="AlignItems.Center">
+            <MudText>Client Payment Status</MudText>
+            <MudSpacer />
+            <MudSelect T="AdminProjectStatus" MultiSelectionTextFunc="@((values)=> GetMultiSelectionTextForStatus(values))" @bind-SelectedValues="selectedPaymentStatuses" SelectAll="true" Label="Select Status" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
+                @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+                {
+                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                }
+            </MudSelect>
+        </MudStack>
+        }
+        <MudStack Row AlignItems="AlignItems.Center">
+            <MudText>Working Month</MudText>
+            <MudSpacer />
+            <MudDatePicker Label="Working Month Start" Variant="Variant.Outlined" 
+            Class="mt-3" Required="false" FixDay="1" DateFormat="MM/yyyy" Date="StartDate"
+            DateChanged="@(date => OnStartDateChanged(date.Value))" />
+
+            <MudDatePicker Label="Working Month End" Variant="Variant.Outlined" 
+            Class="mt-3" Required="false" FixDay="1" DateFormat="MM/yyyy" Date="EndDate"
+            DateChanged="@(date => OnEndDateChanged(date.Value))" />
+
+        </MudStack>
+        <MudDivider/>
+
+        <MudStack Row AlignItems="AlignItems.Center">
+
+            <MudItem sm="4">
+                <MudText>Selected Projects</MudText>
+            </MudItem>
+            <MudItem sm="8">
+                <MudSelect T="Project" style="width: 100%" MultiSelectionTextFunc="@((values)=> GetMultiSelectionText(SelectedProjectNames))" @bind-SelectedValues="selectedProjects" SelectAll="true" Label="Filter By Projects" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
+                @if (projects != null)
+                {
+                    @foreach (var project in projects)
+                    {
+                        <MudSelectItem Value="project">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                            <span>@project.ProjectName</span>
+                            @if(isAdmin && ViewClient == "clients")
+                            {
+                            <span>
+                                <span style="color:#b0dfe8; ">@(project.ClientBillableHours ?? 0)h</span>
+                                <span style="color:#74c85f"> @(project.ClientBillableAmount ?? 0)$</span>
+                            </span>
+                            }
+                            else if(isAdmin && ViewClient == "editors"){
+                                <span>
+                                    <span style="color:#b0dfe8">@(project.PrimaryEditorDetails.FinalBillableHours + project.SecondaryEditorDetails.FinalBillableHours)h</span>
+                                    <span style="color:#74c85f">
+                                        @((project.PrimaryEditorDetails?.PaymentAmount ?? 0) + (project.SecondaryEditorDetails?.PaymentAmount ?? 0))$
+                                    </span>
+                                </span>
+
+                            }
+                            else{
+                                <span>
+                                    <span style="color:#b0dfe8">
+                                        @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
+                                    project.PrimaryEditorDetails.FinalBillableHours : 0)
+                                    + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                    project.SecondaryEditorDetails.FinalBillableHours : 0))h
+                                    </span>
+                                    <span style="color:#74c85f">
+                                        @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
+                                    project.PrimaryEditorDetails.PaymentAmount : 0)
+                                    + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                    project.SecondaryEditorDetails.PaymentAmount : 0))$
+                                    </span>
+                                </span>
+                            }
+                            </div>
+                        </MudSelectItem>
+                    }
+                }
+                </MudSelect>
+            </MudItem>
+        </MudStack>
+        <MudStack Row AlignItems="AlignItems.Center">
+            <MudText>Editor Payment Status</MudText>
+            <MudSpacer />
+            <MudRadioGroup @bind-Value="editorPaid">
+                <MudRadio Value="true" Color="Color.Info" Dense="true">Paid</MudRadio>
+                <MudRadio Value="false" Color="Color.Info" Dense="true">Unpaid</MudRadio>
+            </MudRadioGroup>
+        </MudStack>
+        <MudDivider />
+
+        @if (projects != null)
+        {
+            if (isAdmin && ViewClient == "clients")
+            {
+                <MudText>
+                    Total: <span style="color:#b0dfe8">@(selectedProjects.Sum(p => p.ClientBillableHours) ?? 0)h</span>
+                    <span style="color:#74c85f">@(selectedProjects.Sum(p => p.ClientBillableAmount) ?? 0)$</span>
+                </MudText>
+            }
+            else if(isAdmin && ViewClient == "editors")
+            {
+                var totalHours = selectedProjects?.Sum(p =>
+                (editorPaid == (p.PrimaryEditorDetails.DatePaidEditor != null) ? p.PrimaryEditorDetails.FinalBillableHours : 0) +
+                (editorPaid == (p.SecondaryEditorDetails.DatePaidEditor != null) ? p.SecondaryEditorDetails.FinalBillableHours : 0)
+                ) ?? 0;
+
+                var totalPayment = selectedProjects?.Sum(p =>
+                (editorPaid == (p.PrimaryEditorDetails.DatePaidEditor != null) ? (p.PrimaryEditorDetails.PaymentAmount ?? 0) : 0) +
+                (editorPaid == (p.SecondaryEditorDetails.DatePaidEditor != null) ? (p.SecondaryEditorDetails.PaymentAmount ?? 0) : 0)
+                ) ?? 0;
+
+                var editorTotals = selectedProjects?
+                    .SelectMany(p => new[]
+                    {
+                        new {
+                        EditorId = p.PrimaryEditorId,
+                        Name = p.PrimaryEditor?.UserName,
+                        Hours = p.PrimaryEditorDetails?.FinalBillableHours ?? 0,
+                        Payment = p.PrimaryEditorDetails?.PaymentAmount ?? 0,
+                        IsPaid = p.PrimaryEditorDetails?.DatePaidEditor != null
+                        },
+                        new {
+                        EditorId = p.SecondaryEditorId,
+                        Name = p.SecondaryEditor?.UserName,
+                        Hours = p.SecondaryEditorDetails?.FinalBillableHours ?? 0,
+                        Payment = p.SecondaryEditorDetails?.PaymentAmount ?? 0,
+                        IsPaid = p.SecondaryEditorDetails?.DatePaidEditor != null
+                        }
+                    })
+                    .Where(e => e.EditorId != null && (editorPaid ? e.IsPaid : !e.IsPaid))
+                    .GroupBy(e => new { e.EditorId, e.Name })
+                    .Select(g => new
+                    {
+                        EditorName = g.Key.Name,
+                        TotalHours = g.Sum(e => e.Hours),
+                        TotalPayment = g.Sum(e => e.Payment)
+                    })
+                    .ToList();
+                if(editorTotals.Count > 0)
+                {
+                    @foreach (var editor in editorTotals)
+                    {
+                        <li>@editor.EditorName: <span style="color:#b0dfe8">@editor.TotalHours h</span> <span style="color:#74c85f">@editor.TotalPayment $</span></li>
+                    }
+                }
+                <MudText>
+                    Total: <span style="color:#b0dfe8">@(totalHours)h</span> <span style="color:#74c85f"> @(totalPayment)$</span>
+                </MudText>
+
+            }
+            else if(!isAdmin)
+            {
+                var totalHours = selectedProjects?.Sum(p =>
+                (p.PrimaryEditorId == currentUserId && editorPaid == (p.PrimaryEditorDetails.DatePaidEditor != null) ?
+                p.PrimaryEditorDetails.FinalBillableHours : 0) +
+                (p.SecondaryEditorId == currentUserId && editorPaid == (p.SecondaryEditorDetails.DatePaidEditor != null) ?
+                p.SecondaryEditorDetails.FinalBillableHours : 0)
+                ) ?? 0;
+
+                var totalPayment = selectedProjects?.Sum(p =>
+                (p.PrimaryEditorId == currentUserId && editorPaid == (p.PrimaryEditorDetails.DatePaidEditor != null) ?
+                p.PrimaryEditorDetails.PaymentAmount ?? 0 : 0) +
+                (p.SecondaryEditorId == currentUserId && editorPaid == (p.SecondaryEditorDetails.DatePaidEditor != null) ?
+                p.SecondaryEditorDetails.PaymentAmount ?? 0 : 0)
+                ) ?? 0;
+
+                <MudText>
+                    Total: <span style="color:#b0dfe8">@(totalHours)h</span> <span style="color:#74c85f"> @(totalPayment)$</span>
+                </MudText>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color=Color.Success OnClick="GetProjects">Apply Filters</MudButton>
+        <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel">Close</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit">Download</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public bool isEditor { get; set; }
+    [Parameter] public bool isAdmin { get; set; }
+    [Parameter] public string currentUserId { get; set; }
+
+    List<ApplicationUser> _clients = new();
+    List<ApplicationUser> _editors = new();
+    IEnumerable<ApplicationUser> selectedUsers { get; set; }
+    IEnumerable<ProjectStatus> selectedStatuses { get; set; }
+    IEnumerable<AdminProjectStatus> selectedPaymentStatuses { get; set; }
+    IEnumerable<Project> projects { get; set; }
+    IEnumerable<Project> selectedProjects = new List<Project>() ;
+    private bool editorPaid = false;
+    private DateTime? StartDate;
+    private DateTime? EndDate;
+    private readonly List<string> Months = Enumerable.Range(1, 12)
+    .Select(i => new DateTime(DateTime.Now.Year, i, 1).ToString("MMMM"))
+    .ToList();
+   
+    private string _viewClient = string.Empty;
+    public string ViewClient
+    {
+        get => _viewClient;
+        set
+        {
+            if (_viewClient != value)
+            {
+                _viewClient = value;
+                selectedUsers = new List<ApplicationUser>(); // Reset selectedUsers when viewClient changes
+            }
+        }
+    }
+    [Inject] private UserManager<ApplicationUser> _userManager { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        _clients = (await _userManager.GetUsersInRoleAsync("Client")).ToList();
+        _editors = (await _userManager.GetUsersInRoleAsync("Editor")).ToList();
+
+        if (isAdmin)
+        {
+            ViewClient = "clients";
+        }
+        else
+        {
+            ViewClient = "editors";
+        }
+    }
+
+    private void OnStartDateChanged(DateTime? date)
+    {
+        if (date.HasValue)
+        {
+            // Set StartDate to the first day of the selected month
+            StartDate = new DateTime(date.Value.Year, date.Value.Month, 1);
+
+            // Ensure EndDate is not earlier than StartDate
+            if (EndDate.HasValue && EndDate < StartDate)
+            {
+                EndDate = StartDate.Value.AddMonths(1).AddDays(-1);
+            }
+        }
+    }
+
+    private void OnEndDateChanged(DateTime? date)
+    {
+        if (date.HasValue)
+        {
+            // Set EndDate to the last day of the selected month
+            EndDate = new DateTime(date.Value.Year, date.Value.Month, 1)
+                .AddMonths(1).AddDays(-1);
+
+            // Ensure StartDate is not after EndDate
+            if (StartDate.HasValue && StartDate > EndDate)
+            {
+                StartDate = new DateTime(EndDate.Value.Year, EndDate.Value.Month, 1);
+            }
+        }
+    }
+
+    private async Task GetProjects()
+    {
+        using var context = _contextFactory.CreateDbContext();
+
+        var query = context.Projects
+        .Include(p => p.PrimaryEditor)
+        .Include(p => p.SecondaryEditor)
+        .Include(p => p.PrimaryEditorDetails)
+        .Include(p => p.SecondaryEditorDetails)
+        .AsQueryable();
+
+        // Filter by selected users (Client ID)
+        if (selectedUsers?.Any() == true)
+        {
+            var selectedUserIds = selectedUsers.Select(u => u.Id)
+            .Where(id => id != null).ToList();
+            if (ViewClient == "clients" && isAdmin)
+            {
+                query = query.Where(p => selectedUserIds.Contains(p.ClientId));
+            }
+            else if(ViewClient == "editors" && isAdmin)
+            {
+                query = query.Where(p => selectedUserIds.Contains(p.PrimaryEditorId!) || selectedUserIds.Contains(p.SecondaryEditorId!));
+            }
+          
+        }
+        else if (isEditor && (selectedUsers == null || !selectedUsers.Any()))
+        {
+            query = query.Where(p => p.PrimaryEditorId == currentUserId || p.SecondaryEditorId == currentUserId);
+        }
+
+        // Filter by selected ProjectStatus (if any)
+        if (selectedStatuses?.Any() == true)
+        {
+            var selectedStatusValues = selectedStatuses.ToList();
+            query = query.Where(p => selectedStatusValues.Contains(p.Status));
+        }
+
+        // Filter by AdminProjectStatus (Paid, NotPaid, etc.)
+        if (selectedPaymentStatuses?.Any() == true)
+        {
+            var selectedPaymentStatusValues = selectedPaymentStatuses.ToList();
+            query = query.Where(p => selectedPaymentStatusValues.Contains(p.AdminStatus));
+        }
+
+        // Filter by WorkingMonth (StartDate and EndDate)
+        if (StartDate.HasValue)
+        {
+            query = query.Where(p => p.WorkingMonth >= StartDate.Value);
+        }
+
+        if (EndDate.HasValue)
+        {
+            query = query.Where(p => p.WorkingMonth < EndDate.Value);
+        }
+
+        query = query.Where(p =>
+            (editorPaid == false ? p.PrimaryEditorDetails.DatePaidEditor == null : p.PrimaryEditorDetails.DatePaidEditor != null) ||
+            (editorPaid == false ? p.SecondaryEditorDetails.DatePaidEditor == null : p.SecondaryEditorDetails.DatePaidEditor != null)
+        );
+
+        query = query.Where(p => p.IsArchived == false);
+        // Execute the query
+        projects = await query.ToListAsync();
+        selectedProjects = projects;
+        
+    }
+    private void Submit()
+    {
+        GenerateProjectDTO generateProjectDTO = new()
+        {
+                project = selectedProjects.ToList(),
+                ViewClient = ViewClient,
+                editorPaid = editorPaid
+        };
+        MudDialog.Close(DialogResult.Ok(generateProjectDTO));
+    }
+    private void Cancel() => MudDialog.Cancel();
+
+
+    private List<string> SelectedProjectNames => selectedProjects.Select(p => p.ProjectName).ToList();
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        return $"Selected Project{(selectedValues.Count > 1 ? "s" : "")}: {string.Join(", ", selectedValues)}";
+    }
+    private string GetMultiSelectionTextForStatus(List<string> selectedValues)
+    {
+        return $"{string.Join(", ", selectedValues).Replace('_',' ')}";
+    }
+}
+<style>
+    .mud-select{
+        flex-grow: 0 !important;
+    }
+</style>

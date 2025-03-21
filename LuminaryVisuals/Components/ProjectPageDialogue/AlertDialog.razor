@@ -2,10 +2,10 @@
     <DialogContent>
         @foreach(var notification in notificationList)
         {
-            <MudAlert Severity="notification.SeverityColor"
+            <MudAlert Severity="notification.Notification.SeverityColor"
             Variant="Variant.Outlined"
             Class="my-5">
-                @foreach (var part in StringHelper.GetTextAndLinks(notification.Message))
+                @foreach (var part in StringHelper.GetTextAndLinks(notification.Notification.Message))
                 {
                     @if (StringHelper.IsLink(part))
                     {
@@ -27,7 +27,7 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
-    [Parameter] public List<Notification> notificationList { get; set; }
+    [Parameter] public List<UserNotificationStatus> notificationList { get; set; }
     [Parameter] public string _currentUserId { get; set; }
     [Parameter] public bool isAdmin { get; set; }
     [Inject] private UserNotificationService UserNotificationService { get; set; }
@@ -75,8 +75,8 @@
     {
         foreach (var _notification in notificationList)
         {
-            await SendNotificationToChat(_notification);
-            await UserNotificationService.DismissNotification(_currentUserId, _notification.Id);
+            await SendNotificationToChat(_notification.Notification);
+            await UserNotificationService.DismissNotification(_currentUserId, _notification.Notification.Id);
         }
     }
     [Inject] ChatService chatService { get; set; }

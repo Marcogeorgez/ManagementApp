@@ -1,0 +1,98 @@
+﻿@using MudBlazor
+@using System.Collections.Generic
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh;min-width:600px; overflow-y: auto;">
+            <MudTreeView Class="ml-n3 pa-0" T="string" ReadOnly>
+                <MudTreeViewItem Text="@($"Batch Edit Selected Projects ({SelectedProjects?.Count})")">
+                    @foreach (var project in SelectedProjects)
+                    {
+                        <MudTreeViewItem Text="@project.ProjectName" />
+                    }
+                </MudTreeViewItem>
+            </MudTreeView>
+            <!-- Archive Reason -->
+            <MudSelect T="ArchiveReason?" Label="Reason For Archiving Project" Variant="Variant.Outlined"
+            @bind-Value="editModel.ArchiveReason" Class="mb-4" Clearable="true">
+                <MudSelectItem T="ArchiveReason?" Value="ArchiveReason.Paid">Paid</MudSelectItem>
+                <MudSelectItem T="ArchiveReason?" Value="ArchiveReason.Cancelled">Cancelled</MudSelectItem>
+                <MudSelectItem T="ArchiveReason?" Value="ArchiveReason.Deleted">Deleted</MudSelectItem>
+            </MudSelect>
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Submit">Save Changes</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public HashSet<Project> SelectedProjects { get; set; }
+
+    private MudForm form;
+    private EditModel editModel = new();
+    private HashSet<string> modifiedProperties = new();
+
+    private class EditModel
+    {
+        private ArchiveReason? _archiveReason;
+        public ArchiveReason? ArchiveReason
+        {
+            get => _archiveReason ?? null;
+            set
+            {
+                if (_archiveReason != value)
+                {
+                    _archiveReason = value;
+                    OnPropertyModified(nameof(ArchiveReason));
+                }
+            }
+        }
+
+        public void OnPropertyModified(string propertyName)
+        {
+            if (_modifiedProperties != null)
+            {
+                _modifiedProperties.Add(propertyName);
+            }
+        }
+
+        private HashSet<string> _modifiedProperties;
+        public void SetModifiedPropertiesTracker(HashSet<string> tracker)
+        {
+            _modifiedProperties = tracker;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        editModel.SetModifiedPropertiesTracker(modifiedProperties);
+        base.OnInitialized();
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    [Inject] ISnackbar Snackbar { get; set; }
+    private async Task Submit()
+    {
+        if (modifiedProperties.Contains(nameof(EditModel.ArchiveReason)) && editModel.ArchiveReason != null)
+        {
+            List<int> selectedProjects = SelectedProjects.Select(p => p.ProjectId).ToList();
+            ArchiveProjectsResult result = new()
+                {
+                    ArchivedProjects = selectedProjects,
+                    ArchiveReason = editModel.ArchiveReason
+                };
+            MudDialog.Close(DialogResult.Ok(result));
+        }
+        else
+        {
+            Snackbar.Add("No Archive reason was selected, please select archive reason first.", Severity.Warning);
+        }
+    }
+}

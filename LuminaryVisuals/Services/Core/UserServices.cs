@@ -24,8 +24,29 @@ public class UserServices
         _roleManager = roleManager;
         _logger = logger;
     }
+    public async Task<List<string>> GetAllUsersForRoleAsync(string? role)
+    {
+        using var context = _contextFactory.CreateDbContext();
 
-    public async Task<List<UserRoleViewModel>> GetAllUsersAsync(decimal? storedValue)
+        if (role == null)
+        {
+            return await _userManager.Users.Select(u => u.Id).ToListAsync();
+        }
+
+        var usersInRole = role switch
+        {
+            "Client" => await _userManager.GetUsersInRoleAsync("Client"),
+            "Editor" => await _userManager.GetUsersInRoleAsync("Editor"),
+            "Admin" => await _userManager.GetUsersInRoleAsync("Admin"),
+            _ => new List<ApplicationUser>()
+        };
+
+        return usersInRole.Select(u => u.Id).ToList(); 
+    }
+
+
+
+    public async Task<List<UserRoleViewModel>> GetAllUsersForAdminDashboardAsync(decimal? storedValue)
     {
         using (var context = _contextFactory.CreateDbContext())
         {

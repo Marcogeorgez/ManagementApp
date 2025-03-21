@@ -38,6 +38,17 @@ public class ColumnPreferenceService
         await context.SaveChangesAsync();
     }
 
+    public async Task UpdatePreset(int id, Dictionary<string, bool> preferences)
+    {
+        using var context = await _contextFactory.CreateDbContextAsync();
+        var preset = await context.ColumnPresets.AsTracking().FirstOrDefaultAsync(p => p.Id == id);
+        if (preset == null)
+            return;
+        preset.Preferences = JsonSerializer.Serialize(preferences);
+        context.ColumnPresets.Update(preset);
+        await context.SaveChangesAsync();
+    }
+
     public async Task<Dictionary<string, bool>> GetPreferencesByName(string userId, string presetName)
     {
         using var context = await _contextFactory.CreateDbContextAsync();

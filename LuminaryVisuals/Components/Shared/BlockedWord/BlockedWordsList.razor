@@ -1,0 +1,196 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h5">Blocked Words Management</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenAddDialog">
+            <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" /> Add Word
+        </MudButton>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable Items="BlockedWords" Dense Hover="true" RowsPerPage="100" Breakpoint="Breakpoint.None">
+            <HeaderContent>
+                <MudTh>Word</MudTh>
+                <MudTh Style="text-align: right">Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="word">
+                <MudTd>@word.Word</MudTd>
+                <MudTd Style="text-align: right">
+                    <div class="d-flex justify-end">
+                        <MudIconButton Class="mr-3" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" OnClick="() => OpenEditDialog(word)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Variant="Variant.Outlined" OnClick="() => ConfirmDelete(word)" />
+                    </div>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager AllItemsText="All" PageSizeOptions="[50,100,250,int.MaxValue]" />
+            </PagerContent>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private List<BlockedWord> BlockedWords = new();
+    private string EditingWord = string.Empty;
+    private BlockedWord? EditingBlockedWord;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBlockedWords();
+    }
+
+    private async Task LoadBlockedWords()
+    {
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+            BlockedWords = await context.BlockedWords.OrderBy(w => w.Word).ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading blocked words: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("EditingWord", "");
+        parameters.Add("IsEditing", false);
+
+        var dialog = await DialogService.ShowAsync<BlockedWordDialog>("Add Blocked Word", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string word && !string.IsNullOrWhiteSpace(word))
+        {
+            await AddWord(word);
+        }
+    }
+
+    private async Task OpenEditDialog(BlockedWord word)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("EditingWord", word.Word);
+        parameters.Add("IsEditing", true);
+
+        var dialog = await DialogService.ShowAsync<BlockedWordDialog>("Edit Blocked Word", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is string updatedWord && !string.IsNullOrWhiteSpace(updatedWord))
+        {
+            await UpdateWord(word, updatedWord);
+        }
+    }
+
+    private async Task ConfirmDelete(BlockedWord word)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", $"Are you sure you want to delete \"{word.Word}\"?");
+        parameters.Add("ButtonText", "Delete");
+        parameters.Add("Color", Color.Error);
+
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Confirm Deletion", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await DeleteWord(word);
+        }
+    }
+    [Inject] WordFilter wordFilter { get; set; }
+    private async Task AddWord(string word)
+    {
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+
+            // Check if word already exists (case insensitive)
+            bool exists = await context.BlockedWords
+                .AnyAsync(w => w.Word.ToLower() == word.ToLower());
+
+            if (exists)
+            {
+                Snackbar.Add("This word is already blocked.", Severity.Warning);
+                return;
+            }
+
+            var newWord = new BlockedWord { Word = word.Trim() };
+            context.BlockedWords.Add(newWord);
+            await context.SaveChangesAsync();
+            Snackbar.Add("Word added successfully.", Severity.Success);
+            await LoadBlockedWords();
+
+            wordFilter.InvalidateCache();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error adding word: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task UpdateWord(BlockedWord originalWord, string newWord)
+    {
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+
+            // Check if the edited word would conflict with another existing word
+            bool exists = await context.BlockedWords
+                .AnyAsync(w => w.Id != originalWord.Id &&
+                         w.Word.ToLower() == newWord.ToLower());
+
+            if (exists)
+            {
+                Snackbar.Add("This word is already blocked.", Severity.Warning);
+                return;
+            }
+
+            var wordToUpdate = await context.BlockedWords
+                .AsTracking()
+                .FirstOrDefaultAsync(w => w.Id == originalWord.Id);
+
+            if (wordToUpdate != null)
+            {
+                wordToUpdate.Word = newWord.Trim();
+                await context.SaveChangesAsync();
+                Snackbar.Add("Word updated successfully.", Severity.Success);
+                await LoadBlockedWords();
+            }
+            wordFilter.InvalidateCache();
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating word: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteWord(BlockedWord word)
+    {
+        try
+        {
+            await using var context = await DbContextFactory.CreateDbContextAsync();
+
+            var wordToDelete = await context.BlockedWords
+                .AsTracking()
+                .FirstOrDefaultAsync(w => w.Id == word.Id);
+
+            if (wordToDelete != null)
+            {
+                context.BlockedWords.Remove(wordToDelete);
+                await context.SaveChangesAsync();
+                Snackbar.Add("Word deleted successfully.", Severity.Success);
+                await LoadBlockedWords();
+            }
+            wordFilter.InvalidateCache();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error deleting word: {ex.Message}", Severity.Error);
+        }
+    }
+}

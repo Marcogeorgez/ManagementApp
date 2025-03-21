@@ -79,7 +79,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         new ColumnDefinition { Name = "ClientPaymentToggle", DisplayName = "Client Payment Toggle" },
 
     };
-    private List<Notification> notificationList = new();
+    private List<UserNotificationStatus> notificationList = new();
     [Inject] private UserNotificationService UserNotificationService { get; set; }
     private async Task GetUserNotifications()
     {
@@ -157,11 +157,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         if (firstRender)
         {
             _loading = false;
-            StateHasChanged();
             await GetUserNotifications();
             await LoadProjects();
-
-
+            ToggleFinishedProjects(HideFinishedProjects);
+            StateHasChanged();
         }
     }
     public void Dispose()
@@ -234,6 +233,18 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Snackbar.Add($"Error loading preset. please contact support!", Severity.Error);
         }
     }
+    private async Task EditPreset(ColumnPreset Preset)
+    {
+        try
+        {
+            await _menuRef.CloseAllMenusAsync();
+            await OpenColumnPreferencesDialog(Preset);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
     private async Task DeletePreset(ColumnPreset Preset)
     {
         try
@@ -250,41 +261,57 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     }
     // Open Dialog to Saves the visibility state as a new preset 
     // which can be loaded for fast access to the columns
-    private async Task OpenColumnPreferencesDialog()
+    private async Task OpenColumnPreferencesDialog(ColumnPreset? columnPreset = null)
     {
+        Dictionary<string, bool> visibilityState;
+
+        if (columnPreset is not null)
+        {
+            visibilityState = await columnPreferenceService.GetPreferencesByName(_currentUserId, columnPreset.Name);
+        }
+        else
+        {
+            visibilityState = _columnVisibility ?? new Dictionary<string, bool>();
+        }
+
         var parameters = new DialogParameters
         {
-            ["VisibilityState"] = _columnVisibility,
-            ["Columns"] = _availableColumns,
-            ["_columnPresets"] = _columnPresets
+            ["VisibilityState"] = visibilityState,
+            ["Columns"] = _availableColumns ?? new List<ColumnDefinition>(),
+            ["_columnPresets"] = _columnPresets ?? new List<ColumnPreset>(),
+            ["columnPreset"] = columnPreset
         };
 
         var dialog = await DialogService.ShowAsync<ColumnPreferencesDialog>("Column Preferences", parameters);
         var result = await dialog.Result;
 
-        if (!result!.Canceled)
+        if (result.Canceled)
+            return;
+
+        if (result.Data is ColumnPreferenceResult presetResult)
         {
-            if (result.Data is ColumnPreferenceResult presetResult)
+            if (columnPreset == null)
             {
                 _columnVisibility = presetResult.Visibility;
-                await columnPreferenceService.SavePreset(_currentUserId, presetResult.PresetName, presetResult.Visibility);
-                await GetColumnsPresetPreferences();
                 _selectedPresetName = presetResult.PresetName;
-
+                await columnPreferenceService.SavePreset(_currentUserId, presetResult.PresetName, presetResult.Visibility);
             }
             else
             {
-                _columnVisibility = (Dictionary<string, bool>) result.Data!;
+                await columnPreferenceService.UpdatePreset(columnPreset.Id, presetResult.Visibility);
             }
-            StateHasChanged();
+
+            await GetColumnsPresetPreferences();
         }
+        else
+        {
+            _columnVisibility = (Dictionary<string, bool>) result.Data;
+        }
+
+        StateHasChanged();
     }
-    private Task OnSearch(string text)
-    {
-        _searchString = text;
-        return _dataGrid.ReloadServerData();
-    }
-  
+
+
     // Quick Global Filter which is used to search in the entire grid
     private Func<Project, bool> _quickFilter => x =>
     {
@@ -380,6 +407,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         LoadingService.ShowLoading();
         _isArchived = !_isArchived;
+        SelectedProjects = new();
         await LoadProjects();
         LoadingService.HideLoading();
     }
@@ -433,13 +461,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             }
             else if (_isEditorView && isAdminView == false)
                 await LoadProjectsForEditors();
-            await _dataGrid.ReloadServerData();
+            //await _dataGrid.ReloadServerData(); unused anywhere now that we went back to pagination if no issue is discovered will be deleted
             StateHasChanged();
         }
         finally
         {
             _loadingSemaphore.Release();
-
         }
 
     }
@@ -491,8 +518,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
 
     }
     HashSet<Project> SelectedProjects = new();
-
-    private async Task SelectedItems(HashSet<Project> projects)
+    
+    private async Task SelectedItems(HashSet<Project> projects, bool editSelected)
     {
         if (!_isAdminView)
             return;
@@ -504,21 +531,42 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         LoadingService.ShowLoading();
         try
         {
-            var dialogParameters = new DialogParameters
-        {
-            { "SelectedProjects", SelectedProjects },
-        };
-
-            var dialog = await DialogService.ShowAsync<EditSelected>("Create New Project", dialogParameters);
-            var result = await dialog.Result;
-
-            if (!result!.Canceled)
+            if (editSelected)
             {
-                var modifiedProjects = result.Data as HashSet<Project>;
-                if (modifiedProjects != null)
+                var dialogParameters = new DialogParameters
                 {
-                    await projectServices.UpdateProjectsInBatchAsync(modifiedProjects, _currentUserId);
-                    Snackbar.Add("Saved all projects successfully", Severity.Success);
+                    { "SelectedProjects", SelectedProjects },
+                };
+
+                var dialog = await DialogService.ShowAsync<BatchEditProjects>("Create New Project", dialogParameters);
+                var result = await dialog.Result;
+
+                if (!result!.Canceled)
+                {
+                    var modifiedProjects = result.Data as HashSet<Project>;
+                    if (modifiedProjects != null)
+                    {
+                        await projectServices.UpdateProjectsInBatchAsync(modifiedProjects, _currentUserId);
+                        Snackbar.Add("Saved all projects successfully", Severity.Success);
+                    }
+                }
+            }
+            else
+            {
+                var dialogParameters = new DialogParameters
+                {
+                    { "SelectedProjects", SelectedProjects },
+                };
+                var dialog = await DialogService.ShowAsync<BatchArchiveProjects>("Archive Projects", dialogParameters);
+                var result = await dialog.Result;
+                if (!result!.Canceled)
+                {
+                    var archivedProjects = result.Data as ArchiveProjectsResult;
+                    if (archivedProjects != null)
+                    {
+                        await projectServices.ArchiveProjectsAsync(archivedProjects.ArchivedProjects, archivedProjects.ArchiveReason);
+                        Snackbar.Add("Archived all projects successfully", Severity.Success);
+                    }
                 }
             }
         }
@@ -530,7 +578,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         finally
         {
             LoadingService.HideLoading();
-            SelectedProjects = new();
         }
     }
     private async Task CreateProjectDialogAsync(DialogOptions options)
@@ -575,6 +622,26 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         LoadingService.HideLoading();
         StateHasChanged();
     }
+    private async Task DeleteProjects(HashSet<Project> projects)
+    {
+        List<int> projectToDelete = projects.Select(p => p.ProjectId).ToList();
+        if(projects.Count == 0)
+        {
+            Snackbar.Add("You didn't select any projects, please select projects first!", Severity.Error);
+            return;
+        }
+        if (!await ConfirmationService.Confirm($"Are you sure you'd like to delete these archived {projects.Count} projects ? This will delete it permanently!"))
+        {
+            return;
+        }
+        LoadingService.ShowLoading();
+        await projectServices.DeleteProjectsAsync(projectToDelete);
+        await LoadProjects();
+        SelectedProjects = new();
+        LoadingService.HideLoading();
+        StateHasChanged();
+    }
+
     // Archiving and Unarchiving the project
     public async Task ArchiveProject(Project project)
     {
@@ -768,8 +835,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             { "isAdmin", isAdminView}
         };
 
-        var dialog = await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
-        var result = await dialog.Result;
+        await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
         await LoadProjects();
         LoadingService.HideLoading();
 
@@ -916,23 +982,52 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         };
 
     }
+    private async Task OpenGeneratePaymentDialog()
+    {
+        LoadingService.ShowLoading();
+
+        var dialogParameters = new DialogParameters {
+            { "isAdmin", _isAdminView},
+            { "isEditor", _isEditorView },
+            { "currentUserId", _currentUserId }
+        };
+        var dialog = await DialogService.ShowAsync<GeneratePaymentDialog>("", parameters: dialogParameters);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            var generateProject = result.Data! as GenerateProjectDTO;
+            if (generateProject != null)
+            {
+                if(generateProject.project.Any())
+                {
+                    if(generateProject.ViewClient == "clients" && isAdminView)
+                    {
+                        await DownloadFilteredAsCsvPayoneer(generateProject.project.ToList());
+                    }
+                    else
+                    {
+                        await DownloadFilteredAsCsvEditors(generateProject.project.ToList(), generateProject.editorPaid!.Value);
+                    }
+                }
+            }
+        }
+        LoadingService.HideLoading();
+    }
     // Downloading Filtered as CSV for editors
-    private async Task DownloadFilteredAsCsvEditors()
+    private async Task DownloadFilteredAsCsvEditors(List<Project> _projects,bool editorPaid)
     {
         try
         {
             if (await ConfirmationService.Confirm("Do you want to download the filtered projects in CSV file?"))
             {
-                var filteredItems = _dataGrid.FilteredItems.ToList();
-
                 // Group projects by either PrimaryEditorName or SecondaryEditorName
-                if (currentUser.IsInRole("Admin"))
+                if (isAdminView)
                 {
-                    var groupedByEditor = filteredItems
+                    var groupedByEditor = _projects
                         .SelectMany(p => new[]
                         {
-                        new { EditorName = p.PrimaryEditorName, Project = p },
-                        new { EditorName = p.SecondaryEditorName, Project = p }
+                        new { EditorName = p.PrimaryEditor?.UserName, Project = p },
+                        new { EditorName = p.SecondaryEditor?.UserName, Project = p }
                         })
                         .GroupBy(e => e.EditorName)
                         .Where(g => !string.IsNullOrEmpty(g.Key) && g.Key != "N/A") // Filter out groups with empty editor names
@@ -941,20 +1036,22 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                     {
                         var editorName = editorGroup.Key;
                         var projects = editorGroup.Select(e => e.Project).ToList();
-                        var csvContent = GenerateCsvContentFilteredForEditors(projects, editorName);
+                        var csvContent = GenerateCsvContentFilteredForEditors(projects, editorName, editorPaid);
                         var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
+                        if (csvContent == string.Empty)
+                            continue;
                         await DownloadFile(filename, csvContent);
                     }
                 }
                 else
                 {
-                    var filteredProjects = filteredItems
+                    var filteredProjects = _projects
                         .Where(p => p.PrimaryEditorId == _currentUserId || p.SecondaryEditorId == _currentUserId)
                         .ToList();
                     if (filteredProjects.Any())
                     {
-                        var editorName = currentUser.Identity?.Name;
-                        var csvContent = GenerateCsvContentFilteredForEditors(filteredProjects, editorName);
+                        var editorName = currentUser?.Identity?.Name;
+                        var csvContent = GenerateCsvContentFilteredForEditors(filteredProjects, editorName, editorPaid);
                         var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
                         await DownloadFile(filename, csvContent);
                     }
@@ -967,23 +1064,15 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
         }
     }
-
-
-    private async Task DownloadFilteredAsCsvPayoneer()
+    private async Task DownloadFilteredAsCsvPayoneer(List<Project> projects)
     {
         try
         {
             if (await ConfirmationService.Confirm("Do you want to download the filtered projects as Payoneer batch payment request?"))
             {
-                    var filteredItems = _dataGrid.SelectedItems.ToList();
-                    if(filteredItems.Count <= 0)
-                    {
-                        filteredItems = _dataGrid.FilteredItems.ToList();
-                    }
-                    var csvContent = await GenerateCsvContentFilteredPayoneer(filteredItems);
+                    var csvContent = await GenerateCsvContentFilteredPayoneer(projects);
                     var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_yyyy}.csv";
                     await DownloadFile(filename, csvContent);
-                
             }
         }
         catch (Exception ex)
@@ -1086,7 +1175,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Snackbar.Add($"File save error: {ex.Message}", Severity.Error);
         }
     }
-    private string GenerateCsvContentFilteredForEditors(List<Project> projects, string editorName)
+    private string GenerateCsvContentFilteredForEditors(List<Project> projects, string editorName, bool editorPaid)
     {
         // Create CSV header
         decimal total = 0;
@@ -1094,7 +1183,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         csv.AppendLine(string.Join(",",
             nameof(Project.ProjectName),
             "Editor Name",
-            "Payment Amount"
+            "Payment Amount",
+            "Filtered by Payment Status"
         ));
 
         // Add data rows
@@ -1103,19 +1193,21 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             decimal paymentAmount = 0;
 
             // Check if the editor is Primary or Secondary and assign the PaymentAmount
-            if (project.PrimaryEditorName == editorName)
+            if (project?.PrimaryEditor?.UserName == editorName && editorPaid == ( project?.PrimaryEditorDetails?.DatePaidEditor != null ))
             {
                 paymentAmount = project.PrimaryEditorDetails?.PaymentAmount ?? 0;
             }
-            else if (project.SecondaryEditorName == editorName)
+            else if (project?.SecondaryEditor?.UserName == editorName && editorPaid == ( project?.SecondaryEditorDetails?.DatePaidEditor != null )  )
             {
                 paymentAmount = project.SecondaryEditorDetails?.PaymentAmount ?? 0;
             }
-
+            if (paymentAmount == 0)
+                continue;
             csv.AppendLine(string.Join(",",
                 EscapeCsvValue(project.ProjectName),
                 EscapeCsvValue(editorName),
                 $"${Math.Round(paymentAmount, MidpointRounding.AwayFromZero)}"
+
             ));
 
             total += paymentAmount;
@@ -1127,7 +1219,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             $"Total Payment: ${Math.Round(total, MidpointRounding.AwayFromZero)}",
             $"  Date: {DateTime.Now:dd-MM-yyyy}"
         ));
-
+        if(total == 0)
+        {
+            return string.Empty;
+        }
         return csv.ToString();
     }
 
@@ -1143,6 +1238,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         Dictionary<string, PayoneerSettings> clientSettings = await payoneerSettingsService.GetSettingsForClientsAsync(clientIds);
 
         IEnumerable<IGrouping<string, Project>> groupedByClient = projects.GroupBy(p => p.ClientId);
+
         var csv = new System.Text.StringBuilder();
 
         // Payoneer CSV headers
@@ -1654,11 +1750,11 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         try
         {
             var parameters = new DialogParameters
-        {
+            {
             { "PrimaryEditorId", project.PrimaryEditorId },
             { "Editors", Editors }
 
-        };
+            };
 
             var dialog = await DialogService.ShowAsync<PrimaryEditorDialog>("", parameters);
             var result = await dialog.Result;
@@ -1667,7 +1763,26 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             {
                 var editorId = project.PrimaryEditorId;
                 project.PrimaryEditorId = (string) result.Data!;
-                if(editorId != project.PrimaryEditorId && editorId == null)
+                if (project.PrimaryEditorId == null)
+                {
+                    if (!string.IsNullOrEmpty(project.SecondaryEditorId))
+                    {
+                        var promoteResult = await DialogService.ShowMessageBox(
+                            "Promote Secondary Editor",
+                            "Would you like to set the secondary editor as the primary editor?",
+                            yesText: "Yes",
+                            cancelText: "No"
+                        );
+                        if (promoteResult == true)
+                        {
+                            project.PrimaryEditorId = project.SecondaryEditorId;
+                            project.SecondaryEditorId = null;
+                        }
+                        else
+                            project.PrimaryEditorId = null;
+                    }
+                }
+                if (editorId != project.PrimaryEditorId && editorId == null)
                 {
                     bool isConfirm = await ConfirmationService.Confirm($"Do you want to change project status from {project.FormatStatus} to `Scheduled` status?");
                     if (isConfirm)
@@ -1675,7 +1790,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         project.Status = ProjectStatus.Scheduled;
                     }
                 }
+                
                 await UpdateProjectAsync(project);
+                await LoadProjects();
                 Snackbar.Add("Saved Successfully", Severity.Success);
 
             }
@@ -1832,80 +1949,35 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         UndoRedoService.AddSwap(projectId, projectName, targetName, sourceId, targetId);
     }
-    private async Task<GridData<Project>> ServerDataFunc(GridStateVirtualize<Project> gridState, CancellationToken token)
+
+    private bool _hideFinishedProjects;
+    private bool HideFinishedProjects
     {
-        try
+        get => _isClientView ? false : _hideFinishedProjects;
+    }
+
+    private void ToggleFinishedProjects(bool hideFinished)
+    {
+        _hideFinishedProjects = hideFinished;
+
+        if (_dataGrid != null && (_isAdminView || _isEditorView))
         {
-            var result = projects;
-            if(projects.Count == 0 )
-            {
-                await LoadProjects();
+            // Clear existing filters first
+            _dataGrid.FilterDefinitions.Clear();
 
-            }
-            if (result.Count == 0 || result.Count != projects.Count)
+            if (_hideFinishedProjects)
             {
-                result = projects;
-            }
-            result = result.Where(project =>
-            {
-                if (string.IsNullOrWhiteSpace(_searchString))
-                    return true;
-
-                if (project.ProjectName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
-                    return true;
-                if (project.Description?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
-                    return true;
-
-                if (( $"{project.Link ?? ""} {project.FormatStatus ?? ""} {project.FormatAdminStatus ?? ""} {project.ClientName ?? ""} " +
-                     $"{project.PrimaryEditorName ?? ""} {project.SecondaryEditorName ?? ""} {project.FormattedShootDate ?? ""} " +
-                     $"{project.FormattedDueDate ?? ""} {project.NotesForProject ?? ""} {project.FormattedWorkingMonth ?? ""}" )
-                    .Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-                return false;
-            }).ToList();
-            if (gridState.SortDefinitions.Count > 0)
-            {
-                var firstSort = gridState.SortDefinitions.First();
-                result = firstSort.Descending
-                    ? result.OrderByDescending(firstSort.SortFunc).ToList()
-                    : result.OrderBy(firstSort.SortFunc).ToList();
-            }
-
-            if (gridState.FilterDefinitions.Any())
-            {
-                var filterOptions = new FilterOptions
+                // Add filter to exclude Finished status
+                _dataGrid.FilterDefinitions.Add(new FilterDefinition<Project>
                 {
-                    FilterCaseSensitivity = DataGridFilterCaseSensitivity.CaseInsensitive
-                };
-
-                var filterFunctions = gridState.FilterDefinitions.Select(x => x.GenerateFilterFunction(filterOptions));
-                result = result
-                    .Where(x => filterFunctions.All(f => f(x)))
-                    .ToList();
+                    Column = _dataGrid.RenderedColumns.FirstOrDefault(c => c.Title == "Status") as Column<Project>,
+                    Operator = "not equals",
+                    Value = ProjectStatus.Finished.ToString()
+                });
             }
 
-            var totalNumberOfFilteredItems = result.Count;
-
-            result = result
-                .Skip(gridState.StartIndex)
-                .Take(gridState.Count)
-                .ToList();
-
-
-            return new GridData<Project>
-            {
-                Items = result,
-                TotalItems = totalNumberOfFilteredItems
-            };
-        }
-        catch (TaskCanceledException)
-        {
-            return new GridData<Project>
-            {
-                Items = [],
-                TotalItems = 0
-            };
+            // Apply the filters
+            _dataGrid.ReloadServerData();
         }
     }
 }

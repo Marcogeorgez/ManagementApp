@@ -3,30 +3,29 @@
     <DialogContent>
         @if (Editors != null && Editors.Any())
         {
+            <MudMessageBox @ref="_confirmUnassignDialog"
+                           CancelText="Cancel" YesText="Unassign">
+                <TitleContent>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Class="mr-2" />
+                        <MudText Color="Color.Error">Confirm Removal of Primary Editor</MudText>
+                    </div>
+                </TitleContent>
+                <MessageContent>
+                    Are you sure you want to unassign the Primary Editor? All of his logged hours will be <b style="color: #d22525;">DELETED</b>.
+                </MessageContent>
+            </MudMessageBox>
+
             <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
                        Class="d-flex justify-center mud-width-full py-2" Variant="Variant.Outlined" Label="Primary Editor"
-                       ValueChanged="@(async value => {
-                           if (value == null) {
-                               var result = await dialogService.ShowMessageBox(
-                                   "Confirm Unassign",
-                                   "Are you sure you want to unassign the editor? HIS LOGGED HOURS WILL BE DELETED.",
-                                   yesText: "Unassign",
-                                   cancelText: "Cancel"
-                               );
-                               if (result == true)
-                                   PrimaryEditorId = value;
-                           }
-                           else {
-                               PrimaryEditorId = value;
-                           }
-                       })"
+                       ValueChanged="@HandleEditorSelectionChanged"
                        Value="@PrimaryEditorId">
-                <MudSelectItem Class="" T="string" Value="null" >
+                <MudSelectItem Class="" T="string" Value="null">
                     Unassign Editor
                 </MudSelectItem>
                 @foreach (var editor in Editors)
                 {
-                    <MudSelectItem Class="" T="string" Value="@editor.UserId" >
+                    <MudSelectItem Class="" T="string" Value="@editor.UserId">
                         @editor.UserName
                     </MudSelectItem>
                 }
@@ -34,7 +33,7 @@
         }
         else
         {
-            <MudText Typo="Typo.h5">There are no assigned Editors in the app.</MudText>
+            <MudText Style="display:none;" />
         }
     </DialogContent>
     <DialogActions>
@@ -47,6 +46,26 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public string? PrimaryEditorId { get; set; }
     [Parameter] public List<UserRoleViewModel.UserProjectViewModel>? Editors { get; set; }
+    private MudMessageBox _confirmUnassignDialog;
+    private string _tempSelectedValue;
+
+    private async Task HandleEditorSelectionChanged(string value)
+    {
+        if (value == null)
+        {
+            _tempSelectedValue = value;
+            var result = await _confirmUnassignDialog.ShowAsync();
+            if (result == true)
+            {
+                PrimaryEditorId = _tempSelectedValue;
+            }
+        }
+        else
+        {
+            PrimaryEditorId = value;
+
+        }
+    }
 
     private void Submit()
     {
