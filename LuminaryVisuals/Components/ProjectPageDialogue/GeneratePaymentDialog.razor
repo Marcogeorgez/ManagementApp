@@ -57,20 +57,35 @@
             </MudSelect>
         </MudStack>
         }
-        <MudStack Row AlignItems="AlignItems.Center">
-            <MudText>Working Month</MudText>
-            <MudSpacer />
-            <MudDatePicker Label="Working Month Start" Variant="Variant.Outlined" 
-            Class="mt-3" Required="false" FixDay="1" DateFormat="MM/yyyy" Date="StartDate"
-            DateChanged="@(date => OnStartDateChanged(date.Value))" />
-
-            <MudDatePicker Label="Working Month End" Variant="Variant.Outlined" 
-            Class="mt-3" Required="false" FixDay="1" DateFormat="MM/yyyy" Date="EndDate"
-            DateChanged="@(date => OnEndDateChanged(date.Value))" />
-
+        <MudStack AlignItems="AlignItems.Start">
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="12" lg="4" Style="display: flex; align-items:center;">
+                    <MudText>Working Month Range:</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4">
+                    <MudDatePicker Label="Start Date"
+                                   Variant="Variant.Outlined"
+                                   Required="false"
+                                   FixDay="1"
+                                   DateFormat="MM/yyyy"
+                                   Date="StartDate"
+                                   OverflowBehavior="OverflowBehavior.FlipAlways"
+                                   DateChanged="@(date => OnStartDateChanged(date.Value))"
+                                   Class="mb-1 w-100" />
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4">
+                    <MudDatePicker Label="End Date"
+                                   Variant="Variant.Outlined"
+                                   Required="false"
+                                   FixDay="1"
+                                   DateFormat="MM/yyyy"
+                                   Date="EndDate"
+                                   DateChanged="@(date => OnEndDateChanged(date.Value))"
+                                   Class="w-100" />
+                </MudItem>
+            </MudGrid>
         </MudStack>
         <MudDivider/>
-
         <MudStack Row AlignItems="AlignItems.Center">
 
             <MudItem sm="4">
@@ -124,7 +139,7 @@
                 </MudSelect>
             </MudItem>
         </MudStack>
-        <MudStack Row AlignItems="AlignItems.Center">
+        <MudStack Row AlignItems="AlignItems.Center" Style="mt-3">
             <MudText>Editor Payment Status</MudText>
             <MudSpacer />
             <MudRadioGroup @bind-Value="editorPaid">

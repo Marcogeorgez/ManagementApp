@@ -1,4 +1,5 @@
 ﻿using Amazon.S3;
+using Blazored.LocalStorage;
 using Blazr.RenderState.Server;
 using LuminaryVisuals.Components;
 using LuminaryVisuals.Components.Account;
@@ -141,6 +142,20 @@ builder.Services.AddAuthentication().AddGoogle(googleOptions =>
 
     googleOptions.Scope.Add("email");
     googleOptions.Scope.Add("profile");
+    googleOptions.Events.OnRemoteFailure = context =>
+    {
+        // Log the error for debugging (optional)
+        Console.WriteLine($"Google authentication failed: {context.Failure?.Message}");
+
+        // Clear authentication cookies to remove corrupt session
+        context.HttpContext.Response.Cookies.Delete(".AspNetCore.Identity.Application"); // If using Identity
+
+        // Redirect to login again (or a custom error page)
+        context.Response.Redirect("/Account/Login?retry=true");
+        context.HandleResponse(); // Mark as handled
+        return Task.CompletedTask;
+    };
+
 })
 .AddCookie(options =>
 {
@@ -322,7 +337,7 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<NotificationServic
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<LuminaryVisuals.Services.Helpers.WordFilter>();
-
+builder.Services.AddBlazoredLocalStorage();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

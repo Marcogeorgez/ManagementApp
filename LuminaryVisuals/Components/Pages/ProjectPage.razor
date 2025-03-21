@@ -54,6 +54,10 @@
                             Create Payment Documents
                         </MudMenuItem>
                     }
+                    @if(!isAdminView)
+                    {
+                       <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Hide Finished Projects</MudSwitch>
+                    }
                     @if (isAdminView)
                     {
                         <MudMenuItem OnClick="DownloadAllProjects">
@@ -96,7 +100,8 @@
                             }
                         </MudSelect>
                         <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
-                        <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_hideFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Show Finished Projects</MudSwitch>
+
+                        <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Hide Finished Projects</MudSwitch>
 
                             <MudText Class="ml-5">View as</MudText>
                             <MudStack Row=true Style="background:#151726;" Class="mx-2" Spacing="1">
@@ -106,7 +111,6 @@
                             </MudStack>
                         </MudStack>
                     }
-
                 </MudMenu>
 
 
