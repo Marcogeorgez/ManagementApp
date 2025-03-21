@@ -1194,8 +1194,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         csv.AppendLine(string.Join(",",
             nameof(Project.ProjectName),
             "Editor Name",
-            "Payment Amount",
-            "Filtered by Payment Status"
+            "Payment Amount"
         ));
 
         // Add data rows
