@@ -23,10 +23,8 @@ using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using MudBlazor;
 using MudBlazor.Services;
-using static Dropbox.Api.TeamLog.EventCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection()
