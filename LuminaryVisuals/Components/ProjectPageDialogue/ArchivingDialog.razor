@@ -64,13 +64,8 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="12">
-                    <MudSelect T="ArchiveReason"
-                               Label="Reason For Archiving Project"
-                               AnchorOrigin="Origin.BottomCenter"
-                               @bind-Value="Reason"
-                               Variant="Variant.Outlined"
-                               Class="rounded-lg"
-                               Dense>
+                    <MudSelect T="ArchiveReason" Label="Reason For Archiving Project" @bind-Value="Reason" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
+                        Variant="Variant.Outlined" Class="rounded-lg" Dense>
                         <MudSelectItem Value="ArchiveReason.Paid">Paid</MudSelectItem>
                         <MudSelectItem Value="ArchiveReason.Cancelled">Cancelled</MudSelectItem>
                         <MudSelectItem Value="ArchiveReason.Deleted">Deleted</MudSelectItem>
@@ -96,22 +91,6 @@
     private string errorMessage = "";
     private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
     public ArchiveReason Reason { get; set; }
-    public enum ArchiveReason
-    {
-        Paid = 0,
-        Cancelled = 1,
-        Deleted = 2
-    }
-    private string GetDisplayName(ArchiveReason reason)
-    {
-        return reason switch
-        {
-            ArchiveReason.Paid => "Paid",
-            ArchiveReason.Cancelled => "Cancelled",
-            ArchiveReason.Deleted => "Deleted",
-            _ => "Unknown"
-        };
-    }
 
     protected override void OnInitialized()
     {
@@ -123,7 +102,7 @@
         await form.Validate();
         if (form.IsValid)
         {
-            newProject.Archive.Reason = GetDisplayName(Reason);
+            newProject.Archive.Reason = ArchiveHelper.GetDisplayName(Reason);
             MudDialog.Close(DialogResult.Ok(newProject.Archive.Reason)); // Return the new project to the main component
         }
         else

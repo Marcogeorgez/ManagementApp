@@ -11,12 +11,7 @@
         <MudForm @ref="form" @bind-IsValid="@success"  > 
             <MudGrid Spacing="1">
                 <MudItem xs="12" sm="12">
-                    <MudTextField T="string"
-                                  Label="Project Name"
-                                  Variant="Variant.Outlined"
-                                  @bind-Value="newProject.ProjectName"
-                                  Required="true"
-                                   />
+                    <MudTextField T="string" Label="Project Name" Variant="Variant.Outlined" @bind-Value="newProject.ProjectName" Required="true" />
                 </MudItem>
                 @if (!_isClientView)
                 {

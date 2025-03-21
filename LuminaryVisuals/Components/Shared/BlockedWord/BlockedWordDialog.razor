@@ -1,0 +1,31 @@
+﻿@inject MudBlazor.IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Word" Label="Blocked Word" Required />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string EditingWord { get; set; } = string.Empty;
+    [Parameter] public bool IsEditing { get; set; }
+
+    private string Word { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Word = EditingWord;
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(Word));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

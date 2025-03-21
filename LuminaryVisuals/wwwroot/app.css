@@ -10,6 +10,28 @@
 
 }
 
+@media (min-width: 768px) { /* For PCs and larger screens */
+    .project-data-grid > .mud-table-container {
+        height: 122vh !important;
+    }
+}
+@media (min-height: 600px) and (max-height: 800px) and (max-width:1024px){ /* For medium screens */
+    .project-data-grid > .mud-table-container {
+        height: 110svh !important;
+    }
+}
+
+@media (min-height: 400px) and (max-height: 600px) { /* For Phones */
+    .project-data-grid > .mud-table-container {
+        height: 95svh !important;
+    }
+}
+@media (max-height: 400px)
+{
+    .project-data-grid > .mud-table-container {
+        height: 82svh !important;
+    }
+}
 .mud-tabs-tabbar,
 .mud-paper.mud-paper-outlined.chat-header {
     border-radius: 8px !important;
@@ -1533,4 +1555,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
 }
 .private-chat.chat-panel {
     background: #18150d !important;
+}
+.vh-70{
+    max-height: 70vh;
 }

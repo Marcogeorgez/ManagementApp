@@ -6,44 +6,52 @@
 <MudDialog>
     <DialogContent>
         @if(loggedHours.Count == 0)
-            {
-                <MudText> Currently, There is nothing logged</MudText>
-            }
-            else
-            {
+        {
+            <MudText> Currently, There is nothing logged</MudText>
+        }
+        else
+        {
             <MudStack Row="true" Spacing="2">
-                <MudDataGrid T="EditorLoggingHours" Items="loggedHours" Dense="true" Hover="true" Bordered="true" ReadOnly=false
-                             EditMode="DataGridEditMode.Form" 
-                             EditTrigger="DataGridEditTrigger.Manual" StartedEditingItem="@StartedEditingItem"
-                             CanceledEditingItem="@CanceledEditingItem"
-                             CommittedItemChanges="@CommittedItemChanges">
-                    <Columns>
-                        @if (isAdmin)
-                        {
-                            <PropertyColumn Property="x => x.User.UserName" Title="Editor Name" DragAndDropEnabled="false"
-                                Groupable="false" CellStyle="text-align:center;" />
-                        }
-                        <PropertyColumn Property="x => x.FormattedDate" Title="Worked Date" DragAndDropEnabled="false" Groupable="false"  CellStyle="text-align:center;">
-                            <EditTemplate>
-                                <MudDatePicker Label="Date"
-                                               Variant="Variant.Outlined"
-                                               Date="@context.Item.Date"
-                                               DateChanged="@(date => context.Item.Date = date.Value)"
-                                               Class="mt-3"
-                                               Required="true" />
-                            </EditTemplate>    
-                        </PropertyColumn>
-                        <PropertyColumn Property="x => x.EditorWorkingHours" Title="Logged Hours" DragAndDropEnabled="false" Groupable="false" CellStyle="text-align:center;" />
-                        <TemplateColumn  CellClass="d-flex justify-end">
-                            <CellTemplate>
+            <MudDataGrid T="EditorLoggingHours" Items="loggedHours" Dense="true" Hover="true" Bordered="true" ReadOnly=false
+            EditMode="DataGridEditMode.Form" Style="width:100%;"
+            EditTrigger="DataGridEditTrigger.Manual" StartedEditingItem="@StartedEditingItem"
+            CanceledEditingItem="@CanceledEditingItem" HeaderClass="text-center"
+            CommittedItemChanges="@CommittedItemChanges">
+                <Columns>
+                    @if (isAdmin)
+                    {
+                        <PropertyColumn Property="x => x.User.UserName" Title="Editor Name" DragAndDropEnabled="false"
+                        Groupable="false" CellStyle="text-align:center;" />
+                    }
+                    <PropertyColumn Property="x => x.FormattedDate" Title="Worked Date" DragAndDropEnabled="false" Groupable="false"  CellStyle="text-align:center;">
+                        <EditTemplate>
+                            <MudDatePicker Label="Date"
+                            Variant="Variant.Outlined"
+                            Date="@context.Item.Date"
+                            DateChanged="@(date => context.Item.Date = date.Value)"
+                            Class="mt-3"
+                            Required="true" />
+                        </EditTemplate>    
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.EditorWorkingHours" Title="Logged Hours" DragAndDropEnabled="false" Groupable="false" CellStyle="text-align:center;" />
+                    <PropertyColumn Property="x => x.AddedByAdmin" Title="Added by Admin" DragAndDropEnabled="false" Groupable="false" CellStyle="text-align:center;" Sortable="false" >
+                        <CellTemplate>
+                            <MudIcon Size="@Size.Small" 
+                            Icon="@(context.Item.AddedByAdmin ?  @Icons.Material.Outlined.Check : @Icons.Material.Outlined.Close)"
+                            Color="@(context.Item.AddedByAdmin ?  Color.Success : Color.Error)" />
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                        <TemplateColumn CellClass="d-flex justify-end" >
+                        <CellTemplate>
                                 <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
-                            </CellTemplate>
-                        </TemplateColumn>
-                    </Columns>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
             </MudDataGrid>
                 </MudStack>
 
-                <MudText Typo="Typo.h6" Class="mt-5 mb-2"Align="Align.Center">Total hours worked: @loggedHours.Sum(p => p.EditorWorkingHours)</MudText>
+            <MudText Typo="Typo.h6" Class="mt-5 mb-2"Align="Align.Center">Total hours worked: @loggedHours.Sum(p => p.EditorWorkingHours)</MudText>
 
         }
     </DialogContent>

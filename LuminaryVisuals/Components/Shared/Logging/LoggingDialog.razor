@@ -2,15 +2,12 @@
 <MudDialog>
     <DialogContent>
             <MudStack Row="true" Spacing="4" Class="mb-4" Justify="Justify.Center">
-            @if (!isAdmin)
-            {
                 <MudButton Style="min-width: 120px;" Class="rounded-pill"
                            Variant="Variant.Outlined"
                            Color="Color.Success"
                            OnClick="AddHours">
                     ADD HOURS
                 </MudButton>
-            }
                 <MudButton Style="min-width: 120px;" Class="rounded-pill"
                            Variant="Variant.Outlined"
                            Color="Color.Info"
@@ -32,6 +29,7 @@
 
     private void AddHours()
     {
+
         var parameters = new DialogParameters<Add>
         {
             { x => x.Project, currentProject },
@@ -47,7 +45,7 @@
                 MaxWidth = MaxWidth.Medium
             };
 
-        DialogService.Show<Add>("Add Hours To Project", parameters, options);
+        DialogService.ShowAsync<Add>("Add Hours To Project", parameters, options);
     }
 
     private void ViewHours()
@@ -67,7 +65,7 @@
                 MaxWidth = MaxWidth.Medium
             };
 
-        DialogService.Show<ViewTotalLogged>("Logged Hours for Project", parameters, options);
+        DialogService.ShowAsync<ViewTotalLogged>("Logged Hours for Project", parameters, options);
     }
     private void Close()
     {
@@ -80,7 +78,4 @@
         justify-content: center !important;
     }
 
-    .mud-dialog-title{
-        width:300px;
-    }
 </style>

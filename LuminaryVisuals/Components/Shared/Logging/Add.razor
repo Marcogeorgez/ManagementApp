@@ -6,19 +6,43 @@
 <MudDialog>
     <DialogContent>
         <MudStack Row="true" Spacing="2">
-            <MudText Typo="Typo.h6">Add Logging Hours</MudText>
+            <MudText Typo="Typo.h6" Align="Align.Center">Add Logging Hours:</MudText>
 
             <MudTextField @bind-Value="LoggedHours" Label="Hours Worked" Placeholder="Enter hours"
-                          Adornment="Adornment.Start" AdornmentText="Hrs"
-                          Variant="Variant.Outlined" Immediate="true" />
+            Adornment="Adornment.Start" AdornmentText="Hrs"
+            Variant="Variant.Outlined" Immediate="true" />
 
             <MudDatePicker @bind-Date="SelectedDate" Label="Date" Variant="Variant.Outlined" />
+            @if(isAdmin)
+            {
+                <MudSelect Label="Select Editor" Variant="Variant.Outlined" T="string" @bind-Value="selectedEditor">
+                    @if (Project.PrimaryEditor is not null)
+                    {
+                        <MudSelectItem Value="@Project.PrimaryEditor.Id">
+                            @Project.PrimaryEditor.UserName
+                            <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">Primary Editor</MudText>
+                        </MudSelectItem>
+                    }
+
+                    @if (Project.SecondaryEditor is not null)
+                    {
+                        <MudSelectItem Value="@Project.SecondaryEditor.Id">
+                            @Project.SecondaryEditor.UserName
+                            <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">Secondary Editor</MudText>
+                        </MudSelectItem>
+                    }
+                    @if(Project.PrimaryEditor is null && Project.SecondaryEditor is null)
+                    {
+                        <MudSelectItem Value="String.Empty">No Editor Assigned to the project!</MudSelectItem>
+                    }
+                </MudSelect>
+            }
         </MudStack>
     </DialogContent>
     <DialogActions>
         <MudStack Row="true" Spacing="4" Class="mb-4 ">
-        <MudButton OnClick="@Close" Class="rounded-pill" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
-        <MudButton OnClick="@Save" Class="rounded-pill" Color="Color.Success" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
+            <MudButton OnClick="@Close" Class="rounded-pill" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
+            <MudButton OnClick="@Save" Class="rounded-pill" Color="Color.Success" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
         </MudStack>
     </DialogActions>
 </MudDialog>
@@ -30,7 +54,7 @@
     [Parameter] public string currentUserId { get; set; }
     [Parameter] public bool isAdmin { get; set; }
 
-
+    public string selectedEditor = string.Empty;
     private decimal LoggedHours; 
     private DateTime? SelectedDate;
     private async Task Save()
@@ -46,7 +70,6 @@
             if (Project.PrimaryEditor?.Id == null && Project.SecondaryEditor?.Id == null)
             {
                 Snackbar.Add($"Cannot Add Logging hours to a Project which doesn't have an Editor !!!", Severity.Error);
-                MudDialog.Close();
             }
             else
             {
@@ -70,12 +93,39 @@
                         MudDialog.Close(DialogResult.Ok(true));
                     }
                 }
-                else
+                else if(isAdmin)
                 {
-                    Snackbar.Add("Couldn't Log hours. You aren't the primary editor or the secondary editor of this project!!", Severity.Error);
+                    if (selectedEditor == string.Empty)
+                    {
+                        Snackbar.Add("Please select an editor to add hours.", Severity.Error);
+                        return;
+                    }
+                    var newEntry = new EditorLoggingHours
+                        {
+                            UserId = selectedEditor,
+                            ProjectId = Project.ProjectId,
+                            Date = SelectedDate.Value,
+                            EditorWorkingHours = LoggedHours,
+                            AddedByAdmin = true,
+                            AdminId = currentUserId
 
+                        };
+                    // Save to the database.
+                    var isSuccessful = await loggingHours.CreateAsync(newEntry);
+                    if (!isSuccessful)
+                        Snackbar.Add("Couldn't Log hours. Error has occurred.", Severity.Error);
+                    else
+                    {
+                        Snackbar.Add($"Hours has been added successfully.", Severity.Success);
+                        MudDialog.Close(DialogResult.Ok(true));
+                    }
+                }
+                else 
+                {
+                    Snackbar.Add("You don't have permission to add hours to this project.", Severity.Error);
                 }
             }
+                
         }
         catch (Exception ex)
         {

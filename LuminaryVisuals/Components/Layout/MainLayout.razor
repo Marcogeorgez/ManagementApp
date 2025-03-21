@@ -3,35 +3,34 @@
 @using Blazr.RenderState
 @inject IBlazrRenderStateService RenderState
 @inject IHostEnvironment HostEnvironment
-@inject IJSRuntime JS
-    <div id="blazor-error-ui" data-nosnippet>
+<div id="blazor-error-ui" data-nosnippet>
     @if (HostEnvironment.IsProduction())
     {
-                <span>An error has occurred.</span>
+        <span>An error has occurred.</span>
     }
     else
     {
-                <span>An unhandled exception occurred.</span>
+        <span>An unhandled exception occurred.</span>
     }
-            <a href="" class="reload">Reload</a>
-            <a class="dismiss">🗙</a>
-    </div>
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider CloseButton="true"
-                   MaxWidth="MaxWidth.Medium"
-                   BackdropClick="false"
-                   Position="DialogPosition.Center"
-                   CloseOnEscapeKey="true" />
+MaxWidth="MaxWidth.Medium"
+BackdropClick="false"
+Position="DialogPosition.Center"
+CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 <AppUserProvider>
-<CascadingValue Value="_drawerOpen">
-    <MudLayout Style="position:absolute; overflow:hidden;">
+    <CascadingValue Value="_drawerOpen">
+        <MudLayout Style="position:absolute;">
 
-        @if (_showSplashScreen && !IsStaticSSR)
-        {
-            <SplashScreen />
-        }
+            @if (_showSplashScreen && !IsStaticSSR)
+            {
+                <SplashScreen />
+            }
             @if (!IsGuestPage())
             {
                 <NavMenu @rendermode="InteractiveServer" />
@@ -44,25 +43,37 @@
             else
             {
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
-                        @Body
+                    @Body
                 </MudHidden>
                 <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
-                        @Body
-                        </MudHidden>
+                    @Body
+                </MudHidden>
             }
+@*             @if (ProjectState.CurrentProject != null)
+            {
+                <div class="floating-chat-container">
 
+                    <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
+                    UserId="@_currentUserId"
+                    IsAdminView="@isAdminView"
+                    IsClientView="@_isClientView" isEditorView="@_isEditorView"
+                     />
+                </div>
+
+            }
+ *@
             <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="" />
             </form>
-        <script>
-            function submitForm(formId) {
+            <script>
+                function submitForm(formId) {
                 document.getElementById(formId).submit();
-            }
-        </script>
+                }
+            </script>
 
-    </MudLayout>
-</CascadingValue>
+        </MudLayout>
+    </CascadingValue>
 </AppUserProvider>
 
 @code {
@@ -76,13 +87,51 @@
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender )
+        if (firstRender)
         {
-            // Keep the splash screen for 15 seconds after the first render
             _showSplashScreen = false;
-            _isFirstRender = false; // Prevent further splash screen rendering
             StateHasChanged(); // Trigger a UI update
         }
     }
+
     private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
+
+    // Missing closing button not working properly in calendar.
+    // [CascadingParameter]
+    // public ClaimsPrincipal? currentUser { get; set; }
+    // [Inject] AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    //     currentUser = authState.User;
+
+    //     if (currentUser?.Identity?.IsAuthenticated == true)
+    //     {
+    //         _currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+    //         isAdminView = currentUser.IsInRole("Admin");
+    //         _isEditorView = currentUser.IsInRole("Editor");
+    //         _isClientView = currentUser.IsInRole("Client");
+
+    //         timezoneOffsetMinutes = await JS.InvokeAsync<int>("getTimezoneOffset");
+    //     }
+
+    // }
+    // [Inject] ProjectState ProjectState { get; set; }
+    // public void Dispose()
+    // {
+    //     ProjectState.OnChange -= HandleProjectStateChange;
+
+    // }
+
+
+    // private void HandleProjectStateChange()
+    // {
+    //     InvokeAsync(StateHasChanged);
+    // }
+
+    // private bool isAdminView;
+    // private bool _isEditorView;
+    // private bool _isClientView;
+    // private int timezoneOffsetMinutes;
+    // private string _currentUserId;
 }

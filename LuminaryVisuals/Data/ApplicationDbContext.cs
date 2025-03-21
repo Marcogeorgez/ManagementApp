@@ -24,7 +24,7 @@ namespace LuminaryVisuals.Data
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<QuickMessage> QuickMessages { get; set; }
-
+        public DbSet<BlockedWord> BlockedWords { get; set; }
         public DbSet<ChatReadStatus> ChatReadStatus { get; set; }
 
         public DbSet<UserNote> UserNote { get; set; }
@@ -188,7 +188,9 @@ namespace LuminaryVisuals.Data
                 entity.Property(m => m.IsDeleted)
                       .HasDefaultValue(false);
             });
-
+            builder.Entity<BlockedWord>()
+            .HasIndex(b => b.Word)
+            .IsUnique();
             // Configure User Notes 
             builder.Entity<UserNote>(entity =>
             {

@@ -497,10 +497,28 @@ public class ProjectService
                 }
                 bool hasSecondaryEditorChanged = _project.SecondaryEditorId != null && _project.SecondaryEditorId != project.SecondaryEditorId;
                 bool isNewSecondaryEditorNull = project.SecondaryEditorId == null;
+                bool recalculatePayment = false;
                 if (hasSecondaryEditorChanged && isNewSecondaryEditorNull)
                 {
-                    await loggingHours.DeleteLoggedHoursAsync(_project.ProjectId, _project.SecondaryEditorId!);
-                    _project.SecondaryEditorId = project.SecondaryEditorId;
+                    // this deletes logged house for promoted user from secondary to primary,
+                    // as a fix for this, we check if the user is promoted from secondary to primary
+                    // if so, we don't delete the logged hours for the user
+                    if (_project.SecondaryEditorId == project.PrimaryEditorId && project.SecondaryEditorId == null)
+                    {
+                        if (_project.SecondaryEditorId != _project.PrimaryEditorId)
+                        {
+                            await loggingHours.DeleteLoggedHoursAsync(_project.ProjectId, _project.PrimaryEditorId!); // delete logged hours for the primary editor before promoting the secondary editor
+                        }
+                        _project.PrimaryEditorId = project.PrimaryEditorId;
+                        _project.SecondaryEditorId = project.SecondaryEditorId;
+                        recalculatePayment = true;
+
+                    }
+                    else
+                    {
+                        await loggingHours.DeleteLoggedHoursAsync(_project.ProjectId, _project.SecondaryEditorId!);
+                        _project.SecondaryEditorId = project.SecondaryEditorId;
+                    }
                 }
                 context.Entry(_project).CurrentValues.SetValues(project);
                 if (project.PrimaryEditorDetails != null)
@@ -567,6 +585,11 @@ public class ProjectService
 
                 await context.SaveChangesAsync();
 
+                if(recalculatePayment)
+                {
+                    await CalculateProjectFinalPrice(_project);
+
+                }
                 // For reordering the projects if the external order has changed and is not valid
                 if (isExternalOrderChanged)
                 {
@@ -619,6 +642,10 @@ public class ProjectService
 
                     }
                     _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId));
+                }
+                if(hasPrimaryEditorChanged || hasSecondaryEditorChanged)
+                {
+                    _ = Task.Run(() => loggingHours.CalculateAndSaveBillableHoursForProjectAsync(_project.ProjectId));
                 }
                 _ = Task.Run(() =>  _broadcaster.NotifyAllAsync());
             }
@@ -835,6 +862,17 @@ public class ProjectService
         }
     }
 
+    public async Task DeleteProjectsAsync(List<int> projectId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
+        {
+            var projects = await context.Projects
+                .Where(p => projectId.Contains(p.ProjectId))
+                .ExecuteDeleteAsync();
+
+                await _broadcaster.NotifyAllAsync();
+        }
+    }
     public async Task ArchiveProjectAsync(int projectId, string reason)
     {
         using (var context = _contextFactory.CreateDbContext())
@@ -867,6 +905,7 @@ public class ProjectService
                 .Where(p => !p.IsArchived && p.ClientId == clientId)
                 .OrderBy(p => p.ExternalOrder)
                 .ToListAsync();
+
             var isExternalOrderValid = IsProjectOrderValid(externalProjectsToReorder, true);
             if (!isExternalOrderValid)
                 NormalizeProjectOrder(externalProjectsToReorder, isExternalOrder: true);
@@ -891,6 +930,70 @@ public class ProjectService
                 throw new InvalidOperationException("Failed to archive project", ex);
             }
         }
+    }
+
+    public async Task ArchiveProjectsAsync(List<int> projectIds, ArchiveReason? reason)
+    {
+        using var context = _contextFactory.CreateDbContext();
+
+        if (projectIds == null || projectIds.Count == 0)
+            return;
+
+        // Get distinct client IDs without pulling full entities
+        var clientIds = await context.Projects
+            .Where(p => projectIds.Contains(p.ProjectId) && !p.IsArchived)
+            .Select(p => p.ClientId)
+            .Distinct()
+            .ToListAsync();
+
+        if (clientIds.Count == 0)
+            return;
+
+        // Archive projects in batch (efficient update)
+        await context.Projects
+            .Where(p => projectIds.Contains(p.ProjectId) && !p.IsArchived)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.IsArchived, true)
+                .SetProperty(p => p.InternalOrder, (int?) null)
+                .SetProperty(p => p.ExternalOrder, (int?) null)
+            );
+
+        // Insert archive records in batch without loading projects
+        var archiveRecords = projectIds.Select(id => new Archive
+        {
+            ProjectId = id,
+            Reason = reason.ToString() ?? string.Empty,
+            ArchiveDate = DateTime.UtcNow
+        }).ToList();
+
+        await context.Archives.AddRangeAsync(archiveRecords);
+        await context.SaveChangesAsync();
+
+        // Reorder external projects (grouped by ClientId)
+        var externalProjectsGroupedByClient = await context.Projects
+            .Where(p => !p.IsArchived && clientIds.Contains(p.ClientId))
+            .OrderBy(p => p.ExternalOrder)
+            .GroupBy(p => p.ClientId)
+            .ToListAsync();
+
+        foreach (var clientProjects in externalProjectsGroupedByClient)
+        {
+            var projectList = clientProjects.ToList();
+            if (!IsProjectOrderValid(projectList, true))
+                NormalizeProjectOrder(projectList, isExternalOrder: true);
+        }
+
+        // Reorder internal projects (all together)
+        var internalProjectsToReorder = await context.Projects
+            .Where(p => !p.IsArchived)
+            .OrderBy(p => p.InternalOrder)
+            .ToListAsync();
+
+        if (!IsProjectOrderValid(internalProjectsToReorder, false))
+            NormalizeProjectOrder(internalProjectsToReorder, isExternalOrder: false);
+
+        await context.SaveChangesAsync();
+        await _broadcaster.NotifyAllAsync();
     }
 
     public async Task UnarchiveProjectAsync(int projectId)
@@ -1083,6 +1186,7 @@ public class ProjectService
             await using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
+                await loggingHours.CalculateAndSaveBillableHoursForProjectAsync(_project.ProjectId);
                 var project = await context.Projects
                     .AsTracking()
                     .Include(p => p.Client)
@@ -1091,7 +1195,8 @@ public class ProjectService
                     .Include(p => p.PrimaryEditorDetails)
                     .Include(p => p.SecondaryEditorDetails)
                     .FirstOrDefaultAsync(p => p.ProjectId == _project.ProjectId);
-
+                if(project == null)
+                    throw new ArgumentException("Project not found");
                 // Calculate client billable amount
                 if (project.ClientBillableHours != null && project.Client.HourlyRate != null)
                 {
@@ -1106,6 +1211,10 @@ public class ProjectService
                     CalculateEditorPayment(project.PrimaryEditorDetails, project.PrimaryEditor, project.ClientBillableHours);
                     context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;
                 }
+                else if(project.PrimaryEditor == null)
+                {
+                    ResetEditorDetails(project.PrimaryEditorDetails);
+                }
 
 
                 // Calculate secondary editor details
@@ -1113,6 +1222,10 @@ public class ProjectService
                 {
                     CalculateEditorPayment(project.SecondaryEditorDetails, project.SecondaryEditor, project.ClientBillableHours);
                     context.Entry(project.SecondaryEditorDetails).State = EntityState.Modified;
+                }
+                else if(project.SecondaryEditor == null)
+                {
+                    ResetEditorDetails(project.SecondaryEditorDetails);
                 }
 
                 await context.SaveChangesAsync();
@@ -1129,7 +1242,7 @@ public class ProjectService
         }
     }
 
-    private void CalculateEditorPayment(EditorDetails editorDetails, ApplicationUser editor, decimal? clientBillableHours)
+    private static void CalculateEditorPayment(EditorDetails editorDetails, ApplicationUser editor, decimal? clientBillableHours)
     {
         editorDetails.Overtime = Math.Round(( editorDetails.BillableHours ) - ( editorDetails.FinalBillableHours ), 2);
 
@@ -1144,6 +1257,14 @@ public class ProjectService
             ( editor.HourlyRate ?? 0 ) * ( editorDetails.FinalBillableHours),
             0, MidpointRounding.AwayFromZero);
 
+    }
+    private static void ResetEditorDetails(EditorDetails editorDetails)
+    {
+        editorDetails.BillableHours = 0;
+        editorDetails.FinalBillableHours = 0;
+        editorDetails.Overtime = 0;
+        editorDetails.PaymentAmount = null;
+        editorDetails.AdjustmentHours = 0;
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services;
+using LuminaryVisuals.Services.Core;
 using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
 using Microsoft.AspNetCore.Identity;
@@ -11,10 +12,12 @@ using System.Diagnostics;
 public class UserNotificationService
 {
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+    private readonly UserServices userServices;
 
-    public UserNotificationService(IDbContextFactory<ApplicationDbContext>  context)
+    public UserNotificationService(IDbContextFactory<ApplicationDbContext>  context, UserServices userServices)
     {
         _contextFactory = context;
+        this.userServices = userServices;
     }
 
     // Creates a new notification
@@ -36,19 +39,40 @@ public class UserNotificationService
 
         _context.Notifications.Add(notification);
         await _context.SaveChangesAsync();
+
+        _ = Task.Run(() => CreateUserNotification(notification));
     }
 
+    public async Task CreateUserNotification(Notification notification)
+    {
+        List<string> users = await userServices.GetAllUsersForRoleAsync(notification.TargetRole);
+        if (users.Count == 0)
+        {
+            return;
+        }
+        else
+        {
+            using var _context = _contextFactory.CreateDbContext();
+            foreach (var user in users)
+            {
+                var userNotificationStatus = new UserNotificationStatus
+                {
+                    UserId = user,
+                    NotificationId = notification.Id,
+                    Dismissed = false
+                };
+                _context.UserNotificationStatuses.Add(userNotificationStatus);
+            }
+            await _context.SaveChangesAsync();
+        }
+    }
     // Get active notifications for a user
-    public async Task<List<Notification>> GetActiveNotificationsForUser(string userId, string userRole)
+    public async Task<List<UserNotificationStatus>> GetActiveNotificationsForUser(string userId, string userRole)
     {
         using var _context = _contextFactory.CreateDbContext();
-        return await _context.Notifications
-            .Where(n =>
-            // Check if notification is for all users (TargetRole is null) 
-            // OR if it matches the user's role
-            ( n.TargetRole == null || n.TargetRole == userRole )
-            && !n.UserNotificationStatuses
-                .Any(uns => uns.UserId == userId && uns.Dismissed))
+        return await _context.UserNotificationStatuses
+            .Include(n => n.Notification)
+            .Where(uns => uns.UserId == userId && uns.Dismissed == false)
             .ToListAsync();
     }
 

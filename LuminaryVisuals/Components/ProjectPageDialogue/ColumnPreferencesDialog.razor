@@ -2,13 +2,17 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-            <MudTextField @bind-Value="_presetName"
-            Validation="@(new Func<string, IEnumerable<string>>(ValidatePresetName))"
-            Variant="Variant.Outlined"
-            Label="Preset Name"
-            Required="true"
-            RequiredError="Preset name is required"
-            Class="mb-4" />
+            @if(columnPreset is null)
+            {
+            <MudTextField @bind-Value="_presetName" Validation="@(new Func<string, IEnumerable<string>>(ValidatePresetName))" 
+                Variant="Variant.Outlined" Label="Preset Name" Required="true" RequiredError="Preset name is required" Class="mb-4" />
+            }
+            else
+            {
+                <MudTextField @bind-Value="columnPreset.Name" 
+                    Variant="Variant.Outlined" Label="Preset Name" ReadOnly="true" Class="mb-4" />
+
+            }
         </MudForm>
         <MudList T="bool" Dense="true" ReadOnly=true Style="background:#0d0e19 !important;">
             @foreach (var column in Columns)
@@ -34,6 +38,8 @@
     [Parameter] public List<ColumnDefinition> Columns { get; set; }
     [Parameter] public Dictionary<string, bool> VisibilityState { get; set; }
     [Parameter] public List<ColumnPreset> _columnPresets { get; set; }
+    [Parameter] public ColumnPreset? columnPreset { get; set; }
+
     private string _presetName;
     private MudForm form;
     bool success;
@@ -54,7 +60,7 @@
             return;
         var result = new ColumnPreferenceResult
         {
-            PresetName = _presetName,
+            PresetName = columnPreset is null ? _presetName : columnPreset.Name,
             Visibility = new Dictionary<string, bool>(VisibilityState)
         };
         MudDialog.Close(DialogResult.Ok(result));
