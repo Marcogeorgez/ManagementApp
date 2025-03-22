@@ -572,8 +572,10 @@
 
         finally{
             await InvokeAsync(StateHasChanged);
-            await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
             finishedLoading = true;
+            await Task.Delay(100);
+            await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+
 
         }
     }
