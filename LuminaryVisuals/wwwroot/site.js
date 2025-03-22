@@ -4,6 +4,7 @@
         return;
     }
 
+
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
