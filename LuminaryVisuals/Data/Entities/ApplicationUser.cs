@@ -9,9 +9,9 @@ public class ApplicationUser : IdentityUser
 {
     public decimal? HourlyRate { get; set; }
     public int? WeeksToDueDateDefault { get; set; } = 8;
-    public string PushEndpoint { get; set; }
-    public string PushP256DH { get; set; }
-    public string PushAuth { get; set; }
+    public string? PushEndpoint { get; set; }
+    public string? PushP256DH { get; set; }
+    public string? PushAuth { get; set; }
     // Navigation properties
     public virtual PayoneerSettings PayoneerSettings { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
