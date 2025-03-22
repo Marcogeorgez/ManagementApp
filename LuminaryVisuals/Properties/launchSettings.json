@@ -15,7 +15,15 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "https://+:8081"
+        "ASPNETCORE_URLS": "https://+:8081",
+        "CLOUDFLARE_ACCESS_KEY_ID": "fd72a756cd0578cfe14bedad50478b58",
+        "CLOUDFLARE_ACCOUNT_ID": "4fe45e414f1383c39169090978b52221",
+        "CLOUDFLARE_BUCKET_NAME": "luminary",
+        "CLOUDFLARE_BUCKET_URL": "801546b726d5423faf6fb5a173c1df53",
+        "CLOUDFLARE_SECRET_ACCESS_KEY": "5275b030c16cf4e65234e52d01f03842019b84f9ab408b73f7be4909f008f6ae",
+        "DROPBOX_REFRESH_TOKEN": "15TEY6vY-VkAAAAAAAAAAQ4AZKng9NmPQ9jx-TFFw-TqhNtHaBWHh5568pPqNAjC",
+        "DROPBOX_APP_KEY": "77fl4mnjeaiabgy",
+        "DROPBOX_APP_SECRET": "whsyodss6sgaebb"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:8081"
@@ -34,7 +42,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+        "ASPNETCORE_HTTP_PORTS": "8080",
+
       },
       "publishAllPorts": true,
       "useSSL": true

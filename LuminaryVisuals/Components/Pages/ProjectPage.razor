@@ -17,6 +17,14 @@
 @implements IDisposable
 <PageTitle>Projects</PageTitle>
 
+<button @onclick="SubscribeToPush">Enable Notifications</button>
+
+@code {
+    private async Task SubscribeToPush()
+    {
+        await JS.InvokeVoidAsync("subscribeToPush");
+    }
+}
 
 <MudMainContent class="main-content-sm" Style="height: 100%; padding-top:25px; padding-left:25px; padding-right:25px;">
 
