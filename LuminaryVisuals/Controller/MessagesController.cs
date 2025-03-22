@@ -30,14 +30,29 @@ public class MessagesController : ControllerBase
         return Ok(new { count = count, hasNewMessages = count > 0 });
     }
     [HttpPost("subscribe")]
-    public IActionResult Subscribe([FromBody] PushSubscriptionModel subscription)
+    [Authorize]
+    public async Task<IActionResult> Subscribe([FromBody] PushSubscriptionModel subscription)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        // Save to DB or cache (implementation depends on your app)
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+            return Unauthorized();
+
+        // Update user with subscription details
+        user.PushEndpoint = subscription.Endpoint;
+        user.PushP256DH = subscription.Keys.P256DH;
+        user.PushAuth = subscription.Keys.Auth;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
         return Ok(new { message = "Subscribed successfully!" });
     }
 }

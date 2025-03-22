@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using MudBlazor.Services;
+using static Dropbox.Api.TeamLog.EventCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection()
@@ -341,6 +342,7 @@ builder.Services.AddSingleton<LuminaryVisuals.Services.Helpers.WordFilter>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<PushNotificationService>();
 builder.Services.AddControllers();
+builder.Services.AddHostedService<MessageReminderService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
