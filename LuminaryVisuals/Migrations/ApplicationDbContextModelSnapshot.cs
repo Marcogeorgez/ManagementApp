@@ -68,6 +68,18 @@ namespace LuminaryVisuals.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("PushAuth")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PushEndpoint")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PushP256DH")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 

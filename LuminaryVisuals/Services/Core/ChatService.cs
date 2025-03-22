@@ -15,14 +15,15 @@ public class ChatService
     private readonly IMessageNotificationService _messageNotificationService;
     private readonly INotificationService _notificationService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly PushNotificationService _pushService;
 
-
-    public ChatService(IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService, UserManager<ApplicationUser> userManager)
+    public ChatService(IDbContextFactory<ApplicationDbContext> contextFactory, IMessageNotificationService messageNotificationService, INotificationService notificationService, UserManager<ApplicationUser> userManager, PushNotificationService pushService)
     {
         _contextFactory = contextFactory;
         _messageNotificationService = messageNotificationService;
         _notificationService = notificationService;
         _userManager = userManager;
+        _pushService = pushService;
     }
 
     // Initialize chat for a project
@@ -42,7 +43,7 @@ public class ChatService
             await context.SaveChangesAsync();
         }
     }
-
+    // Used for adding messages for when status changes
     public async Task AddMessageAsync(string userId, string updatedByUserId, string message)
     {
         try
@@ -121,6 +122,35 @@ public class ChatService
 
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
+        if(projectId > 0 )
+        {
+
+        }
+        else
+        {
+            if(chat.UserId == userId)
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+
+                foreach (var user in admins)
+                {
+                    if (user != null)
+                    {
+                        await _pushService.SendNotification(user, "New Message", message);
+                    }
+                }
+            }
+            else
+            {
+                var receiver = await _userManager.FindByIdAsync(userId);
+                if (receiver != null)
+                {
+                    await _pushService.SendNotification(receiver, "New Message", message);
+                }
+            }
+
+        }
+        
         if (projectId > 0)
         {
             var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);

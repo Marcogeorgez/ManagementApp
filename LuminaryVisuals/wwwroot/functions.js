@@ -66,3 +66,19 @@ document.addEventListener("click", function () {
         console.log("Audio context initialized.");
     }
 });
+
+async function subscribeToPush() {
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80"
+    });
+
+    const response = await fetch('/api/messages/subscribe', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(subscription)
+    });
+
+    console.log("Push subscription saved:", response);
+}

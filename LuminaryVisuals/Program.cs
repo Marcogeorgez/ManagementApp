@@ -277,6 +277,7 @@ if (environment.IsProduction())
             options.StackTraceMode = StackTraceMode.Enhanced;
             options.TracesSampleRate = 1.0;
             options.ProfilesSampleRate = 1.0f;
+            options.Release = "luminary-visuals@1.1.0";
         });
     }
     else
@@ -338,6 +339,8 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<NotificationServic
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<LuminaryVisuals.Services.Helpers.WordFilter>();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddSingleton<PushNotificationService>();
+builder.Services.AddControllers();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -392,7 +395,7 @@ app.MapStaticAssets();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapControllers();
 app.UseAntiforgery();
 
 // Initialize roles
