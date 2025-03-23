@@ -106,7 +106,7 @@
             previewPath = preferences?.PreviewFolderPath;
             paidPath = preferences?.PaidFolderPath;
             projectDateName = $"{project.FormattedShootDate}-{project.ProjectName}";
-            if(previewPath != null)
+            /*if(previewPath != null)
             {
                 projectFolderPath = await DropboxService.GetOrCreateSharedLink(RemoveLastSegmentAndAddSlashAtBeginning(previewPath));
             }
@@ -117,7 +117,9 @@
             else
             {
                 projectFolderPath = preferences?.PaidFolderLink;
-            }
+            }*/
+            projectFolderPath = preferences?.PaidFolderLink;
+
         }
         catch(ArgumentOutOfRangeException ex) when (ex.ParamName == "path")
         {
