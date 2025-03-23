@@ -56,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\Logo-Dark.png">
+    <Content Update="wwwroot\Logo192-Dark.png">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
