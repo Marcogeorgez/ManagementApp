@@ -40,7 +40,7 @@ self.addEventListener('periodicsync', event => {
     }
 });
 
-async function checkForNewMessages() {
+/*async function checkForNewMessages() {
     try {
         const response = await fetch('/api/Messages/unread', {
             credentials: 'include'
@@ -61,4 +61,4 @@ async function checkForNewMessages() {
     } catch (error) {
         console.error('Failed to check for messages:', error);
     }
-}
+}*/
