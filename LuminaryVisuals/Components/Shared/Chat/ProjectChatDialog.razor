@@ -317,19 +317,24 @@
         ProjectState.OnChange += HandleProjectChange;
         await LoadMessages(true);
         await MarkMessagesAsRead();
-        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (newMessage) =>
+        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
         {
-            // Check if the message is for this project
-            if (Project.ProjectId == Project.ProjectId)
+        // ProjectId is passed to the handler, not a message object
+        if (projectId == Project.ProjectId) // This is the correct comparison
+        {
+            await InvokeAsync(async () =>
             {
-                await InvokeAsync(async () =>
-                {
-                    await LoadMessages(true);
-                    await MarkMessagesAsRead();
-                    await JSRuntime.InvokeVoidAsync("scrollToBottom");
-                });
+                // Reset pagination state
+                currentPage = 1;
+                hasMoreMessages = true;
 
-            }
+                // Clear existing messages
+                messages.Clear();
+                await LoadMessages(true);
+                await MarkMessagesAsRead();
+                await JSRuntime.InvokeVoidAsync("scrollToBottom");
+            });
+        }
         });
 
         await Task.Delay(250);
@@ -472,6 +477,7 @@
         {
             var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, messageToSend, isEditorView, requireApproval);
             await MarkMessagesAsRead();
+
             await InvokeAsync(StateHasChanged);
             await Task.Delay(50);
             await JSRuntime.InvokeVoidAsync("scrollToBottom");
