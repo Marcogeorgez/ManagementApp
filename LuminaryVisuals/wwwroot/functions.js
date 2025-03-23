@@ -68,7 +68,7 @@ document.addEventListener("click", function () {
 });
 
 async function subscribeToPush() {
-    const registration = await navigator.serviceWorker.register('/sw.js');
+    const registration = await navigator.serviceWorker.register('/service-worker.js');
     const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80"

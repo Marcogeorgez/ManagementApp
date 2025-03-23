@@ -550,6 +550,7 @@
             else
             {
                 var currentScrollPosition = await JSRuntime.InvokeAsync<int>("getCurrentScrollPositionFromBottom", ".chat-content");
+                currentScrollPosition = currentScrollPosition < 0 ? 0 : currentScrollPosition;
 
                 // Prepend new messages to the beginning of the list
                 messages.InsertRange(0, loadedMessages);
@@ -567,6 +568,7 @@
             // Handle or log error
             Snackbar.Add($"Error loading messages. Please try again later, or refresh page if it persists please report this.",Severity.Error);
             Console.WriteLine($"Error loading messages: {ex.Message}");
+            throw(ex);
 
         }
 
@@ -575,8 +577,6 @@
             finishedLoading = true;
             await Task.Delay(100);
             await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
-
-
         }
     }
     [JSInvokable]
@@ -946,7 +946,7 @@
     window.getCurrentScrollPositionFromBottom = function (selector) {
         const element = document.querySelector(selector);
         if (!element) return 0;
-        return element.scrollHeight - element.scrollTop - element.clientHeight;
+        return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight);
     };
 
     window.restoreScrollPositionFromBottom = function (selector, additionalHeight) {
