@@ -287,11 +287,14 @@ public class UserServices
         await _userManagerSemaphore.WaitAsync();
         try
         {
+            // Get the IDs first, outside of the DbContext usage
             var editors = await _userManager.GetUsersInRoleAsync("Editor");
+            var editorIds = editors.Select(e => e.Id).ToList(); // Materialize the list
+
             using (var context = _contextFactory.CreateDbContext())
             {
                 var result = await context.Users
-                    .Where(u => editors.Select(e => e.Id).Contains(u.Id))
+                    .Where(u => editorIds.Contains(u.Id))
                     .Select(u => new UserProjectViewModel
                     {
                         UserId = u.Id,
@@ -308,18 +311,20 @@ public class UserServices
             _userManagerSemaphore.Release();
         }
     }
-    // Method to get all users with the "Client" role and their associated projects
 
     public async Task<List<UserProjectViewModel>> GetClientsWithProjectsAsync()
     {
         await _userManagerSemaphore.WaitAsync();
         try
         {
+            // Get the IDs first, outside of the DbContext usage
             var clients = await _userManager.GetUsersInRoleAsync("Client");
+            var clientIds = clients.Select(c => c.Id).ToList(); // Materialize the list
+
             using (var context = _contextFactory.CreateDbContext())
             {
                 var result = await context.Users
-                    .Where(u => clients.Select(c => c.Id).Contains(u.Id))
+                    .Where(u => clientIds.Contains(u.Id))
                     .Select(u => new UserProjectViewModel
                     {
                         UserId = u.Id,
@@ -336,7 +341,6 @@ public class UserServices
             _userManagerSemaphore.Release();
         }
     }
- 
     public async Task<List<ApplicationUser>> GetAllUsersAssociatedWithProjectAsync(Project project)
     {
         var AllUsers = await GetAllAdminsAsync();
