@@ -472,6 +472,9 @@
         {
             var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, messageToSend, isEditorView, requireApproval);
             await MarkMessagesAsRead();
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(50);
+            await JSRuntime.InvokeVoidAsync("scrollToBottom");
             _isLoading = false;
             _preventDefault = false;
             return true;
@@ -527,33 +530,30 @@
         try
         {
             finishedLoading = false;
-            int pageToLoad = initial ? 1 : currentPage;
             var loadedMessages = await ChatService.GetMessagesAsync(Project.ProjectId, isAdminView, UserId, pageNumber: currentPage, pageSize: PAGE_SIZE);
 
             if (initial)
             {
-
-                // First load - clear existing messages
+                // First load - clear existing messages and add new ones
                 messages.Clear();
-                await Task.Delay(100);
-                await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
-            }
-            else
-            {
-                // Append messages to the beginning of the list
-                messages.InsertRange(0, loadedMessages);
-            }
-            if (initial)
-            {
                 messages.AddRange(loadedMessages);
+                // Allow UI to update before scrolling
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(100);
+                await JSRuntime.InvokeVoidAsync("scrollToBottom");
             }
             else
             {
+                // For pagination: Save scroll position before modifying DOM
                 var currentScrollPosition = await JSRuntime.InvokeAsync<int>("getCurrentScrollPositionFromBottom", ".chat-content");
                 currentScrollPosition = currentScrollPosition < 0 ? 0 : currentScrollPosition;
 
-                // Prepend new messages to the beginning of the list
+                // Prepend new messages to the beginning of the list (only once)
                 messages.InsertRange(0, loadedMessages);
+
+                // Allow UI to update before restoring scroll
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(50);
 
                 // Restore scroll position
                 await JSRuntime.InvokeVoidAsync("restoreScrollPositionFromBottom", ".chat-content", currentScrollPosition + loadedMessages.Count);
@@ -561,22 +561,24 @@
 
             // Determine if there are more messages to load
             hasMoreMessages = loadedMessages.Count == PAGE_SIZE;
-
         }
         catch (Exception ex)
         {
-            // Handle or log error
-            Snackbar.Add($"Error loading messages. Please try again later, or refresh page if it persists please report this.",Severity.Error);
+            Snackbar.Add($"Error loading messages. Please try again later, or refresh page if it persists please report this.", Severity.Error);
             Console.WriteLine($"Error loading messages: {ex.Message}");
-            throw(ex);
-
+            throw (ex);
         }
-
-        finally{
-            await InvokeAsync(StateHasChanged);
+        finally
+        {
             finishedLoading = true;
-            await Task.Delay(100);
-            await ScrollManager.ScrollToBottomAsync(".chat-content", ScrollBehavior.Smooth);
+            await InvokeAsync(StateHasChanged);
+
+            // Only scroll to bottom on initial load, not when paginating
+            if (initial)
+            {
+                await Task.Delay(100);
+                await JSRuntime.InvokeVoidAsync("scrollToBottom");
+            }
         }
     }
     [JSInvokable]
@@ -636,37 +638,20 @@
 
     private async Task OnScroll(EventArgs e)
     {
-        // Skip processing if loading is finished or no more messages are available
-        if (!_isInitialScrollComplete || !( finishedLoading && hasMoreMessages ))
+        // Skip processing if loading is in progress or no more messages are available
+        if (!_isInitialScrollComplete || !finishedLoading || !hasMoreMessages)
         {
             return;
         }
 
-        // Get the message index that is currently in view
-        var messageIndexInView = await JSRuntime.InvokeAsync<string>("getElementWithMessageIndexInView", ".chat-content");
+        // Get the scroll position as a percentage (0 = top, 1 = bottom)
+        var scrollPercentage = await JSRuntime.InvokeAsync<double>("getScrollPercentage", ".chat-content");
 
-        // If no valid message index is in view, return early
-        if (string.IsNullOrEmpty(messageIndexInView))
+        // Load more when scrolling near the top (e.g., first 15%)
+        if (scrollPercentage <= 0.15)
         {
-            return;
-        }
-
-        // Try to parse the message index
-        if (int.TryParse(messageIndexInView, out int messageIndex))
-        {
-            // Log the index for debugging purposes
-
-            // Check if the message index is below a threshold to load more messages
-            if (messageIndex <= 10)
-            {
-                currentPage++;
-                await LoadMessages(initial: false);
-            }
-        }
-        else
-        {
-            // Log error if message index parsing fails
-            Logger.LogError($"Failed to parse message index: {messageIndexInView}");
+            currentPage++;
+            await LoadMessages(initial: false);
         }
     }
     // Display date of each chat messages grouped by their date.
@@ -1010,5 +995,15 @@
             chatContent.scrollTop = chatContent.scrollHeight;
         }
     };
+        window.getScrollPercentage = function(selector) {
+        const element = document.querySelector(selector);
+        if (!element) return 1; // Default to bottom
 
+        const scrollTop = element.scrollTop;
+        const scrollHeight = element.scrollHeight;
+        const clientHeight = element.clientHeight;
+
+        // Calculate percentage (0 = top, 1 = bottom)
+        return scrollTop / (scrollHeight - clientHeight);
+    };
 </script>
