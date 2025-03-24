@@ -1550,3 +1550,8 @@ tr.mud-table-row.drop-target > td, .drop-target {
 .vh-70{
     max-height: 70vh;
 }
+@media (max-width:760px) {
+    .mud-dialog .mud-dialog-content {
+        margin: 12px 12px !important;
+    }
+}
