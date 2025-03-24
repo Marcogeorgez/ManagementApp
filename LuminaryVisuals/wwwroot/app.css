@@ -607,9 +607,6 @@ th.mud-table-cell.sticky-left:hover {
         text-align: start !important;
         align-items: start !important;
     }
-    .project-container {
-        margin: 5px 15px 5px 70px !important;
-    }
     .projects-panel {
         width: 80vw !important;
     }
@@ -676,12 +673,16 @@ th.mud-table-cell.sticky-left:hover {
 .project-container {
     display: flex;
     align-items: center;
-    margin: max(calc(1.8% - 12px), 5px) 5%;
+    margin: 5px 10px 5px clamp(45px, 13.5vw, 75px);
     min-width: 0;
     max-width: 100%;
     transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
-
+@media (min-width:760px) {
+    .project-container {
+        margin: 5px 10px 5px 30px !important;
+    }
+}
 .project-container.slide-enter, .project-container.slide-leave-to {
     transform: translateX(-100%);
     opacity: 0;
