@@ -770,6 +770,8 @@
         {
             _timer.Stop();
         }
+        if (storedValue is null || lastSavedValue is null)
+            return;
         // Save the currency value only if it has changed
         if (storedValue != lastSavedValue)
         {

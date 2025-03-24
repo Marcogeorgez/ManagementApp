@@ -207,8 +207,8 @@ th.mud-table-cell.sticky-left:hover {
 
    
     .chat-container {
-        width: 100% !important;
-        height: 100% !important;
+        width: 100dvh !important;
+        height: 100dvh !important;
     }
 }
 
@@ -597,10 +597,6 @@ th.mud-table-cell.sticky-left:hover {
 }
 
 @media (max-width: 760px) {
-    .projects-list {
-        padding-top: 10px !important;
-        padding-left: 0px !important;
-    }
     .projects-title {
         margin-left: 10px;
     }
@@ -705,7 +701,6 @@ th.mud-table-cell.sticky-left:hover {
     -ms-flex-direction: inherit;
     -webkit-flex-direction: inherit;
     flex-direction: inherit;
-    grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr));
     overflow-y: auto;
     gap: clamp(5px, 5px, 10%);
     padding: 10px 0;

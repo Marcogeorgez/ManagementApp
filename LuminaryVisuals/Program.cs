@@ -278,7 +278,7 @@ if (environment.IsProduction())
             options.StackTraceMode = StackTraceMode.Enhanced;
             options.TracesSampleRate = 1.0;
             options.ProfilesSampleRate = 1.0f;
-            options.Release = "luminary-visuals@1.1.0";
+            options.Release = "luminary-visuals@1.1.1";
         });
     }
     else
