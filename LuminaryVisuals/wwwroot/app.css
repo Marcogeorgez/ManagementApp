@@ -1357,9 +1357,11 @@ textarea.mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-ad
     backface-visibility: hidden;
 }
 div.mud-input-control.mud-input-input-control.outlined-dialog-xl-content {
-    overflow-x: scroll;
     overflow-y: hidden !important;
     resize: horizontal !important;
+}
+.mud-drawer {
+    overflow: hidden !important;
 }
 /* Scrollbar Track */
 ::-webkit-scrollbar {

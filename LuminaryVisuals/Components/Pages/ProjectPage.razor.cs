@@ -121,7 +121,13 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             StateHasChanged();
         });
         ProjectState.OnChange += HandleProjectStateChange;
-        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+
+        if (currentUser == null)
+        {
+            Console.WriteLine("currentUser is null");
+            return;
+        }
+        _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
         foreach (var column in _availableColumns)
         {
             _columnVisibility[column.Name] = column.isHidden;
@@ -185,7 +191,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             _columnPresets = await columnPreferenceService.GetUserPresets(_currentUserId);
             
             _selectedPresetName = await columnPreferenceService.GetLastPresetUsed(_currentUserId);
-            await LoadSelectedPreset(_selectedPresetName);
+            if(_selectedPresetName != null && _selectedPresetName != string.Empty)
+                await LoadSelectedPreset(_selectedPresetName);
         }
         catch (Exception ex)
         {
@@ -197,7 +204,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         return !_columnVisibility.GetValueOrDefault(columnName, false);
     }
 
-    private string _selectedPresetName;
+    private string? _selectedPresetName;
     private MudMenu _menuRef;
     private async Task LoadSelectedPreset(string presetName)
     {

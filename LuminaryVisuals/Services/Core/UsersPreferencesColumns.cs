@@ -65,20 +65,31 @@ public class ColumnPreferenceService
 
         return JsonSerializer.Deserialize<Dictionary<string, bool>>(preset.Preferences)!;
     }
-    public async Task<string> GetLastPresetUsed(string userId)
+    public async Task<string?> GetLastPresetUsed(string userId)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
-        // Find the maximum LastUsedAt value for the given user
+
+        // Find the maximum LastUsedAt value for the given user, handling empty sequences
         var lastUsedAt = await context.ColumnPresets
             .Where(p => p.UserId == userId)
-            .MaxAsync(p => p.LastUsedAt);
+            .Select(p => (DateTime?) p.LastUsedAt) // Convert to nullable DateTime
+            .DefaultIfEmpty(null) // Ensure MaxAsync() has a default value
+            .MaxAsync();
+
+        if (lastUsedAt == null)
+        {
+            Console.WriteLine($"No presets found for user {userId}.");
+            return null; // No presets found, return null
+        }
 
         // Retrieve the preset with the maximum LastUsedAt
         var preset = await context.ColumnPresets
             .Where(p => p.UserId == userId && p.LastUsedAt == lastUsedAt)
             .FirstOrDefaultAsync();
-        return preset.Name!;
+
+        return preset?.Name; // Return null if preset is not found
     }
+
     public async Task DeletePreference(ColumnPreset Preset)
     {
         try
