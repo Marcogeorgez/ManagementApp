@@ -360,7 +360,6 @@ th.mud-table-cell.sticky-left:hover {
 }
 .mud-dialog-container
 {
-    width:  100vw !important;
     height: 100vh !important;
 }
 .ql-snow .ql-tooltip.ql-flip {

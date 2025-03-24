@@ -27,7 +27,7 @@
 
             @if(!isAdminView)
             {
-            <MudList T="Project" Class="projects-list pt-6 pl-3  pt-md-3" Padding=true Gutters=true>
+            <MudList T="Project" Class="projects-list pt-8 pl-md-3  pt-md-3" Padding=true Gutters=true>
                     @foreach (var project in GetPaginatedProjects())
                     {
                         var classText = "project-item" + ( project.MessageRequireApprovalCount > 0 && isEditorView  ? " unapproved-message" : "" )
