@@ -18,7 +18,7 @@ public class WordFilter
     {
         this.contextFactory = contextFactory;
         _cache = memoryCache;
-        _wordSplitter = new Regex(@"\b(\w+)\b", RegexOptions.Compiled);
+        _wordSplitter = new Regex(@"[^\s]+", RegexOptions.Compiled);
 
         // Ensure the cache is populated
         GetBlockedWordsFromCacheOrDb();

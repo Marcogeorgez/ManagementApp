@@ -683,15 +683,7 @@ th.mud-table-cell.sticky-left:hover {
         margin: 5px 10px 5px 30px !important;
     }
 }
-.project-container.slide-enter, .project-container.slide-leave-to {
-    transform: translateX(-100%);
-    opacity: 0;
-}
 
-.project-container.slide-enter-to, .project-container.slide-leave {
-    transform: translateX(0);
-    opacity: 1;
-}
 .pinned-badge{
     transform:rotate(-90deg);
 }
@@ -724,7 +716,6 @@ th.mud-table-cell.sticky-left:hover {
 
 
 .project-item:hover {
-    transform: translateX(10px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     background-color: #333333;
 }
