@@ -128,6 +128,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             return;
         }
         _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        Console.WriteLine($"logging for debugging: Current user is: {_currentUserId}");
+
         foreach (var column in _availableColumns)
         {
             _columnVisibility[column.Name] = column.isHidden;
