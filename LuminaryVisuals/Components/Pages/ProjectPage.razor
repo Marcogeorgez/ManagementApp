@@ -26,8 +26,16 @@
     }
 } *@
 
-<MudMainContent class="main-content-sm" Style="height: 100%; padding-top:25px; padding-left:25px; padding-right:25px;">
 
+@code {
+    private async Task SubscribeToPush()
+    {
+        throw new Exception();
+    }
+}
+
+<MudMainContent class="main-content-sm" Style="height: 100%; padding-top:25px; padding-left:25px; padding-right:25px;">
+    
         <LoadingIndicator IsVisible="@_loadingIndicator" />
 
         <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid"

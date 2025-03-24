@@ -265,26 +265,23 @@ builder.Services.AddServerSideBlazor()
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
 var environment = builder.Environment;
-if (environment.IsProduction())
-{
     // Get the Sentry DSN from environment variables or configuration
-    var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN");
-    if (!string.IsNullOrEmpty(sentryDSN))
+var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN");
+if (!string.IsNullOrEmpty(sentryDSN))
+{
+    builder.WebHost.UseSentry(options =>
     {
-        builder.WebHost.UseSentry(options =>
-        {
-            options.Dsn = sentryDSN;
-            options.AutoSessionTracking = true;
-            options.StackTraceMode = StackTraceMode.Enhanced;
-            options.TracesSampleRate = 1.0;
-            options.ProfilesSampleRate = 1.0f;
-            options.Release = "luminary-visuals@1.1.1";
-        });
-    }
-    else
-    {
-        Console.WriteLine("Sentry DSN not found in environment variables. Sentry will not be configured.");
-    }
+        options.Dsn = sentryDSN;
+        options.AutoSessionTracking = true;
+        options.StackTraceMode = StackTraceMode.Enhanced;
+        options.TracesSampleRate = 1.0;
+        options.ProfilesSampleRate = 1.0f;
+        options.Release = "luminary-visuals@1.1.2";
+    });
+}
+else
+{
+    Console.WriteLine("Sentry DSN not found in environment variables. Sentry will not be configured.");
 }
 
 

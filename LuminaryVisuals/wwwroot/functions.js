@@ -82,3 +82,4 @@ async function subscribeToPush() {
 
     console.log("Push subscription saved:", response);
 }
+

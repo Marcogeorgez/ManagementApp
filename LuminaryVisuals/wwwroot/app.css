@@ -693,10 +693,10 @@ th.mud-table-cell.sticky-left:hover {
     -ms-flex-direction: inherit;
     -webkit-flex-direction: inherit;
     flex-direction: inherit;
-    overflow-y: auto;
     gap: clamp(5px, 5px, 10%);
     padding: 10px 0;
     flex: 1 1;
+    margin-right: 20px;
 }
 
 .project-item {
