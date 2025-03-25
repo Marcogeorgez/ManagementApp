@@ -229,7 +229,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("InternalId"))
                 {
                     <PropertyColumn Property="x => x.InternalOrder" Title="Id" Sortable="true" Filterable="false"
-                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=true
+                    DragAndDropEnabled="false" Groupable="false" Editable=true StickyLeft=false
                     HeaderStyle="@(isSelectorVisible ? "left:32px; z-index:5;" : "z-index:5;")"
                     CellStyle="@(isSelectorVisible ? "left:32px; text-align:center;" : "text-align:center;")">
                         <CellTemplate>
@@ -292,7 +292,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=false
                     HeaderStyle="@(isSelectorVisible ? "min-width:120px; left:75px; z-index:5" : "min-width:120px; z-index:5; left:50px;")"
                     CellStyle="@(isSelectorVisible ? "left:75px; text-align:center;" : "text-align:center;left:50px;")">
                         <CellTemplate>
@@ -358,7 +358,7 @@
 
                 @if (RoleBasedColumns[_currentRole].Contains("ProjectName"))
                 {
-                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : true)" 
+                    <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" StickyLeft="@(_isClientView ? false : false)" 
                     Hideable="false"
                     HeaderStyle="@(isSelectorVisible ? "min-width:316.4px; left:190px; z-index:4" : !_isClientView ? "left:165px; z-index:4;" : "z-index:4; min-width:300px;")"
                     CellStyle="@(isSelectorVisible ? "left:190px;" : "left:165px;")" CellClass="outlined-dialog-xl-content"
