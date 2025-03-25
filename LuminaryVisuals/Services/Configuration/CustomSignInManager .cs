@@ -126,7 +126,8 @@ namespace LuminaryVisuals.Services.Configuration
                         }
                         else
                         {
-                            throw new Exception($"Can't register this account, because of {createResult.Errors}");
+                            var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                            throw new Exception($"Can't register this account, because of: {errors}");
                         }
                     }
                 }
@@ -137,7 +138,7 @@ namespace LuminaryVisuals.Services.Configuration
             {
                 Logger.LogError($"Error during Google authentication: {ex.InnerException}, Date: {DateTime.UtcNow}, User: {user}");
                 throw ex;
-                return SignInResult.Failed;
+                //return SignInResult.Failed;
             }
         }
     }
