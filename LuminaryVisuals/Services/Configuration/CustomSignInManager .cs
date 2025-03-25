@@ -136,6 +136,7 @@ namespace LuminaryVisuals.Services.Configuration
             catch (Exception ex)
             {
                 Logger.LogError($"Error during Google authentication: {ex.InnerException}, Date: {DateTime.UtcNow}, User: {user}");
+                throw ex;
                 return SignInResult.Failed;
             }
         }
