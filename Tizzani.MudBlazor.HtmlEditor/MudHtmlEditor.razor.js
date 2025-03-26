@@ -136,6 +136,7 @@ export class MudQuillInterop {
     constructor(dotNetRef, quill, editorRef, toolbarRef) {
         quill.getModule('toolbar').addHandler('hr', this.insertDividerHandler);
         quill.on('text-change', this.textChangedHandler);
+        quill.root.addEventListener('paste', this.handlePaste);
         this.dotNetRef = dotNetRef;
         this.quill = quill;
         this.editorRef = editorRef;
@@ -161,7 +162,89 @@ export class MudQuillInterop {
             this.quill.insertEmbed(range.index, "hr", "null");
         }
     };
+    handlePaste = async (event) => {
+        //console.log('Paste event triggered'); // Debug log
+        const items = event.clipboardData.items;
+        const pastedItems = Array.from(items);
 
+        //console.log('Pasted items:', pastedItems); // Debug log
+
+        for (let item of pastedItems) {
+            //console.log('Item type:', item.type); // Debug log
+
+            if (item.type.indexOf('image') !== -1) {
+                event.preventDefault(); // Prevent default paste behavior
+                //console.log('Image detected, preventing default paste'); // Debug log
+
+                let file;
+                if (item.kind === 'file') {
+                    // For actual image files
+                    file = item.getAsFile();
+                    //console.log('File from item:', file); // Debug log
+                }
+
+                if (item.type === 'text/plain') {
+                    // For base64 data URIs
+                    item.getAsString(async (pastedText) => {
+                        //console.log('Pasted text:', pastedText); // Debug log
+
+                        if (pastedText.startsWith('data:image')) {
+                            //console.log('Base64 image detected'); // Debug log
+                            file = await this.dataURItoFile(pastedText);
+                        }
+
+                        if (file) {
+                            //console.log('Uploading file:', file); // Debug log
+                            await this.uploadPastedImage(file);
+                        }
+                    });
+                    continue; // Skip to next iteration
+                }
+
+                if (file) {
+                    //console.log('Uploading file:', file); // Debug log
+                    await this.uploadPastedImage(file);
+                }
+            }
+        }
+    };
+
+    dataURItoFile = async (dataURI) => {
+        //console.log('Converting data URI to file:', dataURI); // Debug log
+        const response = await fetch(dataURI);
+        const blob = await response.blob();
+        //console.log('Converted blob:', blob); // Debug log
+        return new File([blob], 'pasted-image.png', { type: blob.type });
+    };
+    uploadPastedImage = async (file) => {
+        const range = this.quill.getSelection(true);
+
+        // Add loading placeholder
+        this.quill.insertText(range.index, 'Uploading...', {
+            'color': '#999',
+            'italic': true
+        }, true);
+
+        try {
+            // Use the same upload method as image upload
+            const url = await this.quill.getModule('imageUploader').upload(file);
+
+            // Remove loading placeholder
+            this.quill.deleteText(range.index, 'Uploading...'.length);
+
+            // Insert the image
+            this.quill.insertEmbed(range.index, 'image', url);
+        } catch (error) {
+            // Remove loading placeholder
+            this.quill.deleteText(range.index, 'Uploading...'.length);
+
+            // Show error message
+            this.quill.insertText(range.index, 'Upload failed', {
+                'color': 'red',
+                'italic': true
+            }, true);
+        }
+    };
     /**
      * 
      * @param {Delta} delta

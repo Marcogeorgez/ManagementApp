@@ -135,7 +135,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
 
             try
             {
-                await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js");
+                await using var module = await JS.InvokeAsync<IJSObjectReference>("import", $"./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js?v=1.1");
                 string theme = IsBubble ? "bubble" : "snow";
 
                 _quill = await module.InvokeAsync<IJSObjectReference>("createQuillInterop", _dotNetRef, _editor, _toolbar, Placeholder, theme);
