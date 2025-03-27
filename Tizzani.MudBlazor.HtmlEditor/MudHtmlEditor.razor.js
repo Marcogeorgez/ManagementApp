@@ -137,6 +137,9 @@ export class MudQuillInterop {
         quill.getModule('toolbar').addHandler('hr', this.insertDividerHandler);
         quill.on('text-change', this.textChangedHandler);
         quill.root.addEventListener('paste', this.handlePaste);
+        quill.root.addEventListener('dragenter', this.handleDragEnter);
+        quill.root.addEventListener('dragover', this.handleDragOver);
+        quill.root.addEventListener('drop', this.handleDrop);
         this.dotNetRef = dotNetRef;
         this.quill = quill;
         this.editorRef = editorRef;
@@ -209,6 +212,62 @@ export class MudQuillInterop {
         }
     };
 
+    handleDragEnter = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+    };
+
+    handleDragOver = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+    };
+
+    handleDrop = async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const items = event.dataTransfer.items;
+        const droppedItems = Array.from(items);
+
+        for (let item of droppedItems) {
+            if (item.type.indexOf('image') !== -1) {
+                let file;
+                if (item.kind === 'file') {
+                    file = item.getAsFile();
+                }
+
+                if (file) {
+                    const range = this.quill.getSelection(true);
+
+                    // Add loading placeholder
+                    this.quill.insertText(range.index, 'Uploading...', {
+                        'color': '#999',
+                        'italic': true
+                    }, true);
+
+                    try {
+                        // Use the same upload method as image upload
+                        const url = await this.quill.getModule('imageUploader').upload(file);
+
+                        // Remove loading placeholder
+                        this.quill.deleteText(range.index, 'Uploading...'.length);
+
+                        // Insert the image
+                        this.quill.insertEmbed(range.index, 'image', url);
+                    } catch (error) {
+                        // Remove loading placeholder
+                        this.quill.deleteText(range.index, 'Uploading...'.length);
+
+                        // Show error message
+                        this.quill.insertText(range.index, 'Upload failed', {
+                            'color': 'red',
+                            'italic': true
+                        }, true);
+                    }
+                }
+            }
+        }
+    };
     dataURItoFile = async (dataURI) => {
         //console.log('Converting data URI to file:', dataURI); // Debug log
         const response = await fetch(dataURI);
