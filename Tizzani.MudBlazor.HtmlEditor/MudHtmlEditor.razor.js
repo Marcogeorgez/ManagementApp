@@ -1,4 +1,5 @@
-var Embed = Quill.import('blots/block/embed');
+﻿var Embed = Quill.import('blots/block/embed');
+const Delta = Quill.import('delta');
 class ImageUploader {
     constructor(quill, options) {
         this.quill = quill;
@@ -156,7 +157,7 @@ export class MudQuillInterop {
 
     setHtml = (html) => {
         this.quill.root.innerHTML = html;
-    }
+    };
 
     insertDividerHandler = () => {
         const range = this.quill.getSelection();
@@ -165,52 +166,80 @@ export class MudQuillInterop {
             this.quill.insertEmbed(range.index, "hr", "null");
         }
     };
+
     handlePaste = async (event) => {
-        //console.log('Paste event triggered'); // Debug log
-        const items = event.clipboardData.items;
+        const clipboardData = event.clipboardData || window.clipboardData;
+        const items = clipboardData.items;
         const pastedItems = Array.from(items);
 
-        //console.log('Pasted items:', pastedItems); // Debug log
+        const htmlData = await new Promise((resolve) => {
+            const item = Array.from(items).find(i => i.type === "text/html");
+            if (item) {
+                item.getAsString(resolve);
+            } else {
+                resolve(null);
+            }
+        });
 
-        for (let item of pastedItems) {
-            //console.log('Item type:', item.type); // Debug log
+        if (htmlData) {
+            const updatedHtml = await this.replaceBase64Images(htmlData);
+            this.quill.clipboard.dangerouslyPasteHTML(updatedHtml);
+        }
+    };
 
-            if (item.type.indexOf('image') !== -1) {
-                event.preventDefault(); // Prevent default paste behavior
-                //console.log('Image detected, preventing default paste'); // Debug log
+    replaceBase64Images = async () => {
+        const editor = this.quill;
+        let imgElements = editor.root.querySelectorAll("img[src^='data:image/']");
 
-                let file;
-                if (item.kind === 'file') {
-                    // For actual image files
-                    file = item.getAsFile();
-                    //console.log('File from item:', file); // Debug log
+        if (imgElements.length === 0) {
+            console.warn("No Base64 images found.");
+            return;
+        }
+
+        for (let imgElement of imgElements) {
+            let base64Src = imgElement.src;
+            let base64Preview = base64Src.substring(0, 30);
+
+            let mimeTypeMatch = base64Src.match(/data:(image\/[a-zA-Z]+);base64/);
+            if (!mimeTypeMatch) {
+                console.error("Failed to extract MIME type.");
+                continue;
+            }
+
+            let mimeType = mimeTypeMatch[1];
+            let base64String = base64Src.split(",")[1];
+            let byteCharacters = atob(base64String);
+            let byteNumbers = new Array(byteCharacters.length);
+            let fileExtension = mimeType.split('/')[1];
+            let fileName = `image_${Date.now()}.${fileExtension}`;
+
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            let byteArray = new Uint8Array(byteNumbers);
+            let file = new File([byteArray], fileName, { type: mimeType });
+
+            try {
+                let url = await this.uploadPastedImageAndReturnLink(file);
+                if (url) {
+                    console.log("Replacing:", base64Preview + "... →", url);
+
+                    // Use Quill's root innerHTML to replace the image src
+                    let html = editor.root.innerHTML;
+                    let replacedHtml = html.replace(base64Src, url);
+
+                    // Set the entire editor content with replaced HTML
+                    editor.root.innerHTML = replacedHtml;
                 }
-
-                if (item.type === 'text/plain') {
-                    // For base64 data URIs
-                    item.getAsString(async (pastedText) => {
-                        //console.log('Pasted text:', pastedText); // Debug log
-
-                        if (pastedText.startsWith('data:image')) {
-                            //console.log('Base64 image detected'); // Debug log
-                            file = await this.dataURItoFile(pastedText);
-                        }
-
-                        if (file) {
-                            //console.log('Uploading file:', file); // Debug log
-                            await this.uploadPastedImage(file);
-                        }
-                    });
-                    continue; // Skip to next iteration
-                }
-
-                if (file) {
-                    //console.log('Uploading file:', file); // Debug log
-                    await this.uploadPastedImage(file);
-                }
+            } catch (error) {
+                console.error("Image replacement failed:", error);
             }
         }
     };
+
+
+
+
 
     handleDragEnter = (event) => {
         event.preventDefault();
@@ -275,6 +304,17 @@ export class MudQuillInterop {
         //console.log('Converted blob:', blob); // Debug log
         return new File([blob], 'pasted-image.png', { type: blob.type });
     };
+    uploadPastedImageAndReturnLink = async (file) => {
+        try {
+            const url = await this.quill.getModule('imageUploader').upload(file);
+            console.log("Upload successful", url); // Debug log
+            return url; // Return the uploaded URL
+        } catch (error) {
+            console.error("Upload failed", error);
+            return null; // Return null on failure
+        }
+    };
+
     uploadPastedImage = async (file) => {
         const range = this.quill.getSelection(true);
 

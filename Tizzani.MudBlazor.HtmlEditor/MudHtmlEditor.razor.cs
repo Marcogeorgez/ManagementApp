@@ -135,7 +135,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
 
             try
             {
-                await using var module = await JS.InvokeAsync<IJSObjectReference>("import", $"./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js?v=1.2");
+                await using var module = await JS.InvokeAsync<IJSObjectReference>("import", $"./_content/Tizzani.MudBlazor.HtmlEditor/MudHtmlEditor.razor.js?v=1.3");
                 string theme = IsBubble ? "bubble" : "snow";
 
                 _quill = await module.InvokeAsync<IJSObjectReference>("createQuillInterop", _dotNetRef, _editor, _toolbar, Placeholder, theme);
@@ -189,7 +189,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
         var stream = new MemoryStream(bytes);
 
         // Create BrowserFile with proper content type
-        var contentType = GetContentTypeFromFileName(fileName);
+            var contentType = GetContentTypeFromFileName(fileName);
         var browserFile = new BrowserFile(stream, fileName, contentType);
 
         // Call the delegate
