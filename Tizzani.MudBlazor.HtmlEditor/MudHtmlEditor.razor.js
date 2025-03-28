@@ -192,7 +192,7 @@ export class MudQuillInterop {
         let imgElements = editor.root.querySelectorAll("img[src^='data:image/']");
 
         if (imgElements.length === 0) {
-            console.warn("No Base64 images found.");
+            //console.warn("No Base64 images found.");
             return;
         }
 
@@ -222,7 +222,7 @@ export class MudQuillInterop {
             try {
                 let url = await this.uploadPastedImageAndReturnLink(file);
                 if (url) {
-                    console.log("Replacing:", base64Preview + "... →", url);
+                    //console.log("Replacing:", base64Preview + "... →", url);
 
                     // Use Quill's root innerHTML to replace the image src
                     let html = editor.root.innerHTML;
@@ -232,7 +232,7 @@ export class MudQuillInterop {
                     editor.root.innerHTML = replacedHtml;
                 }
             } catch (error) {
-                console.error("Image replacement failed:", error);
+                //console.error("Image replacement failed:", error);
             }
         }
     };
@@ -307,10 +307,10 @@ export class MudQuillInterop {
     uploadPastedImageAndReturnLink = async (file) => {
         try {
             const url = await this.quill.getModule('imageUploader').upload(file);
-            console.log("Upload successful", url); // Debug log
+            //console.log("Upload successful", url); // Debug log
             return url; // Return the uploaded URL
         } catch (error) {
-            console.error("Upload failed", error);
+            //console.error("Upload failed", error);
             return null; // Return null on failure
         }
     };
