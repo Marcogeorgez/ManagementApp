@@ -164,7 +164,7 @@
             </MudContainer>
 
 
-            <MudPaper Class="@GetClassNames()" Elevation="0" style="align-items:center;">
+            <MudPaper Class="@GetClassNames()" Elevation="0" style="align-items:center;" >
                 <MudPopover Open="@_openQuickMessage" Fixed="true" Class="pb-4" Delay="100" Duration="150" >
                     <div class="d-flex flex-column">
                         <MudTabs Outlined="true" Centered="true" Border="true" Rounded="true">
@@ -225,7 +225,7 @@
                     </div>
                 </MudPopover>
                 @*Overlay used to close the menu when user clicks anywhere*@
-                <MudOverlay @bind-Visible="isMenuOpen" AutoClose="true" Style="width:100%; height:100%; position:absolute;" />
+                <MudOverlay @bind-Visible="isMenuOpen" AutoClose="true" Style="width:100%; height:100%; position:absolute; z-index:1399;" />
 
                 <MudMenu Icon="@Icons.Material.Filled.MoreVert" AriaLabel="Open user menu" OpenChanged="() => isMenuOpen = !isMenuOpen"
                 Open="@isMenuOpen"
@@ -902,6 +902,9 @@
         padding:4px;
         height:100%;
         overflow:hidden;
+    }
+    .mud-popover.mud-popover-open{
+        z-index:1400 !important;
     }
 </style>
 <script>

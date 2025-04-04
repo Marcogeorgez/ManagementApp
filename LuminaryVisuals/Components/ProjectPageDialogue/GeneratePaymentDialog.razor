@@ -46,16 +46,16 @@
         </MudStack>
         @if(isAdmin)
         {
-        <MudStack Row AlignItems="AlignItems.Center">
-            <MudText>Client Payment Status</MudText>
-            <MudSpacer />
-            <MudSelect T="AdminProjectStatus" MultiSelectionTextFunc="@((values)=> GetMultiSelectionTextForStatus(values))" @bind-SelectedValues="selectedPaymentStatuses" SelectAll="true" Label="Select Status" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
-                @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
-                {
-                    <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
-                }
-            </MudSelect>
-        </MudStack>
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudText>Client Payment Status</MudText>
+                <MudSpacer />
+                <MudSelect T="AdminProjectStatus" MultiSelectionTextFunc="@((values)=> GetMultiSelectionTextForStatus(values))" @bind-SelectedValues="selectedPaymentStatuses" SelectAll="true" Label="Select Status" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
+                    @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
+                    {
+                        <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudStack>
         }
         <MudStack AlignItems="AlignItems.Start">
             <MudGrid Spacing="6">
@@ -64,24 +64,24 @@
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="4">
                     <MudDatePicker Label="Start Date"
-                                   Variant="Variant.Outlined"
-                                   Required="false"
-                                   FixDay="1"
-                                   DateFormat="MM/yyyy"
-                                   Date="StartDate"
-                                   OverflowBehavior="OverflowBehavior.FlipAlways"
-                                   DateChanged="@(date => OnStartDateChanged(date.Value))"
-                                   Class="mb-1 w-100" />
+                    Variant="Variant.Outlined"
+                    Required="false"
+                    FixDay="1"
+                    DateFormat="MM/yyyy"
+                    Date="StartDate"
+                    OverflowBehavior="OverflowBehavior.FlipAlways"
+                    DateChanged="@(date => OnStartDateChanged(date.Value))"
+                    Class="mb-1 w-100" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="4">
                     <MudDatePicker Label="End Date"
-                                   Variant="Variant.Outlined"
-                                   Required="false"
-                                   FixDay="1"
-                                   DateFormat="MM/yyyy"
-                                   Date="EndDate"
-                                   DateChanged="@(date => OnEndDateChanged(date.Value))"
-                                   Class="w-100" />
+                    Variant="Variant.Outlined"
+                    Required="false"
+                    FixDay="1"
+                    DateFormat="MM/yyyy"
+                    Date="EndDate"
+                    DateChanged="@(date => OnEndDateChanged(date.Value))"
+                    Class="w-100" />
                 </MudItem>
             </MudGrid>
         </MudStack>
@@ -93,60 +93,63 @@
             </MudItem>
             <MudItem sm="8">
                 <MudSelect T="Project" style="width: 100%" MultiSelectionTextFunc="@((values)=> GetMultiSelectionText(SelectedProjectNames))" @bind-SelectedValues="selectedProjects" SelectAll="true" Label="Filter By Projects" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
-                @if (projects != null)
-                {
-                    @foreach (var project in projects)
+                    @if (projects != null)
                     {
-                        <MudSelectItem Value="project">
-                            <div style="display: flex; justify-content: space-between; width: 100%;">
-                            <span>@project.ProjectName</span>
-                            @if(isAdmin && ViewClient == "clients")
-                            {
-                            <span>
-                                <span style="color:#b0dfe8; ">@(Math.Round(project.ClientBillableHours ?? 0,1))h</span>
-                                <span style="color:#74c85f"> @(Math.Round(project.ClientBillableAmount ?? 0, 1))$</span>
-                            </span>
-                            }
-                            else if(isAdmin && ViewClient == "editors"){
-                                <span>
-                                    <span style="color:#b0dfe8">@(Math.Round((project.PrimaryEditorDetails.FinalBillableHours + project.SecondaryEditorDetails.FinalBillableHours),1))h</span>
-                                    <span style="color:#74c85f">
-                                        @(Math.Round((project.PrimaryEditorDetails?.PaymentAmount ?? 0) + (project.SecondaryEditorDetails?.PaymentAmount ?? 0),1))$
-                                    </span>
-                                </span>
+                        @foreach (var project in projects)
+                        {
+                            <MudSelectItem Value="project">
+                                <div style="display: flex; justify-content: space-between; width: 100%;">
+                                    <span>@project.ProjectName</span>
+                                    @if(isAdmin && ViewClient == "clients")
+                                    {
+                                        <span>
+                                            <span style="color:#b0dfe8; ">@(Math.Round(project.ClientBillableHours ?? 0,1))h</span>
+                                            <span style="color:#74c85f"> @(Math.Round(project.ClientBillableAmount ?? 0, 1))$</span>
+                                        </span>
+                                    }
+                                    else if(isAdmin && ViewClient == "editors"){
+                                        <span>
+                                            <span style="color:#b0dfe8">@(Math.Round((project.PrimaryEditorDetails.FinalBillableHours + project.SecondaryEditorDetails.FinalBillableHours),1))h</span>
+                                            <span style="color:#74c85f">
+                                                @(Math.Round((project.PrimaryEditorDetails?.PaymentAmount ?? 0) + (project.SecondaryEditorDetails?.PaymentAmount ?? 0),1))$
+                                            </span>
+                                        </span>
 
-                            }
-                            else{
-                                <span>
-                                    <span style="color:#b0dfe8">
-                                        @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
-                                    project.PrimaryEditorDetails.FinalBillableHours : 0)
-                                    + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
-                                    project.SecondaryEditorDetails.FinalBillableHours : 0))h
-                                    </span>
-                                    <span style="color:#74c85f">
-                                    @((Math.Round((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
-                                    project.PrimaryEditorDetails.PaymentAmount ?? 0m : 0m),1))
-                                    + (Math.Round((project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
-                                    project.SecondaryEditorDetails.PaymentAmount ?? 0m : 0m),1)))$
-                                    </span>
-                                </span>
-                            }
-                            </div>
-                        </MudSelectItem>
+                                    }
+                                    else{
+                                        <span>
+                                            <span style="color:#b0dfe8">
+                                                @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
+                                                project.PrimaryEditorDetails.FinalBillableHours : 0)
+                                                + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                                project.SecondaryEditorDetails.FinalBillableHours : 0))h
+                                            </span>
+                                            <span style="color:#74c85f">
+                                                @((Math.Round((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
+                                            project.PrimaryEditorDetails.PaymentAmount ?? 0m : 0m),1))
+                                            + (Math.Round((project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                            project.SecondaryEditorDetails.PaymentAmount ?? 0m : 0m),1)))$
+                                            </span>
+                                        </span>
+                                    }
+                                </div>
+                            </MudSelectItem>
+                        }
                     }
-                }
                 </MudSelect>
             </MudItem>
         </MudStack>
-        <MudStack Row AlignItems="AlignItems.Center" Class="mt-4">
-            <MudText>Editor Payment Status</MudText>
-            <MudSpacer />
-            <MudRadioGroup @bind-Value="editorPaid">
-                <MudRadio Value="true" Color="Color.Info" Dense="true">Paid</MudRadio>
-                <MudRadio Value="false" Color="Color.Info" Dense="true">Unpaid</MudRadio>
-            </MudRadioGroup>
-        </MudStack>
+        @if (ViewClient == "editors")
+        {
+            <MudStack Row AlignItems="AlignItems.Center" Class="mt-4">
+                <MudText>Editor Payment Status</MudText>
+                <MudSpacer />
+                <MudRadioGroup @bind-Value="editorPaid">
+                    <MudRadio Value="true" Color="Color.Info" Dense="true">Paid</MudRadio>
+                    <MudRadio Value="false" Color="Color.Info" Dense="true">Unpaid</MudRadio>
+                </MudRadioGroup>
+            </MudStack>
+        }
         <MudDivider />
 
         @if (projects != null)
@@ -259,7 +262,7 @@
     private readonly List<string> Months = Enumerable.Range(1, 12)
     .Select(i => new DateTime(DateTime.Now.Year, i, 1).ToString("MMMM"))
     .ToList();
-   
+
     private string _viewClient = string.Empty;
     public string ViewClient
     {
@@ -270,6 +273,7 @@
             {
                 _viewClient = value;
                 selectedUsers = new List<ApplicationUser>(); // Reset selectedUsers when viewClient changes
+                GetProjects(); // Call GetProjects to refresh the project list
             }
         }
     }
@@ -344,7 +348,7 @@
             {
                 query = query.Where(p => selectedUserIds.Contains(p.PrimaryEditorId!) || selectedUserIds.Contains(p.SecondaryEditorId!));
             }
-          
+
         }
         else if (isEditor && (selectedUsers == null || !selectedUsers.Any()))
         {
@@ -375,12 +379,13 @@
         {
             query = query.Where(p => p.WorkingMonth < EndDate.Value);
         }
-
-        query = query.Where(p =>
-            (editorPaid == false ? p.PrimaryEditorDetails.DatePaidEditor == null : p.PrimaryEditorDetails.DatePaidEditor != null) ||
-            (editorPaid == false ? p.SecondaryEditorDetails.DatePaidEditor == null : p.SecondaryEditorDetails.DatePaidEditor != null)
-        );
-
+        if (ViewClient == "editors")
+        {
+            query = query.Where(p =>
+                (editorPaid == false ? p.PrimaryEditorDetails.DatePaidEditor == null : p.PrimaryEditorDetails.DatePaidEditor != null) ||
+                (editorPaid == false ? p.SecondaryEditorDetails.DatePaidEditor == null : p.SecondaryEditorDetails.DatePaidEditor != null)
+            );
+        }
         query = query.Where(p => p.IsArchived == false);
         // Execute the query
         projects = await query.ToListAsync();

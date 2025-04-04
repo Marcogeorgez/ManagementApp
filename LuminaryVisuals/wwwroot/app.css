@@ -1411,6 +1411,7 @@ div.mud-input-control.mud-input-input-control.outlined-dialog-xl-content {
     border-color: var(--mud-palette-success);
     color: var(--mud-palette-success);
     padding: 2px 6px 2px 6px;
+    overflow-wrap: break-word;
 }
 .quick-message:hover {
     background-color: var(--mud-palette-success);
