@@ -305,7 +305,7 @@
         {
             <div class="floating-chat-container">
 
-                <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
+                <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject" OnOpenProjectDialog="OpenDescriptionDialog"
                 UserId="@_currentUserId"
                 IsAdminView="@isAdminView"
                 IsClientView="@_isClientView" isEditorView="@_isEditorView"
@@ -319,6 +319,7 @@
 </MudMainContent>
 
 @code {
+    
     private bool FilterNotes(UserRoleViewModel User, string searchText)
     {
         if (userNotesDict.ContainsKey(User.UserId))
@@ -881,6 +882,19 @@
         {
             await chatService.EnsureAdminChat(user.UserId);
         }
+    }
+
+    private void OpenDescriptionDialog(Project context)
+    {
+        var parameters = new DialogParameters
+        {
+                { "context", context },
+                { "currentRole", _currentRole},
+                {"currentUserId", _currentUserId }
+        };
+        var options = new DialogOptions { };
+        DialogService.ShowAsync<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
+
     }
 }
 <style>
