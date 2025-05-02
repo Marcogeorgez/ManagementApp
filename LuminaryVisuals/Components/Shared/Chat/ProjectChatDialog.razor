@@ -580,13 +580,14 @@
             await InvokeAsync(StateHasChanged);
 
             // Only scroll to bottom on initial load, not when paginating
-            if (initial)
+            if (initial && chatContainerRef != null)
             {
                 await Task.Delay(100);
                 await JSRuntime.InvokeVoidAsync("scrollToBottom");
             }
         }
     }
+
     [JSInvokable]
     public async Task OnInitialScrollComplete()
     {
@@ -803,7 +804,7 @@
 
         return DialogResult.Ok(true); 
     }
-    private ElementReference chatContainerRef;
+    private ElementReference? chatContainerRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -897,10 +898,7 @@
     window.getTimezoneOffset = function () {
         return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
     };
-    window.getScrollTop = function (selector) {
-        const element = document.querySelector(selector);
-        return element ? element.scrollTop : 0;
-    };
+
     window.setupInitialScrollListener = function (dotNetHelper) {
         const element = document.querySelector('.chat-content');
         if (!element) return;
@@ -928,24 +926,6 @@
         const element = document.querySelector(selector);
         if (!element) return;
         element.scrollTop = element.scrollHeight - element.clientHeight - additionalHeight;
-    };
-    window.getElementWithMessageIndexInView = function (selector) {
-        // Adjust selector to match chat-messages and message-container within it
-        const elements = document.querySelectorAll(`${selector} .message-container`);
-        let inView = null;
-
-        elements.forEach(element => {
-            const rect = element.getBoundingClientRect();
-
-            // Check if the element is partially visible in the viewport
-            if (rect.top <= window.innerHeight && rect.bottom >= 0) {
-                inView = element;
-            }
-        });
-
-        // Get the value of --message-index from the element in view
-        const messageIndex = inView ? inView.style.getPropertyValue('--message-index') : null;
-        return messageIndex;
     };
 
     window.initializeFocusTrap = (element) => {
@@ -980,11 +960,14 @@
         });
     };
         window.scrollToBottom = function () {
-        var chatContent = document.querySelector(".chat-content");
+            setTimeout(() => {
+                const chatContent = document.querySelector(".chat-content");
         if (chatContent) {
             chatContent.scrollTop = chatContent.scrollHeight;
         }
+            }, 0);
     };
+
         window.getScrollPercentage = function(selector) {
         const element = document.querySelector(selector);
         if (!element) return 1; // Default to bottom
