@@ -11,7 +11,7 @@
             <ToolbarContent>
 
                 <MudStack Row="true" style="align-items:center;">
-                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2"  Variant="Variant.Outlined">
+                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2"  Variant="Variant.Outlined" OpenChanged="ResetSelected">
                         <MudAutocomplete T="Project" Label="Select Project"
                                          @bind-Value="selectedProject"
                                          SearchFunc="@Search1"
@@ -129,6 +129,10 @@
     bool isAdmin;
     DateRange date;
     string _statusFilterString;
+    void ResetSelected()
+    {
+        selectedProject = null;
+    }
     protected override async Task OnInitializedAsync()
     {
         _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
