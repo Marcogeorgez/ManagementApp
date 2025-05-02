@@ -459,9 +459,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             await _loadingSemaphore.WaitAsync();
             if (_isAdminView)
             {
-                projects = (await projectServices.GetProjectsAsync(_isArchived)).ToList();
-                Editors = (await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
-                Clients = (await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
+                projects = await projectServices.GetProjectsAsync(_isArchived));
+                Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
 
             }
             // for client view which will fetch his own projects only)
@@ -470,9 +470,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             // this is for the admin to see all the projects but from the client view
             else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
             {
-                projects = (await projectServices.GetProjectsAsync(_isArchived)).ToList();
-                Editors = (await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
-                Clients = (await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
+                projects = await projectServices.GetProjectsAsync(_isArchived);
+                Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
             }
             else if (_isEditorView && isAdminView == false)
                 await LoadProjectsForEditors();

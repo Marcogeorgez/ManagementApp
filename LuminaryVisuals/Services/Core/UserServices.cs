@@ -2,6 +2,7 @@
 using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
 using static LuminaryVisuals.Services.Core.UserRoleViewModel;
 
@@ -13,13 +14,16 @@ public class UserServices
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ILogger<UserServices> _logger;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+    private readonly IServiceScopeFactory serviceScopeFactory;
+
     public UserServices(
         UserManager<ApplicationUser> userManager,
-        IDbContextFactory<ApplicationDbContext> context,
+        IDbContextFactory<ApplicationDbContext> context, IServiceScopeFactory _serviceScopeFactory,
         RoleManager<IdentityRole> roleManager,
         ILogger<UserServices> logger)
     {
         _contextFactory = context;
+        serviceScopeFactory = _serviceScopeFactory;
         _userManager = userManager;
         _roleManager = roleManager;
         _logger = logger;
@@ -287,23 +291,27 @@ public class UserServices
         await _userManagerSemaphore.WaitAsync();
         try
         {
-            // Get the IDs first, outside of the DbContext usage
-            var editors = await _userManager.GetUsersInRoleAsync("Editor");
-            var editorIds = editors.Select(e => e.Id).ToList(); // Materialize the list
-
-            using (var context = _contextFactory.CreateDbContext())
+            using (var scope = serviceScopeFactory.CreateScope())
             {
-                var result = await context.Users
-                    .Where(u => editorIds.Contains(u.Id))
-                    .Select(u => new UserProjectViewModel
-                    {
-                        UserId = u.Id,
-                        UserName = u.UserName,
-                        HourlyRate = u.HourlyRate,
-                        UserRole = "Editor",
-                    })
-                    .ToListAsync();
-                return result;
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                // Get the IDs first, outside of the DbContext usage
+                var editors = await userManager.GetUsersInRoleAsync("Editor");
+                var editorIds = editors.Select(e => e.Id).ToList(); // Materialize the list
+
+                using (var context = _contextFactory.CreateDbContext())
+                {
+                    var result = await context.Users
+                        .Where(u => editorIds.Contains(u.Id))
+                        .Select(u => new UserProjectViewModel
+                        {
+                            UserId = u.Id,
+                            UserName = u.UserName,
+                            HourlyRate = u.HourlyRate,
+                            UserRole = "Editor",
+                        })
+                        .ToListAsync();
+                    return result;
+                }
             }
         }
         finally
@@ -317,23 +325,28 @@ public class UserServices
         await _userManagerSemaphore.WaitAsync();
         try
         {
-            // Get the IDs first, outside of the DbContext usage
-            var clients = await _userManager.GetUsersInRoleAsync("Client");
-            var clientIds = clients.Select(c => c.Id).ToList(); // Materialize the list
-
-            using (var context = _contextFactory.CreateDbContext())
+            using (var scope = serviceScopeFactory.CreateScope())
             {
-                var result = await context.Users
-                    .Where(u => clientIds.Contains(u.Id))
-                    .Select(u => new UserProjectViewModel
-                    {
-                        UserId = u.Id,
-                        UserName = u.UserName,
-                        HourlyRate = u.HourlyRate,
-                        UserRole = "Client",
-                    })
-                    .ToListAsync();
-                return result;
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+                // Get the IDs first, outside of the DbContext usage
+                var clients = await userManager.GetUsersInRoleAsync("Client");
+                var clientIds = clients.Select(c => c.Id).ToList(); // Materialize the list
+
+                using (var context = _contextFactory.CreateDbContext())
+                {
+                    var result = await context.Users
+                        .Where(u => clientIds.Contains(u.Id))
+                        .Select(u => new UserProjectViewModel
+                        {
+                            UserId = u.Id,
+                            UserName = u.UserName,
+                            HourlyRate = u.HourlyRate,
+                            UserRole = "Client",
+                        })
+                        .ToListAsync();
+                    return result;
+                }
             }
         }
         finally
