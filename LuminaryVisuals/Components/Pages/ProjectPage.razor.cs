@@ -1643,13 +1643,13 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         try
         {
-            if (!_isAdminView)
+            if (!_isAdminView && !_isEditorView)
                 return;
 
             var parameters = new DialogParameters
-        {
-            { "WorkingMonth", project.WorkingMonth }
-        };
+            {
+                { "WorkingMonth", project.WorkingMonth }
+            };
 
             var dialog = await DialogService.ShowAsync<WorkingMonthDialog>("", parameters);
             var result = await dialog.Result;
@@ -1695,6 +1695,11 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                         return;
                     }
                 }
+                if(project.Status == ProjectStatus.Working)
+                {
+                    project.WorkingMonth = DateTime.Today;
+                }
+
                 project = await confirmProjectStatusDelivered(project, beforeModification.Status);
                 await UpdateProjectAsync(project);
                 Snackbar.Add("Saved Successfully", Severity.Success);

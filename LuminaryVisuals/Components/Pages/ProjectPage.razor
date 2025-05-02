@@ -551,13 +551,15 @@
                                 CellStyle="text-align:center;" Groupable="true" Editable=false SortBy="@(x => x.WorkingMonth)">
                     <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" 
-                            Class=@($"outlined-dialog-md-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
-                            @onclick="@( _isAdminView ? (() => OpenWorkingMonthDialog(context.Item)) : null )"
+                            Class=@($"outlined-dialog-md-content grey-border {( _isAdminView || _isEditorView ? "cursor-pointer" : "" )}")
+                            @onclick="@( _isAdminView || _isEditorView 
+                                ? EventCallback.Factory.Create<MouseEventArgs>(this, () => OpenWorkingMonthDialog(context.Item)) 
+                                : EventCallback.Factory.Create<MouseEventArgs>(this, () => Task.CompletedTask) )"
                             ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End">
                             </MudTextField>
                         </CellTemplate>
                         <EditTemplate Context="context">
-                            @if(@_isAdminView){
+                            @if(_isAdminView || _isEditorView){
                                 <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
                                 DateFormat="MM/yyyy" Date="@context.Item.WorkingMonth" DateChanged="@(date => context.Item.WorkingMonth = date)" />
                             }

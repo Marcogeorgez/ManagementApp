@@ -16,7 +16,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public DateTime WorkingMonth { get; set; }
 
     private void Submit()
