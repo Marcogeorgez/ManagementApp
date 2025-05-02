@@ -127,6 +127,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Console.WriteLine("currentUser is null");
             return;
         }
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+
 
         foreach (var column in _availableColumns)
         {
@@ -137,7 +139,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             _currentRole = "Admin";
             _isAdminView = true;
             isAdminView = true;
-            await GetColumnsPresetPreferences();
 
         }
         else if (currentUser.IsInRole("Editor"))
@@ -153,6 +154,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             _isClientView = true;
             _isAdminView = false;
         }
+        await GetColumnsPresetPreferences();
         CircuitId = Guid.NewGuid().ToString();
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
 
@@ -510,12 +512,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 8;
 
         var dialogParameters = new DialogParameters
-    {
-        { "WeeksToDueDateDefault", weeksToDueDateDefault },
-        { "_isClientView", _isClientView},
-        { "Editors", Editors},
-        { "Clients", Clients}
-    };
+        {
+            { "WeeksToDueDateDefault", weeksToDueDateDefault },
+            { "_isClientView", _isClientView},
+            { "Editors", Editors},
+            { "Clients", Clients}
+        };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Add New Project", dialogParameters, options);
         var result = await dialog.Result;
         if (!result!.Canceled)
