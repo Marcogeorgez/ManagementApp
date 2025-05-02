@@ -1,13 +1,9 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Events;
 using LuminaryVisuals.Services.Mail;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 public class ChatService
 {

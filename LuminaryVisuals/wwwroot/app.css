@@ -468,6 +468,7 @@ th.mud-table-cell.sticky-left:hover {
 }
 .mud-layout {
     z-index: 1;
+    overflow-x: clip;
 }
 
 .mud-navmenu {
