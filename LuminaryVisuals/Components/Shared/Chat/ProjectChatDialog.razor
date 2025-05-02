@@ -678,29 +678,10 @@
         {
             return timestamp.DayOfWeek.ToString(); // Display the day of the week for messages within the past week
         }
-        else if (daysDifference <= 14)
-        {
-            return "Last week";
-        }
-        else if (daysDifference <= 21)
-        {
-            return "2 weeks ago";
-        }
-        else if (daysDifference <= 28)
-        {
-            return "3 weeks ago";
-        }
         else if (timestamp.Year == today.Year)
         {
-            if (timestamp.Month == today.Month)
-            {
-                return $"Earlier this month";
-            }
-            else
-            {
                 return timestamp.ToString("MMMM dd"); // Display month and day if it is in a different month but same year
             }
-        }
         else
         {
             return timestamp.ToString("MMMM dd, yyyy"); // Display full date for messages from a different year
