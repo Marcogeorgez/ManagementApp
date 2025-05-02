@@ -682,7 +682,7 @@
         else if (timestamp.Year == today.Year)
         {
                 return timestamp.ToString("MMMM dd"); // Display month and day if it is in a different month but same year
-            }
+        }
         else
         {
             return timestamp.ToString("MMMM dd, yyyy"); // Display full date for messages from a different year
@@ -962,11 +962,11 @@
         window.scrollToBottom = function () {
             setTimeout(() => {
                 const chatContent = document.querySelector(".chat-content");
-        if (chatContent) {
-            chatContent.scrollTop = chatContent.scrollHeight;
-        }
+                if (chatContent) {
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                }
             }, 0);
-    };
+        };
 
         window.getScrollPercentage = function(selector) {
         const element = document.querySelector(selector);

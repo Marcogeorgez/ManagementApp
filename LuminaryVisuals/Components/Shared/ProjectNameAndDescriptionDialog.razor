@@ -116,29 +116,29 @@
                                     foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
                                     {
                                         <MudExpansionPanels MultiExpansion=false Elevation="0">
-                                        <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
-                                            <TitleContent>
-                                                <div class="d-flex align-center">
-                                                    @if (revision.isCompleted)
-                                                    {
+                                            <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
+                                                <TitleContent>
+                                                    <div class="d-flex align-center">
+                                                        @if (revision.isCompleted)
+                                                        {
 
-                                                        <span style="font-weight:bold">
-                                                            <MudChip T="int" Variant="Variant.Outlined"
-                                                            Color="Color.Success"
-                                                            Size="Size.Medium">
-                                                                Completed
-                                                            </MudChip>
-                                                        </span>
-                                                    }
-                                                    <span class="ml-2">Revision Date: @revision.RevisionDate.ToString("MM-dd-yyyy")</span>
-                                                </div>
-                                            </TitleContent>
-                                            <ChildContent>
-                                                <div class="allow-border">
-                                                <MudHtmlViewer  Html="@revision.Content" />
-                                                </div>
-                                            </ChildContent>
-                                        </MudExpansionPanel>
+                                                            <span style="font-weight:bold">
+                                                                <MudChip T="int" Variant="Variant.Outlined"
+                                                                Color="Color.Success"
+                                                                Size="Size.Medium">
+                                                                    Completed
+                                                                </MudChip>
+                                                            </span>
+                                                        }
+                                                        <span class="ml-2">Revision Date: @revision.RevisionDate.ToString("MM-dd-yyyy")</span>
+                                                    </div>
+                                                </TitleContent>
+                                                <ChildContent>
+                                                    <div class="allow-border">
+                                                        <MudHtmlViewer  Html="@revision.Content" />
+                                                    </div>
+                                                </ChildContent>
+                                            </MudExpansionPanel>
                                         </MudExpansionPanels>
                                     }
                                 }
@@ -318,6 +318,7 @@ The Bride was married like I said before, so this wedding was quite special beca
     [Parameter] public Project context { get; set; }
     [Parameter] public string currentRole { get; set; }
     [Parameter] public EventCallback<Project> modifiedProject { get; set; }
+    [Parameter] public string currentUserId { get; set; }
     private string projectTitle;
     bool isAdmin = false;
     bool isClient = false;
@@ -395,12 +396,22 @@ The Bride was married like I said before, so this wedding was quite special beca
             return;
         }
         // Remove revisions with empty content
-        context.Revisions = context.Revisions.Where(r => !string.IsNullOrWhiteSpace(r.Content)).ToList();
+        if (context.Revisions != null)
+        {
+            context.Revisions = context.Revisions
+                .Where(r => r != null && string.IsNullOrWhiteSpace(r.Content))
+                .ToList();
+        }
 
-        await modifiedProject.InvokeAsync(context); // Pass the modified project back
+        await UpdateProjectAsync(context);
         Snackbar.Add($"Successfully Saved.", Severity.Success);
     }
+    [Inject] private ProjectService projectServices { get; set; }
+    private async Task UpdateProjectAsync(Project project)
+    {
+        await projectServices.UpdateProjectAsync(project, currentUserId);
 
+    }
     private void Cancel()
     {
         Dialog.Close(DialogResult.Cancel());
