@@ -27,7 +27,6 @@
 } *@
 
 
-
 <MudMainContent class="main-content-sm" Style="height: 100%; padding-top:25px; padding-left:25px; padding-right:25px;">
     
         <LoadingIndicator IsVisible="@_loadingIndicator" />
@@ -548,13 +547,14 @@
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("WorkingMonth"))
                 {
-                    <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content" Hidden="@(GetColumnVisibility("WorkingMonth"))"
-                    CellStyle="text-align:center;" Groupable="true" Editable=false>
-                        <CellTemplate>
+                <PropertyColumn Property="x => x.FormattedWorkingMonth" Title="Month" Hideable="true" Required=false CellClass="outlined-dialog-md-content" Hidden="@(GetColumnVisibility("WorkingMonth"))"
+                                CellStyle="text-align:center;" Groupable="true" Editable=false SortBy="@(x => x.WorkingMonth)">
+                    <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.FormattedWorkingMonth" 
                             Class=@($"outlined-dialog-md-content grey-border {( _isAdminView ? "cursor-pointer" : "" )}")
                             @onclick="@( _isAdminView ? (() => OpenWorkingMonthDialog(context.Item)) : null )"
-                            ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End"/>
+                            ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End">
+                            </MudTextField>
                         </CellTemplate>
                         <EditTemplate Context="context">
                             @if(@_isAdminView){
@@ -1174,7 +1174,6 @@
                 IsClientView="@_isClientView" isEditorView="@_isEditorView"/> </div>
         }
 </MudMainContent>
-
 
 <script>
         window.copyToClipboard = (text) => {
