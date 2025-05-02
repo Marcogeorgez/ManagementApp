@@ -432,7 +432,10 @@ public class ProjectService
                 .Include(p => p.SecondaryEditorDetails)
                 .Include(p => p.Client)
                 .FirstOrDefaultAsync(p => p.ProjectId == calendarItem.ProjectId);
-
+            if(_project == null)
+            {
+                return;
+            }
             _project.StartDate = calendarItem.Start;
             _project.EndDate = calendarItem.End;
 

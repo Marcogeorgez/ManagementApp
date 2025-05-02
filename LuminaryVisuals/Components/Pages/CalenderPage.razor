@@ -98,7 +98,7 @@
     </MudPaper>
 </MudMainContent>
 @code {
-    [Inject] private ProjectService projectService { get; set;}
+    [Inject] private ProjectService projectService { get; set; } = null!;
     private List<ExtendedCalendarItem> _events = new();
     private List<Project>? allProjectsInDateRange = new();
     private List<Project>? allProjects = new();
@@ -117,18 +117,17 @@
         public int ProjectId = 0;
     }
     [CascadingParameter] public ClaimsPrincipal? currentUser { get; set; }
-    [Inject] private BreakpointService BreakpointService { get; set; }
-
+    [Inject] private BreakpointService BreakpointService { get; set; } = null!;
     public void Dispose()
     {
         BreakpointService.OnChange -= StateHasChanged;
     }
 
-    string _currentUserId;
-    string _userName;
+    string _currentUserId = null!;
+    string? _userName;
     bool isAdmin;
-    DateRange date;
-    string _statusFilterString;
+    DateRange? date;
+    string? _statusFilterString;
     void ResetSelected()
     {
         selectedProject = null;
@@ -168,6 +167,8 @@
     {
         try
         {
+            if (allProjectsInDateRange == null)
+                return;
             filteredProjects = allProjectsInDateRange.ToList();
             if (statusFilter != null)
             {
@@ -244,52 +245,61 @@
         }
 
     }
-    private void OnStatusFilterChanged(string status)
+    private async void OnStatusFilterChanged(string status)
     {
         _statusFilterString = status;
         statusFilter = (ProjectStatus)Enum.Parse(typeof(ProjectStatus), _statusFilterString);
-        ApplyFilters();
+        await ApplyFilters();
         StateHasChanged();
     }
 
-    private void OnEditorFilterChanged(string editor)
+    private async void OnEditorFilterChanged(string editor)
     {
         editorFilter = editor;
-        ApplyFilters();
+        await ApplyFilters();
         StateHasChanged();
     }
 
     // Clear filters
-    private void ClearFilters()
+    private async void ClearFilters()
     {
         _statusFilterString = "";
         statusFilter = null;
         editorFilter = null;
         showCameraRoll = true;
         showFlag = true;
-        ApplyFilters();
+        await ApplyFilters();
         StateHasChanged();
     }
     private IEnumerable<ProjectStatus> GetUniqueStatuses()
     {
-        return allProjectsInDateRange.Select(p => p.Status).Distinct();
+        IEnumerable<ProjectStatus> projects = new List<ProjectStatus>();
+        if (allProjectsInDateRange != null)
+        {
+            projects = allProjectsInDateRange.Select(p => p.Status).Distinct();
+        }
+        return projects;
     }
 
     private IEnumerable<string> GetUniqueEditors()
     {
+        if (allProjectsInDateRange == null)
+            return Enumerable.Empty<string>();
+
         var primaryEditors = allProjectsInDateRange
-            .Where(p => p.PrimaryEditor != null)
-            .Select(p => p.PrimaryEditor!.UserName);
+            .Where(p => p.PrimaryEditor?.UserName != null)
+            .Select(p => p.PrimaryEditor!.UserName!);
 
         var secondaryEditors = allProjectsInDateRange
-            .Where(p => p.SecondaryEditor != null)
-            .Select(p => p.SecondaryEditor!.UserName);
+            .Where(p => p.SecondaryEditor?.UserName != null)
+            .Select(p => p.SecondaryEditor!.UserName!);
 
         return primaryEditors
             .Concat(secondaryEditors)
-            .Where(name => !string.IsNullOrEmpty(name))
+            .Where(name => !string.IsNullOrWhiteSpace(name))
             .Distinct();
     }
+
     private async Task DateChanged(CalendarItem changedItem)
     {
 
@@ -308,8 +318,8 @@
         await Task.CompletedTask;
     }
     [Inject]
-    private IDialogService DialogService { get; set; }
-    [Inject] UserManager<ApplicationUser> _userManager { get; set; }
+    private IDialogService DialogService { get; set; } = default!;
+    [Inject] UserManager<ApplicationUser> _userManager { get; set; } = default!;
     public List<ApplicationUser>? Editors { get; set; }
 
     private async Task ShowCalenderProject(CalendarItem item)
@@ -337,6 +347,19 @@
                     extendedItem.End = _project.EndDate;
                     extendedItem.ProjectId = _project.ProjectId;
                 }
+                if (_project.StartDate == null && _project.EndDate == null)
+                {
+                    var deletedProject = allProjectsInDateRange?.FirstOrDefault(p => p.ProjectId == _project.ProjectId);
+                    if (deletedProject != null)
+                    {
+                        allProjectsInDateRange?.Remove(deletedProject);
+                        var itemToRemove = _events?.FirstOrDefault(e => e.ProjectId == deletedProject.ProjectId);
+                        if (itemToRemove != null)
+                        {
+                            _events?.Remove(itemToRemove);
+                        }
+                    }
+                }
                 if(isAdmin && project != null)
                 {
                     await projectService.UpdateProjectAsync(project ,_currentUserId);
@@ -351,20 +374,20 @@
     }
 
 
-    [Inject] IJSRuntime JS { get; set; }
-    private MudCalendar _calender;
+    [Inject] IJSRuntime JS { get; set; } = null!;
+    private MudCalendar? _calender;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
 
-            _calender.Refresh();
+            _calender?.Refresh();
             await JS.InvokeVoidAsync("updateDraggable");
 
 
         }
     }
-    [Inject] ISnackbar Snackbar { get; set; }
+    [Inject] ISnackbar Snackbar { get; set; } = default!;
     private async Task Confirm()
     {
         if (selectedProject != null )
@@ -372,7 +395,7 @@
             if(selectedProject.Range?.Start != null && selectedProject.Range?.End != null)
             {
                 await projectService.UpdateProjectAsync(selectedProject, _currentUserId);
-                var projectToUpdate = allProjectsInDateRange.FirstOrDefault(p => p.ProjectId == selectedProject.ProjectId);
+                var projectToUpdate = allProjectsInDateRange?.FirstOrDefault(p => p.ProjectId == selectedProject.ProjectId);
                 if (projectToUpdate != null)
                 {
                     projectToUpdate.StartDate = selectedProject.StartDate;
@@ -382,7 +405,7 @@
                 }
                 else
                 {
-                    allProjectsInDateRange.Add(selectedProject);
+                    allProjectsInDateRange?.Add(selectedProject);
                 }
                 Snackbar.Add("It have been saved successfully.", Severity.Success);
                 
@@ -395,17 +418,17 @@
             }
         }
     }
-    private async Task<IEnumerable<Project>> Search1(string value, CancellationToken token)
+    private Task<IEnumerable<Project>> Search1(string value, CancellationToken token)
     {
         if (allProjects == null)
-            return new List<Project>();
+            return Task.FromResult(Enumerable.Empty<Project>());
 
         if (string.IsNullOrWhiteSpace(value))
-            return allProjects.ToList();  // Return all projects when search is empty
+            return Task.FromResult(allProjects.ToList().AsEnumerable());  // Return all projects when search is empty
 
-        return allProjects.Where(x =>
+        return Task.FromResult(allProjects.Where(x =>
             x.ProjectName?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false
-        );
+        ));
     }
     private void Cancel()
     {
