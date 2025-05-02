@@ -459,7 +459,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             await _loadingSemaphore.WaitAsync();
             if (_isAdminView)
             {
-                projects = await projectServices.GetProjectsAsync(_isArchived));
+                projects = await projectServices.GetProjectsAsync(_isArchived);
                 Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
                 Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
 

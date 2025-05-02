@@ -78,7 +78,6 @@ public class ProjectService
                     : "N/A";
             }
 
-            await context.SaveChangesAsync();
             return projects;
         }
     }
