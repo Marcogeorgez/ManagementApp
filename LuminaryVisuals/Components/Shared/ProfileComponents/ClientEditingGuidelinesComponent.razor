@@ -54,15 +54,17 @@
             </MudExpansionPanel>
             <MudExpansionPanel Text="Highlights Film">
                 <!-- Video Structure -->
-                    <MudText Typo="Typo.h6">
-                        How you like to structure the videos:
-                    </MudText>
-                    <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Row=true>
-                        @foreach (var structure in VideoStructureOptions)
-                        {
-                            <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-                        }
-                    </MudStack>
+                <MudText Typo="Typo.h6">
+                    How you like to structure the videos:
+                </MudText>
+                <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
+                <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Row=true>
+                    @foreach (var structure in VideoStructureOptions)
+                    {
+                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                    }
+                </MudStack>
+                </MudRadioGroup>
 
                 <!-- Transitions Checklist -->
                 <MudText Typo="Typo.h6" Class="mt-3">
@@ -328,7 +330,7 @@
 </MudContainer>
 @code {
     private MudForm form;
-    private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };
+    private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid" };
     private static readonly string[] Options = new[] { "Yes", "No", "Few" };
     private static readonly string[] speeches = new[] { "No, music only", "Only when they have said something really cool",
     "Yes, a few from each moment of the day", "Yes put great emphasis on them,built the film around speeches of the day" };
@@ -342,13 +344,13 @@
     private ClientEditingGuidelines? preferences = new();
     private ClientEditingGuidelines? originalPreferences = new();
 
-    [Inject] PayoneerSettingsService payoneerSettingsService { get; set; }
+    [Inject] PayoneerSettingsService payoneerSettingsService { get; set; } = default!;
     private PayoneerSettings? payoneerSettings = new();
 
     [Parameter] public ClaimsPrincipal? currentUser { get; set; }
     private string? _currentUserId; // current user id to check if he is an admin/client
 
-    [Parameter] public string userId { get; set; } // userId which is the preferences for
+    [Parameter] public string userId { get; set; } = default!;// userId which is the preferences for
 
     protected override async Task OnInitializedAsync()
     {
