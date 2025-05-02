@@ -127,8 +127,6 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             Console.WriteLine("currentUser is null");
             return;
         }
-        _currentUserId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-        Console.WriteLine($"logging for debugging: Current user is: {_currentUserId}");
 
         foreach (var column in _availableColumns)
         {
@@ -461,9 +459,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             await _loadingSemaphore.WaitAsync();
             if (_isAdminView)
             {
-                projects = await projectServices.GetProjectsAsync(_isArchived);
-                Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
-                Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                projects = (await projectServices.GetProjectsAsync(_isArchived)).ToList();
+                Editors = (await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
+                Clients = (await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
 
             }
             // for client view which will fetch his own projects only)
@@ -472,9 +470,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             // this is for the admin to see all the projects but from the client view
             else if (_isClientView && isAdminView == true || _isEditorView && isAdminView == true)
             {
-                projects = await projectServices.GetProjectsAsync(_isArchived);
-                Editors = await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
-                Clients = await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>();
+                projects = (await projectServices.GetProjectsAsync(_isArchived)).ToList();
+                Editors = (await UserServices.GetEditorsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
+                Clients = (await UserServices.GetClientsWithProjectsAsync() ?? new List<UserRoleViewModel.UserProjectViewModel>()).ToList();
             }
             else if (_isEditorView && isAdminView == false)
                 await LoadProjectsForEditors();
@@ -743,29 +741,13 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         LoadingService.ShowLoading();
         var parameters = new DialogParameters
-    {
-            { "context", context },
-            { "currentRole", _currentRole},
-            { "modifiedProject", EventCallback.Factory.Create<Project>(this, async (modifiedProject) =>
-                {
-                    await updateProject(modifiedProject);
-                })
-            }
-    };
+        {
+                { "context", context },
+                { "currentRole", _currentRole},
+                {"currentUserId", _currentUserId }
+        };
         var options = new DialogOptions { };
         DialogService.ShowAsync<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
-        LoadingService.HideLoading();
-
-    }
-
-    private async Task updateProject(Project modifiedProject)
-    {
-        LoadingService.ShowLoading();
-
-        if (modifiedProject is Project project)
-        {
-            await UpdateProjectAsync(project);
-        }
         LoadingService.HideLoading();
 
     }
