@@ -52,15 +52,15 @@
                         </MudSelect>
                     }
                     <MudIconButton Icon="@Icons.Material.Rounded.Flag"
-                               OnClick="toggleFlag" Size="Size.Medium"
-                               Variant="Variant.Filled"
-                               Color="@(showFlag ? Color.Primary : Color.Default)">
+                    OnClick="toggleFlag" Size="Size.Medium"
+                    Variant="Variant.Filled"
+                    Color="@(showFlag ? Color.Primary : Color.Default)">
                     </MudIconButton>
 
                     <MudIconButton Icon="@Icons.Material.Filled.CameraRoll"
-                               OnClick="toggleCameraRoll"
-                                   Variant="Variant.Filled" Size="Size.Medium"
-                               Color="@(showCameraRoll ? Color.Primary : Color.Default)">
+                    OnClick="toggleCameraRoll"
+                    Variant="Variant.Filled" Size="Size.Medium"
+                    Color="@(showCameraRoll ? Color.Primary : Color.Default)">
                     </MudIconButton>
                     <MudButton OnClick="ClearFilters" Class="mx-1 my-2" Variant="Variant.Outlined">Clear Filters</MudButton>
                 </MudStack>
@@ -374,8 +374,14 @@
                     projectToUpdate.StartDate = selectedProject.StartDate;
                     projectToUpdate.EndDate = selectedProject.EndDate;
                     projectToUpdate.Range = selectedProject.Range;
+                    
+                }
+                else
+                {
+                    allProjectsInDateRange.Add(selectedProject);
                 }
                 Snackbar.Add("It have been saved successfully.", Severity.Success);
+                
                 await ApplyFilters();
             }
             else
