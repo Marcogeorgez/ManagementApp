@@ -10,6 +10,7 @@ using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Configuration;
 using LuminaryVisuals.Services.Core;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Helpers;
 using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Scheduled;
 using LuminaryVisuals.Services.Shared;
@@ -265,8 +266,13 @@ builder.Services.AddServerSideBlazor()
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
 var environment = builder.Environment;
-    // Get the Sentry DSN from environment variables or configuration
-var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN");
+// Get the Sentry DSN from environment variables or configuration
+var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN") ?? builder.Configuration.GetConnectionString("SentryDSN");
+Console.WriteLine("1st");
+Console.WriteLine(Environment.GetEnvironmentVariable("SentryDSN"));
+Console.WriteLine("2nd");
+Console.WriteLine(builder.Configuration.GetConnectionString("SentryDSN"));
+
 if (!string.IsNullOrEmpty(sentryDSN))
 {
     builder.WebHost.UseSentry(options =>
@@ -276,14 +282,15 @@ if (!string.IsNullOrEmpty(sentryDSN))
         options.StackTraceMode = StackTraceMode.Enhanced;
         options.TracesSampleRate = 1.0;
         options.ProfilesSampleRate = 1.0f;
-        options.Release = "luminary-visuals@1.1.2";
+        options.Release = "luminary-visuals@1.1.3dev";
+        options.AttachStacktrace = true;
+        options.SendDefaultPii = true;
     });
 }
 else
 {
     Console.WriteLine("Sentry DSN not found in environment variables. Sentry will not be configured.");
 }
-
 
 var cloudflareSettings = new CloudflareR2Settings(
     AccountId: Environment.GetEnvironmentVariable("CLOUDFLARE_ACCOUNT_ID")!,
@@ -340,6 +347,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<PushNotificationService>();
 builder.Services.AddControllers();
 builder.Services.AddHostedService<MessageReminderService>();
+builder.Services.AddScoped<BrowserInfoService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -389,6 +397,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
+
 app.UseStaticFiles(); // For now till Microsoft fix the issue with serving videos with MapStaticAssests
 app.MapStaticAssets();
 app.UseRouting();

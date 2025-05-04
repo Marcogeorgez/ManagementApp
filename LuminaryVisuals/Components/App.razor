@@ -35,12 +35,24 @@
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js?v=8.6.0" asp-append-version="true"></script>
     <script src="_content/Tizzani.MudBlazor.HtmlEditor/quill-blot-formatter.min.js?v=1.1" asp-append-version="true"></script>
-    <script src="https://js.sentry-cdn.com/1e27a90b131f833f9329dac90170d0f2.min.js"
-    crossorigin="anonymous"></script>
+
+    <script src="https://js-de.sentry-cdn.com/1e27a90b131f833f9329dac90170d0f2.min.js"
+            crossorigin="anonymous"></script>
     <script type="text/javascript" src="functions.js?verison=1.2" asp-append-version="true"></script>
     <script src="https://rawcdn.githack.com/nextapps-de/spotlight/0.7.8/dist/spotlight.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script type="module" src="_content/Heron.MudCalendar/Heron.MudCalendar.min.js"></script>
+    <script>
+        window.addEventListener("error", function (e) {
+            console.error("JS error:", e.message, e.filename, e.lineno);
+        });
+        Blazor.start({
+            errorHandler: function (err, stack) {
+                console.error("Circuit error", err, stack);
+                alert("Blazor failed: " + err.message);
+            }
+        });
+    </script>
 </body>
 
 </html>
