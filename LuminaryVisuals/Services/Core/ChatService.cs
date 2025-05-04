@@ -308,15 +308,16 @@ public class ChatService
             var messagesData = await context.Messages
                 .Where(m =>
                     ( m.Chat.ProjectId.HasValue && positiveProjectIds.Contains(m.Chat.ProjectId.Value) ) ||
-                    ( negativeChatIds.Contains(m.ChatId) )
+                    ( negativeChatIds.Contains(m.ChatId) ) &&
+                    ( m.UserId != userId)
                 )
                 .GroupBy(m => m.Chat.ProjectId.HasValue ? m.Chat.ProjectId.Value : -m.ChatId)
                 .Select(g => new
                 {
                     ProjectId = g.Key,
                     UnreadCount = isAdmin
-                    ? g.Count(m => !readMessageIds.Contains(m.MessageId))
-                    : g.Count(m => !readMessageIds.Contains(m.MessageId) && m.IsApproved),
+                    ? g.Count(m => !readMessageIds.Contains(m.MessageId) && m.UserId != userId)
+                    : g.Count(m => !readMessageIds.Contains(m.MessageId) && m.IsApproved && m.UserId != userId),
                     LastMessageTime = g.Max(m => m.Timestamp), // Get max timestamp directly in SQL
                     UnapprovedCount = g.Count(m => !m.IsApproved && !m.IsDeleted)
                 })
@@ -356,7 +357,7 @@ public class ChatService
 
             // Get all read message IDs for the user
             var readMessageIds = await context.ChatReadStatus
-                .Where(crs => crs.UserId == userId)
+                .Where(crs => crs.UserId == userId && crs.Message.UserId != userId)
                 .Select(crs => crs.MessageId)
                 .ToListAsync();
 
@@ -372,7 +373,7 @@ public class ChatService
             }
             // Split query based on chat type
             var projectMessagesQuery = query
-                .Where(x => x.chat.ProjectId != null)
+                .Where(x => x.chat.ProjectId != null && x.message.UserId != userId)
                 .Join(context.Projects,
                     combined => combined.chat.ProjectId,
                     project => project.ProjectId,
@@ -387,7 +388,7 @@ public class ChatService
             var adminChatMessagesQuery = query
                 .Where(x =>
                     x.chat.IsAdminChat &&
-                    ( x.chat.UserId == userId || isAdmin ));
+                    ( x.chat.UserId == userId || isAdmin ) && x.message.UserId != userId);
 
             // Combine both queries
             var unreadMessageCount = await projectMessagesQuery

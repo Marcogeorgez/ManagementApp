@@ -242,7 +242,6 @@ OpenMiniOnHover="true"  Elevation="0" >
             { "isAdminView" , isAdminView },
             { "isEditorView" , isEditorView },
             { "isClientView" , isClientView },
-
         };
         await DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);
         await DrawerToggle();
