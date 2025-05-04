@@ -56,6 +56,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Components\ProjectPageDialogue\ProjectActionsDialog.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
     <Content Update="wwwroot\Logo192-Dark.png">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

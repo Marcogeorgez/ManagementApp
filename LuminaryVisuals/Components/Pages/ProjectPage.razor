@@ -290,49 +290,7 @@
                     CellStyle="@(isSelectorVisible ? "left:75px; text-align:center;" : "text-align:center;left:50px;")">
                         <CellTemplate>
                             <div class="d-flex flex-auto flex-row">
-                                <MudMenu Icon="@Icons.Material.Filled.Edit" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopLeft">
-                                    @if (_isAdminView || _isEditorView)
-                                    {
-                                        <MudMenuItem OnClick="@(() => Logging(context.Item,_currentUserId))"
-                                        Icon="@Icons.Material.Filled.WatchLater" >
-                                            Logging hours
-                                        </MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => CopyProjectNameToClipboard(context.Item))"
-                                        Icon="@Icons.Material.Outlined.FileCopy" >
-                                            Copy Project Name to Clipboard
-                                        </MudMenuItem>
-                                    }
-                                    @if (_isArchived && _isAdminView)
-                                    {
-                                        <MudMenuItem OnClick="@(() => context.Item.IsArchived ? UnarchiveProject(context.Item) : ArchiveProject(context.Item))"
-                                        Icon="@Icons.Material.Filled.Archive" IconSize="Size.Small">
-                                            @(context.Item.IsArchived ? "Unarchive" : "Archive")
-                                        </MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => DeleteDialog(context.Item))"
-                                        Icon="@Icons.Material.Filled.Delete" IconSize="Size.Small">
-                                            Delete
-                                        </MudMenuItem>
-                                    }
-                                    else if (!_isArchived && _isAdminView || !_isArchived && _isClientView)
-                                    {
-                                        <MudMenuItem OnClick="@(() => ArchiveProject(context.Item))"
-                                        Icon="@Icons.Material.Filled.Archive">
-                                            Archive
-                                        </MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => Duplicate(context.Item))"
-                                        Icon="@Icons.Material.Filled.ContentCopy">
-                                            Duplicate
-                                        </MudMenuItem>
-
-                                    }
-
-                                    @if(!_isArchived){
-                                        <MudMenuItem OnClick="@(() => OnRowClick(context.Item))"
-                                        Icon="@Icons.Material.TwoTone.Edit">
-                                            Edit Row
-                                        </MudMenuItem>
-                                    }
-                                </MudMenu>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" OnClick="@(() => OpenActionsDialog(context.Item))">Actions</MudIconButton>
                                 @{
                                     var submissionStatus = context.Item.SubmissionStatus == Models.SubmissionStatus.Submitted ?
                             Color.Info : context.Item.SubmissionStatus == Models.SubmissionStatus.Approved ? Color.Success : Color.Error;
