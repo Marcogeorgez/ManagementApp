@@ -285,7 +285,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("Actions"))
                 {
 
-                    <TemplateColumn CellClass="" Title="Actions" Hideable="false" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true
+                    <TemplateColumn CellClass="" Title="Actions" Hideable="true" Filterable="false" Sortable="false" Groupable="false" StickyLeft=true
                     HeaderStyle="@(isSelectorVisible ? "min-width:120px; left:75px; z-index:5" : "min-width:120px; z-index:5; left:50px;")"
                     CellStyle="@(isSelectorVisible ? "left:75px; text-align:center;" : "text-align:center;left:50px;")">
                         <CellTemplate>
