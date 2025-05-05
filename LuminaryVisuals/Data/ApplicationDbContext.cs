@@ -77,6 +77,7 @@ namespace LuminaryVisuals.Data
             });
 
             // Configure composite primary key
+            // UserProjectPins table
             builder.Entity<UserProjectPin>()
                     .HasKey(up => new { up.UserId, up.ProjectId });
             builder.Entity<UserProjectPin>()
@@ -87,6 +88,7 @@ namespace LuminaryVisuals.Data
                 .HasOne(up => up.Project)
                 .WithMany(u => u.PinnedByUsers)
                 .HasForeignKey(up => up.ProjectId);
+
             // Configure Project
             builder.Entity<Project>(entity =>
             {
@@ -271,7 +273,31 @@ namespace LuminaryVisuals.Data
                 entity.HasIndex(n => new {n.UserId, n.Dismissed})
                         .HasDatabaseName("IX_UserNotificationStatuses_UserId_Dismissed");
             });
+            // Indexes for better performance on queries
+            // Projects table
+            builder.Entity<Project>()
+                .HasIndex(p => p.IsArchived);
 
+            builder.Entity<Project>()
+                .HasIndex(p => p.InternalOrder);
+
+            builder.Entity<Project>()
+                .HasIndex(p => new { p.IsArchived, p.PrimaryEditorId, p.SecondaryEditorId });
+
+            builder.Entity<Project>()
+                .HasIndex(p => new { p.IsArchived, p.InternalOrder });
+
+
+            builder.Entity<UserProjectPin>()
+                .HasIndex(p => new { p.UserId, p.IsPinned });
+
+            // Chats table
+            builder.Entity<Chat>()
+                .HasIndex(c => c.ProjectId);
+
+            // Messages table
+            builder.Entity<Message>()
+                .HasIndex(m => new { m.IsApproved, m.IsDeleted });
 
             // Seed Parameters
             builder.Entity<CalculationParameter>().HasData(
