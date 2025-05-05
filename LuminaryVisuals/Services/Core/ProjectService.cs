@@ -43,7 +43,6 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             var projects = await context.Projects
-                .AsTracking()
                 .Where(p => p.IsArchived == isArchived)
                 .Include(p => p.Archive)
                 .Include(p => p.Client)
