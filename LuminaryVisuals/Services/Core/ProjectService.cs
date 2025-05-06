@@ -343,7 +343,7 @@ public class ProjectService
                 // Add the project to the context and save changes
                 context.Projects.Add(project);
                 await context.SaveChangesAsync();
-
+                _ = _broadcaster.NotifyAllAsync();
             }
             else
             {
