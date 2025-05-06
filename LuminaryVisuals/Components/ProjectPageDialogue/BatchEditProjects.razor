@@ -3,7 +3,7 @@
 
 <MudDialog>
     <DialogContent>
-        <MudContainer Style="max-height: 70vh;min-width:600px; overflow-y: auto;">
+        <MudContainer Style="max-height: 70vh;">
             <MudTreeView Class="ml-n3 pa-0" T="string" ReadOnly>
                 <MudTreeViewItem Text="@($"Batch Edit Selected Projects ({SelectedProjects?.Count})")">
                     @foreach (var project in SelectedProjects!)
@@ -263,3 +263,11 @@
             MudDialog.Close(DialogResult.Ok(SelectedProjects));
     }
 }
+<style>
+    @@media (min-width:960px) {
+        .mud-dialog .mud-dialog-content {
+            width: 50dvw;
+        }
+    }
+    
+</style>
