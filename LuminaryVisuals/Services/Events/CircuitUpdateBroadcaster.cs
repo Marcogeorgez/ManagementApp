@@ -12,7 +12,18 @@ public class CircuitUpdateBroadcaster
     {
         _subscribers[circuitId] = callback;
     }
-
+    // Method to check if user is subscribed in a circuit
+    public bool IsSubscribed(string circuitId)
+    {
+        if (_subscribers.TryGetValue(circuitId, out var callback))
+        {
+            return true; // User is subscribed
+        }
+        else
+        {
+            return false; // User is not subscribed
+        }
+    }
     // Method to unsubscribe a circuit (e.g., when a user disconnects)
     public void Unsubscribe(string circuitId)
     {

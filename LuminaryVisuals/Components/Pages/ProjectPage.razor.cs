@@ -360,6 +360,14 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         StateHasChanged();
 
     }
+    private async Task LoadProjectsIfNotSubscribed()
+    {
+        // No need to reload all projects since we notify all users from projectServices
+        if (CircuitId == null || !Broadcaster.IsSubscribed(CircuitId))
+        {
+            await LoadProjects();
+        }
+    }
     private async Task HandleProjectsUpdated()
     {
         await InvokeAsync(async () =>
@@ -528,12 +536,14 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 newProject.ClientId = _currentUserId;
             }
             await projectServices.AddProjectAsync(newProject);
-            await LoadProjects();
-            StateHasChanged();
+            await LoadProjectsIfNotSubscribed();
         }
         LoadingService.HideLoading();
 
     }
+
+
+
     HashSet<Project> SelectedProjects = new();
     
     private async Task SelectedItems(HashSet<Project> projects, bool editSelected)
@@ -606,10 +616,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         var currentUser = await UserServices.GetUserByIdAsync(_currentUserId);
         int weeksToDueDateDefault = currentUser.WeeksToDueDateDefault ?? 8;
         var dialogParameters = new DialogParameters
-    {
-        { "WeeksToDueDateDefault", weeksToDueDateDefault },
-        { "_isClientView", _isClientView}
-    };
+        {
+            { "WeeksToDueDateDefault", weeksToDueDateDefault },
+            { "_isClientView", _isClientView}
+        };
         var dialog = await DialogService.ShowAsync<AddProjectDialog>("Create New Project", dialogParameters, options);
         LoadingService.HideLoading();
         var result = await dialog.Result;
@@ -619,7 +629,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             newProject.WorkingMonth = DateTime.Today;
             newProject.ClientId = _currentUserId;
             await projectServices.AddProjectAsync(newProject);
-            await LoadProjects();
+            await LoadProjectsIfNotSubscribed();
             StateHasChanged();
             if (_isClientView)
             {
@@ -638,7 +648,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         }
         LoadingService.ShowLoading();
         await projectServices.DeleteProjectAsync(projectToDelete.ProjectId);
-        await LoadProjects();
+        await LoadProjectsIfNotSubscribed();
         LoadingService.HideLoading();
         StateHasChanged();
     }
@@ -656,7 +666,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         }
         LoadingService.ShowLoading();
         await projectServices.DeleteProjectsAsync(projectToDelete);
-        await LoadProjects();
+        await LoadProjectsIfNotSubscribed();
         SelectedProjects = new();
         LoadingService.HideLoading();
         StateHasChanged();
@@ -676,8 +686,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             {
                 await projectServices.ArchiveProjectAsync(project.ProjectId, archivedProject);
                 await projectServices.ReorderProjectAsync(project.ProjectId, project.InternalOrder = null, false);
-                await LoadProjects();
-
+                await LoadProjectsIfNotSubscribed();
             }
         }
         LoadingService.HideLoading();
@@ -710,7 +719,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 newProject.ProjectSpecifications.AudioDetails = project.ProjectSpecifications.AudioDetails;
             };
             await projectServices.AddProjectAsync(newProject);
-            await LoadProjects();
+            await LoadProjectsIfNotSubscribed();
             LoadingService.HideLoading();
             Snackbar.Add("Successfully duplicated this project!", Severity.Success);
 
@@ -732,7 +741,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         if (await ConfirmationService.Confirm($"Are you sure you'd like to unarchive this project {project.ProjectName}?"))
         {
             await projectServices.UnarchiveProjectAsync(project.ProjectId);
-            await LoadProjects();
+            await LoadProjectsIfNotSubscribed();
         }
         LoadingService.HideLoading();
 
@@ -785,7 +794,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             var project = (Project) result.Data!;
             await UpdateProjectAsync(project!);
             Snackbar.Add($"Successfully updated the project notes", Severity.Info);
-            await LoadProjects();
+            await LoadProjectsIfNotSubscribed();
         }
         LoadingService.HideLoading();
 
@@ -822,7 +831,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 await projectServices.CalculateProjectFinalPrice(_project);
 
                 Snackbar.Add($"Successfully updated deliverable details of the project: {_project.ProjectName}", Severity.Success);
-                await LoadProjects();
+                await LoadProjectsIfNotSubscribed();
             }
         }
         LoadingService.HideLoading();
@@ -840,7 +849,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         };
 
         await DialogService.ShowAsync<LoggingDialog>("Logging Hours", dialogParameters);
-        await LoadProjects();
+        await LoadProjects(); // This is required here since the dialog is closed and we need to refresh the data
+                              // and we don't notify all users from broadcaster on add/modifying logging
         LoadingService.HideLoading();
 
 
@@ -1460,7 +1470,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     private async Task RefreshGridData()
     {
         projects = ( await projectServices.GetProjectsAsync() ).ToList();
-        await LoadProjects();
+        await LoadProjectsIfNotSubscribed();
         StateHasChanged();
     }
 
