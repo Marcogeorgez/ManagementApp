@@ -74,6 +74,8 @@ public class PayoneerSettingsService
             existingSettings.LastName = settings.LastName;
             existingSettings.Email = settings.Email;
             existingSettings.Currency = settings.Currency;
+            existingSettings.Address = settings.Address;
+            existingSettings.TaxId = settings.TaxId;    
 
             context.PayoneerSettings.Update(existingSettings);
         }
