@@ -1,10 +1,12 @@
-<div class="html-content-wrapper mud-input-outlined-border ql-snow">
+<div class="html-content-wrapper ql-snow @Class">
     <div class="ql-editor" style="@(Borderless ? "border:none" : null)">
         @((MarkupString) Html)
     </div>
 </div>
 
 @code {
+    [Parameter]
+    public string Class { get; set; } = "";
 
     /// <summary>
     /// The HTML content to render.
