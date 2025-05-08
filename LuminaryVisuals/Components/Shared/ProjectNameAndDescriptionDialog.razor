@@ -165,23 +165,25 @@
                     Label="Footage Link" Placeholder="Add link of your footage" AutoGrow="true"
                     Variant="Variant.Outlined" @bind-Value="context.FootageLink" />
                 </MudItem>
+                <MudGrid Class="equal-height">
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                     Label="Add Details of Resolution" Placeholder="Add Details of Footage Resolution"
                     Variant="Variant.Outlined" @bind-Value="context.ProjectSpecifications.Resolution"/>
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                     Label="Add Details of Footage size"
                     Placeholder="Add Details of Footage size"
                     Variant="Variant.Outlined"
                     @bind-Value="context.ProjectSpecifications.Size"
                     />
                 </MudItem>
-
+                </MudGrid>
+            <MudGrid Class="equal-height">
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                     Label="Add Details of Footage Number of Cameras"
                     Placeholder="Add Details of Number of cameras"
                     Variant="Variant.Outlined"
@@ -190,15 +192,16 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                     Label="Add Details of Color profile"
                     Placeholder="Add Details of Color profile for each camera"
                     Variant="Variant.Outlined"
                     @bind-Value="context.ProjectSpecifications.ColorProfile"
                     />
                 </MudItem>
+                </MudGrid>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                     Label="Add Audio Details"
                     Placeholder="Add Details about Audio recorders"
                     Variant="Variant.Outlined"
@@ -439,5 +442,20 @@ The Bride was married like I said before, so this wedding was quite special beca
     .mud-expand-panel .mud-expand-panel-content
     {
         padding-bottom: 65px !important;
+    }
+
+    .equal-height > .mud-grid-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .equal-height .mud-input {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mud-input-control > .mud-input-control-input-container {
+        height: 100%;
     }
 </style>

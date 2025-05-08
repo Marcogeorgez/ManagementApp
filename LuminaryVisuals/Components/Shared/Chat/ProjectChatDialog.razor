@@ -47,9 +47,24 @@
                         <ActivatorContent>
                             @if (_currentFile != null)
                             {
-                                <MudPaper Style="height:97%; width:100%;" Outlined="true" Class="@_dragClass">
-                                    <MudImage src="@_filePreviewUrl" Alt="File Preview" Fluid="true" Class="mb-4" />
-                                </MudPaper>
+                                if (_filePreviewUrl != null && _filePreviewUrl.Contains("image"))
+                                {
+                                    <MudPaper Style="width: 84%;display: flex; height: 70vh;margin-inline: 9%;" Outlined="true" Class="@_dragClass">
+                                        <MudImage src="@_filePreviewUrl" Alt="File Preview" Fluid="true" Class="mb-4" />
+                                    </MudPaper>
+                                }
+                                else if (_filePreviewUrl != null && _filePreviewUrl.Contains("pdf"))
+                                {
+                                    <iframe src="@_filePreviewUrl"
+                                    width="100%"
+                                    style="border: none; height: 70vh;">
+                                    </iframe>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" />
+                                    <MudText Typo="Typo.body1">Unsupported File Format</MudText>
+                                }
                             }
                             else
                             {
@@ -65,7 +80,7 @@
                     </MudFileUpload>
                     @if(_currentFile != null)
                     {
-                        <MudToolBar Gutters="@false" Class="relative d-flex justify-end gap-4 mx-5" Style="z-index:1000;">
+                        <MudToolBar Gutters="@false" Class="justify-end gap-4 mx-5" Style="z-index:1000; position: absolute;bottom:10%;right: 0%;">
                             <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Send"
                             OnClick="Upload" Variant="Variant.Outlined" Disabled="@_isLoading">Send</MudButton>
                             <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Cancel" 
@@ -109,19 +124,32 @@
                                     {
                                         if (StringHelper.IsLink(part))
                                         {
-                                            // Check if the URL is an image based on the file extension
-                                            if (ImageExtensions.Contains(Path.GetExtension(part)))
+                                            var fileName = Path.GetFileName(part);
+                                            var cutIndex = fileName.IndexOf("—", StringComparison.OrdinalIgnoreCase) + 1;
+                                            var nameBeforeExtension = cutIndex >= 0 ? fileName.Substring(cutIndex) : fileName;
+                                            if (ImageExtensions.Contains(Path.GetExtension(nameBeforeExtension)) )
                                             {
                                                 // Display the image
                                                 <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
                                                     <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
                                                 </div>
                                             }
+                                            else if (Path.GetExtension(nameBeforeExtension).Contains("pdf"))
+                                            {
+                                                <div class="file-bubble">
+                                                    <div class="file-icon-label">
+                                                        <a style="display: flex;" href="@message.Content" target="_blank" rel="noopener noreferrer" class="file-name-link">
+                                                            <span class="file-icon"></span>
+                                                            @nameBeforeExtension
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            }
                                             else
                                             {
                                                 <strong>
-                                                    <MudLink Typo="Typo.body1" Class="special-link" Href="@part"
-                                                    Underline="Underline.Always">@part </MudLink>
+                                                    <MudLink Typo="Typo.body1" Class="special-link" Target="_blank" Href="@part"
+                                                             Underline="Underline.Always">@part </MudLink>
                                                 </strong>
                                             }
                                         }
@@ -319,10 +347,10 @@
         await MarkMessagesAsRead();
         _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
         {
-        // ProjectId is passed to the handler, not a message object
-        if (projectId == Project.ProjectId) // This is the correct comparison
-        {
-            await InvokeAsync(async () =>
+            // ProjectId is passed to the handler, not a message object
+            if (projectId == Project.ProjectId) // This is the correct comparison
+            {
+                await InvokeAsync(async () =>
             {
                 // Reset pagination state
                 currentPage = 1;
@@ -334,7 +362,7 @@
                 await MarkMessagesAsRead();
                 await JSRuntime.InvokeVoidAsync("scrollToBottom");
             });
-        }
+            }
         });
 
         await Task.Delay(250);
@@ -352,6 +380,15 @@
             {
                 // Open the stream and read it fully
                 using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 10 ); // 10 MB
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
+                var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
+                return $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            }
+            else if(file.ContentType == "application/pdf")
+            {
+                // Open the stream and read it fully
+                using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 5); // 5 MB
                 using var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
                 var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
@@ -652,8 +689,11 @@
         }
 
         // Get the scroll position as a percentage (0 = top, 1 = bottom)
-        var scrollPercentage = await JSRuntime.InvokeAsync<double>("getScrollPercentage", ".chat-content");
-
+        double? scrollPercentage = await JSRuntime.InvokeAsync<double>("getScrollPercentage", ".chat-content");
+        if (scrollPercentage == null || double.IsNaN(scrollPercentage.Value))
+        {
+            scrollPercentage = 1;
+        }
         // Load more when scrolling near the top (e.g., first 15%)
         if (scrollPercentage <= 0.15)
         {
@@ -965,7 +1005,7 @@
             }, 0);
         };
 
-        window.getScrollPercentage = function(selector) {
+            window.getScrollPercentage = function(selector) {
         const element = document.querySelector(selector);
         if (!element) return 1; // Default to bottom
 
@@ -973,7 +1013,10 @@
         const scrollHeight = element.scrollHeight;
         const clientHeight = element.clientHeight;
 
+        if (scrollHeight === clientHeight) return 1; // Avoid division by zero, return 100% if the element isn't scrollable
+
         // Calculate percentage (0 = top, 1 = bottom)
-        return scrollTop / (scrollHeight - clientHeight);
+        return Math.max(0, Math.min(1, scrollTop / (scrollHeight - clientHeight))); // Ensure the value is within the 0 to 1 range
     };
+
 </script>
