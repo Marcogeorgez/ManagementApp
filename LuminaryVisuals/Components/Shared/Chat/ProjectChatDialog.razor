@@ -80,7 +80,7 @@
                     </MudFileUpload>
                     @if(_currentFile != null)
                     {
-                        <MudToolBar Gutters="@false" Class="justify-end gap-4 mx-5" Style="z-index:1000; position: absolute;bottom:10%;right: 0%;">
+                        <MudToolBar Gutters="@false" Class="justify-end gap-4 mx-5 upload-action" >
                             <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Send"
                             OnClick="Upload" Variant="Variant.Outlined" Disabled="@_isLoading">Send</MudButton>
                             <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Cancel" 
@@ -261,7 +261,7 @@
                     <MudMenuItem OnClick="@(() => _fileUploadReference.OpenFilePickerAsync())" >
                         <div class="d-flex align-center">
                             <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" />
-                            <MudText Class="ml-2">Upload Image</MudText>
+                            <MudText Class="ml-2">Upload</MudText>
                         </div>
                     </MudMenuItem>
                     @if (!isClientView)
@@ -388,7 +388,7 @@
             else if(file.ContentType == "application/pdf")
             {
                 // Open the stream and read it fully
-                using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 5); // 5 MB
+                using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 10); // 5 MB
                 using var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
                 var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
@@ -396,7 +396,7 @@
             }
             else
             {
-                Snackbar.Add("Unsupported Format. Please upload an image file", Severity.Warning);
+                Snackbar.Add("Unsupported Format. Currently support Image/PDF only.", Severity.Warning);
                 await ResetUpload();
                 return null;
             }

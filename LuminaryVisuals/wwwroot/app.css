@@ -1582,3 +1582,14 @@ tr.mud-table-row.drop-target > td, .drop-target {
     font-weight: 500;
 }
 
+.upload-action {
+    z-index: 1000;
+    position: absolute;
+    bottom: 10%;
+    right: 0%;
+}
+@media(max-height: 450px) {
+    .upload-action {
+        bottom: 15% !important;
+    }
+}
