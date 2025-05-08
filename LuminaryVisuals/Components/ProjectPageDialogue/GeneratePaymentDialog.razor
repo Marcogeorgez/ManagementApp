@@ -120,15 +120,15 @@
                                         <span>
                                             <span style="color:#b0dfe8">
                                                 @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
-                                                project.PrimaryEditorDetails.FinalBillableHours : 0)
-                                                + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
-                                                project.SecondaryEditorDetails.FinalBillableHours : 0))h
+                                        project.PrimaryEditorDetails.FinalBillableHours : 0)
+                                        + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                        project.SecondaryEditorDetails.FinalBillableHours : 0))h
                                             </span>
                                             <span style="color:#74c85f">
                                                 @((Math.Round((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
-                                            project.PrimaryEditorDetails.PaymentAmount ?? 0m : 0m),1))
-                                            + (Math.Round((project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
-                                            project.SecondaryEditorDetails.PaymentAmount ?? 0m : 0m),1)))$
+                                    project.PrimaryEditorDetails.PaymentAmount ?? 0m : 0m),1))
+                                    + (Math.Round((project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                    project.SecondaryEditorDetails.PaymentAmount ?? 0m : 0m),1)))$
                                             </span>
                                         </span>
                                     }
@@ -172,7 +172,7 @@
                 (editorPaid == (p.PrimaryEditorDetails.DatePaidEditor != null) ? (p.PrimaryEditorDetails.PaymentAmount ?? 0) : 0) +
                 (editorPaid == (p.SecondaryEditorDetails.DatePaidEditor != null) ? (p.SecondaryEditorDetails.PaymentAmount ?? 0) : 0)
                 ) ?? 0;
-
+                var selectedUsersIds = selectedUsers.Select(u => u.Id).ToList();
                 var editorTotals = selectedProjects?
                     .SelectMany(p => new[]
                     {
@@ -191,7 +191,7 @@
                         IsPaid = p.SecondaryEditorDetails?.DatePaidEditor != null
                         }
                     })
-                    .Where(e => e.EditorId != null && (editorPaid ? e.IsPaid : !e.IsPaid))
+                    .Where(e => e.EditorId != null && (editorPaid ? e.IsPaid : !e.IsPaid) && (  selectedUsersIds?.Count == 0 || selectedUsersIds.Contains(e.EditorId)))
                     .GroupBy(e => new { e.EditorId, e.Name })
                     .Select(g => new
                     {
@@ -390,16 +390,36 @@
         // Execute the query
         projects = await query.ToListAsync();
         selectedProjects = projects;
-        
+
     }
     private void Submit()
     {
-        GenerateProjectDTO generateProjectDTO = new()
+        GenerateProjectDTO generateProjectDTO;
+        if (ViewClient == "clients")
         {
+            generateProjectDTO = new()
+            {
                 project = selectedProjects.ToList(),
                 ViewClient = ViewClient,
                 editorPaid = editorPaid
-        };
+            };
+        }
+        else
+        {
+            var selectedUsersIds = selectedUsers.Select(u => u.Id).ToList();
+
+            generateProjectDTO = new()
+                {
+                    project = selectedProjects.Where(e =>
+                            selectedUsersIds?.Count == 0 ||
+                            (e.PrimaryEditorId != null && selectedUsersIds.Contains(e.PrimaryEditorId)) ||
+                            (e.SecondaryEditorId != null && selectedUsersIds.Contains(e.SecondaryEditorId))
+                        ).ToList(),
+                    ViewClient = ViewClient,
+                    editorPaid = editorPaid
+                };
+        }
+        
         MudDialog.Close(DialogResult.Ok(generateProjectDTO));
     }
     private void Cancel() => MudDialog.Cancel();

@@ -268,10 +268,6 @@ builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforge
 var environment = builder.Environment;
 // Get the Sentry DSN from environment variables or configuration
 var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN") ?? builder.Configuration.GetConnectionString("SentryDSN");
-Console.WriteLine("1st");
-Console.WriteLine(Environment.GetEnvironmentVariable("SentryDSN"));
-Console.WriteLine("2nd");
-Console.WriteLine(builder.Configuration.GetConnectionString("SentryDSN"));
 
 if (!string.IsNullOrEmpty(sentryDSN))
 {
@@ -348,6 +344,7 @@ builder.Services.AddSingleton<PushNotificationService>();
 builder.Services.AddControllers();
 builder.Services.AddHostedService<MessageReminderService>();
 builder.Services.AddScoped<BrowserInfoService>();
+builder.Services.AddScoped<InvoiceService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

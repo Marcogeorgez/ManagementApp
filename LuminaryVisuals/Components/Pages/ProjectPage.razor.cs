@@ -1240,8 +1240,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     }
 
 
-
-    [Inject] private PayoneerSettingsService payoneerSettingsService { get; set; }
+    [Inject] private InvoiceService InvoiceService { get; set; } = default!;
+    [Inject] private PayoneerSettingsService payoneerSettingsService { get; set; } = default!;
     private async Task<string> GenerateCsvContentFilteredPayoneer(List<Project> projects)
     {
         // Get unique client IDs from projects
@@ -1278,26 +1278,26 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
 
             decimal clientTotal = client.Sum(p => p.ClientBillableAmount ?? 0);
             var projectDescription = GenerateProjectDescription(client.ToList(),settings.Currency);
-            projectDescription += $"   Total: ${Math.Round(clientTotal, MidpointRounding.AwayFromZero)}";
             csv.AppendLine(string.Join(",",
-                EscapeCsvValue(settings.CompanyName),
+                EscapeCsvValue(settings.CompanyName!),
                 EscapeCsvValue(settings.CompanyUrl ?? ""),
-                EscapeCsvValue(settings.FirstName),
-                EscapeCsvValue(settings.LastName),
-                EscapeCsvValue(settings.Email),
-                $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
-                settings.Currency,
-                EscapeCsvValueDescritpion(projectDescription),
+                EscapeCsvValue(settings.FirstName!),
+                EscapeCsvValue(settings.LastName!),
+                EscapeCsvValue(settings.Email!),
+                (await projectDescription),
                 DateTime.Now.AddDays(7).ToString("dd/MM/yyyy")
             ));
         }
         return csv.ToString();
     }
     // This generates the description for the Payoneer CSV by combining the projects and returning the total amount.
-    private string GenerateProjectDescription(List<Project> projects,string currency)
+    private async Task<string> GenerateProjectDescription(List<Project> projects,string currency)
     {
-        var projectDescriptions = projects.Select(p => $"{p.ProjectName}: {Math.Round(p.ClientBillableAmount ?? 0, MidpointRounding.AwayFromZero)}").ToList();
-        return string.Join(" ", projectDescriptions);
+        if (projects == null || projects.Count == 0)
+            return string.Empty;
+        var url = await InvoiceService.GenerateInvoicePdfAsync(projects);
+        url = url + " Please download within 120 days as the files will get deleted.";
+        return url;
     }
     private string EscapeCsvValue(string value)
     {
