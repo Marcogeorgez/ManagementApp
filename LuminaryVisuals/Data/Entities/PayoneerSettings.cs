@@ -30,6 +30,8 @@ public class PayoneerSettings
     [Required]
     [StringLength(3)]
     public string Currency { get; set; } = "USD";
+    public string? Address { get; set; }
+    public string TaxId { get; set; } = string.Empty;
 
     // Navigation property
     public virtual ApplicationUser User { get; set; }

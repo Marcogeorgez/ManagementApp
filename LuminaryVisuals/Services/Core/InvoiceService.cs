@@ -1,4 +1,5 @@
-﻿using LuminaryVisuals.Services.Configuration;
+﻿using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Services.Configuration;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 
@@ -14,12 +15,20 @@ public class InvoiceService
         this.logger = logger;
         this.cloudflareR2Service = cloudflareR2Service;
     }
-    public async Task<string> GenerateInvoicePdfAsync(List<Project> Items)
+    public async Task<string> GenerateInvoicePdfAsync(List<Project> Items, PayoneerSettings? setting)
     {
         using (var httpClient = new HttpClient())
         {
             try
             {
+                string BillAddressTo = string.Join("\n", new[]
+                {
+                    setting.CompanyName,
+                    setting.Address,
+                    !string.IsNullOrWhiteSpace(setting.TaxId) ? $"Tax ID: {setting.TaxId}" : null,
+                    setting.Email
+                }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
                 var formFields = new Dictionary<string, string>
                 {
                     { "from", "Joan Dhimitri \n Rr Raqi Qirinxhi L11 Nr 35 Korce, Albania \n NIPT: M14801001M" },

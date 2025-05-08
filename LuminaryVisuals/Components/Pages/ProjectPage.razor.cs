@@ -1277,7 +1277,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             }
 
             decimal clientTotal = client.Sum(p => p.ClientBillableAmount ?? 0);
-            var projectDescription = GenerateProjectDescription(client.ToList(),settings.Currency);
+            var projectDescription = GenerateProjectDescription(client.ToList(),settings);
             csv.AppendLine(string.Join(",",
                 EscapeCsvValue(settings.CompanyName!),
                 EscapeCsvValue(settings.CompanyUrl ?? ""),
@@ -1291,11 +1291,11 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         return csv.ToString();
     }
     // This generates the description for the Payoneer CSV by combining the projects and returning the total amount.
-    private async Task<string> GenerateProjectDescription(List<Project> projects,string currency)
+    private async Task<string> GenerateProjectDescription(List<Project> projects,PayoneerSettings? setting)
     {
         if (projects == null || projects.Count == 0)
             return string.Empty;
-        var url = await InvoiceService.GenerateInvoicePdfAsync(projects);
+        var url = await InvoiceService.GenerateInvoicePdfAsync(projects,setting);
         url = url + " Please download within 120 days as the files will get deleted.";
         return url;
     }
