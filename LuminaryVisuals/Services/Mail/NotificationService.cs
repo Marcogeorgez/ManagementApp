@@ -121,7 +121,7 @@ public class NotificationService : BackgroundService, INotificationService
             if (!isRead)
             {
                 _logger.LogInformation($"Message {item.MessageId} not read by user {item.UserId}, adding to queue");
-                AddToQueue(item);
+                await AddToQueue(item);
             }
             else
             {
@@ -528,15 +528,17 @@ public class NotificationService : BackgroundService, INotificationService
     {
         try
         {
+            _logger.LogInformation($"Sending Push notification for user: {item.UserId}");
+
             // Get the user from the database
             using var scope = _serviceProvider.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var pushNotification = scope.ServiceProvider.GetRequiredService<PushNotificationService>();
             var user = await userManager.FindByIdAsync(item.UserId);
-
-            // Check if user has push notification details
             if (user == null)
             {
+                _logger.LogWarning($"User {item.UserId} not found for push notification");
+                _logger.LogWarning($"User name is: {user.UserName}");
                 return; // Skip if no push notification details
             }
 

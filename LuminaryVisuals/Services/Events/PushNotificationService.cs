@@ -19,16 +19,23 @@ public class PushNotificationService
         var userNotification = await context.PushNotificationSubscriptions
             .Where(s => s.UserId == user.Id && s.Status == true)
             .ToListAsync();
-
+        Console.WriteLine("Sending notificaitons from PushNotificationService");
         // Checks for if type of notification is a chat message, if so we check if user have read it or not
         // if not read it we send notification, else skip it
         if (chatMessageId != null)
         {
             var chatMessage = await context.ChatReadStatus.FirstOrDefaultAsync(s => s.UserId == user.Id && s.MessageId == chatMessageId);
             if (chatMessage == null)
+            {
+                Console.WriteLine("Sending notificaitons from PushNotificationService is canceled since message not found.");
                 return;
+            }
             if (chatMessage.IsRead)
+            {
+
+                Console.WriteLine("Sending notificaitons canceled from PushNotificationService since message is read");
                 return;
+            }
         }
         var vapidDetails = new VapidDetails("mailto:management@luminaryvisuals.net", _publicKey, _privateKey);
         var webPushClient = new WebPushClient();
