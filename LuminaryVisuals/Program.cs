@@ -293,7 +293,8 @@ var cloudflareSettings = new CloudflareR2Settings(
     AccessKeyId: Environment.GetEnvironmentVariable("CLOUDFLARE_ACCESS_KEY_ID")!,
     SecretAccessKey: Environment.GetEnvironmentVariable("CLOUDFLARE_SECRET_ACCESS_KEY")!,
     publicURL: Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_URL")!,
-    BucketName: Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_NAME")!
+    BucketName: Environment.GetEnvironmentVariable("CLOUDFLARE_BUCKET_NAME")!,
+    Env: Environment.GetEnvironmentVariable("CLOUDFLARE_ENV")!
 );
 
 builder.Services.AddSingleton(cloudflareSettings);

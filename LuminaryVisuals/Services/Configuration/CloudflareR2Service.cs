@@ -52,7 +52,7 @@ public class CloudflareR2Service
             _logger.LogInformation("File uploaded successfully.");
             string publicUrl;
             // Construct public URL
-            if (_env.IsProduction())
+            if (_settings.Env != "development")
             {
                 publicUrl = $"https://{_settings.publicURL}/{encodedFileName}";
             }

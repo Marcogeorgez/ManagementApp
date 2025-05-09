@@ -149,7 +149,7 @@
                                             {
                                                 <strong>
                                                     <MudLink Typo="Typo.body1" Class="special-link" Target="_blank" Href="@part"
-                                                             Underline="Underline.Always">@part </MudLink>
+                                                    Underline="Underline.Always">@part </MudLink>
                                                 </strong>
                                             }
                                         }
@@ -414,10 +414,10 @@
             return null;
         }
     }
-    private void Upload()
+    private async void Upload()
     {
-        UploadFiles(_currentFile);
-        ResetUpload();
+        await UploadFiles(_currentFile);
+        await ResetUpload();
     }
     private IBrowserFile _currentFile;
     private async Task ResetUpload()
@@ -485,6 +485,10 @@
             Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
             _isLoading = false;
             return false;
+        }
+        finally{
+            _isLoading = false;
+            StateHasChanged();
         }
 
     }
