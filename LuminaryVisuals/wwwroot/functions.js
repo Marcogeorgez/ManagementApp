@@ -123,6 +123,6 @@ window.triggerInstallPrompt = function () {
 // Check for PWA support
 window.checkPwaSupport = function () {
     if (!('beforeinstallprompt' in window)) {
-        alert("This browser doesn't support PWA installation.");
+        alert("This browser doesn't support PWA installation.\nif you are on ios, you have to click share and then add to home manually for the app to be installed");
     }
 };
