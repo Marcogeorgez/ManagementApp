@@ -37,7 +37,7 @@ public class PushNotificationService
         var payload = new
         {
             title,
-            cleanedMessage
+            message = cleanedMessage
         };
 
         var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
