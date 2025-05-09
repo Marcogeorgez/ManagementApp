@@ -50,7 +50,6 @@ public class CloudflareR2Service
 
             var response = await _s3Client.PutObjectAsync(request);
             _logger.LogInformation("File uploaded successfully.");
-            _logger.LogInformation($"_settings.Env: {_settings.Env}");
 
             string publicUrl;
             // Construct public URL
@@ -75,7 +74,7 @@ public class CloudflareR2Service
         try
         {
             _logger.LogInformation($"Started Uploading file {fileName}");
-
+            
             var request = new PutObjectRequest
             {
                 BucketName = _settings.BucketName,
@@ -89,7 +88,7 @@ public class CloudflareR2Service
             _logger.LogInformation("File uploaded successfully.");
             string publicUrl;
             // Construct public URL
-            if (_env.IsProduction())
+            if (_settings.Env != "development")
             {
                 publicUrl = $"https://{_settings.publicURL}/{fileName}";
             }
