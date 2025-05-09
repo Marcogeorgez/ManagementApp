@@ -102,6 +102,46 @@ export function createQuillInterop(dotNetRef, editorRef, toolbarRef, placeholder
                             }, true);
                         }
                     };
+                },
+                upload: function () {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', 'application/pdf');
+                    input.click();
+
+                    input.onchange = async () => {
+                        if (!input.files || !input.files[0]) return;
+
+                        const file = input.files[0];
+                        const range = this.quill.getSelection(true);
+                        // Add loading placeholder
+                        this.quill.insertText(range.index, 'Uploading...', {
+                            'color': '#999',
+                            'italic': true
+                        }, true);
+                        try {
+                            const url = await modules.imageUploader.upload(file);
+                            // Remove loading placeholder
+                            this.quill.deleteText(range.index, 'Uploading...'.length);
+                            let fileName = file.name.replace('—', '-');  
+                            let urlParts = url.split('/');
+                            let lastPart = urlParts.pop();  // Get the last part after the last slash
+                            let encodedLastPart = encodeURIComponent(lastPart);  // Encode the last part
+                            // Rebuild the URL with the encoded part
+                            let encodedUrl = urlParts.join('/') + '/' + encodedLastPart;
+                            this.quill.insertText(range.index, fileName, { 'link': encodedUrl });
+                        } catch (error) {
+                            // Remove loading placeholder
+                            this.quill.deleteText(range.index, 'Uploading...'.length);
+                            // Show error message
+                            console.error(error);
+                            this.quill.insertText(range.index, 'Upload failed', {
+                                'color': 'red',
+                                'italic': true
+                            }, true);
+                        }
+                    }
+
                 }
             }
         };
@@ -298,16 +338,13 @@ export class MudQuillInterop {
         }
     };
     dataURItoFile = async (dataURI) => {
-        //console.log('Converting data URI to file:', dataURI); // Debug log
         const response = await fetch(dataURI);
         const blob = await response.blob();
-        //console.log('Converted blob:', blob); // Debug log
         return new File([blob], 'pasted-image.png', { type: blob.type });
     };
     uploadPastedImageAndReturnLink = async (file) => {
         try {
             const url = await this.quill.getModule('imageUploader').upload(file);
-            //console.log("Upload successful", url); // Debug log
             return url; // Return the uploaded URL
         } catch (error) {
             //console.error("Upload failed", error);

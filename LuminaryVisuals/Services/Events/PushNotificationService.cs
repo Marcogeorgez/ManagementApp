@@ -30,7 +30,7 @@ public class PushNotificationService
             if (chatMessage.IsRead)
                 return;
         }
-        var vapidDetails = new VapidDetails("mailto:your@email.com", _publicKey, _privateKey);
+        var vapidDetails = new VapidDetails("mailto:management@luminaryvisuals.net", _publicKey, _privateKey);
         var webPushClient = new WebPushClient();
 
         var payload = new
