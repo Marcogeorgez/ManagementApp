@@ -1,6 +1,7 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using WebPush;
 
 public class PushNotificationService
@@ -19,31 +20,24 @@ public class PushNotificationService
         var userNotification = await context.PushNotificationSubscriptions
             .Where(s => s.UserId == user.Id && s.Status == true)
             .ToListAsync();
-        Console.WriteLine("Sending notificaitons from PushNotificationService");
         // Checks for if type of notification is a chat message, if so we check if user have read it or not
         // if not read it we send notification, else skip it
         if (chatMessageId != null)
         {
             var chatMessage = await context.ChatReadStatus.FirstOrDefaultAsync(s => s.UserId == user.Id && s.MessageId == chatMessageId);
-            if (chatMessage == null)
+            if (chatMessage != null && chatMessage.IsRead)
             {
-                Console.WriteLine("Sending notificaitons from PushNotificationService is canceled since message not found.");
-                return;
-            }
-            if (chatMessage.IsRead)
-            {
-
-                Console.WriteLine("Sending notificaitons canceled from PushNotificationService since message is read");
                 return;
             }
         }
         var vapidDetails = new VapidDetails("mailto:management@luminaryvisuals.net", _publicKey, _privateKey);
         var webPushClient = new WebPushClient();
-
+        var cleanedMessage = CleanText(message);
+        
         var payload = new
         {
             title,
-            message
+            cleanedMessage
         };
 
         var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
@@ -60,5 +54,17 @@ public class PushNotificationService
         {
             Console.WriteLine($"Error sending notification: {ex.Message}");
         }
+    }
+    public static string CleanText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        // Remove all HTML tags
+        string cleanedText = Regex.Replace(text, "<.*?>", string.Empty);
+
+        cleanedText = System.Net.WebUtility.HtmlDecode(cleanedText);
+
+        return cleanedText.Trim();
     }
 }

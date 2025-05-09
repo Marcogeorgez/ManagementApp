@@ -537,8 +537,6 @@ public class NotificationService : BackgroundService, INotificationService
             var user = await userManager.FindByIdAsync(item.UserId);
             if (user == null)
             {
-                _logger.LogWarning($"User {item.UserId} not found for push notification");
-                _logger.LogWarning($"User name is: {user.UserName}");
                 return; // Skip if no push notification details
             }
 
