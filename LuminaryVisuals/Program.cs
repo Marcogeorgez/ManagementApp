@@ -342,7 +342,6 @@ builder.Services.AddSingleton<LuminaryVisuals.Services.Helpers.WordFilter>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<PushNotificationService>();
 builder.Services.AddControllers();
-builder.Services.AddHostedService<MessageReminderService>();
 builder.Services.AddScoped<BrowserInfoService>();
 builder.Services.AddScoped<InvoiceService>();
 var app = builder.Build();

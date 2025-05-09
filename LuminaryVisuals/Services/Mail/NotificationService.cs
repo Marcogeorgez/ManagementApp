@@ -1,6 +1,7 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Services.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 namespace LuminaryVisuals.Services.Mail;
@@ -412,7 +413,7 @@ public class NotificationService : BackgroundService, INotificationService
             _logger.LogError($"{ex}");
         }
     }
-    private void AddToQueue(NotificationQueueItem item)
+    private async Task AddToQueue(NotificationQueueItem item)
     {
         _notificationQueue.AddOrUpdate(
             item.UserId,
@@ -423,6 +424,8 @@ public class NotificationService : BackgroundService, INotificationService
                 return existingList;
             });
         _logger.LogInformation($"Added notification to queue for user {item.UserId}. Queue size for this user: {_notificationQueue[item.UserId].Count}");
+        // Also send as push notification
+        await SendPushNotificationForQueueItemAsync(item);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -521,7 +524,32 @@ public class NotificationService : BackgroundService, INotificationService
             }
         }
     }
+    private async Task SendPushNotificationForQueueItemAsync(NotificationQueueItem item)
+    {
+        try
+        {
+            // Get the user from the database
+            using var scope = _serviceProvider.CreateScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var pushNotification = scope.ServiceProvider.GetRequiredService<PushNotificationService>();
+            var user = await userManager.FindByIdAsync(item.UserId);
 
+            // Check if user has push notification details
+            if (user == null)
+            {
+                return; // Skip if no push notification details
+            }
+
+            // Send the push notification
+            await pushNotification.SendNotification(user, item.Subject, item.Message, item.MessageId);
+
+            _logger.LogInformation($"Push notification sent for user {item.UserId}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error sending push notification to user {item.UserId}");
+        }
+    }
 }
 public class NotificationQueueItem
 {

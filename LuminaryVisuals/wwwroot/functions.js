@@ -67,21 +67,42 @@ document.addEventListener("click", function () {
     }
 });
 
-async function subscribeToPush() {
-    const registration = await navigator.serviceWorker.register('/service-worker.js');
-    const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80"
-    });
-
-    const response = await fetch('/api/messages/subscribe', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription)
-    });
-
-    console.log("Push subscription saved:", response);
-}
+window.subscribeToPush = async function() {
+    try {
+        const permission = await Notification.requestPermission();
+        console.log('Notification permission:', permission);
+        
+        if (permission !== 'granted') {
+            console.log('Notification permission denied');
+            return false;
+        }
+        
+        const registration = await navigator.serviceWorker.register('/service-worker.js');
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80"
+        });
+        
+        const response = await fetch('/api/messages/subscribe', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(subscription)
+        });
+        
+        console.log("Push subscription response:", response);
+        
+        // Check if the request was successful (status 2xx)
+        if (response.ok) {
+            return true;
+        } else {
+            console.error("Failed to save subscription on server:", response.statusText);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error subscribing to push notifications:', error);
+        return false;
+    }
+};
 
 
 window.triggerInstallPrompt = function () {

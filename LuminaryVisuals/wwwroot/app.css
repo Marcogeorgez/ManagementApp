@@ -9,10 +9,27 @@
     --mud-default-borderradius: 12px !important;
 
 }
-
+.popup-banner {
+    background-color: rgb(25, 27, 43);
+    border-radius: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+}
 @media (min-width: 768px) { /* For PCs and larger screens */
     .project-data-grid > .mud-table-container {
         height: 122vh !important;
+    }
+    div.popup-banner {
+        bottom: 0%;
+        margin-bottom: 250px;
+        right: 0%;
+        top: unset;
+        left: unset;
+        width: 40vw;
+        transform: unset;
     }
 }
 @media (min-height: 600px) and (max-height: 800px) and (max-width:1024px){ /* For medium screens */
@@ -25,6 +42,8 @@
     .project-data-grid > .mud-table-container {
         height: 95svh !important;
     }
+
+
 }
 @media (max-height: 400px)
 {

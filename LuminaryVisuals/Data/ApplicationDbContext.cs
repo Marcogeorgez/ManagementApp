@@ -13,6 +13,7 @@ namespace LuminaryVisuals.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+
         public DbSet<UserProjectPin> UserProjectPins{ get; set; }
 
         public DbSet<PayoneerSettings> PayoneerSettings { get; set; }
@@ -35,7 +36,7 @@ namespace LuminaryVisuals.Data
         public DbSet<EditorLoggingHours> EditorLoggingHours { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserNotificationStatus> UserNotificationStatuses { get; set; }
-
+        public DbSet<PushNotificationSubscriptions> PushNotificationSubscriptions { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

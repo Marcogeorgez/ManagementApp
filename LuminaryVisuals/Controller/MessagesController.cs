@@ -1,34 +1,25 @@
-﻿using LuminaryVisuals.Data.Entities;
+﻿using LuminaryVisuals.Data;
+using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace LuminaryVisuals.Controller;
 [ApiController]
 [Route("api/[controller]")]
 public class MessagesController : ControllerBase
 {
-    private readonly ChatService _chatService;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<MessagesController> logger;
+    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
 
-    public MessagesController(ChatService chatService, UserManager<ApplicationUser> userManager)
+    public MessagesController(ILogger<MessagesController> logger, IDbContextFactory<ApplicationDbContext> contextFactory)
     {
-        _chatService = chatService;
-        _userManager = userManager;
+        this.logger = logger;
+        this.contextFactory = contextFactory;
     }
 
-    [HttpGet("unread")]
-    [Authorize] // This will use your existing cookie authentication
-    public async Task<IActionResult> GetUnreadCount()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
-            return Unauthorized();
-
-        var count = await _chatService.GetUnreadMessageCount(user.Id);
-        return Ok(new { count = count, hasNewMessages = count > 0 });
-    }
     [HttpPost("subscribe")]
     [Authorize]
     public async Task<IActionResult> Subscribe([FromBody] PushSubscriptionModel subscription)
@@ -37,23 +28,41 @@ public class MessagesController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
-            return Unauthorized();
-
-        // Update user with subscription details
-        user.PushEndpoint = subscription.Endpoint;
-        user.PushP256DH = subscription.Keys.P256DH;
-        user.PushAuth = subscription.Keys.Auth;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
+        try
         {
-            return BadRequest(result.Errors);
-        }
+            using var context = contextFactory.CreateDbContext();
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                return Unauthorized();
+            // Check if the user already has a subscription
+            var existingSubscription = await context.PushNotificationSubscriptions
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.Endpoint == subscription.Endpoint && s.P256DH == subscription.Keys.P256DH);
 
-        return Ok(new { message = "Subscribed successfully!" });
+            if(existingSubscription == null)
+            {
+                existingSubscription = new PushNotificationSubscriptions
+                {
+                    UserId = user.Id,
+                    Endpoint = subscription.Endpoint,
+                    P256DH = subscription.Keys.P256DH,
+                    Auth = subscription.Keys.Auth
+                };
+            }
+            else
+            {
+                logger.LogInformation($"User {user.Id} already subscribed to endpoint {subscription.Endpoint}.");
+                return Ok("Already subscribed with this device.");
+            }
+            await context.PushNotificationSubscriptions.AddAsync(existingSubscription);
+            await context.SaveChangesAsync();
+            return Ok(new { message = "Subscribed successfully!" });
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
     }
 }
 

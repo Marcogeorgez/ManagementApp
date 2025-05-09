@@ -3,6 +3,10 @@
 @using Blazr.RenderState
 @inject IBlazrRenderStateService RenderState
 @inject IHostEnvironment HostEnvironment
+@inject BrowserInfoService BrowserInfo
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
 <div id="blazor-error-ui" data-nosnippet>
     @if (HostEnvironment.IsProduction())
     {
@@ -15,6 +19,7 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider CloseButton="true"
@@ -49,7 +54,35 @@ CloseOnEscapeKey="true" />
                     @Body
                 </MudHidden>
             }
-@*             @if (ProjectState.CurrentProject != null)
+            @if (_showBanner)
+            {
+                <MudPaper Elevation="3" Class="pa-4 mb-4 popup-banner">
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.body1">Would you like to receive notifications on this device?</MudText>
+                        </MudItem>
+                        <MudItem xs="12" Class="d-flex gap-2 mt-2">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       OnClick="SubscribeToPush">
+                                Yes, enable notifications
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       OnClick="DeclineNotifications">
+                                No, thanks
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       OnClick="AskLater">
+                                Ask me later
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+
+            @*             @if (ProjectState.CurrentProject != null)
             {
                 <div class="floating-chat-container">
 
@@ -85,17 +118,54 @@ CloseOnEscapeKey="true" />
         var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
         return currentPath.StartsWith("/guest");
     }
+    private async Task SubscribeToPush()
+    {
+        bool subscriptionSucceeded = await JS.InvokeAsync<bool>("subscribeToPush");
+
+        // Only save to localStorage if subscription was successful
+        if (subscriptionSucceeded)
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "notificationPreference", "enabled");
+            _showBanner = false;
+        }
+        else
+        {
+            Snackbar.Add($"An Error has occurred. please contact support!", Severity.Error);
+            Console.WriteLine("fail: Error: Subscription failed.");
+        }
+        _showBanner = false;
+    }
+
+    private async Task DeclineNotifications()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "notificationPreference", "declined");
+        _showBanner = false;
+    }
+
+    private void AskLater()
+    {
+        _showBanner = false;
+        // Don't save to localStorage so it will show again next time
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _showSplashScreen = false;
             StateHasChanged(); // Trigger a UI update
+            await Task.Delay(5000);
+            // Check if user has already made a choice
+            var userChoice = await JS.InvokeAsync<string>("localStorage.getItem", "notificationPreference");
+            if (string.IsNullOrEmpty(userChoice))
+            {
+                _showBanner = true;
+                StateHasChanged(); // Trigger a UI update
+            }
         }
     }
 
     private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
-
+    private bool _showBanner = false;
     // Missing closing button not working properly in calendar.
     // [CascadingParameter]
     // public ClaimsPrincipal? currentUser { get; set; }

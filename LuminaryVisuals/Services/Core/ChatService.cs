@@ -118,35 +118,7 @@ public class ChatService
 
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
-        if(projectId > 0 )
-        {
-
-        }
-        else
-        {
-            if(chat.UserId == userId)
-            {
-                var admins = await _userManager.GetUsersInRoleAsync("Admin");
-
-                foreach (var user in admins)
-                {
-                    if (user != null)
-                    {
-                        await _pushService.SendNotification(user, "New Message", message);
-                    }
-                }
-            }
-            else
-            {
-                var receiver = await _userManager.FindByIdAsync(userId);
-                if (receiver != null)
-                {
-                    await _pushService.SendNotification(receiver, "New Message", message);
-                }
-            }
-
-        }
-        
+       
         if (projectId > 0)
         {
             var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
