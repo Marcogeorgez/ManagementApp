@@ -27,9 +27,9 @@ public class CloudflareR2Service
         {
             _logger.LogInformation($"Started Uploading file {file.Name}");
 
-            
+            var cleanedFileName = file.Name.Trim().Replace('—', '-'); // Replace em dash with hyphen
             // Generate a unique filename
-            var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{file.Name.Trim()}"?? $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{cleanedFileName}"?? $"{Guid.NewGuid()}{Path.GetExtension(cleanedFileName)}";
 
             // URL encode the file name
             string encodedFileName = WebUtility.UrlEncode(fileName);
