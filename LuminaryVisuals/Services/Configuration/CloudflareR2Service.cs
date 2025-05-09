@@ -50,6 +50,8 @@ public class CloudflareR2Service
 
             var response = await _s3Client.PutObjectAsync(request);
             _logger.LogInformation("File uploaded successfully.");
+            _logger.LogInformation($"_settings.Env: {_settings.Env}");
+
             string publicUrl;
             // Construct public URL
             if (_settings.Env != "development")
