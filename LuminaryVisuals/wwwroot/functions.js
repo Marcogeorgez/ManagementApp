@@ -73,9 +73,10 @@ window.subscribeToPush = async function () {
             console.log('Push notifications not supported in this browser');
             return false;
         }
-
+        console.log("Push notifications supported in this browser, requesting permission");
         // Request permission - same for all browsers
         const permission = await Notification.requestPermission();
+
         console.log('Notification permission:', permission);
 
         if (permission !== 'granted') {
@@ -141,7 +142,7 @@ function urlB64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
         .replace(/\-/g, '+')
-        .replace(/_/g, '/');
+        .replace(/\_/g, '/'); 
 
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
