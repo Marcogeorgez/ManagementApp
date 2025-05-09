@@ -22,7 +22,7 @@
         <LoadingIndicator IsVisible="@_loadingIndicator" />
 
         <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid"
-        Style="transform: scale(0.7);transform-origin: top left; width: 145%; transform-style: flat;" 
+        Style="zoom: 0.7;" 
         Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" 
         Filterable=true ColumnsPanelReordering=false  MultiSelection="true"ShowColumnOptions=false  
         @bind-SelectedItems="@SelectedProjects" SelectOnRowClick="false" Groupable

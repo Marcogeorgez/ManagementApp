@@ -31,7 +31,7 @@ public class InvoiceService
 
                 var formFields = new Dictionary<string, string>
                 {
-                    { "from", "Joan Dhimitri \n Rr Raqi Qirinxhi L11 Nr 35 Korce, Albania \n NIPT: M14801001M" },
+                    { "from", "Joan Dhimitri \n Rr Raqi Qirinxhi L11 Nr\n35 Korce, Albania \n NIPT: M14801001M" },
                     { "to", BillAddressTo },
                     { "logo", $"{navigationManager.BaseUri}Logo192-Dark.png" },
                     { "date", DateTime.Now.ToString("MMM dd, yyyy") },
