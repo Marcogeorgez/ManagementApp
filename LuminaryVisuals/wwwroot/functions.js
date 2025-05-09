@@ -83,3 +83,25 @@ async function subscribeToPush() {
     console.log("Push subscription saved:", response);
 }
 
+
+window.triggerInstallPrompt = function () {
+    if (window.deferredPrompt) {
+        // Show the installation prompt
+        window.deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        window.deferredPrompt.userChoice.then((choiceResult) => {
+            // Nullify the prompt object after the prompt has been handled
+            window.deferredPrompt = null;
+        });
+    } else {
+        // Call checkPwaSupport when installation isn't available
+        window.checkPwaSupport();
+    }
+};
+
+// Check for PWA support
+window.checkPwaSupport = function () {
+    if (!('beforeinstallprompt' in window)) {
+        alert("This browser doesn't support PWA installation.");
+    }
+};

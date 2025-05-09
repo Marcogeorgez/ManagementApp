@@ -169,6 +169,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             _showFinishedProjects = await LocalStorage.GetItemAsync<bool>("showFinishedProjects");
             ToggleFinishedProjects(_showFinishedProjects);
             StateHasChanged();
+
         }
     }
     public void Dispose()
