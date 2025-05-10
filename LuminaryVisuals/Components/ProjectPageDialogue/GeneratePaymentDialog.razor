@@ -142,11 +142,11 @@
 
             @if (isAdmin && ViewClient == "clients")
             {
-                <MudItem sm="12">
+                <MudItem sm="12" Class="mt-3">
                     <MudText >
                         Mark Selected Projects Statuses as Sent-Invoice:
                     </MudText>
-                    <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus">
+                    <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus" Class="ml-3">
 
                     </MudCheckBox>
                 </MudItem>
