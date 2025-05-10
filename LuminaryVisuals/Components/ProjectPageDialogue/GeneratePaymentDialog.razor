@@ -142,14 +142,9 @@
 
             @if (isAdmin && ViewClient == "clients")
             {
-                <MudItem sm="12" Class="mt-3">
-                    <MudText >
-                    Mark Status of Selected Projects as 'Sent-Invoice'
-                    </MudText>
-                    <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus" Color="Color.Primary" Class="ml-3">
-
-                    </MudCheckBox>
-                </MudItem>
+            <MudItem sm="12" Class="mt-3" >
+                <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus" Color="Color.Primary" Class="ml-3" Label="Mark Status of Selected Projects as 'Sent-Invoice'" />
+            </MudItem>
             }
         @if (ViewClient == "editors")
         {
