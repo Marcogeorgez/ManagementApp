@@ -120,9 +120,9 @@
                                         <span>
                                             <span style="color:#b0dfe8">
                                                 @((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
-                                        project.PrimaryEditorDetails.FinalBillableHours : 0)
-                                        + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
-                                        project.SecondaryEditorDetails.FinalBillableHours : 0))h
+                                    project.PrimaryEditorDetails.FinalBillableHours : 0)
+                                    + (project.SecondaryEditorId == currentUserId && editorPaid == (project.SecondaryEditorDetails.DatePaidEditor != null) ?
+                                    project.SecondaryEditorDetails.FinalBillableHours : 0))h
                                             </span>
                                             <span style="color:#74c85f">
                                                 @((Math.Round((project.PrimaryEditorId == currentUserId && editorPaid == (project.PrimaryEditorDetails.DatePaidEditor != null) ?
@@ -139,6 +139,18 @@
                 </MudSelect>
             </MudItem>
         </MudStack>
+
+            @if (isAdmin && ViewClient == "clients")
+            {
+                <MudItem sm="12">
+                    <MudText >
+                        Mark Selected Projects Statuses as Sent-Invoice:
+                    </MudText>
+                    <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus">
+
+                    </MudCheckBox>
+                </MudItem>
+            }
         @if (ViewClient == "editors")
         {
             <MudStack Row AlignItems="AlignItems.Center" Class="mt-4">
@@ -257,6 +269,7 @@
     IEnumerable<Project> projects { get; set; }
     IEnumerable<Project> selectedProjects = new List<Project>() ;
     private bool editorPaid = false;
+    private bool sentInvoiceStatus = false;
     private DateTime? StartDate;
     private DateTime? EndDate;
     private readonly List<string> Months = Enumerable.Range(1, 12)
@@ -395,13 +408,21 @@
     private void Submit()
     {
         GenerateProjectDTO generateProjectDTO;
+        if (sentInvoiceStatus)
+        {
+            foreach (var project in selectedProjects)
+            {
+                project.AdminStatus = AdminProjectStatus.Sent_Invoice;
+            }
+        }
         if (ViewClient == "clients")
         {
             generateProjectDTO = new()
             {
                 project = selectedProjects.ToList(),
                 ViewClient = ViewClient,
-                editorPaid = editorPaid
+                editorPaid = editorPaid,
+                sentInvoice = sentInvoiceStatus
             };
         }
         else
@@ -416,7 +437,8 @@
                             (e.SecondaryEditorId != null && selectedUsersIds.Contains(e.SecondaryEditorId))
                         ).ToList(),
                     ViewClient = ViewClient,
-                    editorPaid = editorPaid
+                    editorPaid = editorPaid,
+                    sentInvoice = false
                 };
         }
         

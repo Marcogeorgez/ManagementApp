@@ -1017,6 +1017,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 {
                     if(generateProject.ViewClient == "clients" && isAdminView)
                     {
+                        if(generateProject.sentInvoice == true)
+                        {
+                            _ = projectServices.UpdateProjectsInBatchAsync(generateProject.project, _currentUserId);
+                        }
                         await DownloadFilteredAsCsvPayoneer(generateProject.project.ToList());
                     }
                     else
@@ -1083,12 +1087,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     {
         try
         {
-            if (await ConfirmationService.Confirm("Do you want to download the filtered projects as Payoneer batch payment request?"))
-            {
-                    var csvContent = await GenerateCsvContentFilteredPayoneer(projects);
-                    var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_yyyy}.csv";
-                    await DownloadFile(filename, csvContent);
-            }
+            var csvContent = await GenerateCsvContentFilteredPayoneer(projects);
+            var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_yyyy}.csv";
+            await DownloadFile(filename, csvContent);
         }
         catch (Exception ex)
         {
