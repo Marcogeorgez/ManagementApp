@@ -139,20 +139,34 @@
     }
     protected override async Task OnInitializedAsync()
     {
-        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
-        _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
-        isAdmin = currentUser.IsInRole("Admin");
-        if(isAdmin)
+        try
         {
-            allProjects = await projectService.GetProjectsAsync(false);
+
+
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            _userName = currentUser.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value!;
+            isAdmin = currentUser.IsInRole("Admin");
+            if (isAdmin)
+            {
+                allProjects = await projectService.GetProjectsAsync(false);
+            }
+            else
+            {
+                allProjects = allProjectsInDateRange;
+            }
+            if (!_subscribed)
+            {
+                BreakpointService.OnChange += StateHasChanged;
+                _subscribed = true;
+            }
         }
-        else{
-            allProjects = allProjectsInDateRange;
-        }
-        if (!_subscribed)
+        catch (OperationCanceledException)
         {
-            BreakpointService.OnChange += StateHasChanged;
-            _subscribed = true;
+            // Task was canceled because component is being disposed
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
         }
     }
     private void toggleFlag() => showFlag = !showFlag;

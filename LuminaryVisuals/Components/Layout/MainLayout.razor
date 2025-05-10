@@ -6,7 +6,7 @@
 @inject BrowserInfoService BrowserInfo
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
-
+@implements IAsyncDisposable
 <div id="blazor-error-ui" data-nosnippet>
     @if (HostEnvironment.IsProduction())
     {
@@ -82,19 +82,6 @@ CloseOnEscapeKey="true" />
                 </MudPaper>
             }
 
-            @*             @if (ProjectState.CurrentProject != null)
-            {
-                <div class="floating-chat-container">
-
-                    <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject"
-                    UserId="@_currentUserId"
-                    IsAdminView="@isAdminView"
-                    IsClientView="@_isClientView" isEditorView="@_isEditorView"
-                     />
-                </div>
-
-            }
- *@
             <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="" />
@@ -147,61 +134,51 @@ CloseOnEscapeKey="true" />
         _showBanner = false;
         // Don't save to localStorage so it will show again next time
     }
+    // Add a class-level field for the CancellationTokenSource
+    private CancellationTokenSource _cts = new CancellationTokenSource();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _showSplashScreen = false;
             StateHasChanged(); // Trigger a UI update
-            await Task.Delay(5000);
-            // Check if user has already made a choice
-            var userChoice = await JS.InvokeAsync<string>("localStorage.getItem", "notificationPreference");
-            if (string.IsNullOrEmpty(userChoice))
+
+            try
             {
-                _showBanner = true;
-                StateHasChanged(); // Trigger a UI update
+                await Task.Delay(5000, _cts.Token);
+
+                // Check if cancellation was requested
+                if (!_cts.IsCancellationRequested)
+                {
+                    // Check if user has already made a choice
+                    var userChoice = await JS.InvokeAsync<string>("localStorage.getItem", "notificationPreference");
+                    if (string.IsNullOrEmpty(userChoice))
+                    {
+                        _showBanner = true;
+                        StateHasChanged(); // Trigger a UI update
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Component was disposed, do nothing
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error accessing localStorage: {ex.Message}");
             }
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        // Cancel any pending operations
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+
     private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
     private bool _showBanner = false;
-    // Missing closing button not working properly in calendar.
-    // [CascadingParameter]
-    // public ClaimsPrincipal? currentUser { get; set; }
-    // [Inject] AuthenticationStateProvider AuthenticationStateProvider { get; set; }
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-    //     currentUser = authState.User;
-
-    //     if (currentUser?.Identity?.IsAuthenticated == true)
-    //     {
-    //         _currentUserId = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-    //         isAdminView = currentUser.IsInRole("Admin");
-    //         _isEditorView = currentUser.IsInRole("Editor");
-    //         _isClientView = currentUser.IsInRole("Client");
-
-    //         timezoneOffsetMinutes = await JS.InvokeAsync<int>("getTimezoneOffset");
-    //     }
-
-    // }
-    // [Inject] ProjectState ProjectState { get; set; }
-    // public void Dispose()
-    // {
-    //     ProjectState.OnChange -= HandleProjectStateChange;
-
-    // }
-
-
-    // private void HandleProjectStateChange()
-    // {
-    //     InvokeAsync(StateHasChanged);
-    // }
-
-    // private bool isAdminView;
-    // private bool _isEditorView;
-    // private bool _isClientView;
-    // private int timezoneOffsetMinutes;
-    // private string _currentUserId;
+   
 }
