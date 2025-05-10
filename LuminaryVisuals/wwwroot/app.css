@@ -20,7 +20,7 @@
 }
 @media (min-width: 768px) { /* For PCs and larger screens */
     .project-data-grid > .mud-table-container {
-        height: 122vh !important;
+        height: 119dvh !important;
     }
     div.popup-banner {
         bottom: 0%;
@@ -31,6 +31,14 @@
         width: 40vw;
         transform: unset;
     }
+}
+@media (max-width:700px) {
+    div.project-data-grid > div.mud-table-container {
+        height: 107dvh !important;
+    }
+}
+.mud-table-container{
+    height: 115dvh !important;
 }
 @media (min-height: 600px) and (max-height: 800px) and (max-width:1024px){ /* For medium screens */
     .project-data-grid > .mud-table-container {
