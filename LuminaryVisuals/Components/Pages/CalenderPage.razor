@@ -1,7 +1,7 @@
 ﻿@attribute [Authorize(Policy = "RequireAdminEditor")]
 @page "/Calendar"
 @using LuminaryVisuals.Components.ProjectPageDialogue
-
+@implements IDisposable
 <PageTitle>Calendar</PageTitle>
 
 <MudMainContent class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px;">
@@ -108,6 +108,7 @@
     private ProjectStatus? statusFilter;
     private string? editorFilter;
     private Project? selectedProject = new() ;
+    private bool _subscribed = false;
     private bool canDrag => BreakpointService.CurrentBreakpoint >= Breakpoint.Md;
     public class ExtendedCalendarItem : CalendarItem
     {
@@ -120,7 +121,11 @@
     [Inject] private BreakpointService BreakpointService { get; set; } = null!;
     public void Dispose()
     {
-        BreakpointService.OnChange -= StateHasChanged;
+        if (_subscribed)
+        {
+            BreakpointService.OnChange -= StateHasChanged;
+            _subscribed = false;
+        }
     }
 
     string _currentUserId = null!;
@@ -144,7 +149,11 @@
         else{
             allProjects = allProjectsInDateRange;
         }
-        BreakpointService.OnChange += StateHasChanged;
+        if (!_subscribed)
+        {
+            BreakpointService.OnChange += StateHasChanged;
+            _subscribed = true;
+        }
     }
     private void toggleFlag() => showFlag = !showFlag;
     private void toggleCameraRoll() => showCameraRoll = !showCameraRoll;
@@ -160,8 +169,17 @@
         date = dateRange;
         await ApplyFilters();
 
-        await JS.InvokeVoidAsync("updateDraggable");
-
+        try
+        {
+            if (_subscribed)
+            {
+                await JS.InvokeVoidAsync("updateDraggable");
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit disconnected — no action needed
+        }
     }
     private async Task ApplyFilters()
     {
@@ -183,7 +201,10 @@
 
             }
             UpdateEvents();
-            await JS.InvokeVoidAsync("updateDraggable");
+
+            if (_subscribed) { 
+                await JS.InvokeVoidAsync("updateDraggable"); 
+            }
         }
         catch (Exception ex)
         {
@@ -245,7 +266,7 @@
         }
 
     }
-    private async void OnStatusFilterChanged(string status)
+    private async Task OnStatusFilterChanged(string status)
     {
         _statusFilterString = status;
         statusFilter = (ProjectStatus)Enum.Parse(typeof(ProjectStatus), _statusFilterString);
@@ -253,7 +274,7 @@
         StateHasChanged();
     }
 
-    private async void OnEditorFilterChanged(string editor)
+    private async Task OnEditorFilterChanged(string editor)
     {
         editorFilter = editor;
         await ApplyFilters();
@@ -261,7 +282,7 @@
     }
 
     // Clear filters
-    private async void ClearFilters()
+    private async Task ClearFilters()
     {
         _statusFilterString = "";
         statusFilter = null;
@@ -382,8 +403,10 @@
         {
 
             _calender?.Refresh();
-            await JS.InvokeVoidAsync("updateDraggable");
-
+            if (_subscribed)
+            {
+                await JS.InvokeVoidAsync("updateDraggable");
+            }
 
         }
     }
