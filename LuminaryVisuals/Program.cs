@@ -341,7 +341,7 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<NotificationServic
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<LuminaryVisuals.Services.Helpers.WordFilter>();
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddSingleton<PushNotificationService>();
+builder.Services.AddScoped<PushNotificationService>();
 builder.Services.AddControllers();
 builder.Services.AddScoped<BrowserInfoService>();
 builder.Services.AddScoped<InvoiceService>();
