@@ -32,7 +32,7 @@
         transform: unset;
     }
 }
-@media (max-width:700px) {
+@media (max-width:800px) {
     div.project-data-grid > div.mud-table-container {
         height: 121dvh !important;
     }
@@ -486,13 +486,13 @@ th.mud-table-cell.sticky-left:hover {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.9); /* Optional: Add a background overlay */
+    background-color: rgba(0, 0, 0, 0.9);
     z-index: 10000;
 }
 .mud-layout {
@@ -520,13 +520,11 @@ th.mud-table-cell.sticky-left:hover {
 .loading-screen-title {
     color: #FFB647;
     font: inherit;
-    font-size: 76px;
-    height: 45%;
-    margin: 80px;
-    text-align: center;
+    font-size: 4rem;
+    height: auto;
     color: #FFFFFF;
     font-family: 'Inter', sans-serif;
-    font-size: 5.5em;
+    font-size: 4.5em;
     line-height: 1.125;
     font-weight: 600;
     background-image: linear-gradient(275deg, #FFC700 0%, #FFFFFF 59%);
@@ -547,7 +545,6 @@ th.mud-table-cell.sticky-left:hover {
     font-weight: 300;
     letter-spacing: 3px;
     text-transform: uppercase;
-    animation: pulse 1.5s ease-in-out infinite alternate, fade-in 1s ease-in;
     opacity: 0.9;
     text-shadow: 0 0 10px rgba(255,255,255,0.3);
     height:50%;
