@@ -1632,6 +1632,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
     bottom: 0;
     z-index: 1;
 }
-.mud-table-agination{
+.mud-table-pagination{
     position: fixed !important;
+    width: 100%;
 }
