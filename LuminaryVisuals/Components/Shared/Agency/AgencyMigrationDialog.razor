@@ -182,7 +182,7 @@
             { "Message", "Are you sure you want to combine these users into a single agency? All of their projects will be assigned to the new agency." }
         };
 
-        var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
         var result = await dialog.Result;
 
         return !result.Canceled && (bool) result.Data;

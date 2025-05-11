@@ -1,0 +1,42 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudDatePicker Label="Primary Editor Payment Date"
+                       Variant="Variant.Outlined" @bind-Date="_PrimaryEditorPaymentDate"
+                       Class="mt-3" Clearable="true"
+                       Required="false" />
+        <MudDatePicker Label="Secondary Editor Payment Date"
+                       Variant="Variant.Outlined" @bind-Date="_SecondaryEditorPaymentDate"
+                       Class="mt-3" Clearable="true"
+                       Required="false" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel" Disabled="processing">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit" Disabled="processing">@(processing ? "Saving.." : "Save")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<Project> projects { get; set; }
+    private DateTime? _PrimaryEditorPaymentDate = DateTime.Today;
+    private DateTime? _SecondaryEditorPaymentDate = DateTime.Today;
+    bool processing;
+    private void Submit()
+    {
+        foreach(var project in projects)
+        {
+            if(project.PrimaryEditorId != null && _PrimaryEditorPaymentDate != null)
+            {
+                project.PrimaryEditorDetails.DatePaidEditor = DateTime.SpecifyKind(_PrimaryEditorPaymentDate.Value, DateTimeKind.Utc);
+            }
+            if (project.SecondaryEditor != null && _SecondaryEditorPaymentDate != null)
+            {
+                project.SecondaryEditorDetails.DatePaidEditor = DateTime.SpecifyKind(_SecondaryEditorPaymentDate.Value, DateTimeKind.Utc);
+            }
+        }
+        MudDialog.Close(DialogResult.Ok(projects));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+}

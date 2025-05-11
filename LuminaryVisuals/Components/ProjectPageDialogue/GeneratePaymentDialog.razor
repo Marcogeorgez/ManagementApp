@@ -1,4 +1,6 @@
 ﻿@inject IDbContextFactory<ApplicationDbContext> _contextFactory;
+@inject IDialogService DialogService
+
 <MudDialog>
     <DialogContent>
         @if (isAdmin)
@@ -140,12 +142,7 @@
             </MudItem>
         </MudStack>
 
-            @if (isAdmin && ViewClient == "clients")
-            {
-            <MudItem sm="12" Class="mt-3" >
-                <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus" Color="Color.Primary" Class="ml-3" Label="Mark Status of Selected Projects as 'Sent-Invoice'" />
-            </MudItem>
-            }
+
         @if (ViewClient == "editors")
         {
             <MudStack Row AlignItems="AlignItems.Center" Class="mt-4">
@@ -156,6 +153,18 @@
                     <MudRadio Value="false" Color="Color.Info" Dense="true">Unpaid</MudRadio>
                 </MudRadioGroup>
             </MudStack>
+        }
+        @if (isAdmin && ViewClient == "clients")
+        {
+            <MudItem sm="12" Class="mt-3">
+                <MudCheckBox T="bool" @bind-Value="sentInvoiceStatus" @onclick="ShowConfirmation" Color="Color.Primary" Class="ml-3" Label="Mark Status of Selected Projects as 'Sent-Invoice'" />
+            </MudItem>
+        }
+        @if (isAdmin && ViewClient == "editors")
+        {
+            <MudItem sm="12" Class="mt-3 mb-3 ml-auto d-flex justify-end">
+                <MudButton Variant="Variant.Outlined" @onclick="ShowEditorDateDialog" Color="Color.Primary">Set Payment Date</MudButton>
+            </MudItem>
         }
         <MudDivider />
 
@@ -251,7 +260,7 @@
 
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public bool isEditor { get; set; }
     [Parameter] public bool isAdmin { get; set; }
     [Parameter] public string currentUserId { get; set; }
@@ -300,7 +309,49 @@
             ViewClient = "editors";
         }
     }
+    private async Task ShowConfirmation()
+    {
+        var projectNames = selectedProjects.Select(x => x.ProjectName).ToList();
 
+        var grouped = projectNames
+            .Select((name, index) => new { name, index })
+            .GroupBy(x => x.index / 2)
+            .Select(g => string.Join(", ", g.Select(x => x.name)));
+
+        var formattedMessage = string.Join("<br />", grouped);
+
+        var parameters = new DialogParameters
+        {
+            { "Message", $"Are you sure you want to change these projects status to sent Invoice? <br /><br /> {formattedMessage}" }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            sentInvoiceStatus = true;
+        }
+        else
+        {
+            sentInvoiceStatus = false;
+        }
+    }
+    bool _modifiedDate;
+    private async Task ShowEditorDateDialog()
+    {
+        var parameters = new DialogParameters
+        {
+                ["projects"] = selectedProjects.ToList()
+        };
+        var dialog = await DialogService.ShowAsync<GeneratePaymentPaymentDateEditorDialog>("Payment Date For Editors", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            selectedProjects = result.Data as List<Project> ?? new();
+            _modifiedDate = true;
+        }
+    }
     private void OnStartDateChanged(DateTime? date)
     {
         if (date.HasValue)
@@ -417,7 +468,7 @@
                 project = selectedProjects.ToList(),
                 ViewClient = ViewClient,
                 editorPaid = editorPaid,
-                sentInvoice = sentInvoiceStatus
+                modified = sentInvoiceStatus
             };
         }
         else
@@ -433,7 +484,7 @@
                         ).ToList(),
                     ViewClient = ViewClient,
                     editorPaid = editorPaid,
-                    sentInvoice = false
+                    modified = _modifiedDate
                 };
         }
         

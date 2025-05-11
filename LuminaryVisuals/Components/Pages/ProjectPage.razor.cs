@@ -1025,7 +1025,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 {
                     if(generateProject.ViewClient == "clients" && isAdminView)
                     {
-                        if(generateProject.sentInvoice == true)
+                        if(generateProject.modified == true)
                         {
                             _ = projectServices.UpdateProjectsInBatchAsync(generateProject.project, _currentUserId);
                         }
@@ -1033,6 +1033,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                     }
                     else
                     {
+                        if (generateProject.modified == true)
+                        {
+                            _ = projectServices.UpdateProjectsInBatchAsync(generateProject.project, _currentUserId);
+                        }
                         await DownloadFilteredAsCsvEditors(generateProject.project.ToList(), generateProject.editorPaid!.Value);
                     }
                 }
