@@ -42,13 +42,13 @@
 }
 @media (min-height: 600px) and (max-height: 800px) and (max-width:1024px){ /* For medium screens */
     .project-data-grid > .mud-table-container {
-        height: 110svh !important;
+        height: 110dvh !important;
     }
 }
 
 @media (min-height: 400px) and (max-height: 600px) { /* For Phones */
     .project-data-grid > .mud-table-container {
-        height: 95svh !important;
+        height: 95dvh !important;
     }
 
 
@@ -56,7 +56,7 @@
 @media (max-height: 400px)
 {
     .project-data-grid > .mud-table-container {
-        height: 82svh !important;
+        height: 82dvh !important;
     }
 }
 .mud-tabs-tabbar,
