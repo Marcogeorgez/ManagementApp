@@ -36,6 +36,7 @@
     div.project-data-grid > div.mud-table-container {
         height: 99dvh !important;
     }
+
 }
 .mud-table-container{
     height: 115dvh !important;
@@ -1627,7 +1628,6 @@ tr.mud-table-row.drop-target > td, .drop-target {
 }
 .mud-table-pagination, .mud-toolbar-gutters.mud-toolbar-gutters.mud-table-pagination-toolbar {
     background: #0d0e19 !important;
-    position: fixed !important;
     bottom: 0;
     z-index: 1;
 }
