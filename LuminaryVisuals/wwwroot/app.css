@@ -244,10 +244,7 @@ th.mud-table-cell.sticky-left:hover {
         width: 50px !important;
     }
 
-    .chat-container {
-        width: 100dvw !important;
-        height: 100dvh !important;
-    }
+
 }
 
 .mud-navmenu {
@@ -666,6 +663,10 @@ th.mud-table-cell.sticky-left:hover {
         /* Modern solution that accounts for mobile browser UI */
         height: 100dvh !important;
     }
+    .chat-container {
+        width: 100dvw !important;
+        height: 100dvh !important;
+    }
     body.chat-open {
         overflow: hidden;
         position: fixed;
@@ -673,9 +674,6 @@ th.mud-table-cell.sticky-left:hover {
     }
     .chat-panel {
         width: 100dvw !important;
-        /* Fallback for browsers that don't support dvh */
-        height: 95vh !important;
-        /* Modern solution that accounts for mobile browser UI */
         height: 100dvh !important;
     }
 
@@ -894,8 +892,8 @@ th.mud-table-cell.sticky-left:hover {
     overflow-x:hidden;
 }
 .chat-panel {
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
     border-radius: 12px;
     background-color: #161621;
     color: #E0E0E0;
