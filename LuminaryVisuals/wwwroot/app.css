@@ -36,6 +36,7 @@
     div.project-data-grid > div.mud-table-container {
         height: 121dvh !important;
     }
+    
 
 }
 .mud-table-container{
@@ -1630,4 +1631,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
     background: #0d0e19 !important;
     bottom: 0;
     z-index: 1;
+}
+.mud-table-agination{
+    position: fixed !important;
 }
