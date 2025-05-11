@@ -1625,6 +1625,6 @@ tr.mud-table-row.drop-target > td, .drop-target {
     flex: unset;
     margin-right: auto;
 }
-.mud-table-pagination {
+.mud-table-pagination, .mud-toolbar-gutters.mud-toolbar-gutters.mud-table-pagination-toolbar {
     background: #0d0e19 !important;
 }
