@@ -34,7 +34,7 @@
 }
 @media (max-width:700px) {
     div.project-data-grid > div.mud-table-container {
-        height: 107dvh !important;
+        height: 99dvh !important;
     }
 }
 .mud-table-container{
@@ -1627,4 +1627,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
 }
 .mud-table-pagination, .mud-toolbar-gutters.mud-toolbar-gutters.mud-table-pagination-toolbar {
     background: #0d0e19 !important;
+    position: fixed !important;
+    bottom: 0;
+    z-index: 1;
 }
