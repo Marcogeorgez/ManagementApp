@@ -29,6 +29,7 @@ Position="DialogPosition.Center"
 CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 <AppUserProvider>
+    <CascadingValue Value="@SetShowBanner" Name="SetBannerVisibility">
     <CascadingValue Value="_drawerOpen">
         <MudLayout Style="position:absolute;">
             @if (_showSplashScreen && !IsStaticSSR)
@@ -62,18 +63,18 @@ CloseOnEscapeKey="true" />
                         </MudItem>
                         <MudItem xs="12" Class="d-flex gap-2 mt-2">
                             <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Primary"
-                                       OnClick="SubscribeToPush">
+                            Color="Color.Primary"
+                            OnClick="SubscribeToPush">
                                 Yes, enable notifications
                             </MudButton>
                             <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Error"
-                                       OnClick="DeclineNotifications">
+                            Color="Color.Error"
+                            OnClick="DeclineNotifications">
                                 No, thanks
                             </MudButton>
                             <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Primary"
-                                       OnClick="AskLater">
+                            Color="Color.Primary"
+                            OnClick="AskLater">
                                 Ask me later
                             </MudButton>
                         </MudItem>
@@ -92,6 +93,7 @@ CloseOnEscapeKey="true" />
             </script>
 
         </MudLayout>
+    </CascadingValue>
     </CascadingValue>
 </AppUserProvider>
 
@@ -178,6 +180,11 @@ CloseOnEscapeKey="true" />
     }
 
     private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
-    private bool _showBanner = false;
-   
+    [CascadingParameter]
+    public bool _showBanner { get; set; } = false;
+    private Action<bool> SetShowBanner => (value) =>
+    {
+        _showBanner = value;
+        StateHasChanged();
+    };
 }

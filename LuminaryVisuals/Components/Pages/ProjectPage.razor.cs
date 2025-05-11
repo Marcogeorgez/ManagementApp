@@ -997,6 +997,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         };
 
     }
+    [CascadingParameter(Name = "SetBannerVisibility")]
+    private Action<bool> SetBannerVisibility { get; set; } = default!;
+    private void NotificationPreferences()
+    {
+        SetBannerVisibility?.Invoke(true);
+    }
     private async Task OpenGeneratePaymentDialog()
     {
         LoadingService.ShowLoading();

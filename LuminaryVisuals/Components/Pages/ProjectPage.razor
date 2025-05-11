@@ -16,7 +16,6 @@
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
 @implements IDisposable
 <PageTitle>Projects</PageTitle>
-
 <MudMainContent class="main-content-sm" Style="height: 100dvh; padding-top:25px; padding-left:25px; padding-right:25px;">
     
         <LoadingIndicator IsVisible="@_loadingIndicator" />
@@ -46,6 +45,11 @@
                     <MudMenuItem OnClick="@(() => _dataGrid.ShowColumnsPanel())">
                         Show Columns Panel
                     </MudMenuItem>
+                    <MudMenuItem OnClick="NotificationPreferences">
+                        <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
+                        Notification Preferences
+                    </MudMenuItem>
+
                     @if (_isAdminView || _isEditorView)
                     {
                         <MudMenuItem OnClick="OpenGeneratePaymentDialog">

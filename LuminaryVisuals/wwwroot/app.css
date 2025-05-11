@@ -25,6 +25,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100vw;
+    z-index:10000;
 }
 @media (min-width: 768px) { /* For PCs and larger screens */
     .project-data-grid > .mud-table-container {
