@@ -1,13 +1,15 @@
-﻿<MudDialog>
+﻿@inject IDialogService DialogService
+
+<MudDialog>
     <DialogContent>
         <MudDatePicker Label="Primary Editor Payment Date"
-                       Variant="Variant.Outlined" @bind-Date="_PrimaryEditorPaymentDate"
-                       Class="mt-3" Clearable="true"
-                       Required="false" />
+        Variant="Variant.Outlined" @bind-Date="_PrimaryEditorPaymentDate"
+        Class="mt-3" Clearable="true"
+        Required="false" />
         <MudDatePicker Label="Secondary Editor Payment Date"
-                       Variant="Variant.Outlined" @bind-Date="_SecondaryEditorPaymentDate"
-                       Class="mt-3" Clearable="true"
-                       Required="false" />
+        Variant="Variant.Outlined" @bind-Date="_SecondaryEditorPaymentDate"
+        Class="mt-3" Clearable="true"
+        Required="false" />
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel" Disabled="processing">Cancel</MudButton>
@@ -21,8 +23,29 @@
     private DateTime? _PrimaryEditorPaymentDate = DateTime.Today;
     private DateTime? _SecondaryEditorPaymentDate = DateTime.Today;
     bool processing;
-    private void Submit()
+    private async Task Submit()
     {
+        var projectNames = projects.Select(x => x.ProjectName).ToList();
+
+        var grouped = projectNames
+            .Select((name, index) => new { name, index })
+            .GroupBy(x => x.index / 2)
+            .Select(g => string.Join(", ", g.Select(x => x.name)));
+
+        var formattedMessage = string.Join("<br />", grouped);
+
+        var parameters = new DialogParameters
+        {
+            { "Message", $"Are you sure you want to change these projects payment date for existing editors? <br /><br /> {formattedMessage}" }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+
+        if (result.Canceled)
+        {
+            return;
+        }
+
         foreach(var project in projects)
         {
             if(project.PrimaryEditorId != null && _PrimaryEditorPaymentDate != null)
