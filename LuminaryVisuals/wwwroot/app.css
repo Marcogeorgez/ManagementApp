@@ -9,6 +9,14 @@
     --mud-default-borderradius: 12px !important;
 
 }
+@media (max-width: 600px) {
+    @supports (-webkit-touch-callout: none) {
+        .mud-table-pagination {
+            position: fixed !important;
+            width: 100%;
+        }
+    }
+}
 .popup-banner {
     background-color: rgb(25, 27, 43);
     border-radius: 14px;
@@ -1629,8 +1637,4 @@ tr.mud-table-row.drop-target > td, .drop-target {
     background: #0d0e19 !important;
     bottom: 0;
     z-index: 1;
-}
-.mud-table-pagination{
-    position: fixed !important;
-    width: 100%;
 }
