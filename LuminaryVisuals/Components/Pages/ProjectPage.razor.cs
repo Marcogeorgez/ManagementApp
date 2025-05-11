@@ -167,9 +167,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
             await GetUserNotifications();
             await LoadProjects();
             _showFinishedProjects = await LocalStorage.GetItemAsync<bool>("showFinishedProjects");
+            _showUpcomingProjects = await LocalStorage.GetItemAsync<bool>("showUpcomingProjects");
             ToggleFinishedProjects(_showFinishedProjects);
+            ToggleUpcomingProjects(_showUpcomingProjects);
             StateHasChanged();
-
         }
     }
     public void Dispose()
@@ -431,7 +432,8 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         }
         else
         {
-            ToggleFinishedProjects(_showFinishedProjects);  
+            ToggleFinishedProjects(_showFinishedProjects);
+            ToggleUpcomingProjects(_showUpcomingProjects);
         }
         SelectedProjects = new();
         await LoadProjects();
@@ -1976,7 +1978,9 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         UndoRedoService.AddSwap(projectId, projectName, targetName, sourceId, targetId);
     }
 
-    private bool _showFinishedProjects ;
+    private bool _showFinishedProjects;
+    private bool _showUpcomingProjects;
+
     [Inject] Blazored.LocalStorage.ILocalStorageService LocalStorage { get; set; }
     private async void ToggleFinishedProjects(bool hideFinished)
     {
@@ -1984,22 +1988,44 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         await LocalStorage.SetItemAsync("showFinishedProjects", _showFinishedProjects);
         if (_dataGrid != null && (!_isArchived))
         {
-            // Clear existing filters first
-            _dataGrid.FilterDefinitions.Clear();
-
-            if (_showFinishedProjects)
-            {
-                // Add filter to exclude Finished status
-                _dataGrid.FilterDefinitions.Add(new FilterDefinition<Project>
-                {
-                    Column = _dataGrid.RenderedColumns.FirstOrDefault(c => c.Title == "Status") as Column<Project>,
-                    Operator = "not equals",
-                    Value = ProjectStatus.Finished.ToString()
-                });
-            }
-            // Apply the filters
-            //await _dataGrid.ReloadServerData();
-            StateHasChanged();
+            ApplyFilters();
         }
+    }
+    private async void ToggleUpcomingProjects(bool hideUpcoming)
+    {
+        _showUpcomingProjects = hideUpcoming;
+        await LocalStorage.SetItemAsync("showUpcomingProjects", _showUpcomingProjects);
+        if (_dataGrid != null && ( !_isArchived ))
+        {
+            ApplyFilters();
+        }
+    }
+    private void ApplyFilters()
+    {
+        // Clear existing filters first
+        _dataGrid.FilterDefinitions.Clear();
+
+        // Add active filters based on current toggle states
+        if (_showFinishedProjects)
+        {
+            _dataGrid.FilterDefinitions.Add(new FilterDefinition<Project>
+            {
+                Column = _dataGrid.RenderedColumns.FirstOrDefault(c => c.Title == "Status") as Column<Project>,
+                Operator = "not equals",
+                Value = ProjectStatus.Finished.ToString()
+            });
+        }
+
+        if (_showUpcomingProjects)
+        {
+            _dataGrid.FilterDefinitions.Add(new FilterDefinition<Project>
+            {
+                Column = _dataGrid.RenderedColumns.FirstOrDefault(c => c.Title == "Status") as Column<Project>,
+                Operator = "not equals",
+                Value = ProjectStatus.Upcoming.ToString()
+            });
+        }
+
+        StateHasChanged();
     }
 }
