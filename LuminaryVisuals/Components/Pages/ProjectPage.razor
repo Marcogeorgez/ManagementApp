@@ -112,9 +112,6 @@
                     }
                 </MudMenu>
 
-
-                
-
                 @if (isAdminView)
                 {
                     <MudTooltip ShowOnClick=false Text="Batch Editing" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
@@ -192,7 +189,7 @@
                 }
                 <MudSpacer />
 
-            <MudTextField T="string" Placeholder="Search..." @bind-Value="_searchString" Adornment="Adornment.Start" Immediate="true" 
+            <MudTextField T="string" Placeholder="Search..." @bind-Value="_searchString" Adornment="Adornment.Start" DebounceInterval="300" 
                 AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
 
             </ToolBarContent>

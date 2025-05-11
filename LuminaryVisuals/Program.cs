@@ -261,14 +261,13 @@ builder.Services.AddServerSideBlazor()
         options.DisconnectedCircuitMaxRetained = 100; // Optional: Limit the number of disconnected circuits retained.
         options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(120);
     });
-// So now it can be unlimited
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
 var environment = builder.Environment;
-// Get the Sentry DSN from environment variables or configuration
+// Gets the Sentry DSN from environment variables or configuration
 var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN") ?? builder.Configuration.GetConnectionString("SentryDSN");
-
+var sentryEnvironment = Environment.GetEnvironmentVariable("SentryEnvironment") ?? "luminary-visuals@1.142.production";
 if (!string.IsNullOrEmpty(sentryDSN))
 {
     builder.WebHost.UseSentry(options =>
@@ -278,7 +277,7 @@ if (!string.IsNullOrEmpty(sentryDSN))
         options.StackTraceMode = StackTraceMode.Enhanced;
         options.TracesSampleRate = 1.0;
         options.ProfilesSampleRate = 1.0f;
-        options.Release = "luminary-visuals@1.1.3dev";
+        options.Release = sentryEnvironment;
         options.AttachStacktrace = true;
         options.SendDefaultPii = true;
     });
@@ -365,7 +364,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
 }
-// Replace your existing HTTP pipeline configuration with this:
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler(new ExceptionHandlerOptions
