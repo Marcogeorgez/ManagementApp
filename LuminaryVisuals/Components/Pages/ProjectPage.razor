@@ -214,18 +214,17 @@
                     CellStyle="@(isSelectorVisible ? "left:32px; text-align:center;" : "text-align:center;")">
                         <CellTemplate>
                             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert=true>
-                                <div style="height:30px;"
-                                class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") 
-                                    @(isDragOver == context.Item.ProjectId ? "border-2 mud-border-primary border-dashed" : "")
+                                <div style="height:30px;" class="drag-handle @(draggedProject?.ProjectId == context.Item.ProjectId ? "being-dragged" : "") 
+                                    @(isDragOver == context.Item.ProjectId ? "border-2 mud-border-primary border-dashed" : "") 
                                     flex-row  justify-center align-center ml-n3 "
-                                draggable="true"
-                                @ondragstart="@(() => HandleDragStart(context.Item))"
-                                @ondragover:preventDefault
-                                @ondragover="@(() => HandleDragOver(context.Item))"
-                                @ondrop:preventDefault
-                                @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
-                                @ondragenter="@(() => HandleDragEnter(context.Item))"
-                                @ondragleave="@(() => HandleDragLeave(context.Item))">
+                                    draggable="true"
+                                    @ondragstart="@(() => HandleDragStart(context.Item))"
+                                    @ondragover:preventDefault
+                                    @ondragover="@(() => HandleDragOver(context.Item))"
+                                    @ondrop:preventDefault
+                                    @ondrop="@(() => HandleDropForInternalOrder(context.Item))"
+                                    @ondragenter="@(() => HandleDragEnter(context.Item))"
+                                    @ondragleave="@(() => HandleDragLeave(context.Item))">
                                     <MudIcon Icon="@Icons.Material.Filled.Menu" Class="mr-2" />
                                     @context.Item.InternalOrder
                                 </div>
@@ -476,7 +475,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("ShootDate"))
                 {
                     <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;" Hidden="@(GetColumnVisibility("ShootDate"))"
-                    Groupable="true" Editable=false CellStyle="text-align:center;" >
+                    Groupable="true" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.ShootDate)" >
                         <CellTemplate>
                             <MudTextField T="string" Value="@context.Item.FormattedShootDate" 
                             Class=@($"outlined-dialog-lg-content grey-border {( _isAdminView || _isClientView ? "cursor-pointer" : "" )}")
@@ -497,7 +496,7 @@
                 @if (RoleBasedColumns[_currentRole].Contains("DueDate"))
                 {
                     <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" CellStyle="text-align:center; Required=false" Hidden="@(GetColumnVisibility("DueDate"))"
-                    CellClass="outlined-dialog-md-content" Groupable="true" Editable=false >
+                    CellClass="outlined-dialog-md-content" Groupable="true" Editable=false SortBy="@(x => x.DueDate)">
                         <CellTemplate>
                             @if (context.Item.IsUrgent == true)
                             {
@@ -544,17 +543,17 @@
                                 : EventCallback.Factory.Create<MouseEventArgs>(this, () => Task.CompletedTask) )"
                             ReadOnly="true" Variant="Variant.Outlined" Adornment="Adornment.End">
                             </MudTextField>
-                        </CellTemplate>
-                        <EditTemplate Context="context">
-                            @if(_isAdminView || _isEditorView){
-                                <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
-                                DateFormat="MM/yyyy" Date="@context.Item.WorkingMonth" DateChanged="@(date => context.Item.WorkingMonth = date)" />
-                            }
-                        </EditTemplate>
-                        <GroupTemplate>
-                            <GroupTemplateComponent TItem="Project" Context="@context" Label="Working Month" />
-                        </GroupTemplate>
-                    </PropertyColumn>
+                    </CellTemplate>
+                    <EditTemplate Context="context">
+                        @if(_isAdminView || _isEditorView){
+                            <MudDatePicker Required="false" Label="Working Month" Variant="Variant.Outlined" Class="mt-3" FixDay="1"
+                            DateFormat="MM/yyyy" Date="@context.Item.WorkingMonth" DateChanged="@(date => context.Item.WorkingMonth = date)" />
+                        }
+                    </EditTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Working Month" />
+                    </GroupTemplate>
+                </PropertyColumn>
                 }
                 @if (RoleBasedColumns[_currentRole].Contains("Status"))
                 {
