@@ -35,7 +35,7 @@ public class InvoiceService
                     { "to", BillAddressTo },
                     { "logo", $"{navigationManager.BaseUri}Logo192-Dark.png" },
                     { "date", DateTime.Now.ToString("MMM dd, yyyy") },
-                    { "terms", "All transaction fees must be paid by the client. Lumianry Visuals should recive the full ammount in the description." },
+                    { "terms", "All transaction fees must be paid by the client. Luminary Visuals should receive the full amount in the description." },
                 };
                 // Line item
                 decimal total = 0;
