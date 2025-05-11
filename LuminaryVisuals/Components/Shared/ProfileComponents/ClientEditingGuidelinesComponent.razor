@@ -57,13 +57,13 @@
                 <MudText Typo="Typo.h6">
                     How you like to structure the videos:
                 </MudText>
-                <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure">
-                <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Row=true>
-                    @foreach (var structure in VideoStructureOptions)
-                    {
-                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
-                    }
-                </MudStack>
+                <MudRadioGroup T="string" @bind-Value="preferences.VideoStructure" >
+                    <MudStack Spacing="0" Class="ml-10" AlignItems="AlignItems.Start" Row=true>
+                        @foreach (var structure in VideoStructureOptions)
+                        {
+                            <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                        }
+                    </MudStack>
                 </MudRadioGroup>
 
                 <!-- Transitions Checklist -->
@@ -80,7 +80,7 @@
 
                                 @foreach (var structure in Options)
                                 {
-                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
                             </MudStack>
                         </MudRadioGroup>
@@ -399,7 +399,7 @@
             await payoneerSettingsService.UpdateSettingsAsync(payoneerSettings!);
             Snackbar.Add($"We have saved your preferences successfully!", Severity.Info);
             var clientUser = await context.Users.FirstOrDefaultAsync(u => u.Id == userId); // which is getting updated notification for (client)
-                                                                                     // _currentUserId: Id of current user (admin/client)
+                                                                                           // _currentUserId: Id of current user (admin/client)
             var changedProperties = GetChangedProperties();
             await notificationService.ClientPreferencesUpdated(clientUser!, _currentUserId!,changedProperties);
         }
@@ -488,7 +488,6 @@
         }
         return changedProperties;
     }
-
 }
 
 <style>

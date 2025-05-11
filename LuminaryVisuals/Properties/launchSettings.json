@@ -17,7 +17,14 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_URLS": "https://+:8081",
-
+        "CLOUDFLARE_ACCESS_KEY_ID": "2a5216b2fcfcc315742a50ab48bade77",
+        "CLOUDFLARE_ACCOUNT_ID": "4fe45e414f1383c39169090978b52221",
+        "CLOUDFLARE_BUCKET_NAME": "luminary",
+        "CLOUDFLARE_BUCKET_URL": "801546b726d5423faf6fb5a173c1df53",
+        "CLOUDFLARE_ENV": "development",
+        "CLOUDFLARE_SECRET_ACCESS_KEY": "138231a7a0e174875321b7fd61208e9ea7c1e7452d159062cc532b1371493358",
+        "EMAIL_SEND_DELAY_MINUTES": "9999",
+        "Generate-Invoice-API-Key": "sk_ZhjPnuRcCHjoMk509TMCrrYKtgFSo4TA"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:8081"

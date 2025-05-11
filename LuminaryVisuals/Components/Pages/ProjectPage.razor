@@ -16,8 +16,9 @@
 @attribute [Authorize(Policy = "RequireAdminClientEditor")]
 @implements IDisposable
 <PageTitle>Projects</PageTitle>
+
 <MudMainContent class="main-content-sm" Style="height: 100dvh; padding-top:25px; padding-left:25px; padding-right:25px;">
-    
+
         <LoadingIndicator IsVisible="@_loadingIndicator" />
 
         <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid"
@@ -40,20 +41,22 @@
                 <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" Label="Actions" AriaLabel="Projects Options" Class="mt-1"
                 LockScroll=true DropShadow=true  @ref=_menuRef AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
                     <MudMenuItem  OnClick="ResetState">
+                        <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.LayersClear" Class="mr-2" />
                         Reset State
                     </MudMenuItem>
                     <MudMenuItem OnClick="@(() => _dataGrid.ShowColumnsPanel())">
+                       <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.ViewColumn" Class="mr-2" />
                         Show Columns Panel
                     </MudMenuItem>
                     <MudMenuItem OnClick="NotificationPreferences">
-                        <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
+                        <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
                         Notification Preferences
                     </MudMenuItem>
 
                     @if (_isAdminView || _isEditorView)
                     {
                         <MudMenuItem OnClick="OpenGeneratePaymentDialog">
-                           <MudIcon Icon="@Icons.Material.TwoTone.Payments" Class="mr-2" />
+                           <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.TwoTone.Payments" Class="mr-2" />
                             Create Payment Documents
                         </MudMenuItem>
                     }
@@ -65,7 +68,7 @@
                     {
                         <MudMenuItem OnClick="DownloadAllProjects">
                             <div style="display:flex;">
-                                <MudIcon Icon="@Icons.Material.TwoTone.Download" Class="mr-2  ml-n1" />
+                            <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.TwoTone.Download" Class="mr-2  ml-n1" />
                                 Backup Projects
                             </div>
                         </MudMenuItem>
