@@ -8,12 +8,13 @@ public class InvoiceService
     private readonly NavigationManager navigationManager;
     private readonly ILogger<InvoiceService> logger;
     private readonly CloudflareR2Service cloudflareR2Service;
-
+    private readonly string key = Environment.GetEnvironmentVariable("Generate-Invoice-API-Key")!;
     public InvoiceService(NavigationManager navigationManager, ILogger<InvoiceService> logger, CloudflareR2Service cloudflareR2Service)
     {
         this.navigationManager = navigationManager;
         this.logger = logger;
         this.cloudflareR2Service = cloudflareR2Service;
+        
     }
     public async Task<string> GenerateInvoicePdfAsync(List<Project> Items, PayoneerSettings? setting)
     {
@@ -58,8 +59,8 @@ public class InvoiceService
                 {
                     Content = content
                 };
-
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "sk_ZhjPnuRcCHjoMk509TMCrrYKtgFSo4TA");
+                
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", key);
 
                 // Accept PDF as response
                 request.Headers.Accept.Clear();
