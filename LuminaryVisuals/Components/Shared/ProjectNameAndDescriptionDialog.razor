@@ -200,13 +200,17 @@
                     />
                 </MudItem>
                 </MudGrid>
-                <MudItem xs="12" sm="6">
-                    <MudTextField T="string" AutoGrow="true"
-                    Label="Add Audio Details"
-                    Placeholder="Add Details about Audio recorders"
-                    Variant="Variant.Outlined"
-                    @bind-Value="context.ProjectSpecifications.AudioDetails" />
-                </MudItem>
+
+                <MudGrid Class="equal-height">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" AutoGrow="true"
+                        Label="Add Audio Details"
+                        Placeholder="Add Details about Audio recorders"
+                        Variant="Variant.Outlined"
+                        @bind-Value="context.ProjectSpecifications.AudioDetails" />
+                    </MudItem>
+                </MudGrid>
+
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
                     <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@context.Deliverables"  OnFileUpload="@HandleFileUpload"
                     HtmlChanged="OnDeliverableTextChanged" Resizable="true" style="min-height:100px;"
