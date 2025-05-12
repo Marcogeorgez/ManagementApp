@@ -1627,11 +1627,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
         bottom: 15% !important;
     }
 }
-.mud-input-control.mud-input-input-control.outlined-dialog-xl-content 
-{
-    flex: unset;
-    margin-right: auto;
-}
+
 .mud-table-pagination, .mud-toolbar-gutters.mud-toolbar-gutters.mud-table-pagination-toolbar {
     background: #0d0e19 !important;
     bottom: 0;
