@@ -43,7 +43,7 @@
 
                                             <MudText style="max-width:90%;" Typo="Typo.body1">@(isAdminView || isEditorView ? $"{project.Client.UserName} | {project.ProjectName}" : project.ProjectName)</MudText>
                                             <MudText Typo="Typo.caption" Class="message-timestamp">
-                                                @project.LastSentMessage
+                                                @ConvertLocal.ConvertToLocalTime(project?.LastSentMessage, timezoneOffsetMinutes)
                                             </MudText>
                                         </div>
                                     </MudListItem>
@@ -155,21 +155,11 @@
             timezoneOffsetMinutes = await JS.InvokeAsync<int>("getTimezoneOffset");
             TimeSpan timeSpan = TimeSpan.FromMinutes(timezoneOffsetMinutes);
 
-            Console.WriteLine(timezoneOffsetMinutes);
-            var stopwatch = Stopwatch.StartNew();
-            Console.WriteLine($"Copy From Here To End:");
-
             ProjectState.OnChange += StateHasChanged;
-            Console.WriteLine($"Subscribed to ProjectState.OnChange - {stopwatch.ElapsedMilliseconds} ms");
-
-            stopwatch.Restart();
             projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView, isEditorView, isClientView);
-            Console.WriteLine($"Fetched projects - {stopwatch.ElapsedMilliseconds} ms");
-            stopwatch.Restart();
             List<int> projectIds = projects.Select(p => p.ProjectId).ToList();
             if (projects.Count > 0)
             {
-                stopwatch.Restart();
                 var messageDataByProject = await ChatService.GetUnreadMessageDataForProjectsAsync(projectIds, userId);
                 foreach (var project in projects)
                 {
@@ -177,7 +167,7 @@
                     {
                         // 'data' is the Tuple<int, DateTime?, int> for this project
                         project.countUnreadMessages = data.Item1;
-                        project.LastSentMessage = data.Item2.HasValue ? data.Item2.Value.Add(timeSpan) : null;
+                        project.LastSentMessage = data.Item2.HasValue ? data.Item2.Value : null;
                         project.MessageRequireApprovalCount = data.Item3;
                     }
                     else
@@ -188,21 +178,12 @@
                         project.MessageRequireApprovalCount = 0;
                     }
                 }
-                Console.WriteLine($"Fetched unread messages for Projects - {stopwatch.ElapsedMilliseconds} ms");
-
-                stopwatch.Restart();
-
-
                 projects = projects
                     .OrderByDescending(p => p.IsPinned)
                     .ThenByDescending(p => p.countUnreadMessages) // sort by unread messages
                     .ThenByDescending(p => p.LastSentMessage) // then by last message sent
                     .ToList();
-                Console.WriteLine($"Sorted projects - {stopwatch.ElapsedMilliseconds} ms");
             }
-
-            stopwatch.Stop();
-
         }
         catch (Exception ex)
         {
