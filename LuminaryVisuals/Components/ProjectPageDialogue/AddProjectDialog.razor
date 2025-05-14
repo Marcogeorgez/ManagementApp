@@ -11,7 +11,7 @@
         <MudForm @ref="form" @bind-IsValid="@success"  > 
             <MudGrid Spacing="1">
                 <MudItem xs="12" sm="12">
-                    <MudTextField T="string" Label="Project Name" Variant="Variant.Outlined" @bind-Value="newProject.ProjectName" Required="true" />
+                    <MudTextField T="string" AutoGrow="true" Label="Project Name" Variant="Variant.Outlined" @bind-Value="newProject.ProjectName" Required="true" />
                 </MudItem>
                 @if (!_isClientView)
                 {
@@ -24,7 +24,7 @@
                                    @bind-Value="newProject.PrimaryEditorId">
                             @foreach (var editor in Editors)
                             {
-                                <MudSelectItem Class="" T="string" Value="@editor.UserId" >
+                                <MudSelectItem Class="" T="string" Value="@editor.UserId">
                                     @editor.UserName
                                 </MudSelectItem>
                             }
@@ -39,7 +39,7 @@
                                    @bind-Value="newProject.ClientId">
                             @foreach (var client in Clients)
                             {
-                                <MudSelectItem Class="" T="string" Value="@client.UserId" >
+                                <MudSelectItem Class="" T="string" Value="@client.UserId">
                                     @client.UserName
                                 </MudSelectItem>
                             }
@@ -74,7 +74,7 @@
                 }
       
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                                   Label="Footage Link"
                                   Placeholder="Add link of your footage"
                                   Variant="Variant.Outlined"
@@ -83,7 +83,7 @@
                                    />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                                   Label="Resolution"
                                   Placeholder="Add Details of Footage Resolution"
                                   Variant="Variant.Outlined"
@@ -93,7 +93,7 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string"AutoGrow="true"
                                   Label="Footage Size"
                                   Placeholder="Add Details of Footage size"
                                   Variant="Variant.Outlined"
@@ -103,7 +103,7 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                                   Label="Number of Cameras"
                                   Placeholder="Add Details of Number of cameras"
                                   Variant="Variant.Outlined"
@@ -112,7 +112,7 @@
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                                   Label="Add Audio Details"
                                   Placeholder="Add Details about Audio recorders"
                                   Variant="Variant.Outlined"
@@ -121,7 +121,7 @@
                                   RequiredError="This is required when the status of project is not 'Upcoming'" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string"
+                    <MudTextField T="string" AutoGrow="true"
                                   Label="Color Profile"
                                   Placeholder="Add Details of Color profile for each camera"
                                   Variant="Variant.Outlined"
