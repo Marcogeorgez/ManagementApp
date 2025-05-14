@@ -152,26 +152,3 @@ function urlB64ToUint8Array(base64String) {
     }
     return outputArray;
 }
-
-
-window.triggerInstallPrompt = function () {
-    if (window.deferredPrompt) {
-        // Show the installation prompt
-        window.deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        window.deferredPrompt.userChoice.then((choiceResult) => {
-            // Nullify the prompt object after the prompt has been handled
-            window.deferredPrompt = null;
-        });
-    } else {
-        // Call checkPwaSupport when installation isn't available
-        window.checkPwaSupport();
-    }
-};
-
-// Check for PWA support
-window.checkPwaSupport = function () {
-    if (!('beforeinstallprompt' in window)) {
-        alert("This browser doesn't support PWA installation.\nif you are on ios, you have to click share and then add to home manually for the app to be installed");
-    }
-};
