@@ -63,6 +63,7 @@
                         {
                             <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                         }
+                        <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.VideoStructure = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
                     </MudStack>
                 </MudRadioGroup>
 
@@ -71,7 +72,7 @@
                     Transitions VFX to use/avoid:
                 </MudText>
                 <MudGrid Spacing=4 Class="px-md-10 py-md-2 flex-column flex-md-row">
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Cross Fades:
                         </MudText>
@@ -80,12 +81,14 @@
 
                                 @foreach (var structure in Options)
                                 {
-                                        <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
+                                    <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.CrossFades = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
+
                             </MudStack>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Fades to Black:
                         </MudText>
@@ -96,10 +99,11 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                    <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.FadeToBlack = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
                             </MudStack>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Black and White:
                         </MudText>
@@ -110,10 +114,11 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                    <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.BlackAndWhite = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
                             </MudStack>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Double exposure:
                         </MudText>
@@ -124,10 +129,11 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                    <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.DoubleExposure = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
                             </MudStack>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Masking transitions:
                         </MudText>
@@ -137,10 +143,12 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.MaskingTransitions = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
+
                             </MudStack>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Lens flares:
                         </MudText>
@@ -150,11 +158,13 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.LensFlares = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
+
                             </MudStack>
 
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Old Film look:
                         </MudText>
@@ -164,10 +174,12 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.OldFilmLook = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
+
                             </MudStack>
                         </MudRadioGroup>
                     </MudItem>
-                    <MudItem xs="4">
+                    <MudItem xs="6">
                         <MudText Typo="Typo.body1">
                             Picture in picture:
                         </MudText>
@@ -177,6 +189,7 @@
                                 {
                                     <MudRadio Color="Color.Info" Value="@structure">@structure.ToString()</MudRadio>
                                 }
+                                    <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.PictureInPicture = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
                             </MudStack>
 
                         </MudRadioGroup>
@@ -201,6 +214,7 @@
                         {
                             <MudRadio Color="Color.Info" Value="@speech">@speech.ToString()</MudRadio>
                         }
+                            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.Filled.SettingsBackupRestore" OnClick="@(() => preferences.UseSpeeches = null)" />
                     </MudStack>
                 </MudRadioGroup>
                 <MudText Class="ml-md-10 ml-2 mt-2" Typo=" Typo.body1">
@@ -219,6 +233,7 @@
                         {
                             <MudRadio Color="Color.Info" Value="@_soundDesign">@_soundDesign.ToString()</MudRadio>
                         }
+                            <MudIconButton Color="Color.Primary" OnClick="@(() => preferences.SoundDesignEmphasis = null)" Icon="@Icons.Material.Filled.SettingsBackupRestore" />
                     </MudStack>
                 </MudRadioGroup>
                 <MudText Class="ml-md-10 ml-2 mt-2" Typo=" Typo.body1">
@@ -336,12 +351,34 @@
 </MudContainer>
 @code {
     private MudForm form;
-    private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid" };
-    private static readonly string[] Options = new[] { "Yes", "No", "Few" };
-    private static readonly string[] speeches = new[] { "No, music only", "Only when they have said something really cool",
-    "Yes, a few from each moment of the day", "Yes put great emphasis on them,built the film around speeches of the day" };
-    private static readonly string[] soundDesign = new[] { "Only music, no other sounds",
-    "A few audio from the day would be nice, documentary feel (Only if there’s something good to use)", "High focus on sound design" };
+    private static readonly string[] VideoStructureOptions = new[]
+    {
+        "Linear",
+        "Hybrid",
+    };
+    private void ResetVideoStructure(ref object perferenceValue)
+    {
+        perferenceValue = null;
+    }
+    private static readonly string[] Options = new[]
+    {
+        "Yes",
+        "No",
+        "Few",
+    };
+    private static readonly string[] speeches = new[]
+    {
+        "No, music only",
+        "Only when they have said something really cool",
+        "Yes, a few from each moment of the day",
+        "Yes, put great emphasis on them, built the film around speeches of the day",
+    };
+    private static readonly string[] soundDesign = new[]
+    {
+        "Only music, no other sounds",
+        "A few audio from the day would be nice, documentary feel (Only if there’s something good to use)",
+        "High focus on sound design",
+    };
     private const string _djAudio = "(Requires: External Recorded Audio from DJ/LAVALIER MIC from the person talking!)";
     private const string _recordedAudio = "(Requires: External Recorded Audio!)";
     private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
