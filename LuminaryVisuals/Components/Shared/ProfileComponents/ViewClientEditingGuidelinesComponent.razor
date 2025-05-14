@@ -55,7 +55,7 @@
                         Transitions VFX to use/avoid:
                     </MudText>
                     <MudGrid Spacing=4 Class="px-10 py-2" >
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Cross Fades:
                             </MudText>
@@ -70,7 +70,7 @@
                                 </MudStack>
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Fades to Black:
                             </MudText>
@@ -84,7 +84,7 @@
                                 </MudStack>
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Black and White:
                             </MudText>
@@ -98,7 +98,7 @@
                                 </MudStack>
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Double exposure:
                             </MudText>
@@ -112,7 +112,7 @@
                                 </MudStack>
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Masking transitions:
                             </MudText>
@@ -125,7 +125,7 @@
                                 </MudStack>
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Lens flares:
                             </MudText>
@@ -139,7 +139,7 @@
 
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Old Film look:
                             </MudText>
@@ -152,7 +152,7 @@
                                 </MudStack>
                             </MudRadioGroup>
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="4">
+                        <MudItem xs="12"  md="6">
                             <MudText Typo="Typo.body1">
                                 Picture in picture:
                             </MudText>
@@ -322,12 +322,30 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     private MudForm form;
     private ClientEditingGuidelines? preferences = new();
-    private static readonly string[] VideoStructureOptions = new[] { "Linear", "Hybrid", "Mixed" };
-    private static readonly string[] Options = new[] { "Yes", "No", "Few" };
-    private static readonly string[] speeches = new[] { "No, music only", "Only when they have said something really cool",
-    "Yes, a few from each moment of the day", "Yes put great emphasis on them,built the film around speeches of the day" };
-    private static readonly string[] soundDesign = new[] { "Only music, no other sounds",
-    "A few audio from the day would be nice, documentary feel (Only if there’s something good to use)", "High focus on sound design" };
+    private static readonly string[] VideoStructureOptions = new[]
+    {
+        "Linear",
+        "Hybrid",
+    };
+    private static readonly string[] Options = new[]
+    {
+        "Yes",
+        "No",
+        "Few",
+    };
+    private static readonly string[] speeches = new[]
+    {
+        "No, music only",
+        "Only when they have said something really cool",
+        "Yes, a few from each moment of the day",
+        "Yes, put great emphasis on them, built the film around speeches of the day",
+    };
+    private static readonly string[] soundDesign = new[]
+    {
+        "Only music, no other sounds",
+        "A few audio from the day would be nice, documentary feel (Only if there’s something good to use)",
+        "High focus on sound design",
+    };
     private const string _djAudio = "(Requires: External Recorded Audio from DJ/LAVALIER MIC from the person talking!)";
     private const string _recordedAudio = "(Requires: External Recorded Audio!)";
     private const string _LavalierMic = "(Requires: Audio from Lavalier mic from the person talking!)";
