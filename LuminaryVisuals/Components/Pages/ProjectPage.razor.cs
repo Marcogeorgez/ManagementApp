@@ -1025,18 +1025,10 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
                 {
                     if(generateProject.ViewClient == "clients" && isAdminView)
                     {
-                        if(generateProject.modified == true)
-                        {
-                            _ = projectServices.UpdateProjectsInBatchAsync(generateProject.project, _currentUserId);
-                        }
                         await DownloadFilteredAsCsvPayoneer(generateProject.project.ToList());
                     }
                     else
                     {
-                        if (generateProject.modified == true)
-                        {
-                            _ = projectServices.UpdateProjectsInBatchAsync(generateProject.project, _currentUserId);
-                        }
                         await DownloadFilteredAsCsvEditors(generateProject.project.ToList(), generateProject.editorPaid!.Value);
                     }
                 }
