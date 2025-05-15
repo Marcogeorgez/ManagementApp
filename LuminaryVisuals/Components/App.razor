@@ -42,6 +42,16 @@
     <script src="https://rawcdn.githack.com/nextapps-de/spotlight/0.7.8/dist/spotlight.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script type="module" src="_content/Heron.MudCalendar/Heron.MudCalendar.min.js"></script>
+    <script>
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+            const installButton = document.getElementById('pwa-install-button');
+            if (installButton) {
+                installButton.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 
 </html>

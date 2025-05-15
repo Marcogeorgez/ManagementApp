@@ -44,6 +44,8 @@ OpenMiniOnHover="true"  Elevation="0" >
         <AuthorizeView Roles="Admin,Client,Editor">
             <MudNavLink OnClick="@profileDialog" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
         </AuthorizeView>
+        <MudNavLink id="pwa-install-button" Icon="@Icons.Material.Filled.InstallMobile" IconColor="Color.Tertiary" OnClick="ShowInstallPrompt" style="color:var(--mud-palette-action-default)">Install App</MudNavLink>
+
         <AuthorizeView Roles="Admin">
             <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Admin Dashboard</MudNavLink>
         </AuthorizeView>
@@ -106,6 +108,12 @@ OpenMiniOnHover="true"  Elevation="0" >
         ReportRate = 250,
         NotifyOnBreakpointOnly = true
     };
+    private async Task ShowInstallPrompt()
+    {
+        // Call the JS function to trigger the PWA install prompt
+        await JSRuntime.InvokeVoidAsync("triggerInstallPrompt");
+    }
+
     Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
     {
         if (browserViewportEventArgs.IsImmediate)
