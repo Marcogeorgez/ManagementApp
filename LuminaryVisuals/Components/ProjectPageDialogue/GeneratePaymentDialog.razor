@@ -67,15 +67,15 @@
         }
         <MudStack AlignItems="AlignItems.Start" Row="true" >
             <MudGrid Spacing="2">
-                <MudItem xs="4" Style="display: flex; align-items:center;">
+                <MudItem xs="12" sm="4" Style="display: flex; align-items:center;">
                     <MudText Style="justify-self:center">Working Month Range:</MudText>
                 </MudItem>
-                <MudItem xs="4" Style="padding-left: 7px !important;">
+                <MudItem xs="6" sm="4" Style="padding-left: 7px !important;">
                     <MudDatePicker Label="Start Date" Variant="Variant.Outlined" Required="false" FixDay="1"
                     DateFormat="MM/yyyy" Date="StartDate" OverflowBehavior="OverflowBehavior.FlipAlways"
                     DateChanged="@(date => OnStartDateChanged(date.Value))" Class="mb-1 w-100" />
                 </MudItem>
-                <MudItem xs="4" Style="padding-left: 7px !important;">
+                <MudItem xs="6" sm="4" Style="padding-left: 7px !important;">
                     <MudDatePicker Label="End Date" Variant="Variant.Outlined" Required="false" FixDay="1"
                     DateFormat="MM/yyyy" Date="EndDate" DateChanged="@(date => OnEndDateChanged(date.Value))" Class="w-100" />
                 </MudItem>
@@ -147,7 +147,7 @@
         </MudStack>
 
         <MudGrid Justify="Justify.Center" Class="mb-3 mt-n1" >
-            <MudItem xs="4" Style="display: flex; justify-content: center; ">
+            <MudItem xs="12" md="4" Style="display: flex; justify-content: center; ">
                 <MudButton Variant="Variant.Outlined" Color=Color.Success OnClick="GetProjects">Apply Filters</MudButton>
             </MudItem>
         </MudGrid>
@@ -168,14 +168,14 @@
         {
             <MudStack AlignItems="AlignItems.Start" Row="true">
                 <MudGrid Spacing="2">
-                    <MudItem xs="4" Style="display: flex; align-items:center;">
+                    <MudItem xs="12" sm="4" Style="display: flex; align-items:center;">
                         <MudText Style="justify-self:center">Working Month Range:</MudText>
                     </MudItem>
-                    <MudItem xs="4" Style="padding-left: 7px !important;">
+                    <MudItem xs="6" sm="4" Style="padding-left: 7px !important;">
                         <MudDatePicker Label="Primary Editor" Variant="Variant.Outlined" @bind-Date="_PrimaryEditorPaymentDate"
                         Class="mt-3" Clearable="true" Required="false" />
                     </MudItem>
-                    <MudItem xs="4" Style="padding-left: 7px !important;">
+                    <MudItem xs="6" sm="4" Style="padding-left: 7px !important;">
                         <MudDatePicker Label="Secondary Editor" Variant="Variant.Outlined" @bind-Date="_SecondaryEditorPaymentDate"
                         Class="mt-3" Clearable="true" Required="false" />
                     </MudItem>
@@ -274,7 +274,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel" Style="padding: 5px 36px;">Close</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit">Download</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit" >Download</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -547,5 +547,3 @@
         return $"{string.Join(", ", selectedValues).Replace('_',' ')}";
     }
 }
-<style>
-</style>
