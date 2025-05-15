@@ -15,9 +15,10 @@
             </MudStack>
 
             <MudStack Row AlignItems="AlignItems.Center">
+                <MudItem xs="6" sm="4" >
                 <MudText>Users</MudText>
-                <MudSpacer />
-                <MudItem xs="8" >
+                </MudItem>
+                <MudItem xs="6" sm="8" >
                     <MudSelect T="ApplicationUser" SelectAll="true" Label="Select User" Variant="Variant.Outlined" Dense="true" MultiSelection="true" 
                     @bind-SelectedValues="selectedUsers">
                         @if (ViewClient == "clients")
@@ -39,9 +40,10 @@
             </MudStack>
         }
         <MudStack Row AlignItems="AlignItems.Center">
-            <MudText>Working Status</MudText>
-            <MudSpacer />
-            <MudItem xs="8" >
+            <MudItem xs="6" sm="4">
+                <MudText>Working Status</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="8" >
                 <MudSelect T="ProjectStatus" MultiSelectionTextFunc="@((values)=> GetMultiSelectionTextForStatus(values))" @bind-SelectedValues="selectedStatuses" SelectAll="true" Label="Select Status" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
                     @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
                     {
@@ -53,9 +55,10 @@
         @if(isAdmin)
         {
             <MudStack Row AlignItems="AlignItems.Center">
+            <MudItem xs="6" sm="4">
                 <MudText>Client Payment Status</MudText>
-                <MudSpacer />
-                <MudItem xs="8" >
+                </MudItem>
+                <MudItem xs="6" sm="8" >
                     <MudSelect T="AdminProjectStatus" MultiSelectionTextFunc="@((values)=> GetMultiSelectionTextForStatus(values))" @bind-SelectedValues="selectedPaymentStatuses" SelectAll="true" Label="Select Status" Variant="Variant.Outlined" Dense="true" MultiSelection="true">
                         @foreach (AdminProjectStatus status in Enum.GetValues(typeof(AdminProjectStatus)))
                         {
@@ -70,12 +73,12 @@
                 <MudItem xs="12" sm="4" Style="display: flex; align-items:center;">
                     <MudText Style="justify-self:center">Working Month Range:</MudText>
                 </MudItem>
-                <MudItem xs="6" sm="4" Style="padding-left: 7px !important;">
+                <MudItem xs="6" sm="4" Style="padding-left: 14px !important;">
                     <MudDatePicker Label="Start Date" Variant="Variant.Outlined" Required="false" FixDay="1"
                     DateFormat="MM/yyyy" Date="StartDate" OverflowBehavior="OverflowBehavior.FlipAlways"
                     DateChanged="@(date => OnStartDateChanged(date.Value))" Class="mb-1 w-100" />
                 </MudItem>
-                <MudItem xs="6" sm="4" Style="padding-left: 7px !important;">
+                <MudItem xs="6" sm="4" Style="padding-left: 14px !important;">
                     <MudDatePicker Label="End Date" Variant="Variant.Outlined" Required="false" FixDay="1"
                     DateFormat="MM/yyyy" Date="EndDate" DateChanged="@(date => OnEndDateChanged(date.Value))" Class="w-100" />
                 </MudItem>
@@ -93,7 +96,7 @@
             </MudStack>
         }
         <MudDivider Class="mb-2"/>
-        <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+        <MudStack Row AlignItems="AlignItems.Center" Spacing="4">
             <MudItem sm="4">
                 <MudText>Selected Projects</MudText>
             </MudItem>
