@@ -43,14 +43,15 @@
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script type="module" src="_content/Heron.MudCalendar/Heron.MudCalendar.min.js"></script>
     <script>
+        let isPwaInstallable = false;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
+            isPwaInstallable = true;
             window.deferredPrompt = e;
-            const installButton = document.getElementById('pwa-install-button');
-            if (installButton) {
-                installButton.style.display = 'block';
-            }
         });
+        window.checkPwaSupport = function () {
+            return isPwaInstallable;
+        };
     </script>
 </body>
 
