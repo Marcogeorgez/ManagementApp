@@ -24,10 +24,15 @@ public class PushNotificationService
         // if not read it we send notification, else skip it
         if (chatMessageId != null)
         {
-            var chatMessage = await context.ChatReadStatus.FirstOrDefaultAsync(s => s.UserId == user.Id && s.MessageId == chatMessageId);
-            if (chatMessage != null && chatMessage.IsRead)
+            var chatMessageReadStatus = await context.ChatReadStatus.FirstOrDefaultAsync(s => s.UserId == user.Id && s.MessageId == chatMessageId);
+            if (chatMessageReadStatus != null && chatMessageReadStatus.IsRead)
             {
                 return;
+            }
+            var chatMessage = await context.Messages.FirstOrDefaultAsync(s => s.MessageId == chatMessageId);
+            if(chatMessage != null)
+            {
+                message = $"{chatMessage.Content}";
             }
         }
         var vapidDetails = new VapidDetails("mailto:management@luminaryvisuals.net", _publicKey, _privateKey);
@@ -59,9 +64,10 @@ public class PushNotificationService
     {
         if (string.IsNullOrWhiteSpace(text))
             return string.Empty;
-
+        // Replace <img> tags with (Image)
+        string cleanedText = Regex.Replace(text, "<img[^>]*>", "(Image)", RegexOptions.IgnoreCase);
         // Remove all HTML tags
-        string cleanedText = Regex.Replace(text, "<.*?>", string.Empty);
+        cleanedText = Regex.Replace(text, "<.*?>", string.Empty);
 
         cleanedText = System.Net.WebUtility.HtmlDecode(cleanedText);
 
