@@ -166,39 +166,39 @@
                     Variant="Variant.Outlined" @bind-Value="context.FootageLink" />
                 </MudItem>
                 <MudGrid Class="equal-height">
-                <MudItem xs="12" sm="6">
-                    <MudTextField T="string" AutoGrow="true"
-                    Label="Add Details of Resolution" Placeholder="Add Details of Footage Resolution"
-                    Variant="Variant.Outlined" @bind-Value="context.ProjectSpecifications.Resolution"/>
-                </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" AutoGrow="true"
+                        Label="Add Details of Resolution" Placeholder="Add Details of Footage Resolution"
+                        Variant="Variant.Outlined" @bind-Value="context.ProjectSpecifications.Resolution"/>
+                    </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudTextField T="string" AutoGrow="true"
-                    Label="Add Details of Footage size"
-                    Placeholder="Add Details of Footage size"
-                    Variant="Variant.Outlined"
-                    @bind-Value="context.ProjectSpecifications.Size"
-                    />
-                </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" AutoGrow="true"
+                        Label="Add Details of Footage size"
+                        Placeholder="Add Details of Footage size"
+                        Variant="Variant.Outlined"
+                        @bind-Value="context.ProjectSpecifications.Size"
+                        />
+                    </MudItem>
                 </MudGrid>
-            <MudGrid Class="equal-height">
-                <MudItem xs="12" sm="6">
-                    <MudTextField T="string" AutoGrow="true"
-                    Label="Add Details of Footage Number of Cameras"
-                    Placeholder="Add Details of Number of cameras"
-                    Variant="Variant.Outlined"
-                    @bind-Value="context.ProjectSpecifications.CameraNumber"
-                    />
-                </MudItem>
+                <MudGrid Class="equal-height">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" AutoGrow="true"
+                        Label="Add Details of Footage Number of Cameras"
+                        Placeholder="Add Details of Number of cameras"
+                        Variant="Variant.Outlined"
+                        @bind-Value="context.ProjectSpecifications.CameraNumber"
+                        />
+                    </MudItem>
 
-                <MudItem xs="12" sm="6">
-                    <MudTextField T="string" AutoGrow="true"
-                    Label="Add Details of Color profile"
-                    Placeholder="Add Details of Color profile for each camera"
-                    Variant="Variant.Outlined"
-                    @bind-Value="context.ProjectSpecifications.ColorProfile"
-                    />
-                </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" AutoGrow="true"
+                        Label="Add Details of Color profile"
+                        Placeholder="Add Details of Color profile for each camera"
+                        Variant="Variant.Outlined"
+                        @bind-Value="context.ProjectSpecifications.ColorProfile"
+                        />
+                    </MudItem>
                 </MudGrid>
 
                 <MudGrid Class="equal-height">
@@ -344,6 +344,11 @@ The Bride was married like I said before, so this wedding was quite special beca
         isAdmin = currentRole == "Admin";
         isClient = currentRole == "Client";
         projectTitle = context.ProjectName;
+        // fix for opening project-details from chat where revisions aren't included.
+        if (context.Revisions == null)
+        {
+            context = await projectServices.GetProjectByIdAsync(context.ProjectId) ?? context;
+        }
         await base.OnInitializedAsync();
     }
     private void AddRevision()
@@ -402,14 +407,6 @@ The Bride was married like I said before, so this wedding was quite special beca
             Snackbar.Add("You are not authorized to save changes.", Severity.Error);
             return;
         }
-        // Remove revisions with empty content
-        if (context.Revisions != null)
-        {
-            context.Revisions = context.Revisions
-                .Where(r => r != null && string.IsNullOrWhiteSpace(r.Content))
-                .ToList();
-        }
-
         await UpdateProjectAsync(context);
         Snackbar.Add($"Successfully Saved.", Severity.Success);
     }
