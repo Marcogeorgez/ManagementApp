@@ -67,7 +67,8 @@ public class PushNotificationService
         // Replace <img> tags with (Image)
         string cleanedText = Regex.Replace(text, "<img[^>]*>", "(Image)", RegexOptions.IgnoreCase);
         // Remove all HTML tags
-        cleanedText = Regex.Replace(text, "<.*?>", string.Empty);
+        cleanedText = Regex.Replace(text, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+        cleanedText = Regex.Replace(text, "<.*?>", " ");
 
         cleanedText = System.Net.WebUtility.HtmlDecode(cleanedText);
 
