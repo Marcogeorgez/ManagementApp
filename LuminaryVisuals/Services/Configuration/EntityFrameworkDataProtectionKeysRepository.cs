@@ -1,5 +1,5 @@
-﻿using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Data;
+﻿using LuminaryVisuals.Data;
+using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using System.Xml.Linq;
 

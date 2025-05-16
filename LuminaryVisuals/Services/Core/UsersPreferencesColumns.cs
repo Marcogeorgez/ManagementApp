@@ -61,7 +61,7 @@ public class ColumnPreferenceService
 
         await context.SaveChangesAsync();
         if (preset == null)
-            return new Dictionary<string, bool>();
+            return [];
 
         return JsonSerializer.Deserialize<Dictionary<string, bool>>(preset.Preferences)!;
     }

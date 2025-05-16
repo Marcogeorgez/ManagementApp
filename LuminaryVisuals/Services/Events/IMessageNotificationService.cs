@@ -1,57 +1,54 @@
-﻿using LuminaryVisuals.Data.Entities;
+﻿namespace LuminaryVisuals.Services.Events;
 
-namespace LuminaryVisuals.Services.Events
+public interface IMessageNotificationService
 {
-    public interface IMessageNotificationService
+    IDisposable Subscribe(int ProjectId, Func<int, Task> onMessageReceived);
+    Task NotifyNewMessage(int ProjectId);
+}
+
+public class MessageNotificationService : IMessageNotificationService
+{
+    private readonly Dictionary<int, List<Func<int, Task>>> _subscribers = [];
+
+    public IDisposable Subscribe(int ProjectId, Func<int, Task> onMessageReceived)
     {
-        IDisposable Subscribe(int ProjectId, Func<int, Task> onMessageReceived);
-        Task NotifyNewMessage(int ProjectId);
+        if (!_subscribers.ContainsKey(ProjectId))
+        {
+            _subscribers[ProjectId] = [];
+        }
+
+        _subscribers[ProjectId].Add(onMessageReceived);
+
+        return new Subscription(() =>
+        {
+            _subscribers[ProjectId].Remove(onMessageReceived);
+        });
     }
 
-    public class MessageNotificationService : IMessageNotificationService
+    public async Task NotifyNewMessage(int ProjectId)
     {
-        private readonly Dictionary<int, List<Func<int, Task>>> _subscribers = new();
-
-        public IDisposable Subscribe(int ProjectId, Func<int, Task> onMessageReceived)
+        if (_subscribers.TryGetValue(ProjectId, out var subscribers))
         {
-            if (!_subscribers.ContainsKey(ProjectId))
+            foreach (var subscriber in subscribers)
             {
-                _subscribers[ProjectId] = new List<Func<int, Task>>();
-            }
-
-            _subscribers[ProjectId].Add(onMessageReceived);
-
-            return new Subscription(() =>
-            {
-                _subscribers[ProjectId].Remove(onMessageReceived);
-            });
-        }
-
-        public async Task NotifyNewMessage(int ProjectId)
-        {
-            if (_subscribers.TryGetValue(ProjectId, out var subscribers))
-            {
-                foreach (var subscriber in subscribers)
-                {
-                    await subscriber(ProjectId);
-                }
+                await subscriber(ProjectId);
             }
         }
+    }
 
-        // Helper class to manage subscription disposal
-        private class Subscription : IDisposable
+    // Helper class to manage subscription disposal
+    private class Subscription : IDisposable
+    {
+        private readonly Action _unsubscribe;
+
+        public Subscription(Action unsubscribe)
         {
-            private readonly Action _unsubscribe;
+            _unsubscribe = unsubscribe;
+        }
 
-            public Subscription(Action unsubscribe)
-            {
-                _unsubscribe = unsubscribe;
-            }
-
-            public void Dispose()
-            {
-                _unsubscribe();
-            }
+        public void Dispose()
+        {
+            _unsubscribe();
         }
     }
 }

@@ -27,9 +27,9 @@
         Filterable=true ColumnsPanelReordering=false  MultiSelection="true"ShowColumnOptions=false  
         @bind-SelectedItems="@SelectedProjects" SelectOnRowClick="false" Groupable
         ShowMenuIcon=false EditMode="DataGridEditMode.Form"  ReadOnly=false RowStyle="text-align:center;"  
-        StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem"
+        StartedEditingItem="@StartedEditingItem"
         CommittedItemChanges="@CommittedItemChanges" 
-        RowsPerPage="25"  FixedHeader FixedFooter QuickFilter="@_quickFilter" 
+        RowsPerPage="25"  FixedHeader FixedFooter QuickFilter="@QuickFilter" 
         Loading="@_loading" Items="@projects" RowClassFunc="@GetRowClass" >
 
 

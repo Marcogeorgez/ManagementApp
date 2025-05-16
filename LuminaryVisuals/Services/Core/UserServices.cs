@@ -2,7 +2,6 @@
 using LuminaryVisuals.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
 using static LuminaryVisuals.Services.Core.UserRoleViewModel;
 
@@ -42,10 +41,10 @@ public class UserServices
             "Client" => await _userManager.GetUsersInRoleAsync("Client"),
             "Editor" => await _userManager.GetUsersInRoleAsync("Editor"),
             "Admin" => await _userManager.GetUsersInRoleAsync("Admin"),
-            _ => new List<ApplicationUser>()
+            _ => []
         };
 
-        return usersInRole.Select(u => u.Id).ToList(); 
+        return usersInRole.Select(u => u.Id).ToList();
     }
 
 
@@ -135,7 +134,7 @@ public class UserServices
                     // Update the ExternalOrder for the new client
                     var highestOrderForClient = await context.Projects
                         .Where(p => p.ClientId == AdminId && !p.IsArchived)
-                        .MaxAsync(p =>  p.ExternalOrder) ?? 0;
+                        .MaxAsync(p => p.ExternalOrder) ?? 0;
 
                     project.ExternalOrder = highestOrderForClient + 1;
                 }

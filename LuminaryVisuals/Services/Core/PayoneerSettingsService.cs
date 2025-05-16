@@ -1,5 +1,5 @@
-﻿using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Data;
+﻿using LuminaryVisuals.Data;
+using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace LuminaryVisuals.Services.Core;
@@ -75,7 +75,7 @@ public class PayoneerSettingsService
             existingSettings.Email = settings.Email;
             existingSettings.Currency = settings.Currency;
             existingSettings.Address = settings.Address;
-            existingSettings.TaxId = settings.TaxId;    
+            existingSettings.TaxId = settings.TaxId;
 
             context.PayoneerSettings.Update(existingSettings);
         }

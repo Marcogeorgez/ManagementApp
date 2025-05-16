@@ -181,7 +181,7 @@ public class NotificationService : BackgroundService, INotificationService
                 await AddToQueue(notificationItem);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError($"{ex}");
         }
@@ -215,7 +215,7 @@ public class NotificationService : BackgroundService, INotificationService
         }
 
     }
-    public async Task ClientPreferencesUpdated(ApplicationUser clientUser,string UserId, Dictionary<string, string> newClientPreferences)
+    public async Task ClientPreferencesUpdated(ApplicationUser clientUser, string UserId, Dictionary<string, string> newClientPreferences)
     {
         try
         {
@@ -232,7 +232,7 @@ public class NotificationService : BackgroundService, INotificationService
             var editorIds = ( await projectService.GetProjectsForClients(false, clientUser.Id) )
                 .Where(p => p != null && ( p.Status == ProjectStatus.Scheduled
                     || p.Status == ProjectStatus.Working
-                    || p.Status == ProjectStatus.Revision))
+                    || p.Status == ProjectStatus.Revision ))
                 .SelectMany(p => new[] { p?.PrimaryEditorId, p?.SecondaryEditorId })
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .Select(id => id!)
@@ -409,7 +409,7 @@ public class NotificationService : BackgroundService, INotificationService
                 }
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError($"{ex}");
         }
@@ -418,7 +418,7 @@ public class NotificationService : BackgroundService, INotificationService
     {
         _notificationQueue.AddOrUpdate(
             item.UserId,
-            new List<NotificationQueueItem> { item },
+            [item],
             (key, existingList) =>
             {
                 existingList.Add(item);
@@ -457,7 +457,7 @@ public class NotificationService : BackgroundService, INotificationService
 
             _logger.LogInformation($"Processing notifications for user {userId}. Notification count: {notifications.Count}");
 
-            if (notifications.Any())
+            if (notifications.Count != 0)
             {
                 var user = await userService.GetUserByIdAsync(userId);
                 if (user?.Email == null)

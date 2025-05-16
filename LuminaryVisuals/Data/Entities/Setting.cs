@@ -1,25 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace LuminaryVisuals.Data.Entities
+namespace LuminaryVisuals.Data.Entities;
+
+public class Setting
 {
-    public class Setting
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string Name { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string Name { get; set; }
 
-        [Required]
-        public decimal? ConversionRateUSToLek { get; set; }
+    [Required]
+    public decimal? ConversionRateUSToLek { get; set; }
 
-        [ForeignKey("User")]
-        public string UpdatedByUserId { get; set; }
+    [ForeignKey("User")]
+    public string UpdatedByUserId { get; set; }
 
-        public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
-        public virtual ApplicationUser User { get; set; }
-    }
+    public virtual ApplicationUser User { get; set; }
 }

@@ -2,23 +2,22 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class removingUniqueDateFromEditorLogging : Migration
 {
     /// <inheritdoc />
-    public partial class removingUniqueDateFromEditorLogging : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
 
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }

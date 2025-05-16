@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 public static class DataProtectionBuilderExtensions

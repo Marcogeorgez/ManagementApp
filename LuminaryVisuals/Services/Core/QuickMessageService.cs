@@ -1,11 +1,6 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Services;
-using LuminaryVisuals.Services.Events;
-using LuminaryVisuals.Services.Mail;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 public class QuickMessageService
 {
@@ -28,7 +23,7 @@ public class QuickMessageService
         using var context = _contextFactory.CreateDbContext();
         try
         {
-            return   await context.QuickMessages.ToListAsync();
+            return await context.QuickMessages.ToListAsync();
         }
         catch (Exception ex)
         {
@@ -58,7 +53,7 @@ public class QuickMessageService
             throw;
         }
     }
-    
+
     /// <summary>
     /// Deletes a quick message by id
     /// </summary>

@@ -32,7 +32,7 @@ public class ChatService
             var chat = new Chat
             {
                 ProjectId = projectId,
-                Messages = new List<Message>(), // Empty collection of messages initially
+                Messages = [], // Empty collection of messages initially
             };
 
             context.Chats.Add(chat);
@@ -96,7 +96,7 @@ public class ChatService
         }
         else
         {
-            
+
             chat = await context.Chats.FirstOrDefaultAsync(c => c.ProjectId == projectId);
             // Create new message
             newMessage = new Message
@@ -105,7 +105,7 @@ public class ChatService
                 UserId = userId,
                 Content = message,
                 Timestamp = DateTime.UtcNow,
-                IsApproved = !(isEditor || requireApproval),  // Editor messages are not approved by default, requireApproval not approved 
+                IsApproved = !( isEditor || requireApproval ),  // Editor messages are not approved by default, requireApproval not approved 
                 IsDeleted = false
             };
 
@@ -118,7 +118,7 @@ public class ChatService
 
         await context.SaveChangesAsync();
         await _messageNotificationService.NotifyNewMessage(projectId);
-       
+
         if (projectId > 0)
         {
             var project = await context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
@@ -126,7 +126,7 @@ public class ChatService
         }
         else
         {
-            _ = Task.Run(() => _notificationService.QueuePrivateChatNotification(userId,newMessage,chat));
+            _ = Task.Run(() => _notificationService.QueuePrivateChatNotification(userId, newMessage, chat));
 
         }
         return newMessage;
@@ -156,17 +156,17 @@ public class ChatService
 
     // Get messages for a project chat
 
-    public async Task<List<Message>> GetMessagesAsync(int projectId,bool isAdminView, string currentUser, int pageNumber = 1, int pageSize = 50)
+    public async Task<List<Message>> GetMessagesAsync(int projectId, bool isAdminView, string currentUser, int pageNumber = 1, int pageSize = 50)
     {
         var chat = await GetOrCreateChatAsync(projectId);
 
         using var context = _contextFactory.CreateDbContext();
-        
+
         // Return messages based on approval status and whether the user is a client
         var messages = await context.Messages
             .Where(m => m.ChatId == chat.ChatId &&
                         !m.IsDeleted &&
-                        (isAdminView || m.IsApproved || m.UserId == currentUser ))
+                        ( isAdminView || m.IsApproved || m.UserId == currentUser ))
             .OrderByDescending(m => m.Timestamp)
             .Include(m => m.User)
             .Skip(( pageNumber - 1 ) * pageSize)
@@ -189,7 +189,7 @@ public class ChatService
                 chat = new Chat
                 {
                     ProjectId = projectId,
-                    Messages = new List<Message>()
+                    Messages = []
                 };
 
                 context.Chats.Add(chat);
@@ -208,7 +208,7 @@ public class ChatService
                 chat = new Chat
                 {
                     ChatId = -projectId,
-                    Messages = new List<Message>()
+                    Messages = []
                 };
                 context.Chats.Add(chat);
                 await context.SaveChangesAsync();
@@ -224,13 +224,13 @@ public class ChatService
         List<Message> unreadMessages;
         if (projectId > 0)
         {
-             unreadMessages = await context.Messages
-                .Where(message => message.Chat.ProjectId == projectId &&
-                                 !context.ChatReadStatus
-                                     .Where(crs => crs.UserId == userId)
-                                     .Select(crs => crs.MessageId)
-                                     .Contains(message.MessageId))
-                .ToListAsync();
+            unreadMessages = await context.Messages
+               .Where(message => message.Chat.ProjectId == projectId &&
+                                !context.ChatReadStatus
+                                    .Where(crs => crs.UserId == userId)
+                                    .Select(crs => crs.MessageId)
+                                    .Contains(message.MessageId))
+               .ToListAsync();
         }
         else
         {
@@ -281,7 +281,7 @@ public class ChatService
                 .Where(m =>
                     ( m.Chat.ProjectId.HasValue && positiveProjectIds.Contains(m.Chat.ProjectId.Value) ) ||
                     ( negativeChatIds.Contains(m.ChatId) ) &&
-                    ( m.UserId != userId)
+                    ( m.UserId != userId )
                 )
                 .GroupBy(m => m.Chat.ProjectId.HasValue ? m.Chat.ProjectId.Value : -m.ChatId)
                 .Select(g => new
@@ -397,7 +397,7 @@ public class ChatService
 
     }
 
-    public async Task EditMessageAsync(Message message,int projectId,string content,bool isEditorView)
+    public async Task EditMessageAsync(Message message, int projectId, string content, bool isEditorView)
     {
         using var context = _contextFactory.CreateDbContext();
         var newMessage = await context.Messages.AsTracking().FirstOrDefaultAsync(m => m.MessageId == message.MessageId);
@@ -407,7 +407,7 @@ public class ChatService
         }
         newMessage!.Content = content;
         newMessage.IsEdited = true;
-        if(isEditorView)
+        if (isEditorView)
         {
             newMessage.IsApproved = false;
         }
@@ -454,7 +454,7 @@ public class ChatService
                     {
                         IsAdminChat = true,
                         UserId = userId,
-                        Messages = new List<Message>()
+                        Messages = []
                     };
 
                     context.Chats.Add(newAdminChat);

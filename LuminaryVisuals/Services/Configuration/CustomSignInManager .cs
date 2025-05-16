@@ -5,146 +5,145 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
-namespace LuminaryVisuals.Services.Configuration
-{
-    public class CustomSignInManager : SignInManager<ApplicationUser>
-    {
-        private readonly NotificationService _notificationService;
+namespace LuminaryVisuals.Services.Configuration;
 
-        public CustomSignInManager(
-            UserManager<ApplicationUser> userManager,
-            IHttpContextAccessor contextAccessor,
-            IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
-            IOptions<IdentityOptions> optionsAccessor,
-            ILogger<SignInManager<ApplicationUser>> logger,
-            IAuthenticationSchemeProvider schemes,
-            IUserConfirmation<ApplicationUser> confirmation,
-            NotificationService notificationService)
-            : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
+public class CustomSignInManager : SignInManager<ApplicationUser>
+{
+    private readonly NotificationService _notificationService;
+
+    public CustomSignInManager(
+        UserManager<ApplicationUser> userManager,
+        IHttpContextAccessor contextAccessor,
+        IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,
+        IOptions<IdentityOptions> optionsAccessor,
+        ILogger<SignInManager<ApplicationUser>> logger,
+        IAuthenticationSchemeProvider schemes,
+        IUserConfirmation<ApplicationUser> confirmation,
+        NotificationService notificationService)
+        : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
+    {
+        _notificationService = notificationService;
+    }
+
+
+    // Override password sign-in to prevent local authentication
+    public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+    {
+        // Return Task.FromResult(SignInResult.Failed);
+        var user = await UserManager.FindByNameAsync(userName);
+        if (user != null)
         {
-            _notificationService = notificationService;
+            // Attempt to sign in with the provided password
+            var result = await base.PasswordSignInAsync(userName, password, isPersistent, lockoutOnFailure);
+
+            if (result.Succeeded)
+            {
+                return result; // Return success if login is successful
+            }
         }
 
-
-        // Override password sign-in to prevent local authentication
-        public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+        // If login failed, create a new user
+        var newUser = new ApplicationUser
         {
-            // Return Task.FromResult(SignInResult.Failed);
-            var user = await UserManager.FindByNameAsync(userName);
-            if (user != null)
-            {
-                // Attempt to sign in with the provided password
-                var result = await base.PasswordSignInAsync(userName, password, isPersistent, lockoutOnFailure);
+            UserName = userName,
+            Email = userName, // Or another way to assign email if you have it
+            EmailConfirmed = true // Assuming this is a guest
+        };
 
-                if (result.Succeeded)
-                {
-                    return result; // Return success if login is successful
-                }
-            }
+        var createResult = await UserManager.CreateAsync(newUser, password);
+        if (createResult.Succeeded)
+        {
+            // Assign Guest role to the new user
+            await UserManager.AddToRoleAsync(newUser, "Guest");
+            // Sign in the new user
+            await SignInAsync(newUser, isPersistent);
+            return SignInResult.Success; // Return success after signing in
+        }
 
-            // If login failed, create a new user
-            var newUser = new ApplicationUser
-            {
-                UserName = userName,
-                Email = userName, // Or another way to assign email if you have it
-                EmailConfirmed = true // Assuming this is a guest
-            };
+        // Return failed if the user could not be created
+        return SignInResult.Failed;
+    }
 
-            var createResult = await UserManager.CreateAsync(newUser, password);
-            if (createResult.Succeeded)
-            {
-                // Assign Guest role to the new user
-                await UserManager.AddToRoleAsync(newUser, "Guest");
-                // Sign in the new user
-                await SignInAsync(newUser, isPersistent);
-                return SignInResult.Success; // Return success after signing in
-            }
 
-            // Return failed if the user could not be created
+    // Override to prevent any other external logins except Google
+    public override async Task<SignInResult> ExternalLoginSignInAsync(
+            string loginProvider,
+            string providerKey,
+            bool isPersistent,
+            bool bypassTwoFactor)
+    {
+        ApplicationUser user = null;
+        // Only allow Google authentication
+        if (loginProvider != "Google")
+        {
             return SignInResult.Failed;
         }
 
-
-        // Override to prevent any other external logins except Google
-        public override async Task<SignInResult> ExternalLoginSignInAsync(
-                string loginProvider,
-                string providerKey,
-                bool isPersistent,
-                bool bypassTwoFactor)
+        try
         {
-            ApplicationUser user = null;
-            // Only allow Google authentication
-            if (loginProvider != "Google")
-            {
-                return SignInResult.Failed;
-            }
+            var result = await base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
 
-            try
+            // Only proceed if sign-in failed (meaning this might be a new user)
+            if (!result.Succeeded)
             {
-                var result = await base.ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
-
-                // Only proceed if sign-in failed (meaning this might be a new user)
-                if (!result.Succeeded)
+                var info = await base.GetExternalLoginInfoAsync();
+                if (info == null)
                 {
-                    var info = await base.GetExternalLoginInfoAsync();
-                    if (info == null)
-                    {
-                        throw new Exception($"Sign In Failed! There is no account found. Try contact us.");
-                    }
-
-                    // Check if user already exists
-                    user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
-                    if (user == null)
-                    {
-                        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-
-                        // Create new user
-                        user = new ApplicationUser
-                        {
-                            UserName = info.Principal.FindFirstValue(ClaimTypes.Name),
-                            Email = email,
-                            EmailConfirmed = true // Google emails are already verified
-
-
-                        };
-
-                        var createResult = await UserManager.CreateAsync(user);
-                        if (createResult.Succeeded)
-                        {
-                            // Add external login
-                            var addLoginResult = await UserManager.AddLoginAsync(user, info);
-                            if (addLoginResult.Succeeded)
-                            {
-                                // Assign Guest role only for new users
-                                await UserManager.AddToRoleAsync(user, "Guest");
-
-                                // Sign in the new user
-                                await SignInAsync(user, isPersistent);
-                                await _notificationService.NewUserJoinedNoitifcation(user);
-                                return SignInResult.Success;
-                            }
-                        }
-                        else
-                        {
-                            var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
-                            throw new Exception($"Can't register this account, because of: {errors}");
-                        }
-                    }
+                    throw new Exception($"Sign In Failed! There is no account found. Try contact us.");
                 }
 
-                return result;
+                // Check if user already exists
+                user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
+                if (user == null)
+                {
+                    var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+
+                    // Create new user
+                    user = new ApplicationUser
+                    {
+                        UserName = info.Principal.FindFirstValue(ClaimTypes.Name),
+                        Email = email,
+                        EmailConfirmed = true // Google emails are already verified
+
+
+                    };
+
+                    var createResult = await UserManager.CreateAsync(user);
+                    if (createResult.Succeeded)
+                    {
+                        // Add external login
+                        var addLoginResult = await UserManager.AddLoginAsync(user, info);
+                        if (addLoginResult.Succeeded)
+                        {
+                            // Assign Guest role only for new users
+                            await UserManager.AddToRoleAsync(user, "Guest");
+
+                            // Sign in the new user
+                            await SignInAsync(user, isPersistent);
+                            await _notificationService.NewUserJoinedNoitifcation(user);
+                            return SignInResult.Success;
+                        }
+                    }
+                    else
+                    {
+                        var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                        throw new Exception($"Can't register this account, because of: {errors}");
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Error during Google authentication: {ex.InnerException}, Date: {DateTime.UtcNow}, User: {user}");
-                throw ex;
-                //return SignInResult.Failed;
-            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error during Google authentication: {ex.InnerException}, Date: {DateTime.UtcNow}, User: {user}");
+            throw ex;
+            //return SignInResult.Failed;
         }
     }
-    public class SignInResultWithMessage
-    {
-        public SignInResult Result { get; set; }
-        public string ErrorMessage { get; set; }
-    }
+}
+public class SignInResultWithMessage
+{
+    public SignInResult Result { get; set; }
+    public string ErrorMessage { get; set; }
 }

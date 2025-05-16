@@ -39,7 +39,7 @@ public class MessagesController : ControllerBase
             var existingSubscription = await context.PushNotificationSubscriptions
                 .FirstOrDefaultAsync(s => s.UserId == userId && s.Endpoint == subscription.Endpoint && s.P256DH == subscription.Keys.P256DH);
 
-            if(existingSubscription == null)
+            if (existingSubscription == null)
             {
                 existingSubscription = new PushNotificationSubscriptions
                 {
@@ -67,20 +67,20 @@ public class MessagesController : ControllerBase
 }
 
 public class PushSubscriptionModel
-    {
-        [Required]
-        public string Endpoint { get; set; }
+{
+    [Required]
+    public string Endpoint { get; set; }
 
-        [Required]
-        public Keys Keys { get; set; }
-    }
+    [Required]
+    public Keys Keys { get; set; }
+}
 
-    public class Keys
-    {
-        [Required]
-        public string P256DH { get; set; }
+public class Keys
+{
+    [Required]
+    public string P256DH { get; set; }
 
-        [Required]
-        public string Auth { get; set; }
-    }
+    [Required]
+    public string Auth { get; set; }
+}
 

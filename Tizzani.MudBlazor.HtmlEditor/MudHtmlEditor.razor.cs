@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using System.Reflection.Emit;
 namespace Tizzani.MudBlazor.HtmlEditor;
 
 public sealed partial class MudHtmlEditor : IAsyncDisposable
@@ -74,7 +73,7 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     /// Raised when an image is uploaded to the editor, Convert base64 of quill to IBrowserFile 
     /// which can be used to enable uploading to outside storage like cloudflare.
     /// </summary>
-    [Parameter,EditorRequired]
+    [Parameter, EditorRequired]
     public Func<IBrowserFile, Task<string>>? OnFileUpload { get; set; }
 
     /// <summary>
@@ -160,7 +159,8 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     [JSInvokable]
     public async void HandleHtmlContentChanged(string html)
     {
-        if (Html == html) return; // nothing changed
+        if (Html == html)
+            return; // nothing changed
 
         Html = html;
         await HtmlChanged.InvokeAsync(html);
@@ -169,7 +169,8 @@ public sealed partial class MudHtmlEditor : IAsyncDisposable
     [JSInvokable]
     public async void HandleTextContentChanged(string text)
     {
-        if (Text == text) return; // nothing changed
+        if (Text == text)
+            return; // nothing changed
 
         Text = text;
         await TextChanged.InvokeAsync(text);

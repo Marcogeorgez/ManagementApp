@@ -1,10 +1,8 @@
-﻿namespace LuminaryVisuals.Models
-{
-    public enum SubmissionStatus
-    {
-        Pending,
-        Submitted,
-        Approved
-    }
+﻿namespace LuminaryVisuals.Models;
 
+public enum SubmissionStatus
+{
+    Pending,
+    Submitted,
+    Approved
 }

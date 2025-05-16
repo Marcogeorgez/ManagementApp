@@ -22,10 +22,10 @@ public class ProjectService
     private readonly INotificationService _notificationService;
     private readonly LoggingHours loggingHours;
     private readonly ChatService chatService;
-    private bool IsConcurrencyConflict(DbUpdateException ex) => ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
+    private static bool IsConcurrencyConflict(DbUpdateException ex) => ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
 
-        // Check if the exception is due to a concurrency conflict (e.g., duplicate key)
-    
+    // Check if the exception is due to a concurrency conflict (e.g., duplicate key)
+
     public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger, ChatService chatService,
         CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService, LoggingHours loggingHours)
     {
@@ -65,21 +65,21 @@ public class ProjectService
 
             foreach (var project in projects)
             {
-                project.ClientName = project.ClientId != null && userNames.ContainsKey(project.ClientId)
-                    ? userNames[project.ClientId]!
+                project.ClientName = project.ClientId != null && userNames.TryGetValue(project.ClientId, out string? ClientName)
+                    ? ClientName!
                     : "N/A ??";
-                project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
-                    ? userNames[project.PrimaryEditorId]!
+                project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.TryGetValue(project.PrimaryEditorId, out string? PrimaryEditorName)
+                    ? PrimaryEditorName!
                     : "N/A";
-                project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
-                    ? userNames[project.SecondaryEditorId]!
+                project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.TryGetValue(project.SecondaryEditorId, out string? SecondaryEditorName)
+                    ? SecondaryEditorName!
                     : "N/A";
             }
 
             return projects;
         }
     }
-    public async Task<List<Project>> GetProjectsDateRangeCalenderAsync(bool isArchived, DateRange dateRange, bool isAdmin,string userId)
+    public async Task<List<Project>> GetProjectsDateRangeCalenderAsync(bool isArchived, DateRange dateRange, bool isAdmin, string userId)
     {
         using (var context = _contextFactory.CreateDbContext())
         {
@@ -100,7 +100,7 @@ public class ProjectService
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
                 .ToListAsync();
-            if(!isAdmin)
+            if (!isAdmin)
             {
                 projects = projects.Where(p => p.PrimaryEditor?.Id == userId || p.SecondaryEditor?.Id == userId).ToList();
             }
@@ -246,7 +246,7 @@ public class ProjectService
             }).ToList();
 
             // Add pseudo-projects for admin chats
-            List<Project> adminChats = new();
+            List<Project> adminChats = [];
 
             if (isAdminView)
             {
@@ -315,12 +315,12 @@ public class ProjectService
                     _logger.LogInformation("Lock acquired for InternalOrder assignment.");
                     var highestOrder = context.Projects
                         .Where(p => !p.IsArchived)
-                        .Max(p =>  p.InternalOrder) ?? 0;
+                        .Max(p => p.InternalOrder) ?? 0;
                     project.InternalOrder = highestOrder + 1;
 
                     var highestOrderForClient = context.Projects
                         .Where(p => !p.IsArchived && project.ClientId == p.ClientId)
-                        .Max(p =>  p.ExternalOrder) ?? 0;
+                        .Max(p => p.ExternalOrder) ?? 0;
                     project.ExternalOrder = highestOrderForClient + 1;
 
                     _logger.LogInformation("Lock released for InternalOrder assignment.");
@@ -358,7 +358,7 @@ public class ProjectService
 
                 var highestOrderForClient = context.Projects
                     .Where(p => !p.IsArchived && _project.ClientId == p.ClientId)
-                    .Max(p =>  p.ExternalOrder) ?? 0;
+                    .Max(p => p.ExternalOrder) ?? 0;
                 _project.ExternalOrder = highestOrderForClient + 1;
 
                 await context.SaveChangesAsync();
@@ -417,7 +417,7 @@ public class ProjectService
                 .Include(p => p.SecondaryEditorDetails)
                 .Include(p => p.Client)
                 .FirstOrDefaultAsync(p => p.ProjectId == calendarItem.ProjectId);
-            if(_project == null)
+            if (_project == null)
             {
                 return;
             }
@@ -458,7 +458,7 @@ public class ProjectService
                     _project.ClientId = project.ClientId;
                     var highestOrderForClient = context.Projects
                         .Where(p => !p.IsArchived && _project.ClientId == p.ClientId)
-                        .Max(p =>  p.ExternalOrder) ?? 0;
+                        .Max(p => p.ExternalOrder) ?? 0;
                     _project.ExternalOrder = highestOrderForClient + 1;
                     isExternalOrderChanged = true;
                 }
@@ -545,7 +545,7 @@ public class ProjectService
                             {
                                 // Remove the entire revision if content is empty or only <p><br></p>
                                 _project.Revisions.Remove(existingRevision);
-                                
+
                             }
                             else
                             {
@@ -572,7 +572,7 @@ public class ProjectService
 
                 await context.SaveChangesAsync();
 
-                if(recalculatePayment)
+                if (recalculatePayment)
                 {
                     await CalculateProjectFinalPrice(_project);
 
@@ -604,11 +604,11 @@ public class ProjectService
                         .Select(u => new { u.Id, u.UserName, u.HourlyRate })
                         .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-                    _project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
-                        ? userNames[project.PrimaryEditorId]!
+                    _project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.TryGetValue(project.PrimaryEditorId, out string? PrimaryEditorName)
+                        ? PrimaryEditorName!
                         : null;
-                    _project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
-                        ? userNames[project.SecondaryEditorId]!
+                    _project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.TryGetValue(project.SecondaryEditorId, out string? SecondaryEditorName)
+                        ? SecondaryEditorName!
                         : null;
 
                     string messageToSend = $"Project {_project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {_project.Status.ToString().Replace('_', ' ')}.";
@@ -617,8 +617,8 @@ public class ProjectService
                         _ = Task.Run(() => chatService.AddMessageAsync(_project.Client.Id, updatedByUserId, messageToSend));
                     }
                     else if (
-                        (  _project.Status == ProjectStatus.Ready_To_Review || _project.Status == ProjectStatus.Working )
-                        && (oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
+                        ( _project.Status == ProjectStatus.Ready_To_Review || _project.Status == ProjectStatus.Working )
+                        && ( oldStatus == ProjectStatus.Ready_To_Review || oldStatus == ProjectStatus.Working ))
                     {
                         // Do nothing since we don't want to send info the user at all (intentionally left blank)
                     }
@@ -630,11 +630,11 @@ public class ProjectService
                     }
                     _ = Task.Run(() => _notificationService.QueueStatusChangeNotification(_project, oldStatus, _project.Status, updatedByUserId));
                 }
-                if(hasPrimaryEditorChanged || hasSecondaryEditorChanged)
+                if (hasPrimaryEditorChanged || hasSecondaryEditorChanged)
                 {
                     _ = Task.Run(() => loggingHours.CalculateAndSaveBillableHoursForProjectAsync(_project.ProjectId));
                 }
-                _ = Task.Run(() =>  _broadcaster.NotifyAllAsync());
+                _ = Task.Run(() => _broadcaster.NotifyAllAsync());
             }
         }
     }
@@ -710,15 +710,17 @@ public class ProjectService
                     .Select(u => new { u.Id, u.UserName })
                     .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
-                foreach(Project _project in projects)
+                foreach (Project _project in projects)
                 {
-                    _project.PrimaryEditorName = project.PrimaryEditorId != null && userNames.ContainsKey(project.PrimaryEditorId)
-                            ? userNames[project.PrimaryEditorId]!
-                            : null;
-                    _project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.ContainsKey(project.SecondaryEditorId)
-                        ? userNames[project.SecondaryEditorId]!
+                    _project.PrimaryEditorName = _project.PrimaryEditorId != null && userNames.TryGetValue(_project.PrimaryEditorId, out string? primaryEditorName)
+                        ? primaryEditorName!
+                        : null;
+
+                    _project.SecondaryEditorName = _project.SecondaryEditorId != null && userNames.TryGetValue(_project.SecondaryEditorId, out string? secondaryEditorName)
+                        ? secondaryEditorName!
                         : null;
                 }
+
 
 
                 string messageToSend = $"Project {project.ProjectName} status has been changed from {oldStatus.ToString().Replace('_', ' ')} to {project.Status.ToString().Replace('_', ' ')}.";
@@ -821,7 +823,7 @@ public class ProjectService
             {
                 _project.ClientBillableHours = project.ClientBillableHours.HasValue
                     ? Math.Round(project.ClientBillableHours.Value, 2)
-                    :  null;
+                    : null;
 
                 _project.ClientBillableAmount = Math.Round(( project.Client.HourlyRate ?? 0 ) * ( project.ClientBillableHours ?? 0 ), 2);
 
@@ -871,7 +873,7 @@ public class ProjectService
                 .Where(p => projectId.Contains(p.ProjectId))
                 .ExecuteDeleteAsync();
 
-                await _broadcaster.NotifyAllAsync();
+            await _broadcaster.NotifyAllAsync();
         }
     }
     public async Task ArchiveProjectAsync(int projectId, string reason)
@@ -1010,13 +1012,13 @@ public class ProjectService
                     _logger.LogInformation("Lock acquired for InternalOrder assignment.");
                     var highestOrder = context.Projects
                         .Where(p => !p.IsArchived)
-                        .Max(p =>  p.InternalOrder) ?? 0;
+                        .Max(p => p.InternalOrder) ?? 0;
 
                     project.InternalOrder = highestOrder + 1;
 
                     var highestOrderClient = context.Projects
                         .Where(p => !p.IsArchived && p.ClientId == project.ClientId)
-                        .Max(p =>  p.ExternalOrder) ?? 0;
+                        .Max(p => p.ExternalOrder) ?? 0;
 
                     project.ExternalOrder = highestOrderClient + 1;
                     _logger.LogInformation("Lock released for InternalOrder assignment.");
@@ -1055,7 +1057,7 @@ public class ProjectService
             await using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                List<Project> projectsToReorder = new();
+                List<Project> projectsToReorder = [];
                 // Fetch all non-archived projects
                 if (isExternalOrder)
                 {
@@ -1080,7 +1082,7 @@ public class ProjectService
                 ValidateNewOrder(projectsToReorder, newOrder);
 
                 // If the list is empty or has unexpected order, normalize it
-                if (!projectsToReorder.Any() || !IsProjectOrderValid(projectsToReorder, isExternalOrder))
+                if (projectsToReorder.Count == 0 || !IsProjectOrderValid(projectsToReorder, isExternalOrder))
                 {
                     NormalizeProjectOrder(projectsToReorder, isExternalOrder);
                     await context.SaveChangesAsync();
@@ -1117,7 +1119,7 @@ public class ProjectService
             }
         }
     }
-    private bool IsProjectOrderValid(List<Project> projects, bool isExternalOrder)
+    private static bool IsProjectOrderValid(List<Project> projects, bool isExternalOrder)
     {
         // Validate if projects are in a continuous sequence based on ExternalOrder or InternalOrder
         return projects
@@ -1127,7 +1129,7 @@ public class ProjectService
             .All(isValid => isValid);
     }
 
-    private void NormalizeProjectOrder(List<Project> projects, bool isExternalOrder)
+    private static void NormalizeProjectOrder(List<Project> projects, bool isExternalOrder)
     {
         // Sort projects by their current order (ExternalOrder or InternalOrder), then assign new sequential order
         var orderedProjects = projects
@@ -1142,7 +1144,7 @@ public class ProjectService
                 orderedProjects[i].InternalOrder = i + 1;
         }
     }
-    private void PerformProjectReordering(List<Project> projects, Project projectToMove, int newOrder, bool isExternalOrder)
+    private static void PerformProjectReordering(List<Project> projects, Project projectToMove, int newOrder, bool isExternalOrder)
     {
         // Remove the project from its current position
         projects.Remove(projectToMove);
@@ -1159,7 +1161,7 @@ public class ProjectService
                 projects[i].InternalOrder = i + 1;
         }
     }
-    private void ValidateNewOrder(List<Project> projects, int? newOrder)
+    private static void ValidateNewOrder(List<Project> projects, int? newOrder)
     {
         if (newOrder == null)
             return;
@@ -1196,14 +1198,14 @@ public class ProjectService
                     .Include(p => p.PrimaryEditorDetails)
                     .Include(p => p.SecondaryEditorDetails)
                     .FirstOrDefaultAsync(p => p.ProjectId == _project.ProjectId);
-                if(project == null)
+                if (project == null)
                     throw new ArgumentException("Project not found");
                 // Calculate client billable amount
                 if (project.ClientBillableHours != null && project.Client.HourlyRate != null)
                 {
-                    project.ClientBillableAmount =  project.Client.HourlyRate.HasValue && project.ClientBillableHours.HasValue 
+                    project.ClientBillableAmount = project.Client.HourlyRate.HasValue && project.ClientBillableHours.HasValue
                         ? Math.Round(project.Client.HourlyRate.Value * project.ClientBillableHours.Value, 0, MidpointRounding.AwayFromZero)
-                        :  null;
+                        : null;
                 }
 
                 // Calculate primary editor details
@@ -1212,7 +1214,7 @@ public class ProjectService
                     CalculateEditorPayment(project.PrimaryEditorDetails, project.PrimaryEditor, project.ClientBillableHours);
                     context.Entry(project.PrimaryEditorDetails).State = EntityState.Modified;
                 }
-                else if(project.PrimaryEditor == null)
+                else if (project.PrimaryEditor == null)
                 {
                     ResetEditorDetails(project.PrimaryEditorDetails);
                 }
@@ -1224,7 +1226,7 @@ public class ProjectService
                     CalculateEditorPayment(project.SecondaryEditorDetails, project.SecondaryEditor, project.ClientBillableHours);
                     context.Entry(project.SecondaryEditorDetails).State = EntityState.Modified;
                 }
-                else if(project.SecondaryEditor == null)
+                else if (project.SecondaryEditor == null)
                 {
                     ResetEditorDetails(project.SecondaryEditorDetails);
                 }
@@ -1248,14 +1250,14 @@ public class ProjectService
         editorDetails.Overtime = Math.Round(( editorDetails.BillableHours ) - ( editorDetails.FinalBillableHours ), 2);
 
         editorDetails.FinalBillableHours = Math.Round(
-            ( editorDetails.BillableHours) -
+            ( editorDetails.BillableHours ) -
             ( editorDetails.Overtime ) +
             ( editorDetails.AdjustmentHours ),
             2
         );
 
         editorDetails.PaymentAmount = Math.Round(
-            ( editor.HourlyRate ?? 0 ) * ( editorDetails.FinalBillableHours),
+            ( editor.HourlyRate ?? 0 ) * ( editorDetails.FinalBillableHours ),
             0, MidpointRounding.AwayFromZero);
 
     }

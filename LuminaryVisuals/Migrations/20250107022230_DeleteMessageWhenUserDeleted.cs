@@ -2,41 +2,40 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class DeleteMessageWhenUserDeleted : Migration
 {
     /// <inheritdoc />
-    public partial class DeleteMessageWhenUserDeleted : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Messages_Users_UserId",
-                table: "Messages");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Messages_Users_UserId",
+            table: "Messages");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Messages_Users_UserId",
-                table: "Messages",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Messages_Users_UserId",
+            table: "Messages",
+            column: "UserId",
+            principalTable: "Users",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Messages_Users_UserId",
-                table: "Messages");
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropForeignKey(
+            name: "FK_Messages_Users_UserId",
+            table: "Messages");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Messages_Users_UserId",
-                table: "Messages",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Messages_Users_UserId",
+            table: "Messages",
+            column: "UserId",
+            principalTable: "Users",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Restrict);
     }
 }

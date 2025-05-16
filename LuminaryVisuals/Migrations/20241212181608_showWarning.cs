@@ -2,28 +2,27 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class showWarning : Migration
 {
     /// <inheritdoc />
-    public partial class showWarning : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsUrgent",
-                table: "Projects",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
-        }
+        migrationBuilder.AddColumn<bool>(
+            name: "IsUrgent",
+            table: "Projects",
+            type: "boolean",
+            nullable: false,
+            defaultValue: false);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "IsUrgent",
-                table: "Projects");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "IsUrgent",
+            table: "Projects");
     }
 }

@@ -1,10 +1,11 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
+using LuminaryVisuals.Utility;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using WebPush;
 
-public class PushNotificationService
+public partial class PushNotificationService
 {
     private readonly string _publicKey = "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80";
     private readonly string _privateKey = "eYN89bnSaq1aEBr1I5g14mI30AIHVDvJoeW3QpG-sE0";
@@ -30,7 +31,7 @@ public class PushNotificationService
                 return;
             }
             var chatMessage = await context.Messages.FirstOrDefaultAsync(s => s.MessageId == chatMessageId);
-            if(chatMessage != null)
+            if (chatMessage != null)
             {
                 message = $"{chatMessage.Content}";
             }
@@ -38,7 +39,7 @@ public class PushNotificationService
         var vapidDetails = new VapidDetails("mailto:management@luminaryvisuals.net", _publicKey, _privateKey);
         var webPushClient = new WebPushClient();
         var cleanedMessage = CleanText(message);
-        
+
         var payload = new
         {
             title,
@@ -49,7 +50,7 @@ public class PushNotificationService
 
         try
         {
-            foreach(var item in userNotification)
+            foreach (var item in userNotification)
             {
                 var pushSubscription = new PushSubscription(item.Endpoint, item.P256DH, item.Auth);
                 await webPushClient.SendNotificationAsync(pushSubscription, jsonPayload, vapidDetails);
@@ -65,13 +66,19 @@ public class PushNotificationService
         if (string.IsNullOrWhiteSpace(text))
             return string.Empty;
         // Replace <img> tags with (Image)
-        string cleanedText = Regex.Replace(text, "<img[^>]*>", "(Image)", RegexOptions.IgnoreCase);
+        string cleanedText = ImageTagRegex().Replace(text, "(Image)");
         // Remove all HTML tags
-        cleanedText = Regex.Replace(text, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
-        cleanedText = Regex.Replace(text, "<.*?>", " ");
+        cleanedText = LineBreakRegex().Replace(text, "\n");
+        cleanedText = MyRegexes.HtmlCleanerRegex().Replace(text, " ");
 
         cleanedText = System.Net.WebUtility.HtmlDecode(cleanedText);
 
         return cleanedText.Trim();
     }
+
+
+    [GeneratedRegex(@"<br\s*/?>", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex LineBreakRegex();
+    [GeneratedRegex("<img[^>]*>", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex ImageTagRegex();
 }

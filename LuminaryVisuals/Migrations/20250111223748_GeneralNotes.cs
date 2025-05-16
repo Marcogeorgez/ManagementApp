@@ -2,27 +2,26 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class GeneralNotes : Migration
 {
     /// <inheritdoc />
-    public partial class GeneralNotes : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "GeneralNotes",
-                table: "ClientEditingGuidelines",
-                type: "text",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<string>(
+            name: "GeneralNotes",
+            table: "ClientEditingGuidelines",
+            type: "text",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "GeneralNotes",
-                table: "ClientEditingGuidelines");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "GeneralNotes",
+            table: "ClientEditingGuidelines");
     }
 }

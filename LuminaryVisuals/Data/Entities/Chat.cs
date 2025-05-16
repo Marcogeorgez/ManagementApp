@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LuminaryVisuals.Data.Entities;
 
@@ -19,7 +18,7 @@ public class Chat
 
     public ICollection<Message> Messages { get; set; }
 
-  
+
     // Navigation properties
 
     public virtual Project? Project { get; set; }

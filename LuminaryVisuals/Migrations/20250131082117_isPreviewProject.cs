@@ -2,27 +2,26 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class isPreviewProject : Migration
 {
     /// <inheritdoc />
-    public partial class isPreviewProject : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsPreview",
-                table: "Projects",
-                type: "boolean",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<bool>(
+            name: "IsPreview",
+            table: "Projects",
+            type: "boolean",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "IsPreview",
-                table: "Projects");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "IsPreview",
+            table: "Projects");
     }
 }

@@ -1,7 +1,7 @@
-﻿using MailKit.Security;
-using MimeKit;
-using MailKit.Net.Smtp;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
+using MimeKit;
 namespace LuminaryVisuals.Services;
 
 public class EmailConfiguration

@@ -2,27 +2,26 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class updateRolesName : Migration
 {
     /// <inheritdoc />
-    public partial class updateRolesName : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "TargetRole",
-                table: "Notifications",
-                type: "text",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<string>(
+            name: "TargetRole",
+            table: "Notifications",
+            type: "text",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "TargetRole",
-                table: "Notifications");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "TargetRole",
+            table: "Notifications");
     }
 }

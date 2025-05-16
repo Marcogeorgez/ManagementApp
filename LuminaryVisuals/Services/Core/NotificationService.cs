@@ -1,20 +1,15 @@
 ﻿using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Services;
 using LuminaryVisuals.Services.Core;
-using LuminaryVisuals.Services.Events;
-using LuminaryVisuals.Services.Mail;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
-using System.Diagnostics;
 
 public class UserNotificationService
 {
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly UserServices userServices;
 
-    public UserNotificationService(IDbContextFactory<ApplicationDbContext>  context, UserServices userServices)
+    public UserNotificationService(IDbContextFactory<ApplicationDbContext> context, UserServices userServices)
     {
         _contextFactory = context;
         this.userServices = userServices;
@@ -32,7 +27,7 @@ public class UserNotificationService
             TargetRole = targetRole,
             SeverityColor = Severity
         };
-        if(notification.TargetRole == "Everyone")
+        if (notification.TargetRole == "Everyone")
         {
             notification.TargetRole = null;
         }

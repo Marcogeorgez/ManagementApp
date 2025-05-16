@@ -1,7 +1,6 @@
 ﻿using LuminaryVisuals.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace LuminaryVisuals.Services.Helpers;

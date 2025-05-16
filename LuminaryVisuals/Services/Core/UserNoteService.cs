@@ -2,7 +2,6 @@
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace LuminaryVisuals.Services.Core;
 

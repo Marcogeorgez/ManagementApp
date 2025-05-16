@@ -2,9 +2,7 @@
 using Amazon.S3.Model;
 using LuminaryVisuals.Models;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Options;
 using System.Net;
-using System.Web;
 
 namespace LuminaryVisuals.Services.Configuration;
 public class CloudflareR2Service
@@ -29,7 +27,7 @@ public class CloudflareR2Service
 
             var cleanedFileName = file.Name.Trim().Replace('—', '-'); // Replace em dash with hyphen
             // Generate a unique filename
-            var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{cleanedFileName}"?? $"{Guid.NewGuid()}{Path.GetExtension(cleanedFileName)}";
+            var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{cleanedFileName}" ?? $"{Guid.NewGuid()}{Path.GetExtension(cleanedFileName)}";
 
             // URL encode the file name
             string encodedFileName = WebUtility.UrlEncode(fileName);
@@ -74,7 +72,7 @@ public class CloudflareR2Service
         try
         {
             _logger.LogInformation($"Started Uploading file {fileName}");
-            
+
             var request = new PutObjectRequest
             {
                 BucketName = _settings.BucketName,

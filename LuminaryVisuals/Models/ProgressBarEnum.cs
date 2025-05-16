@@ -1,12 +1,11 @@
-﻿namespace LuminaryVisuals.Data.Entities
+﻿namespace LuminaryVisuals.Data.Entities;
+
+public enum ProgressBarValue
 {
-    public enum ProgressBarValue
-    {
-        Zero = 0,
-        Twenty = 20,
-        Forty = 40,
-        Sixty = 60,
-        Eighty = 80,
-        Hundred = 100
-    }
+    Zero = 0,
+    Twenty = 20,
+    Forty = 40,
+    Sixty = 60,
+    Eighty = 80,
+    Hundred = 100
 }

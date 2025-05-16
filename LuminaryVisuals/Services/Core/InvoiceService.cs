@@ -14,7 +14,7 @@ public class InvoiceService
         this.navigationManager = navigationManager;
         this.logger = logger;
         this.cloudflareR2Service = cloudflareR2Service;
-        
+
     }
     public async Task<string> GenerateInvoicePdfAsync(List<Project> Items, PayoneerSettings? setting)
     {
@@ -40,7 +40,7 @@ public class InvoiceService
                 };
                 // Line item
                 decimal total = 0;
-                for (int i = 0; i < Items.Count; i++ )
+                for (int i = 0; i < Items.Count; i++)
                 {
                     if (Items[i].ClientBillableAmount == null)
                     {
@@ -52,14 +52,14 @@ public class InvoiceService
                     formFields.Add($"items[{i}][quantity]", "1");
                     formFields.Add($"items[{i}][unit_cost]", clientBillableAmount.ToString());
                 }
-                
+
                 var content = new FormUrlEncodedContent(formFields);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, "https://invoice-generator.com")
                 {
                     Content = content
                 };
-                
+
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", key);
 
                 // Accept PDF as response

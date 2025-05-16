@@ -7,6 +7,6 @@ public class UserNote
     public string? CreatedByUserId { get; set; }
     public string Note { get; set; }
 
-    public virtual ApplicationUser TargetUser { get; set; } 
+    public virtual ApplicationUser TargetUser { get; set; }
     public virtual ApplicationUser CreatedByUser { get; set; }
 }

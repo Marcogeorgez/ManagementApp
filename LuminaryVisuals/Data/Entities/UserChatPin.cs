@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LuminaryVisuals.Data.Entities;
 
@@ -12,7 +11,7 @@ public class UserChatPin
     // So we can have a pinned project in a private chat
     // This is a nullable string to allow for null values and if its null its a project chat
     public string? UserChatId { get; set; }      // Foreign key to private chats
-    
+
     public bool IsPinned { get; set; }      // Pinned state for the user
 
     // Navigation properties

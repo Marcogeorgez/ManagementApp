@@ -1,34 +1,32 @@
 ﻿using LuminaryVisuals.Components.ProjectPageDialogue;
-using LuminaryVisuals.Components.Shared;
 using MudBlazor;
 
-namespace LuminaryVisuals.Services.Shared
+namespace LuminaryVisuals.Services.Shared;
+
+public interface IConfirmationService
 {
-    public interface IConfirmationService
+    Task<bool> Confirm(string message, string title = "Confirm");
+}
+
+public class ConfirmationService : IConfirmationService
+{
+    private readonly IDialogService _dialogService;
+
+    public ConfirmationService(IDialogService dialogService)
     {
-        Task<bool> Confirm(string message, string title = "Confirm");
+        _dialogService = dialogService;
     }
 
-    public class ConfirmationService : IConfirmationService
+    public async Task<bool> Confirm(string message, string title = "Confirm")
     {
-        private readonly IDialogService _dialogService;
+        var parameters = new DialogParameters
+    {
+        { "Message", message }
+    };
 
-        public ConfirmationService(IDialogService dialogService)
-        {
-            _dialogService = dialogService;
-        }
+        var dialog = await _dialogService.ShowAsync<ConfirmationDialog>(title, parameters);
+        var result = await dialog.Result;
 
-        public async Task<bool> Confirm(string message, string title = "Confirm")
-        {
-            var parameters = new DialogParameters
-        {
-            { "Message", message }
-        };
-
-            var dialog = await _dialogService.ShowAsync<ConfirmationDialog>(title, parameters);
-            var result = await dialog.Result;
-
-            return !result.Canceled;
-        }
+        return !result.Canceled;
     }
 }

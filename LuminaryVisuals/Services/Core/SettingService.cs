@@ -1,58 +1,57 @@
-﻿using LuminaryVisuals.Data.Entities;
-using LuminaryVisuals.Data;
+﻿using LuminaryVisuals.Data;
+using LuminaryVisuals.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace LuminaryVisuals.Services.Core
+namespace LuminaryVisuals.Services.Core;
+
+// Setting Service for updating the setting table in the database
+// which contains the conversion rate from USD to Lek
+public class SettingService
 {
-    // Setting Service for updating the setting table in the database
-    // which contains the conversion rate from USD to Lek
-    public class SettingService
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
+    public SettingService(IDbContextFactory<ApplicationDbContext> context)
     {
-        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+        _contextFactory = context;
+    }
 
-        public SettingService(IDbContextFactory<ApplicationDbContext> context)
+    public async Task<Setting> GetSettingByNameAsync(string name)
+    {
+        using (var context = _contextFactory.CreateDbContext())
         {
-            _contextFactory = context;
-        }
-
-        public async Task<Setting> GetSettingByNameAsync(string name)
-        {
-            using (var context = _contextFactory.CreateDbContext())
+            var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
+            if (setting == null)
             {
-                var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
-                if (setting == null)
-                {
-                    setting = new Setting();
-                }
-                return setting;
+                setting = new Setting();
             }
+            return setting;
         }
+    }
 
-        public async Task UpdateSettingAsync(string name, decimal? ConversionRateUSToLek, string updatedByUserId)
+    public async Task UpdateSettingAsync(string name, decimal? ConversionRateUSToLek, string updatedByUserId)
+    {
+        using (var context = _contextFactory.CreateDbContext())
         {
-            using (var context = _contextFactory.CreateDbContext())
+            var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
+            if (setting == null)
             {
-                var setting = await context.Settings.FirstOrDefaultAsync(s => s.Name == name);
-                if (setting == null)
+                setting = new Setting
                 {
-                    setting = new Setting
-                    {
-                        Name = name,
-                        ConversionRateUSToLek = ConversionRateUSToLek,
-                        UpdatedByUserId = updatedByUserId,
-                        LastUpdated = DateTime.UtcNow
-                    };
-                    await context.Settings.AddAsync(setting);
-                }
-                else
-                {
-                    setting.ConversionRateUSToLek = ConversionRateUSToLek;
-                    setting.UpdatedByUserId = updatedByUserId;
-                    setting.LastUpdated = DateTime.UtcNow;
-                }
-
-                await context.SaveChangesAsync();
+                    Name = name,
+                    ConversionRateUSToLek = ConversionRateUSToLek,
+                    UpdatedByUserId = updatedByUserId,
+                    LastUpdated = DateTime.UtcNow
+                };
+                await context.Settings.AddAsync(setting);
             }
+            else
+            {
+                setting.ConversionRateUSToLek = ConversionRateUSToLek;
+                setting.UpdatedByUserId = updatedByUserId;
+                setting.LastUpdated = DateTime.UtcNow;
+            }
+
+            await context.SaveChangesAsync();
         }
     }
 }

@@ -2,33 +2,32 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class updateUserIdToBeString : Migration
 {
     /// <inheritdoc />
-    public partial class updateUserIdToBeString : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
-                name: "UserId",
-                table: "UserNotificationStatuses",
-                type: "text",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
-        }
+        migrationBuilder.AlterColumn<string>(
+            name: "UserId",
+            table: "UserNotificationStatuses",
+            type: "text",
+            nullable: false,
+            oldClrType: typeof(int),
+            oldType: "integer");
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<int>(
-                name: "UserId",
-                table: "UserNotificationStatuses",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AlterColumn<int>(
+            name: "UserId",
+            table: "UserNotificationStatuses",
+            type: "integer",
+            nullable: false,
+            oldClrType: typeof(string),
+            oldType: "text");
     }
 }

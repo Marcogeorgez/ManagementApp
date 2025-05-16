@@ -1,11 +1,11 @@
 ﻿namespace LuminaryVisuals.Services.Core;
+using Dropbox.Api;
+using Dropbox.Api.Sharing;
 using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Dropbox.Api;
-using Dropbox.Api.Sharing;
 public class TokenResponse
 {
     [JsonPropertyName("access_token")]
@@ -223,7 +223,7 @@ public class DropboxService
         }
     }
     // Move the contents of a folder to another folder
-    public async Task MoveFolderContentsAsync(string fromPath, string toPath,string projectName)
+    public async Task MoveFolderContentsAsync(string fromPath, string toPath, string projectName)
     {
         EnsureValidAccessToken();
 
@@ -234,7 +234,7 @@ public class DropboxService
 
             foreach (var item in listResult.Entries)
             {
-                if(item.Name == projectName)
+                if (item.Name == projectName)
                 {
                     var destinationPath = $"{toPath}/{item.Name}";
                     await _client.Files.MoveV2Async(item.PathLower, destinationPath);

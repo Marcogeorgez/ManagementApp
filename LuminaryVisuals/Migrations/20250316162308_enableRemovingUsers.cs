@@ -2,40 +2,39 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class enableRemovingUsers : Migration
 {
     /// <inheritdoc />
-    public partial class enableRemovingUsers : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Chats_Users_UserId",
-                table: "Chats");
+        migrationBuilder.DropForeignKey(
+            name: "FK_Chats_Users_UserId",
+            table: "Chats");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Chats_Users_UserId",
-                table: "Chats",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Chats_Users_UserId",
+            table: "Chats",
+            column: "UserId",
+            principalTable: "Users",
+            principalColumn: "Id",
+            onDelete: ReferentialAction.Cascade);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Chats_Users_UserId",
-                table: "Chats");
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropForeignKey(
+            name: "FK_Chats_Users_UserId",
+            table: "Chats");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Chats_Users_UserId",
-                table: "Chats",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "Id");
-        }
+        migrationBuilder.AddForeignKey(
+            name: "FK_Chats_Users_UserId",
+            table: "Chats",
+            column: "UserId",
+            principalTable: "Users",
+            principalColumn: "Id");
     }
 }

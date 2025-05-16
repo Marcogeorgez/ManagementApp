@@ -1,9 +1,9 @@
 using LuminaryVisuals.Data.Entities;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using LuminaryVisuals.Models;
 using MudBlazor;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 public class Project
 {
@@ -27,10 +27,10 @@ public class Project
 
     [DataType(DataType.MultilineText)]
     public string? Deliverables { get; set; }
-    
+
     [DataType(DataType.MultilineText)]
     public string? Description { get; set; }
-    
+
     [DataType(DataType.MultilineText)]
     public string? MusicPreference { get; set; }
     private ProjectSpecifications _projectSpecifications = new ProjectSpecifications();
@@ -41,7 +41,8 @@ public class Project
     }
 
     private ProjectCalculationDetails _calculationDetails = new ProjectCalculationDetails();
-    public ProjectCalculationDetails CalculationDetails {
+    public ProjectCalculationDetails CalculationDetails
+    {
         get => _calculationDetails;
         set => _calculationDetails = value;
     }
@@ -61,8 +62,9 @@ public class Project
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     [NotMapped]
-    public DateRange? Range {
-    get => new(StartDate, EndDate);
+    public DateRange? Range
+    {
+        get => new(StartDate, EndDate);
         set
         {
             StartDate = value?.Start;
@@ -107,7 +109,7 @@ public class Project
     }
     [Required]
     public bool IsArchived { get; set; } = false;
-    
+
     public ProjectStatus Status { get; set; }
     public AdminProjectStatus AdminStatus { get; set; }
 
@@ -119,14 +121,14 @@ public class Project
     public virtual ApplicationUser? PrimaryEditor { get; set; }
 
     [ForeignKey("SecondaryEditorId")]
-    public virtual ApplicationUser? SecondaryEditor { get; set;  }
+    public virtual ApplicationUser? SecondaryEditor { get; set; }
 
     public virtual Chat Chat { get; set; }
     public virtual Archive Archive { get; set; }
 
     [JsonIgnore]
     public virtual ICollection<Revision?> Revisions { get; set; }
-    public List<UserChatPin> PinnedByUsers { get; set; } = new();
+    public List<UserChatPin> PinnedByUsers { get; set; } = [];
     [NotMapped]
     public bool IsPinned { get; set; }
     [NotMapped]

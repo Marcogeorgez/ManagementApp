@@ -2,27 +2,26 @@
 
 #nullable disable
 
-namespace LuminaryVisuals.Migrations
+namespace LuminaryVisuals.Migrations;
+
+/// <inheritdoc />
+public partial class TrackWhichAdminModifiedIt : Migration
 {
     /// <inheritdoc />
-    public partial class TrackWhichAdminModifiedIt : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "AdminId",
-                table: "EditorLoggingHours",
-                type: "text",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<string>(
+            name: "AdminId",
+            table: "EditorLoggingHours",
+            type: "text",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "AdminId",
-                table: "EditorLoggingHours");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "AdminId",
+            table: "EditorLoggingHours");
     }
 }

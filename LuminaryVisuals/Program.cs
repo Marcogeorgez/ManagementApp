@@ -27,7 +27,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using MudBlazor.Services;
-using static Dropbox.Api.TeamLog.EventCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection()
@@ -251,10 +250,11 @@ builder.Services.AddHostedService<MessageCleanupBackgroundService>();
 
 
 builder.Services.AddServerSideBlazor()
-    .AddHubOptions(opt => {
+    .AddHubOptions(opt =>
+    {
         opt.MaximumReceiveMessageSize = null;
         opt.ClientTimeoutInterval = null;
-        }
+    }
     )
     .AddCircuitOptions(options =>
     {
@@ -373,7 +373,7 @@ if (!app.Environment.IsDevelopment())
         AllowStatusCode404Response = true // allows 404 responses.
     });
     // Only use HTTPS redirection if not running in a container
-        app.UseHsts();
+    app.UseHsts();
 }
 using (var scope = app.Services.CreateScope())
 {
