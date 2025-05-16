@@ -126,7 +126,7 @@ public class Project
 
     [JsonIgnore]
     public virtual ICollection<Revision?> Revisions { get; set; }
-    public List<UserProjectPin> PinnedByUsers { get; set; } = new();
+    public List<UserChatPin> PinnedByUsers { get; set; } = new();
     [NotMapped]
     public bool IsPinned { get; set; }
     [NotMapped]

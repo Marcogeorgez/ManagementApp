@@ -768,7 +768,7 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("UserNote");
                 });
 
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserProjectPin", b =>
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("character varying(255)");
@@ -1184,7 +1184,7 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("TargetUser");
                 });
 
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserProjectPin", b =>
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
                 {
                     b.HasOne("Project", "Project")
                         .WithMany("PinnedByUsers")

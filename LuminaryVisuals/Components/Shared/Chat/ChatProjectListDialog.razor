@@ -285,7 +285,7 @@
     private async void PinChat(Project Project)
     {
         Project.IsPinned = !Project.IsPinned;
-        await ProjectService.TogglePinAsync(userId, Project.ProjectId, Project.IsPinned);
+        await ProjectService.TogglePinAsync(userId, Project.ProjectId,Project.ClientId, Project.IsPinned);
         projects = projects
         .OrderByDescending(p => p.IsPinned)
         .ThenByDescending(p => p.countUnreadMessages) // Sort by unread messages

@@ -767,21 +767,27 @@
     }
     private async Task SaveCurrencyValue()
     {
-        if (_timer.Enabled)
-        {
-            _timer.Stop();
+        try{
+            if (_timer.Enabled)
+            {
+                _timer.Stop();
+            }
+            if (storedValue is null || lastSavedValue is null)
+                return;
+            // Save the currency value only if it has changed
+            if (storedValue != lastSavedValue)
+            {
+                await SaveToSetting();
+                lastSavedValue = storedValue; // Update the last saved value
+            }
+            // Set the flag to true as the currency has changed
+            isCurrencyChanged = true;
+            _timer.Start();
         }
-        if (storedValue is null || lastSavedValue is null)
-            return;
-        // Save the currency value only if it has changed
-        if (storedValue != lastSavedValue)
+        catch(Exception ex)
         {
-            await SaveToSetting();
-            lastSavedValue = storedValue; // Update the last saved value
+            Console.WriteLine("Disposing timer");
         }
-        // Set the flag to true as the currency has changed
-        isCurrencyChanged = true;
-        _timer.Start();
     }
     private async Task SaveToSetting()
     {

@@ -14,6 +14,6 @@ public class ApplicationUser : IdentityUser
     public virtual PayoneerSettings PayoneerSettings { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
     public virtual ICollection<UserNote> CreatedNotes { get; set; }
-    public List<UserProjectPin> PinnedProjects { get; set; }
+    public List<UserChatPin> PinnedProjects { get; set; }
 
 }

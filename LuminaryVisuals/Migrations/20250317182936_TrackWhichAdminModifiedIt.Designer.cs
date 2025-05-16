@@ -850,7 +850,7 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("UserNotificationStatuses");
                 });
 
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserProjectPin", b =>
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("character varying(255)");
@@ -1288,7 +1288,7 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("Notification");
                 });
 
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserProjectPin", b =>
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
                 {
                     b.HasOne("Project", "Project")
                         .WithMany("PinnedByUsers")

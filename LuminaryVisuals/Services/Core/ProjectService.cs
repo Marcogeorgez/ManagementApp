@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Npgsql;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using static LuminaryVisuals.Components.Pages.CalenderPage;
@@ -214,77 +213,79 @@ public class ProjectService
         }
     }
     // For fetching chats
-    public async Task<List<Project?>> GetProjectsForChat(bool isArchived, string userId,bool isAdminView, bool isEditorView, bool isClientView)
+    public async Task<List<Project?>> GetProjectsForChat(bool isArchived, string userId, bool isAdminView, bool isEditorView, bool isClientView)
     {
-        await chatService.EnsureAdminChat(userId); // creates a 1 admin chat if it doesn't exist for each user that isn't admin.
+        await chatService.EnsureAdminChat(userId);
+
         using (var context = _contextFactory.CreateDbContext())
         {
-            // Query projects and add pinned status for the projects set by users
+            // Get all user chat pins in one go to avoid repeated DB calls
+            var userChatPins = await context.UserChatPins
+                .Where(p => p.UserId == userId && p.IsPinned)
+                .ToListAsync();
+
+            // Query real projects
             var projects = await context.Projects
                 .Where(p => p.IsArchived == isArchived &&
-                        ( isAdminView ? true :
-                         isEditorView ? ( p.PrimaryEditorId == userId || p.SecondaryEditorId == userId ) :
-                         isClientView ? p.ClientId == userId : false ))
+                       ( isAdminView ? true :
+                        isEditorView ? ( p.PrimaryEditorId == userId || p.SecondaryEditorId == userId ) :
+                        isClientView ? p.ClientId == userId : false ))
                 .Include(p => p.Client)
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
-                .OrderBy(p => p.InternalOrder)
                 .Include(p => p.Chat)
-                .Select(p => new
-                {
-                    Project = p,
-                    IsPinned = p.PinnedByUsers.Any(up => up.UserId == userId && up.IsPinned)
-                })
+                .Include(p => p.PinnedByUsers)
+                .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
 
-            // Map the results to include the IsPinned property
-            var result = projects.Select(x =>
+            // Set IsPinned for real projects
+            var result = projects.Select(p =>
             {
-                x.Project.IsPinned = x.IsPinned; // Set the IsPinned property
-                return x.Project;
+                p.IsPinned = p.PinnedByUsers.Any(pin => pin.UserId == userId && pin.IsPinned);
+                return p;
             }).ToList();
+
+            // Add pseudo-projects for admin chats
+            List<Project> adminChats = new();
 
             if (isAdminView)
             {
-                // For admins, also get all user-admin chats as pseudo-projects
-                List<Project>? adminChats = await context.Chats
+                adminChats = await context.Chats
                     .Where(c => c.IsAdminChat)
                     .Include(c => c.User)
                     .Select(c => new Project
                     {
-                        ProjectId = -c.ChatId, // Using negative IDs to avoid conflicts
-                        ProjectName = $"Management Chat",   
+                        ProjectId = -c.ChatId,
+                        ProjectName = "Management Chat",
                         ClientId = c.UserId,
-                        Client = c.User,
+                        Client = c.User
                     })
                     .ToListAsync();
-
-
-                var finalList = result;
-
-                finalList.InsertRange(0, adminChats);
-                return finalList;
             }
             else
             {
-                // For users to get their admin chat as pseudo-projects
-                List<Project>? adminChat = await context.Chats
+                adminChats = await context.Chats
                     .Where(c => c.IsAdminChat && c.UserId == userId)
                     .Include(c => c.User)
                     .Select(c => new Project
                     {
-                        ProjectId = -c.ChatId, // Using negative IDs to avoid conflicts
-                        ProjectName = $"Management Chat",
+                        ProjectId = -c.ChatId,
+                        ProjectName = "Management Chat",
                         ClientId = c.UserId,
-                        Client = c.User,
+                        Client = c.User
                     })
                     .ToListAsync();
-
-
-                var finalList = result;
-                finalList.InsertRange(0, adminChat);
-                return finalList;
             }
+
+            // Set IsPinned for pseudo-projects based on UserChatPins
+            foreach (var pseudoProject in adminChats)
+            {
+                pseudoProject.IsPinned = userChatPins.Any(pin => pin.UserChatId == pseudoProject.ClientId && pin.IsPinned);
+            }
+
+            // Combine both
+            adminChats.AddRange(result);
+            return adminChats;
         }
     }
     // Lock to handle concurrency issue
@@ -744,7 +745,7 @@ public class ProjectService
             await _broadcaster.NotifyAllAsync();
         }
     }
-    public async Task TogglePinAsync(string userId, int projectId, bool isPinned)
+    public async Task TogglePinAsync(string userId, int projectId, string chatId, bool isPinned)
     {
         using var context = _contextFactory.CreateDbContext();
 
@@ -757,20 +758,34 @@ public class ProjectService
                 using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
                 // Check for existing pin
-                var existingPin = await context.UserProjectPins
+                var existingPin = await context.UserChatPins
                     .AsTracking()
-                    .FirstOrDefaultAsync(up => up.UserId == userId && up.ProjectId == projectId);
-
+                    .FirstOrDefaultAsync(up => up.UserId == userId &&
+                        ( projectId > 0 ? up.ProjectId == projectId : up.UserChatId == chatId ));
                 if (existingPin != null)
                 {
                     existingPin.IsPinned = isPinned; // Update existing entry
                 }
                 else
                 {
-                    context.UserProjectPins.Add(new UserProjectPin
+                    int? _projectId;
+                    string? userChatId;
+                    if (projectId < 0)
+                    {
+                        _projectId = null;
+                        userChatId = chatId;
+                    }
+                    else
+                    {
+                        _projectId = projectId;
+                        userChatId = null;
+                    }
+
+                    context.UserChatPins.Add(new UserChatPin
                     {
                         UserId = userId,
-                        ProjectId = projectId,
+                        ProjectId = _projectId,
+                        UserChatId = userChatId, // Assuming this is null for project pins
                         IsPinned = isPinned
                     });
                 }

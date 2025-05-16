@@ -14,7 +14,7 @@ namespace LuminaryVisuals.Data
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
-        public DbSet<UserProjectPin> UserProjectPins{ get; set; }
+        public DbSet<UserChatPin> UserChatPins { get; set; }
 
         public DbSet<PayoneerSettings> PayoneerSettings { get; set; }
         public DbSet<Entities.ColumnPreset> ColumnPresets { get; set; }
@@ -79,16 +79,19 @@ namespace LuminaryVisuals.Data
 
             // Configure composite primary key
             // UserProjectPins table
-            builder.Entity<UserProjectPin>()
-                    .HasKey(up => new { up.UserId, up.ProjectId });
-            builder.Entity<UserProjectPin>()
+            builder.Entity<UserChatPin>()
+                    .HasKey(up => new { up.Id });
+
+            builder.Entity<UserChatPin>()
                 .HasOne(up => up.User)
                 .WithMany(u => u.PinnedProjects)
                 .HasForeignKey(up => up.UserId);
-             builder.Entity<UserProjectPin>()
+
+             builder.Entity<UserChatPin>()
                 .HasOne(up => up.Project)
                 .WithMany(u => u.PinnedByUsers)
-                .HasForeignKey(up => up.ProjectId);
+                .HasForeignKey(up => up.ProjectId)
+                .IsRequired(false);
 
             // Configure Project
             builder.Entity<Project>(entity =>
@@ -287,10 +290,6 @@ namespace LuminaryVisuals.Data
 
             builder.Entity<Project>()
                 .HasIndex(p => new { p.IsArchived, p.InternalOrder });
-
-
-            builder.Entity<UserProjectPin>()
-                .HasIndex(p => new { p.UserId, p.IsPinned });
 
             // Chats table
             builder.Entity<Chat>()

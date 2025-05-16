@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuminaryVisuals.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250509074345_StorePushNotifications")]
-    partial class StorePushNotifications
+    [Migration("20250516093907_updatePin")]
+    partial class updatePin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -859,6 +859,36 @@ namespace LuminaryVisuals.Migrations
                     b.ToTable("Settings");
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserChatId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserChatPins");
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserNote", b =>
                 {
                     b.Property<int>("Id")
@@ -912,26 +942,6 @@ namespace LuminaryVisuals.Migrations
                         .HasDatabaseName("IX_UserNotificationStatuses_UserId_Dismissed");
 
                     b.ToTable("UserNotificationStatuses");
-                });
-
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsPinned")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("UserId", "ProjectId");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("UserId", "IsPinned");
-
-                    b.ToTable("UserProjectPins");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1340,6 +1350,23 @@ namespace LuminaryVisuals.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
+                {
+                    b.HasOne("Project", "Project")
+                        .WithMany("PinnedByUsers")
+                        .HasForeignKey("ProjectId");
+
+                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "User")
+                        .WithMany("PinnedProjects")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserNote", b =>
                 {
                     b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", null)
@@ -1371,25 +1398,6 @@ namespace LuminaryVisuals.Migrations
                         .IsRequired();
 
                     b.Navigation("Notification");
-                });
-
-            modelBuilder.Entity("LuminaryVisuals.Data.Entities.UserChatPin", b =>
-                {
-                    b.HasOne("Project", "Project")
-                        .WithMany("PinnedByUsers")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LuminaryVisuals.Data.Entities.ApplicationUser", "User")
-                        .WithMany("PinnedProjects")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Project");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
