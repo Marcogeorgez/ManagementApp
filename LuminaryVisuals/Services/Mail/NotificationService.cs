@@ -131,7 +131,7 @@ public class NotificationService : BackgroundService, INotificationService
         else
         {
             _logger.LogInformation($"Adding non-chat notification for user {item.UserId}");
-            AddToQueue(item);
+            await AddToQueue(item);
         }
     }
     public async Task QueueProjectCreationNotification(Project project)
@@ -153,7 +153,7 @@ public class NotificationService : BackgroundService, INotificationService
                 CreatedAt = DateTime.UtcNow
             };
 
-            AddToQueue(notificationItem);
+            await AddToQueue(notificationItem);
         }
     }
     public async Task QueueProjectScheduleUpdated(Project project, string UserId)
@@ -178,7 +178,7 @@ public class NotificationService : BackgroundService, INotificationService
                     CreatedAt = DateTime.UtcNow
                 };
 
-                AddToQueue(notificationItem);
+                await AddToQueue(notificationItem);
             }
         }
         catch(Exception ex)
@@ -206,12 +206,12 @@ public class NotificationService : BackgroundService, INotificationService
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a> please review it and assign a role to them.</p>",
                     CreatedAt = DateTime.UtcNow
                 };
-                AddToQueue(notificationItem);
+                await AddToQueue(notificationItem);
             }
         }
         catch (Exception ex)
         {
-            throw ex;
+            _logger.LogError($"Error happened in NotificationService In NewUserJoinedNotification: \n{ex}");
         }
 
     }
@@ -230,11 +230,12 @@ public class NotificationService : BackgroundService, INotificationService
 
             // Fetch projects and extract editor IDs for scheduled/working/revision projects
             var editorIds = ( await projectService.GetProjectsForClients(false, clientUser.Id) )
-                .Where(p => p.Status == ProjectStatus.Scheduled
+                .Where(p => p != null && ( p.Status == ProjectStatus.Scheduled
                     || p.Status == ProjectStatus.Working
-                    || p.Status == ProjectStatus.Revision)
-                .SelectMany(p => new[] { p.PrimaryEditorId, p.SecondaryEditorId })
+                    || p.Status == ProjectStatus.Revision))
+                .SelectMany(p => new[] { p?.PrimaryEditorId, p?.SecondaryEditorId })
                 .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id!)
                 .ToHashSet();
 
             // Combine both sets
@@ -259,13 +260,13 @@ public class NotificationService : BackgroundService, INotificationService
                             <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a> please review to stay up to date.</p>",
                         CreatedAt = DateTime.UtcNow
                     };
-                    AddToQueue(notificationItem);
+                    await AddToQueue(notificationItem);
                 }
             }
         }
         catch (Exception ex)
         {
-            throw ex;
+            _logger.LogError($"Error happened in NotificationService In ClientPreferencesUpdated: \n{ex}");
         }
 
     }
@@ -294,7 +295,7 @@ public class NotificationService : BackgroundService, INotificationService
                             {readyToReviewText}{messageForPrivateNotes}</p>",
                     CreatedAt = DateTime.UtcNow
                 };
-                AddToQueue(notificationItem);
+                await AddToQueue(notificationItem);
             }
             if (newStatus == ProjectStatus.Revision)
             {
@@ -311,7 +312,7 @@ public class NotificationService : BackgroundService, INotificationService
                             Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
                             CreatedAt = DateTime.UtcNow
                         };
-                        AddToQueue(notificationItem);
+                        await AddToQueue(notificationItem);
                     }
                 }
 
@@ -327,7 +328,7 @@ public class NotificationService : BackgroundService, INotificationService
                             Message = $"Project '{project.ProjectName}' status changed to {newStatus}",
                             CreatedAt = DateTime.UtcNow
                         };
-                        AddToQueue(notificationItem);
+                        await AddToQueue(notificationItem);
                     }
                 }
             }
@@ -347,7 +348,7 @@ public class NotificationService : BackgroundService, INotificationService
                             Message = $@" <p>The project '<strong>{project.ProjectName}</strong>' has been marked as '<strong>{newStatus}</strong>' on <a href='https://synchron.luminaryvisuals.net/project' target='_blank'>Synchron</a>.</p>",
                             CreatedAt = DateTime.UtcNow
                         };
-                        AddToQueue(notificationItem);
+                        await AddToQueue(notificationItem);
                     }
                 }
             }
@@ -403,7 +404,7 @@ public class NotificationService : BackgroundService, INotificationService
 </html>",
                             CreatedAt = DateTime.UtcNow
                         };
-                        AddToQueue(notificationItem);
+                        await AddToQueue(notificationItem);
                     }
                 }
             }
@@ -553,9 +554,9 @@ public class NotificationService : BackgroundService, INotificationService
 }
 public class NotificationQueueItem
 {
-    public string UserId { get; set; }
-    public string Subject { get; set; }
-    public string Message { get; set; }
+    public string UserId { get; set; } = default!;
+    public string Subject { get; set; } = default!;
+    public string Message { get; set; } = default!;
     public DateTime CreatedAt { get; set; }
     public int? MessageId { get; set; }
     public int? ProjectId { get; set; }

@@ -484,7 +484,7 @@
             Console.WriteLine("Timer disposed for admindashboard"); // Add logging
         }
     }
-    private void OpenNoteDialog(string noteValue,CellContext<UserRoleViewModel> context)
+    private async Task OpenNoteDialog(string noteValue,CellContext<UserRoleViewModel> context)
     {
         var parameters = new DialogParameters
         {
@@ -493,28 +493,29 @@
             }    
         };
         var options = new DialogOptions{ };
-        var dialog = DialogService.Show<FullNoteDialog>("Edit Note",parameters,options);
-        dialog.Result.ContinueWith(async task =>
-        {
-            if (!task.IsCanceled && task.Result!.Data is string updatedText )
-            {
-                OnNoteTextChanged(updatedText, context);
-                // Update the UI for notes instead of re-loading the entire data which is an expensive operation
-                if (context.Item.Notes.ContainsKey(context.Item.UserId))
-                {
-                    context.Item.Notes[context.Item.UserId].Note = updatedText;
-                }
-                else
-                {
-                    context.Item.Notes[context.Item.UserId] = new UserNote
-                    {
-                        TargetUserId = context.Item.UserId,
-                        Note = updatedText
-                    };
-                }
+        var dialog = await DialogService.ShowAsync<FullNoteDialog>("Edit Note", parameters, options);
+        var result = await dialog.Result;
 
-            }
-        });
+        if (result == null || result.Canceled || result.Data is not string updatedText)
+            return;
+
+        OnNoteTextChanged(updatedText, context);
+
+        var notes = context.Item.Notes;
+        var userId = context.Item.UserId;
+
+        if (notes.ContainsKey(userId))
+        {
+            notes[userId].Note = updatedText;
+        }
+        else
+        {
+            notes[userId] = new UserNote
+                {
+                    TargetUserId = userId,
+                    Note = updatedText
+                };
+        }
     }
     // Load all user notes
     private async Task LoadUserNotes()

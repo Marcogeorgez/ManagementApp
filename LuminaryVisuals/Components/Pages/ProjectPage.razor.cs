@@ -182,10 +182,12 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
         ProjectState.OnChange -= HandleProjectStateChange;
     }
 
-    private async Task ResetState()
+    private Task ResetState()
     {
         _gridKey = Guid.NewGuid();
+        return Task.CompletedTask;
     }
+
 
 
     private async Task GetColumnsPresetPreferences()

@@ -29,13 +29,12 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
-    [Parameter] public HashSet<Project> SelectedProjects { get; set; }
-
-    private MudForm form;
+    [Inject] ISnackbar Snackbar { get; set; } = default!;
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public HashSet<Project> SelectedProjects { get; set; } = default!;
+    private MudForm form = default!;
     private EditModel editModel = new();
     private HashSet<string> modifiedProperties = new();
-
     private class EditModel
     {
         private ArchiveReason? _archiveReason;
@@ -60,7 +59,7 @@
             }
         }
 
-        private HashSet<string> _modifiedProperties;
+        private HashSet<string> _modifiedProperties = default!;;
         public void SetModifiedPropertiesTracker(HashSet<string> tracker)
         {
             _modifiedProperties = tracker;
@@ -77,7 +76,6 @@
     {
         MudDialog.Cancel();
     }
-    [Inject] ISnackbar Snackbar { get; set; }
     private async Task Submit()
     {
         if (modifiedProperties.Contains(nameof(EditModel.ArchiveReason)) && editModel.ArchiveReason != null)

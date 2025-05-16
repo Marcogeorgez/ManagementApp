@@ -41,9 +41,10 @@
 @code
 {
     private bool _loading = true;
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         _loading = false;
+        return Task.CompletedTask;
     }
 
 }

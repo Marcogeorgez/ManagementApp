@@ -172,11 +172,12 @@ CloseOnEscapeKey="true" />
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         // Cancel any pending operations
         _cts.Cancel();
         _cts.Dispose();
+        return ValueTask.CompletedTask;
     }
 
     private bool IsStaticSSR => NavigationManager.Uri.Contains("/Account");
