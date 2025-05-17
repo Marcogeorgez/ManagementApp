@@ -27,7 +27,7 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
             </MudPaper>
 
-            <MudContainer Class="chat-content" Gutters="false" @onscroll="OnScroll"
+            <MudContainer Class="chat-content" Gutters="false" 
             @ondragenter="HandleDragEnter" @ondragleave="OnContainerDragLeave">
                 <MudStack Style="@($"z-index:10; {(IsDragging == true || _currentFile != null ? "" : "display:none;")}")">
                     <MudFileUpload T="IBrowserFile" 
@@ -88,109 +88,115 @@
                     }
                 </MudStack>
                 <div class="chat-messages" style="@($"{(IsDragging == true || _currentFile != null ? "display:none;" : "" )}")">
-                    @if (hasMoreMessages)
-                    {
-                        <MudProgressCircular Color="Color.Info" Indeterminate="true" Style="margin-top:0px!important;align-self:center;position:relative;   "/>
-                    }
-
                     <div class="chat-pinned-text" style="@(isPrivateChat == true ? "display:none;" : isClientView ? "" : "display:none;")">
                         Please discuss here all details related to this project except payment issues. <br/> 
                         <span style="text-align: center;   display: block;">For payment related issues please use the direct chat with the administrator.</span>
                     </div>
-                    <div class="messages-container">
                     <div class="scroller-content" id="scrollerContent">
-                    @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
-                    {
-                        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
-                            @group.Key
-                        </MudText>
-                        DateTime? lastTimestamp = null;
-                        string lastUserId = null;
-                        @foreach (var (message, index) in group.Select((m, i) => (m, i)))
+                        @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
                         {
-                            if (lastUserId != message.UserId || ( lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null ))
+                            <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
+                                @group.Key
+                            </MudText>
+                            DateTime? lastTimestamp = null;
+                            string lastUserId = null;
+                            @foreach (var (message, index) in group.Select((m, i) => (m, i)))
                             {
-                                <MudText Typo="Typo.body2" Class="message-username">@(message.UserId != UserId && !isClientView
+                                if (lastUserId != message.UserId || ( lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null ))
+                                {
+                                    <MudText Typo="Typo.body2" Class="message-username">@(message.UserId != UserId && !isClientView
                                         ? message.User.UserName
                                         : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
-                                </MudText> 
-                                lastUserId = message.UserId; 
-                            }
-                            <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" style="--total-messages:@messages.Count; --message-index:@index;">
+                                    </MudText> 
+                                    lastUserId = message.UserId; 
+                                }
+                                <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" style="--total-messages:@messages.Count; --message-index:@index;">
 
 
-                                <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )" @onclick="() => ToggleClick(message.MessageId)">
-                                    @foreach (var part in GetMessageWithLinks(message.Content))
-                                    {
-                                        if (StringHelper.IsLink(part))
+                                    <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )" @onclick="() => ToggleClick(message.MessageId)">
+                                        @foreach (var part in GetMessageWithLinks(message.Content))
                                         {
-                                            var fileName = Path.GetFileName(part);
-                                            var cutIndex = fileName.IndexOf("—", StringComparison.OrdinalIgnoreCase) + 1;
-                                            var nameBeforeExtension = cutIndex >= 0 ? fileName.Substring(cutIndex) : fileName;
-                                            if (ImageExtensions.Contains(Path.GetExtension(nameBeforeExtension)) )
+                                            if (StringHelper.IsLink(part))
                                             {
-                                                // Display the image
-                                                <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
-                                                    <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
-                                                </div>
-                                            }
-                                            else if (Path.GetExtension(nameBeforeExtension).Contains("pdf"))
-                                            {
-                                                <div class="file-bubble">
-                                                    <div class="file-icon-label">
-                                                        <a style="display: flex;" href="@message.Content" target="_blank" rel="noopener noreferrer" class="file-name-link">
-                                                            <span class="file-icon"></span>
-                                                            @nameBeforeExtension
-                                                        </a>
+                                                var fileName = Path.GetFileName(part);
+                                                var cutIndex = fileName.IndexOf("—", StringComparison.OrdinalIgnoreCase) + 1;
+                                                var nameBeforeExtension = cutIndex >= 0 ? fileName.Substring(cutIndex) : fileName;
+                                                if (ImageExtensions.Contains(Path.GetExtension(nameBeforeExtension)) )
+                                                {
+                                                    // Display the image
+                                                    <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
+                                                        <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
                                                     </div>
-                                                </div>
+                                                }
+                                                else if (Path.GetExtension(nameBeforeExtension).Contains("pdf"))
+                                                {
+                                                    <div class="file-bubble">
+                                                        <div class="file-icon-label">
+                                                            <a style="display: flex;" href="@message.Content" target="_blank" rel="noopener noreferrer" class="file-name-link">
+                                                                <span class="file-icon"></span>
+                                                                @nameBeforeExtension
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <strong>
+                                                        <MudLink Typo="Typo.body1" Class="special-link" Target="_blank" Href="@part"
+                                                        Underline="Underline.Always">@part </MudLink>
+                                                    </strong>
+                                                }
                                             }
                                             else
                                             {
-                                                <strong>
-                                                    <MudLink Typo="Typo.body1" Class="special-link" Target="_blank" Href="@part"
-                                                    Underline="Underline.Always">@part </MudLink>
-                                                </strong>
+                                                <MudText Typo="Typo.body1">@part</MudText>
                                             }
                                         }
-                                        else
-                                        {
-                                            <MudText Typo="Typo.body1">@part</MudText>
-                                        }
-                                    }
-                                    <MudText Typo="Typo.caption" Class="message-timestamp">
-                                        @ConvertLocal.ConvertToLocalTime(message.Timestamp,timezoneOffsetMinutes)
-                                        <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
-                                    </MudText>
-                                </div>
-                                @if (message.UserId == UserId || isAdminView == true)   
-                                {
-                                    <div class="message-hover-options @(messageClicks.ContainsKey(message.MessageId) && messageClicks[message.MessageId] ? "active" : "")">
-                                        @if (isAdminView)
-                                        {
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"Size="Size.Small"
-                                            OnClick="() => DeleteMessage(message)"/>
-                                            <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info" Size="Size.Small"
-                                            OnClick="() => MessageInformation(message)" />
-                                            if (message.IsApproved == false)
-                                            {
-                                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
-                                                Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
-                                            }
-                                        }
-
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
-                                        OnClick="() => EditMessage(message)"  />
+                                        <MudText Typo="Typo.caption" Class="message-timestamp">
+                                            @ConvertLocal.ConvertToLocalTime(message.Timestamp,timezoneOffsetMinutes)
+                                            <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
+                                        </MudText>
                                     </div>
-                                }
+                                    @if (message.UserId == UserId || isAdminView == true)   
+                                    {
+                                        <div class="message-hover-options @(messageClicks.ContainsKey(message.MessageId) && messageClicks[message.MessageId] ? "active" : "")">
+                                            @if (isAdminView)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"Size="Size.Small"
+                                                OnClick="() => DeleteMessage(message)"/>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info" Size="Size.Small"
+                                                OnClick="() => MessageInformation(message)" />
+                                                if (message.IsApproved == false)
+                                                {
+                                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
+                                                    Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
+                                                }
+                                            }
 
-                            </div>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
+                                            OnClick="() => EditMessage(message)"  />
+                                        </div>
+                                    }
+
+                                </div>
+                            }
                         }
+                    </div>
+                    @if (hasMoreMessages && finishedLoading)
+                    {
+                        <MudButton class="load-more-button" Style="flex: 1 0 auto; width: 50%; transform: translate(50%);" Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMoreButtonClick" disabled="@_isLoadingMore">
+                            @if (_isLoadingMore)
+                            {
+                                <span>Loading...</span>
+                            }
+                            else
+                            {
+                                <span>Load More</span>
+                            }
+                        </MudButton>
                     }
-                    </div>
-                    </div>
                 </div>
-                <LoadingIndicatorChat IsVisible="@_isLoading" /> @* loading indicator for the messages section of the chat*@
+                <LoadingIndicatorChat IsVisible="@_isLoading" /> 
             </MudContainer>
 
 
@@ -313,7 +319,6 @@
     private int currentPage = 1;
     private bool hasMoreMessages = true;
     private bool finishedLoading = false;
-    private bool _isInitialScrollComplete = false;
     private bool _isLoading;
     private List<QuickMessage> quickMessages = new List<QuickMessage>();
     private MudFileUpload<IBrowserFile> _fileUploadReference;
@@ -353,21 +358,19 @@
             if (projectId == Project.ProjectId) // This is the correct comparison
             {
                 await InvokeAsync(async () =>
-            {
-                // Reset pagination state
-                currentPage = 1;
-                hasMoreMessages = true;
+                {
+                    // Reset pagination state
+                    currentPage = 1;
+                    hasMoreMessages = true;
 
-                // Clear existing messages
-                messages.Clear();
-                await LoadMessages(true);
-                await MarkMessagesAsRead();
-            });
+                    // Clear existing messages
+                    messages.Clear();
+                    await LoadMessages(true);
+                    await MarkMessagesAsRead();
+                });
             }
         });
 
-        await Task.Delay(250);
-        await JSRuntime.InvokeVoidAsync("setupInitialScrollListener", DotNetObjectReference.Create(this));
         await JSRuntime.InvokeVoidAsync("document.body.classList.add", "chat-open");
 
     }
@@ -580,14 +583,10 @@
                 // First load - clear existing messages and add new ones
                 messages.Clear();
                 messages.AddRange(loadedMessages);
-                // Allow UI to update before scrolling
-                await InvokeAsync(StateHasChanged);
             }
             else
             {
-                // For pagination: Save scroll position before modifying DOM
-                var currentScrollPosition = await JSRuntime.InvokeAsync<int>("getCurrentScrollPositionFromBottom", ".chat-content");
-                currentScrollPosition = currentScrollPosition < 0 ? 0 : currentScrollPosition;
+                var currentScrollPosition = await JSRuntime.InvokeAsync<int>("getCurrentScrollPositionFromBottom", ".chat-messages");
 
                 // Prepend new messages to the beginning of the list (only once)
                 messages.InsertRange(0, loadedMessages);
@@ -597,7 +596,7 @@
                 await Task.Delay(50);
 
                 // Restore scroll position
-                await JSRuntime.InvokeVoidAsync("restoreScrollPositionFromBottom", ".chat-content", currentScrollPosition + loadedMessages.Count);
+                await JSRuntime.InvokeVoidAsync("restoreScrollPositionFromBottom", ".chat-messages", currentScrollPosition);
             }
 
             // Determine if there are more messages to load
@@ -617,17 +616,6 @@
         }
     }
 
-    [JSInvokable]
-    public async Task OnInitialScrollComplete()
-    {
-        await InvokeAsync(() =>
-        {
-            _isInitialScrollComplete = true;
-            finishedLoading = true;
-            StateHasChanged();
-        });
-
-    }
     // Quick Messages adding and deleting methods
     private async Task DeleteQuickMessage(QuickMessage message)
     {
@@ -672,25 +660,33 @@
     }
 
 
-    private async Task OnScroll(EventArgs e)
+    private bool _isLoadingMore = false;
+    private DateTime _lastLoadTime = DateTime.MinValue;
+    private readonly TimeSpan _loadThrottleTime = TimeSpan.FromMilliseconds(500);
+
+    private async Task LoadMoreButtonClick()
     {
-        // Skip processing if loading is in progress or no more messages are available
-        if (!_isInitialScrollComplete || !finishedLoading || !hasMoreMessages)
+        // Skip if loading is in progress or no more messages
+        if (!finishedLoading || !hasMoreMessages || _isLoadingMore)
         {
             return;
         }
 
-        // Get the scroll position as a percentage (0 = top, 1 = bottom)
-        double? scrollPercentage = await JSRuntime.InvokeAsync<double>("getScrollPercentage", ".chat-content");
-        if (scrollPercentage == null || double.IsNaN(scrollPercentage.Value))
+        // Throttle to prevent rapid clicking
+        if (DateTime.Now - _lastLoadTime < _loadThrottleTime)
         {
-            scrollPercentage = 1;
+            return;
         }
-        // Load more when scrolling near the top (e.g., first 15%)
-        if (scrollPercentage <= 0.15)
+        _lastLoadTime = DateTime.Now;
+        try
         {
+            _isLoadingMore = true;
             currentPage++;
             await LoadMessages(initial: false);
+        }
+        finally
+        {
+            _isLoadingMore = false;
         }
     }
     // Display date of each chat messages grouped by their date.
@@ -919,7 +915,7 @@
     }
 </style>
 <script>
-        function isMouseOverPaper(paperElement, clientX, clientY) {
+    function isMouseOverPaper(paperElement, clientX, clientY) {
         const elementUnderMouse = document.elementFromPoint(clientX, clientY);
         return paperElement.contains(elementUnderMouse);
     }
@@ -928,35 +924,19 @@
         return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
     };
 
-    window.setupInitialScrollListener = function (dotNetHelper) {
-        const element = document.querySelector('.chat-content');
-        if (!element) return;
-
-        let hasUserScrolled = false;
-
-        const scrollHandler = () => {
-            if (!hasUserScrolled) {
-                hasUserScrolled = true;
-                // Invoke the .NET method
-                dotNetHelper.invokeMethodAsync('OnInitialScrollComplete');
-                element.removeEventListener('scroll', scrollHandler);
-            }
-        };
-
-        element.addEventListener('scroll', scrollHandler);
-    };
     window.getCurrentScrollPositionFromBottom = function (selector) {
         const element = document.querySelector(selector);
         if (!element) return 0;
-        return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight);
+        // For column-reverse layout, we need to measure from the top instead
+        return element.scrollTop;
     };
 
-    window.restoreScrollPositionFromBottom = function (selector, additionalHeight) {
-        const element = document.querySelector(selector);
-        if (!element) return;
-        element.scrollTop = element.scrollHeight - element.clientHeight - additionalHeight;
-    };
-
+    window.restoreScrollPositionFromBottom = function(selector, position) {
+        const container = document.querySelector(selector);
+        if (!container) return;
+        // For column-reverse layouts, setting scrollTop directly
+        container.scrollTop = position;
+    }
     window.initializeFocusTrap = (element) => {
         const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -987,20 +967,6 @@
                 element.querySelector('.close-button')?.click();
             }
         });
-    };
-
-            window.getScrollPercentage = function(selector) {
-        const element = document.querySelector(selector);
-        if (!element) return 1; // Default to bottom
-
-        const scrollTop = element.scrollTop;
-        const scrollHeight = element.scrollHeight;
-        const clientHeight = element.clientHeight;
-
-        if (scrollHeight === clientHeight) return 1; // Avoid division by zero, return 100% if the element isn't scrollable
-
-        // Calculate percentage (0 = top, 1 = bottom)
-        return Math.max(0, Math.min(1, scrollTop / (scrollHeight - clientHeight))); // Ensure the value is within the 0 to 1 range
     };
 
 </script>
