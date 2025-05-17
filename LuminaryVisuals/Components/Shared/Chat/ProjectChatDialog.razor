@@ -88,10 +88,6 @@
                     }
                 </MudStack>
                 <div class="chat-messages" style="@($"{(IsDragging == true || _currentFile != null ? "display:none;" : "" )}")">
-                    <div class="chat-pinned-text" style="@(isPrivateChat == true ? "display:none;" : isClientView ? "" : "display:none;")">
-                        Please discuss here all details related to this project except payment issues. <br/> 
-                        <span style="text-align: center;   display: block;">For payment related issues please use the direct chat with the administrator.</span>
-                    </div>
                     <div class="scroller-content" id="scrollerContent">
                         @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
                         {
@@ -102,17 +98,16 @@
                             string lastUserId = null;
                             @foreach (var (message, index) in group.Select((m, i) => (m, i)))
                             {
-                                if (lastUserId != message.UserId || ( lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null ))
+                                if (lastUserId != message.UserId || (lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null))
                                 {
-                                    <MudText Typo="Typo.body2" Class="message-username">@(message.UserId != UserId && !isClientView
-                                        ? message.User.UserName
-                                        : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
-                                    </MudText> 
-                                    lastUserId = message.UserId; 
+                                    <MudText Typo="Typo.body2" Class="message-username">
+                                        @(message.UserId != UserId && !isClientView
+                                            ? message.User.UserName
+                                            : message.UserId != UserId && isClientView ? "Luminary Visuals" : "")
+                                    </MudText>
+                                    lastUserId = message.UserId;
                                 }
                                 <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" style="--total-messages:@messages.Count; --message-index:@index;">
-
-
                                     <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )" @onclick="() => ToggleClick(message.MessageId)">
                                         @foreach (var part in GetMessageWithLinks(message.Content))
                                         {
@@ -121,7 +116,7 @@
                                                 var fileName = Path.GetFileName(part);
                                                 var cutIndex = fileName.IndexOf("—", StringComparison.OrdinalIgnoreCase) + 1;
                                                 var nameBeforeExtension = cutIndex >= 0 ? fileName.Substring(cutIndex) : fileName;
-                                                if (ImageExtensions.Contains(Path.GetExtension(nameBeforeExtension)) )
+                                                if (ImageExtensions.Contains(Path.GetExtension(nameBeforeExtension)))
                                                 {
                                                     // Display the image
                                                     <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
@@ -143,7 +138,7 @@
                                                 {
                                                     <strong>
                                                         <MudLink Typo="Typo.body1" Class="special-link" Target="_blank" Href="@part"
-                                                        Underline="Underline.Always">@part </MudLink>
+                                                                 Underline="Underline.Always">@part </MudLink>
                                                     </strong>
                                                 }
                                             }
@@ -153,28 +148,28 @@
                                             }
                                         }
                                         <MudText Typo="Typo.caption" Class="message-timestamp">
-                                            @ConvertLocal.ConvertToLocalTime(message.Timestamp,timezoneOffsetMinutes)
+                                            @ConvertLocal.ConvertToLocalTime(message.Timestamp, timezoneOffsetMinutes)
                                             <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
                                         </MudText>
                                     </div>
-                                    @if (message.UserId == UserId || isAdminView == true)   
+                                    @if (message.UserId == UserId || isAdminView == true)
                                     {
                                         <div class="message-hover-options @(messageClicks.ContainsKey(message.MessageId) && messageClicks[message.MessageId] ? "active" : "")">
                                             @if (isAdminView)
                                             {
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"Size="Size.Small"
-                                                OnClick="() => DeleteMessage(message)"/>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                                               OnClick="() => DeleteMessage(message)" />
                                                 <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info" Size="Size.Small"
-                                                OnClick="() => MessageInformation(message)" />
+                                                               OnClick="() => MessageInformation(message)" />
                                                 if (message.IsApproved == false)
                                                 {
-                                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" 
-                                                    Size="Size.Small" OnClick="() => ApproveMessage(message)"/>
+                                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
+                                                                   Size="Size.Small" OnClick="() => ApproveMessage(message)" />
                                                 }
                                             }
 
                                             <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
-                                            OnClick="() => EditMessage(message)"  />
+                                                           OnClick="() => EditMessage(message)" />
                                         </div>
                                     }
 
@@ -182,7 +177,12 @@
                             }
                         }
                     </div>
-                    @if (hasMoreMessages && finishedLoading)
+                    <div class="chat-pinned-text" style="@(isPrivateChat == true ? "display:none;" : isClientView ? "" : "display:none;")">
+                        Please discuss here all details related to this project except payment issues. <br/> 
+                        <span style="text-align: center;   display: block;">For payment related issues please use the direct chat with the administrator.</span>
+                    </div>
+
+                    @if (hasMoreMessages && !initialLoading)
                     {
                         <MudButton class="load-more-button" Style="flex: 1 0 auto; width: 50%; transform: translate(50%);" Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMoreButtonClick" disabled="@_isLoadingMore">
                             @if (_isLoadingMore)
@@ -195,8 +195,8 @@
                             }
                         </MudButton>
                     }
+                    <LoadingIndicatorChat IsVisible="@initialLoading" Style="bottom: 50%; left:50%; position: absolute" /> 
                 </div>
-                <LoadingIndicatorChat IsVisible="@_isLoading" /> 
             </MudContainer>
 
 
@@ -319,7 +319,9 @@
     private int currentPage = 1;
     private bool hasMoreMessages = true;
     private bool finishedLoading = false;
-    private bool _isLoading;
+    private bool initialLoading = true;
+
+    private bool _isLoading = true;
     private List<QuickMessage> quickMessages = new List<QuickMessage>();
     private MudFileUpload<IBrowserFile> _fileUploadReference;
     private bool isPrivateChat;
@@ -351,6 +353,7 @@
         isPrivateChat = Project.ProjectId < 0 ? true : false ;
         ProjectState.OnChange += HandleProjectChange;
         await LoadMessages(true);
+        _isLoading = false;
         await MarkMessagesAsRead();
         _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
         {
@@ -583,6 +586,7 @@
                 // First load - clear existing messages and add new ones
                 messages.Clear();
                 messages.AddRange(loadedMessages);
+                initialLoading = false;
             }
             else
             {
@@ -612,7 +616,6 @@
         {
             finishedLoading = true;
             await InvokeAsync(StateHasChanged);
-
         }
     }
 
@@ -681,6 +684,7 @@
         try
         {
             _isLoadingMore = true;
+            await InvokeAsync(StateHasChanged);
             currentPage++;
             await LoadMessages(initial: false);
         }

@@ -1,10 +1,12 @@
-﻿<MudOverlay Visible="@IsVisible" DarkBackground="true" ZIndex="9999">
+﻿<MudOverlay Visible="@IsVisible" DarkBackground="true" ZIndex="9999" Style="@style">
     <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large" />
 </MudOverlay>
 
 @code {
     [Parameter]
     public bool IsVisible { get; set; }
+    [Parameter]
+    public string style { get; set; } = string.Empty;
 }
 <style>
     .mud-overlay{
