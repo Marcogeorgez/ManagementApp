@@ -29,7 +29,6 @@
 
             <MudContainer Class="chat-content" Gutters="false" @onscroll="OnScroll"
             @ondragenter="HandleDragEnter" @ondragleave="OnContainerDragLeave">
-
                 <MudStack Style="@($"z-index:10; {(IsDragging == true || _currentFile != null ? "" : "display:none;")}")">
                     <MudFileUpload T="IBrowserFile" 
                     Style="@($"text-align:center;position:sticky;z-index:2; height:100%; width:100%; top:0px; {(IsDragging ? "" : "display:none;")}")"
@@ -98,7 +97,8 @@
                         Please discuss here all details related to this project except payment issues. <br/> 
                         <span style="text-align: center;   display: block;">For payment related issues please use the direct chat with the administrator.</span>
                     </div>
-
+                    <div class="messages-container">
+                    <div class="scroller-content" id="scrollerContent">
                     @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
                     {
                         <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
@@ -187,6 +187,8 @@
                             </div>
                         }
                     }
+                    </div>
+                    </div>
                 </div>
                 <LoadingIndicatorChat IsVisible="@_isLoading" /> @* loading indicator for the messages section of the chat*@
             </MudContainer>
@@ -360,13 +362,11 @@
                 messages.Clear();
                 await LoadMessages(true);
                 await MarkMessagesAsRead();
-                await JSRuntime.InvokeVoidAsync("scrollToBottom");
             });
             }
         });
 
         await Task.Delay(250);
-        await JSRuntime.InvokeVoidAsync("scrollToBottom");
         await JSRuntime.InvokeVoidAsync("setupInitialScrollListener", DotNetObjectReference.Create(this));
         await JSRuntime.InvokeVoidAsync("document.body.classList.add", "chat-open");
 
@@ -426,8 +426,6 @@
         _currentFile = null;
         _filePreviewUrl = null;
         StateHasChanged();
-        await Task.Delay(300);
-        await JSRuntime.InvokeVoidAsync("scrollToBottom");
 
     }
     private async Task HandleFileChanged(InputFileChangeEventArgs e)
@@ -520,8 +518,6 @@
             await MarkMessagesAsRead();
 
             await InvokeAsync(StateHasChanged);
-            await Task.Delay(50);
-            await JSRuntime.InvokeVoidAsync("scrollToBottom");
             _isLoading = false;
             _preventDefault = false;
             return true;
@@ -586,8 +582,6 @@
                 messages.AddRange(loadedMessages);
                 // Allow UI to update before scrolling
                 await InvokeAsync(StateHasChanged);
-                await Task.Delay(100);
-                await JSRuntime.InvokeVoidAsync("scrollToBottom");
             }
             else
             {
@@ -620,12 +614,6 @@
             finishedLoading = true;
             await InvokeAsync(StateHasChanged);
 
-            // Only scroll to bottom on initial load, not when paginating
-            if (initial && chatContainerRef != null)
-            {
-                await Task.Delay(100);
-                await JSRuntime.InvokeVoidAsync("scrollToBottom");
-            }
         }
     }
 
@@ -1000,14 +988,6 @@
             }
         });
     };
-        window.scrollToBottom = function () {
-            setTimeout(() => {
-                const chatContent = document.querySelector(".chat-content");
-                if (chatContent) {
-                    chatContent.scrollTop = chatContent.scrollHeight;
-                }
-            }, 0);
-        };
 
             window.getScrollPercentage = function(selector) {
         const element = document.querySelector(selector);

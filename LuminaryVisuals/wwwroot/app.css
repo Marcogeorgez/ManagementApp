@@ -965,6 +965,7 @@ back-button {
 .chat-messages{
     display: flex;
     flex-direction: column;
+    height:100%;
 }
 
 
@@ -1632,4 +1633,20 @@ tr.mud-table-row.drop-target > td, .drop-target {
     background: #0d0e19 !important;
     bottom: 0;
     z-index: 1;
+}
+
+.scroller-content {
+    will-change: transform; /* for safari */
+}
+.chat-messages .message {
+    transform: translateZ(0); /* fixes a bug in Safari iOS where the scroller doesn't update */
+}
+.messages-container {
+    height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-anchor: auto !important;
 }

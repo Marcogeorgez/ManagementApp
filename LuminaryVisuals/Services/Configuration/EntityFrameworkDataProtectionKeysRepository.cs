@@ -18,12 +18,10 @@ public class EntityFrameworkDataProtectionKeysRepository : IXmlRepository
 
     public IReadOnlyCollection<XElement> GetAllElements()
     {
-        _logger.LogInformation("GetAllElements called");
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var keys = context.DataProtectionKeys.ToList();
-        _logger.LogInformation($"Found {keys.Count} keys");
 
         return keys.Select(k => XElement.Parse(k.Xml))
             .ToList()
@@ -32,7 +30,6 @@ public class EntityFrameworkDataProtectionKeysRepository : IXmlRepository
 
     public void StoreElement(XElement element, string friendlyName)
     {
-        _logger.LogInformation($"StoreElement called with friendlyName: {friendlyName}");
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
