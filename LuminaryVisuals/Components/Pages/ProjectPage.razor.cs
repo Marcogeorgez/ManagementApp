@@ -1475,7 +1475,7 @@ public partial class ProjectPage : Microsoft.AspNetCore.Components.ComponentBase
     }
     private async Task RefreshGridData()
     {
-        projects = ( await projectServices.GetProjectsAsync() ).ToList();
+        await LoadProjects();
         await LoadProjectsIfNotSubscribed();
         StateHasChanged();
     }
