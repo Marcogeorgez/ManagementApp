@@ -22,11 +22,7 @@
 
 <MudThemeProvider />
 <MudPopoverProvider />
-<MudDialogProvider CloseButton="true"
-MaxWidth="MaxWidth.Medium"
-BackdropClick="false"
-Position="DialogPosition.Center"
-CloseOnEscapeKey="true" />
+<MudDialogProvider CloseButton="true" MaxWidth="MaxWidth.Medium" BackdropClick="false" Position="DialogPosition.Center"CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 <AppUserProvider>
     <CascadingValue Value="@SetShowBanner" Name="SetBannerVisibility">
@@ -62,19 +58,13 @@ CloseOnEscapeKey="true" />
                             <MudText Typo="Typo.body1">Would you like to receive notifications on this device?</MudText>
                         </MudItem>
                         <MudItem xs="12" Class="d-flex gap-2 mt-2">
-                            <MudButton Variant="Variant.Outlined"
-                            Color="Color.Primary"
-                            OnClick="SubscribeToPush">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SubscribeToPush">
                                 Yes, enable notifications
                             </MudButton>
-                            <MudButton Variant="Variant.Outlined"
-                            Color="Color.Error"
-                            OnClick="DeclineNotifications">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeclineNotifications">
                                 No, thanks
                             </MudButton>
-                            <MudButton Variant="Variant.Outlined"
-                            Color="Color.Primary"
-                            OnClick="AskLater">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AskLater">
                                 Ask me later
                             </MudButton>
                         </MudItem>
