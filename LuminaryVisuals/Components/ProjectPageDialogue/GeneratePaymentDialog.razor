@@ -3,6 +3,18 @@
 
 <MudDialog>
     <DialogContent>
+        @if(Loading)
+        {
+            <div class="" style="position: absolute;top: 50%; left: 50%; transform: translate(-50%); text-align: center; display:block; z-index: 5000;">
+                <MudCard>
+                    <MudCardContent>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+                        <MudText Typo="Typo.h5" Color="Color.Default" Class="ma-5">Downloading, Please wait for few seconds.</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </div>
+        }
+
         @if (isAdmin)
         {
             <MudStack Row AlignItems="AlignItems.Center">
@@ -293,6 +305,7 @@
     [Parameter] public bool isEditor { get; set; }
     [Parameter] public bool isAdmin { get; set; }
     [Parameter] public string currentUserId { get; set; }
+    bool Loading = false;
     private DateTime? _PrimaryEditorPaymentDate = DateTime.Today;
     private DateTime? _SecondaryEditorPaymentDate = DateTime.Today;
     List<ApplicationUser> _clients = new();
@@ -522,7 +535,6 @@
         else
         {
             var selectedUsersIds = selectedUsers.Select(u => u.Id).ToList();
-
             generateProjectDTO = new()
                 {
                     project = selectedProjects.Where(e =>
@@ -544,6 +556,8 @@
         {
             if (await ConfirmationService.Confirm("Do you want to download the filtered projects in CSV file?"))
             {
+                Loading = true;
+                StateHasChanged();
                 // Group projects by either PrimaryEditorName or SecondaryEditorName
                 if (isAdmin)
                 {
@@ -587,12 +601,17 @@
         {
             Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
         }
+        finally
+        {
+            Loading = false;
+        }
     }
     private async Task DownloadFilteredAsCsvPayoneer(List<Project> projects)
     {
         if (await ConfirmationService.Confirm("Do you want to download the filtered projects in CSV file?"))
         {
-
+            Loading = true;
+            StateHasChanged();
             try
             {
                 var csvContent = await GenerateCsvContentFilteredPayoneer(projects);
@@ -602,6 +621,10 @@
             catch (Exception ex)
             {
                 Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                Loading = false;
             }
         }
     }
