@@ -13,6 +13,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Transactions;
 namespace LuminaryVisuals.Components.Pages;
 
 public partial class ProjectPage : ComponentBase
@@ -1004,97 +1005,16 @@ public partial class ProjectPage : ComponentBase
     private async Task OpenGeneratePaymentDialog()
     {
         LoadingService.ShowLoading();
-
         var dialogParameters = new DialogParameters {
             { "isAdmin", _isAdminView},
             { "isEditor", _isEditorView },
-            { "currentUserId", _currentUserId }
+            { "currentUserId", _currentUserId },
+            { "CurrentUser", CurrentUser }
         };
         var dialog = await DialogService.ShowAsync<GeneratePaymentDialog>("", parameters: dialogParameters);
-        var result = await dialog.Result;
-        if (!result!.Canceled)
-        {
-            if (result.Data! is GenerateProjectDTO generateProject)
-            {
-                if (generateProject.project.Any())
-                {
-                    if (generateProject.ViewClient == "clients" && isAdminView)
-                    {
-                        await DownloadFilteredAsCsvPayoneer(generateProject.project.ToList());
-                    }
-                    else
-                    {
-                        await DownloadFilteredAsCsvEditors(generateProject.project.ToList(), generateProject.editorPaid!.Value);
-                    }
-                }
-            }
-        }
         LoadingService.HideLoading();
     }
-    // Downloading Filtered as CSV for editors
-    private async Task DownloadFilteredAsCsvEditors(List<Project> _projects, bool editorPaid)
-    {
-        try
-        {
-            if (await ConfirmationService.Confirm("Do you want to download the filtered projects in CSV file?"))
-            {
-                // Group projects by either PrimaryEditorName or SecondaryEditorName
-                if (isAdminView)
-                {
-                    var groupedByEditor = _projects
-                        .SelectMany(p => new[]
-                        {
-                        new { EditorName = p.PrimaryEditor?.UserName, Project = p },
-                        new { EditorName = p.SecondaryEditor?.UserName, Project = p }
-                        })
-                        .GroupBy(e => e.EditorName)
-                        .Where(g => !string.IsNullOrEmpty(g.Key) && g.Key != "N/A") // Filter out groups with empty editor names
-                        .ToList();
-                    foreach (var editorGroup in groupedByEditor)
-                    {
-                        var editorName = editorGroup.Key;
-                        var projects = editorGroup.Select(e => e.Project).ToList();
-                        var csvContent = GenerateCsvContentFilteredForEditors(projects, editorName, editorPaid);
-                        var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
-                        if (csvContent == string.Empty)
-                            continue;
-                        await DownloadFile(filename, csvContent);
-                    }
-                }
-                else
-                {
-                    var filteredProjects = _projects
-                        .Where(p => p.PrimaryEditorId == _currentUserId || p.SecondaryEditorId == _currentUserId)
-                        .ToList();
-                    if (filteredProjects.Count != 0)
-                    {
-                        var editorName = CurrentUser?.Identity?.Name;
-                        var csvContent = GenerateCsvContentFilteredForEditors(filteredProjects, editorName, editorPaid);
-                        var filename = $"{editorName.Replace(" ", "-")}_{DateTime.Now:MM_dd_yyyy}.csv";
-                        await DownloadFile(filename, csvContent);
-                    }
-                }
-
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
-        }
-    }
-    private async Task DownloadFilteredAsCsvPayoneer(List<Project> projects)
-    {
-        try
-        {
-            var csvContent = await GenerateCsvContentFilteredPayoneer(projects);
-            var filename = $"PayoneerPaymentBatch-{DateTime.Now:dd_MM_yyyy}.csv";
-            await DownloadFile(filename, csvContent);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Download failed: {ex.Message}", Severity.Error);
-        }
-    }
+   
     private async Task DownloadAllProjects()
     {
         try
@@ -1189,149 +1109,6 @@ public partial class ProjectPage : ComponentBase
         {
             Snackbar.Add($"File save error: {ex.Message}", Severity.Error);
         }
-    }
-    private static string GenerateCsvContentFilteredForEditors(List<Project> projects, string editorName, bool editorPaid)
-    {
-        // Create CSV header
-        decimal total = 0;
-        var csv = new System.Text.StringBuilder();
-        csv.AppendLine(string.Join(",",
-            nameof(Project.ProjectName),
-            "Editor Name",
-            "Payment Amount"
-        ));
-
-        // Add data rows
-        foreach (var project in projects)
-        {
-            decimal paymentAmount = 0;
-
-            // Check if the editor is Primary or Secondary and assign the PaymentAmount
-            if (project?.PrimaryEditor?.UserName == editorName && editorPaid == ( project?.PrimaryEditorDetails?.DatePaidEditor != null ))
-            {
-                paymentAmount = project.PrimaryEditorDetails?.PaymentAmount ?? 0;
-            }
-            else if (project?.SecondaryEditor?.UserName == editorName && editorPaid == ( project?.SecondaryEditorDetails?.DatePaidEditor != null ))
-            {
-                paymentAmount = project.SecondaryEditorDetails?.PaymentAmount ?? 0;
-            }
-            if (paymentAmount == 0)
-                continue;
-            csv.AppendLine(string.Join(",",
-                EscapeCsvValue(project.ProjectName),
-                EscapeCsvValue(editorName),
-                $"${Math.Round(paymentAmount, MidpointRounding.AwayFromZero)}"
-
-            ));
-
-            total += paymentAmount;
-        }
-
-        // Add total
-        csv.AppendLine();
-        csv.AppendLine(string.Join(",",
-            $"Total Payment: ${Math.Round(total, MidpointRounding.AwayFromZero)}",
-            $"  Date: {DateTime.Now:dd-MM-yyyy}"
-        ));
-        if (total == 0)
-        {
-            return string.Empty;
-        }
-        return csv.ToString();
-    }
-
-
-    [Inject] private InvoiceService InvoiceService { get; set; } = default!;
-    [Inject] private PayoneerSettingsService PayoneerSettingsService { get; set; } = default!;
-    private async Task<string> GenerateCsvContentFilteredPayoneer(List<Project> projects)
-    {
-        // Get unique client IDs from projects
-        List<string> clientIds = projects.Select(p => p.ClientId).Distinct().ToList();
-
-        // Get Payoneer settings for all clients
-        Dictionary<string, PayoneerSettings> clientSettings = await PayoneerSettingsService.GetSettingsForClientsAsync(clientIds);
-
-        IEnumerable<IGrouping<string, Project>> groupedByClient = projects.GroupBy(p => p.ClientId);
-
-        var csv = new System.Text.StringBuilder();
-
-        // Payoneer CSV headers
-        csv.AppendLine(string.Join(",",
-            "Company Name",
-            "Company URL",
-            "First Name",
-            "Last Name",
-            "Email",
-            "Amount",
-            "Currency",
-            "Description",
-            "Payment Due By"));
-
-        foreach (var client in groupedByClient)
-        {
-            var clientName = client.First().ClientName;
-            if (!clientSettings.TryGetValue(client.Key, out var settings))
-            {
-                // Skip if no settings found for this client
-                Snackbar.Add($"User {clientName} does not have Payoneer settings. The CSV won't include his projects!! ", Severity.Warning);
-                continue;
-            }
-
-            decimal clientTotal = client.Sum(p => p.ClientBillableAmount ?? 0);
-            var projectDescription = GenerateProjectDescription(client.ToList(), settings);
-            csv.AppendLine(string.Join(",",
-                EscapeCsvValue(settings.CompanyName!),
-                EscapeCsvValue(settings.CompanyUrl ?? ""),
-                EscapeCsvValue(settings.FirstName!),
-                EscapeCsvValue(settings.LastName!),
-                EscapeCsvValue(settings.Email!),
-                $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
-                settings.Currency,
-                ( await projectDescription ),
-                DateTime.Now.AddDays(7).ToString("dd/MM/yyyy")
-            ));
-        }
-        return csv.ToString();
-    }
-    // This generates the description for the Payoneer CSV by combining the projects and returning the total amount.
-    private async Task<string> GenerateProjectDescription(List<Project> projects, PayoneerSettings? setting)
-    {
-        if (projects == null || projects.Count == 0)
-            return string.Empty;
-        var url = await InvoiceService.GenerateInvoicePdfAsync(projects, setting);
-        url += " Please download within 120 days as the files will get deleted.";
-        return url;
-    }
-    private static string EscapeCsvValue(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return "";
-
-        // Escape commas and quotes
-        value = value.Replace("\"", "\"\"");
-        if (value.Contains(',') || value.Contains('"') || value.Contains('/') || value.Contains('\n'))
-        {
-            value = $"\"{value}\"";
-        }
-        return value;
-    }
-    private static string EscapeCsvValueDescritpion(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return "";
-
-        // Replace / and \ with -
-        value = value.Replace("/", "-").Replace("\\", "-");
-
-        // Escape double quotes
-        value = value.Replace("\"", "\"\"");
-
-        // Wrap in quotes if it contains special CSV characters
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
-        {
-            value = $"\"{value}\"";
-        }
-        return value;
     }
 
     // DRAGGING FUNCTIONALITIES 
