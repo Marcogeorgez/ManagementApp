@@ -42,13 +42,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-    <PackageReference Include="MudBlazor" Version="8.3.0" />
     <PackageReference Include="NCalcSync" Version="5.4.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Sentry.AspNetCore" Version="5.7.0" />
     <PackageReference Include="Sentry.Profiling" Version="5.7.0" />
     <PackageReference Include="System.Text.Encodings.Web" Version="9.0.5" />
     <PackageReference Include="WebPush" Version="1.0.12" />
+    <PackageReference Include="MudBlazor" Version="8.3.0" />
+  
   </ItemGroup>
 
   <ItemGroup>
