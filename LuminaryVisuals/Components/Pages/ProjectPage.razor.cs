@@ -1285,6 +1285,8 @@ public partial class ProjectPage : ComponentBase
                 EscapeCsvValue(settings.FirstName!),
                 EscapeCsvValue(settings.LastName!),
                 EscapeCsvValue(settings.Email!),
+                $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
+                settings.Currency,
                 ( await projectDescription ),
                 DateTime.Now.AddDays(7).ToString("dd/MM/yyyy")
             ));
