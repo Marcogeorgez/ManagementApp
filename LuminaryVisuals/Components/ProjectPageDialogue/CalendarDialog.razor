@@ -34,7 +34,7 @@
                 }
             </MudSelect>
             <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                       Class="d-flex justify-center mud-width-full" Variant="Variant.Outlined" Label="Secondary Editor" ReadOnly="!isAdmin"
+            Class="d-flex justify-center mud-width-full" Variant="Variant.Outlined" Label="Secondary Editor" ReadOnly="!isAdmin"
             ValueChanged="@(async value => {
                            if (value == null) {
                                var result = await dialogService.ShowMessageBox(
@@ -63,11 +63,11 @@
             </MudSelect>
 
             <MudDatePicker Label="Due Date"
-                           Variant="Variant.Outlined"
-                           Date="@project.DueDate"
-                           DateChanged="@(date => project.DueDate = date.Value)"
-                           Class="" ReadOnly="!isAdmin"
-                           Required="false" />
+            Variant="Variant.Outlined"
+            Date="@project.DueDate"
+            DateChanged="@(date => project.DueDate = date.Value)"
+            Class="" ReadOnly="!isAdmin"
+            Required="false" />
             <MudCheckBox Label="Mark as Urgent" @bind-Value="@project.IsUrgent" Class="mb-1" Style="@(!isAdmin ? "display:none;" : "" )" ReadOnly="!isAdmin"/>
             <MudDateRangePicker @bind-DateRange="@project.Range" Margin="Margin.Dense" Clearable="true" 
             PlaceholderStart="Start Date" PlaceholderEnd="End Date" Label="Date Range"Variant="Variant.Outlined" />
@@ -80,12 +80,17 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Project project { get; set; } = new();
     [Parameter] public bool isAdmin { get; set; }
-    [Parameter] public List<ApplicationUser>? Editors { get; set; } = new();
-    [Inject] IDialogService dialogService {get; set;}
+    public List<ApplicationUser>? Editors { get; set; } = new();
+    [Inject] IDialogService dialogService { get; set; } = default!;
+    [Inject] UserManager<ApplicationUser> _userManager { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        Editors = (await _userManager.GetUsersInRoleAsync("Editor")).ToList();
 
+    }
     private void Submit()
     {
         MudDialog.Close(DialogResult.Ok(project));

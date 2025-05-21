@@ -1,0 +1,109 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h5" Align="Align.Center">
+            Projects
+        </MudText>
+        <MudDataGrid T="Project" FixedHeader Dense=true Hover="true" Breakpoint="Breakpoint.None" Items="@Projects" QuickFilter="@QuickFilter" Virtualize="true" Height="600px !important" OverscanCount="30">
+            <ToolBarContent>
+                <MudTextField T="string" Placeholder="Search..." @bind-Value="_searchString" Adornment="Adornment.Start" DebounceInterval="300"
+                AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+            </ToolBarContent>
+            <Columns>
+                <TemplateColumn CellClass="" Title="Actions">
+                    <CellTemplate>
+                        <MudIconButton Color="Color.Tertiary" Icon="@Icons.Material.Filled.Edit"
+                                       Variant="Variant.Text" Size="Size.Large" OnClick="@(() => OpenDialog(context.Item))" />
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" CellClass="outlined-dialog-xl-content"
+                                Groupable="false" Editable=false Required=false>
+                    <CellTemplate>
+                                <MudTextField T="string" AutoGrow=true MaxLines="2"
+                                              Value="context.Item.ProjectName" Class="outlined-dialog-xl-content"
+                                              ReadOnly="true"
+                                              Immediate="true" Adornment="Adornment.End" Variant="Variant.Outlined">
+                                </MudTextField>
+                    </CellTemplate>
+                </PropertyColumn>
+
+                 <PropertyColumn Property="x => x.Client.UserName" Title="Client" CellClass="outlined-dialog-name-content">
+                        <CellTemplate>
+                            <MudTextField T="string" Value="context.Item.Client.UserName"  ReadOnly="true"  Immediate="true" Adornment="Adornment.End"
+                            Variant="Variant.Outlined" MaxLines="2" class="outlined-dialog-name-content grey-border">
+                            </MudTextField>
+                        </CellTemplate>
+                 </PropertyColumn>
+
+                <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;" 
+                                Groupable="true" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.ShootDate)">
+                    <CellTemplate>
+                        <MudTextField T="string" Value="@context.Item.FormattedShootDate"
+                                      Class="outlined-dialog-lg-content grey-border"
+                                      ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" HeaderStyle="width:115px;"
+                                Groupable="true" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.DueDate)">
+                    <CellTemplate>
+                        <MudTextField T="string" Value="@context.Item.FormattedDueDate"
+                                      Class="outlined-dialog-lg-content grey-border"
+                                      ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End" />
+                    </CellTemplate>
+                </PropertyColumn>
+
+            </Columns>
+        </MudDataGrid>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public List<Project> Projects { get; set; } = default!;
+    [Parameter] public bool isAdmin { get; set; }
+    [Parameter] public string currentUserId { get; set; } = default!;
+    Project selectedProject = new();
+    string _searchString = string.Empty;
+    // Return all projects if no search value is provided
+    // Otherwise, filter projects based on the search value by project name or client name
+    private Func<Project, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.ProjectName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true || x.Client.UserName?.Contains(_searchString, StringComparison.InvariantCultureIgnoreCase) == true)
+            return true;
+
+        return false;
+    };
+    [Inject] IDialogService DialogService { get; set; } = default!;
+    [Inject] ProjectService projectService { get; set; } = default!;
+
+    private async Task OpenDialog(Project project)
+    {
+        var parameters = new DialogParameters
+            {
+                ["project"] = project,
+                ["isAdmin"] = isAdmin,
+            };
+
+        var dialog = await DialogService.ShowAsync<CalendarDialog>("", parameters);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            var updatedProject = (Project)result.Data!;
+            await projectService.UpdateProjectAsync(project, currentUserId);
+
+            // Update the project in the list
+            var index = Projects.FindIndex(p => p.ProjectId == updatedProject.ProjectId);
+            if (index != -1)
+            {
+                Projects[index] = updatedProject;
+            }
+        }
+    }
+}
+<style>
+    .mud-table-container{
+        zoom: 0.8;
+    }
+</style>

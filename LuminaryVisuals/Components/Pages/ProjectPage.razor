@@ -21,18 +21,15 @@
 
         <LoadingIndicator IsVisible="@_loadingIndicator" />
 
-        <MudDataGrid @ref=_dataGrid T="Project"SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid"
-        Style="zoom: 0.7;" 
-        Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" 
-        Filterable=true ColumnsPanelReordering=false  MultiSelection="true"ShowColumnOptions=false  
+        <MudDataGrid @ref=_dataGrid T="Project" SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid"
+        Style="zoom: 0.7;" Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" 
+        Filterable=true ColumnsPanelReordering=false MultiSelection="true" ShowColumnOptions=false  
         @bind-SelectedItems="@SelectedProjects" SelectOnRowClick="false" Groupable
         ShowMenuIcon=false EditMode="DataGridEditMode.Form"  ReadOnly=false RowStyle="text-align:center;"  
         StartedEditingItem="@StartedEditingItem"
         CommittedItemChanges="@CommittedItemChanges" 
         RowsPerPage="25"  FixedHeader FixedFooter QuickFilter="@QuickFilter" 
         Loading="@_loading" Items="@projects" RowClassFunc="@GetRowClass" >
-
-
             <ToolBarContent>
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                 <MudText Typo="Typo.h4" Class="mr-3">Your Projects</MudText>
@@ -156,7 +153,7 @@
                     }
 
                 </div>
-            @if (isAdminView)
+                @if (isAdminView)
                 {
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
@@ -194,7 +191,6 @@
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
                 }
-                
                 @if(_isAdminView || _isEditorView)
                 {
                     <div class="d-flex align-center">
@@ -209,7 +205,8 @@
                     </div>
                 }
                 <MudSpacer />
-            <MudTextField T="string" Placeholder="Search..." @bind-Value="_searchString" Adornment="Adornment.Start" DebounceInterval="300" 
+                
+                <MudTextField T="string" Placeholder="Search..." @bind-Value="_searchString" Adornment="Adornment.Start" DebounceInterval="300" 
                 AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
 
             </ToolBarContent>
@@ -410,7 +407,7 @@
                 *@
                 @if (RoleBasedColumns[_currentRole].Contains("ClientName") || isAdminView ) 
                 {
-                    <PropertyColumn Property="x => x.Client.UserName" Title="Client Name" Grouping="_groupByClientName" Hidden="@(GetColumnVisibility("ClientUserName"))"
+                    <PropertyColumn Property="x => x.Client.UserName" Title="Client" Grouping="_groupByClientName" Hidden="@(GetColumnVisibility("ClientUserName"))"
                     Hideable="true" Groupable="true" CellStyle="" CellClass="outlined-dialog-name-content"
                     Editable=false Required=false >
 

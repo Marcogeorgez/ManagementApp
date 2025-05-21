@@ -11,28 +11,9 @@
             <ToolbarContent>
 
                 <MudStack Row="true" style="align-items:center;">
-                    <MudMenu Label="Schedule Project Details" Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2"  Variant="Variant.Outlined" OpenChanged="ResetSelected">
-                        <MudAutocomplete T="Project" Label="Select Project"
-                                         @bind-Value="selectedProject"
-                                         SearchFunc="@Search1"
-                                         ToStringFunc="@(p => p?.ProjectName ?? "")"
-                                         ResetValueOnEmptyText="true"
-                                         CoerceText="true"
-                                         CoerceValue="true" />
-
-                        @if (selectedProject != null)
-                        {
-                            <MudDateRangePicker   @bind-DateRange="@selectedProject.Range" Margin="Margin.Dense" Clearable="true"
-                            PlaceholderStart="Start Date" PlaceholderEnd="End Date" Label="Date Range" />
-                        }
-                        <div class="d-flex justify-end mt-5">
-                            <MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="@Cancel"Class="mr-3">Cancel</MudButton>
-                            <MudButton Color="Color.Info" Variant="Variant.Outlined" OnClick="@Confirm">Confirm</MudButton>
-                        </div>
-                    </MudMenu>
-
-
-
+                    <MudButton Color="Color.Info" Size="Size.Medium" Class="mx-1 my-2"  Variant="Variant.Outlined" OnClick="ShowSchedulingProject">
+                        Schedule Projects
+                    </MudButton>
 
                     <MudSelect T="string" Label="Status Filter" MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" SelectedValues="@_statusFilterStrings" SelectedValuesChanged="OnStatusFilterChanged" MultiSelection="true" Class="mb-3" style="min-width:150px;">
                         @foreach (var status in GetUniqueStatuses())
@@ -104,6 +85,7 @@
     private List<Project>? allProjects = new();
     bool showCameraRoll = true;
     bool showFlag = true;
+    DateRange? _dateRange = new();
     private List<Project> filteredProjects = new();
     private HashSet<ProjectStatus>? statusFilters;
     private HashSet<string>? _editorsFilterStrings;
@@ -134,10 +116,7 @@
     string? _userName;
     bool isAdmin;
     DateRange? date;
-    void ResetSelected()
-    {
-        selectedProject = null;
-    }
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -153,7 +132,7 @@
             }
             else
             {
-                allProjects = allProjectsInDateRange;
+                allProjects = await projectService.GetProjectsForEditors(false, _currentUserId);
             }
             if (!_subscribed)
             {
@@ -179,7 +158,7 @@
     {
         // Clear previous events if needed
         _events.Clear();
-
+        _dateRange = dateRange;
         allProjectsInDateRange = await projectService.GetProjectsDateRangeCalenderAsync(false, dateRange, isAdmin, _currentUserId);
         date = dateRange;
         await ApplyFilters();
@@ -324,23 +303,23 @@
     private IEnumerable<ProjectStatus> GetUniqueStatuses()
     {
         IEnumerable<ProjectStatus> projects = new List<ProjectStatus>();
-        if (allProjectsInDateRange != null)
+        if (allProjects != null)
         {
-            projects = allProjectsInDateRange.Select(p => p.Status).Distinct();
+            projects = allProjects.Select(p => p.Status).Distinct();
         }
         return projects;
     }
 
     private IEnumerable<string> GetUniqueEditors()
     {
-        if (allProjectsInDateRange == null)
+        if (allProjects == null)
             return Enumerable.Empty<string>();
 
-        var primaryEditors = allProjectsInDateRange
+        var primaryEditors = allProjects
             .Where(p => p.PrimaryEditor?.UserName != null)
             .Select(p => p.PrimaryEditor!.UserName!);
 
-        var secondaryEditors = allProjectsInDateRange
+        var secondaryEditors = allProjects
             .Where(p => p.SecondaryEditor?.UserName != null)
             .Select(p => p.SecondaryEditor!.UserName!);
 
@@ -369,19 +348,55 @@
     }
     [Inject]
     private IDialogService DialogService { get; set; } = default!;
-    [Inject] UserManager<ApplicationUser> _userManager { get; set; } = default!;
-    public List<ApplicationUser>? Editors { get; set; }
+    private async Task ShowSchedulingProject()
+    {
+        var _filteredProjects = allProjects.ToList();
 
+        // Filter by multiple statuses
+        if (statusFilters != null && statusFilters.Count > 0)
+        {
+            _filteredProjects = _filteredProjects
+                .Where(p => statusFilters.Contains(p.Status))
+                .ToList();
+        }
+
+        // Filter by multiple editors (Primary or Secondary)
+        if (_editorFilters != null && _editorFilters.Count > 0)
+        {
+            _filteredProjects = _filteredProjects
+                .Where(p =>
+                    (p.PrimaryEditor != null && _editorFilters.Contains(p.PrimaryEditor.UserName)) ||
+                    (p.SecondaryEditor != null && _editorFilters.Contains(p.SecondaryEditor.UserName))
+                )
+                .ToList();
+        }
+        var parameters = new DialogParameters
+        {
+            ["Projects"] = _filteredProjects,
+            ["isAdmin"] = isAdmin,
+            ["currentUserId"] = _currentUserId
+        };
+        var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Large,
+            };
+        var dialog = await DialogService.ShowAsync<SchedulingProject>("", parameters, options);
+        var result = await dialog.Result;
+        if(_dateRange != null)
+        {
+            allProjectsInDateRange = await projectService.GetProjectsDateRangeCalenderAsync(false, _dateRange, isAdmin, _currentUserId);
+            await ApplyFilters();
+        }
+    }
+    public List<ApplicationUser>? Editors { get; set; }
     private async Task ShowCalenderProject(CalendarItem item)
     {
         var clickedItem = (ExtendedCalendarItem)item;
         var project = filteredProjects.FirstOrDefault(p => p.ProjectId == clickedItem.ProjectId);
-        Editors = (await _userManager.GetUsersInRoleAsync("Editor")).ToList();
         var parameters = new DialogParameters
         {
             ["project"] = project,
             ["isAdmin"] = isAdmin,
-            ["Editors"] = Editors
         };
 
         var dialog = await DialogService.ShowAsync<CalendarDialog>("", parameters);
@@ -474,18 +489,7 @@
     {
             return string.Join(", ", selectedValues.Select(s => s.Replace('_', ' ')));
     }
-    private Task<IEnumerable<Project>> Search1(string value, CancellationToken token)
-    {
-        if (filteredProjects == null)
-            return Task.FromResult(Enumerable.Empty<Project>());
-
-        if (string.IsNullOrWhiteSpace(value))
-            return Task.FromResult(filteredProjects.ToList().AsEnumerable());  // Return all projects when search is empty
-
-        return Task.FromResult(filteredProjects.Where(x =>
-            x.ProjectName?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false
-        ));
-    }
+   
     private void Cancel()
     {
         selectedProject = null;
