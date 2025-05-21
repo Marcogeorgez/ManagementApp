@@ -341,15 +341,35 @@
     };
     public void Dispose()
     {
-        ProjectState.OnChange -= HandleProjectChange;
+        ProjectState.OnChange -= async () => await HandleProjectChange(); // unsubscribe properly
         _subscription?.Dispose();
     }
-    private async void HandleProjectChange()
+
+    private async Task HandleProjectChange()
     {
-        // Immediately reload messages whenever the project changes
-        await LoadMessages(true);  
+        _subscription?.Dispose();
+
+        // Reload messages and mark them as read for the new project
+        await LoadMessages(true);
         await MarkMessagesAsRead();
-        StateHasChanged();  // Trigger a re-render after messages are loaded
+
+        // Re-subscribe to new project messages
+        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
+        {
+            if (projectId == Project.ProjectId)
+            {
+                await InvokeAsync(async () =>
+                {
+                    currentPage = 1;
+                    hasMoreMessages = true;
+                    messages.Clear();
+                    await LoadMessages(true);
+                    await MarkMessagesAsRead();
+                });
+            }
+        });
+
+        StateHasChanged();
     }
     protected override async Task OnInitializedAsync()
     {
@@ -357,7 +377,7 @@
         if (!isClientView)
             quickMessages = await QuickMessageService.GetAllMessagesAsync();
         isPrivateChat = Project.ProjectId < 0 ? true : false ;
-        ProjectState.OnChange += HandleProjectChange;
+        ProjectState.OnChange += async () => await HandleProjectChange();
         await LoadMessages(true);
         _isLoading = false;
         await MarkMessagesAsRead();
