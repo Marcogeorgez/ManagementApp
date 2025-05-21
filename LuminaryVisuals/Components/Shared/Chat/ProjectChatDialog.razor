@@ -90,7 +90,8 @@
                 <div class="chat-messages" style="@($"{(IsDragging == true || _currentFile != null ? "display:none;" : "" )}")">
                     <div class="scroller-content" id="scrollerContent">
                         @foreach (var group in messages.GroupBy(m =>
-                        GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
+                        GetDisplayDate(m.Timestamp, timezoneOffsetMinutes)))
+
                         {
                             <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
                                 @group.Key
@@ -99,9 +100,11 @@
                             string lastUserId = null;
                             @foreach (var (message, index) in group.Select((m, i) => (m, i)))
                             {
-                                if (lastUserId != message.UserId || (lastTimestamp.HasValue && GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(lastTimestamp.Value, timezoneOffsetMinutes)) !=
-                                GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(message.Timestamp, timezoneOffsetMinutes))
-                                || lastUserId == null))
+                                if (lastUserId != message.UserId ||
+                                (lastTimestamp.HasValue &&
+                                GetDisplayDate(lastTimestamp.Value, timezoneOffsetMinutes) != GetDisplayDate(message.Timestamp, timezoneOffsetMinutes)) ||
+                                lastUserId == null)
+
                                 {
                                     <MudText Typo="Typo.body2" Class="message-username">
                                         @(message.UserId != UserId && !isClientView
@@ -697,32 +700,36 @@
         }
     }
     // Display date of each chat messages grouped by their date.
-    string GetDisplayDate(DateTime timestamp)
+    string GetDisplayDate(DateTime timestamp, int timezoneOffsetMinutes)
     {
-        var today = DateTime.Today;
-        var daysDifference = ( today - timestamp.Date ).Days;
+        // Convert both to local time
+        var localTimestamp = timestamp.AddMinutes(-timezoneOffsetMinutes);
+        var localToday = DateTime.UtcNow.AddMinutes(-timezoneOffsetMinutes).Date;
 
-        if (timestamp.Date == today)
+        var daysDifference = (localToday - localTimestamp.Date).Days;
+
+        if (localTimestamp.Date == localToday)
         {
             return "Today";
         }
-        else if (timestamp.Date == today.AddDays(-1))
+        else if (localTimestamp.Date == localToday.AddDays(-1))
         {
             return "Yesterday";
         }
         else if (daysDifference <= 7)
         {
-            return timestamp.DayOfWeek.ToString(); // Display the day of the week for messages within the past week
+            return localTimestamp.DayOfWeek.ToString(); // Within past week
         }
-        else if (timestamp.Year == today.Year)
+        else if (localTimestamp.Year == localToday.Year)
         {
-                return timestamp.ToString("MMMM dd"); // Display month and day if it is in a different month but same year
+            return localTimestamp.ToString("MMMM dd");
         }
         else
         {
-            return timestamp.ToString("MMMM dd, yyyy"); // Display full date for messages from a different year
+            return localTimestamp.ToString("MMMM dd, yyyy");
         }
     }
+
 
     private IEnumerable<string> GetMessageWithLinks(string messageContent)
     {
