@@ -89,7 +89,8 @@
                 </MudStack>
                 <div class="chat-messages" style="@($"{(IsDragging == true || _currentFile != null ? "display:none;" : "" )}")">
                     <div class="scroller-content" id="scrollerContent">
-                        @foreach (var group in messages.GroupBy(m => GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
+                        @foreach (var group in messages.GroupBy(m =>
+                        GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(m.Timestamp, timezoneOffsetMinutes))))
                         {
                             <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
                                 @group.Key
@@ -98,7 +99,9 @@
                             string lastUserId = null;
                             @foreach (var (message, index) in group.Select((m, i) => (m, i)))
                             {
-                                if (lastUserId != message.UserId || (lastTimestamp.HasValue && GetDisplayDate(lastTimestamp.Value) != GetDisplayDate(message.Timestamp) || lastUserId == null))
+                                if (lastUserId != message.UserId || (lastTimestamp.HasValue && GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(lastTimestamp.Value, timezoneOffsetMinutes)) !=
+                                GetDisplayDate(ConvertLocal.ConvertToLocalTimeDateTime(message.Timestamp, timezoneOffsetMinutes))
+                                || lastUserId == null))
                                 {
                                     <MudText Typo="Typo.body2" Class="message-username">
                                         @(message.UserId != UserId && !isClientView
@@ -580,7 +583,7 @@
         {
             finishedLoading = false;
             var loadedMessages = await ChatService.GetMessagesAsync(Project.ProjectId, isAdminView, UserId, pageNumber: currentPage, pageSize: PAGE_SIZE);
-
+            
             if (initial)
             {
                 // First load - clear existing messages and add new ones
