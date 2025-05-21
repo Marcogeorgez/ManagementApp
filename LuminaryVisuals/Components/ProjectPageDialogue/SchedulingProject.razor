@@ -15,8 +15,8 @@
                                        Variant="Variant.Text" Size="Size.Large" OnClick="@(() => OpenDialog(context.Item))" />
                     </CellTemplate>
                 </TemplateColumn>
-                <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" CellClass="outlined-dialog-xl-content"
-                                Groupable="false" Editable=false Required=false>
+                <PropertyColumn Property="x => x.ProjectName" Title="Project Brief" CellClass="outlined-dialog-xl-content" Groupable="true"
+                                Editable=false Required=false>
                     <CellTemplate>
                                 <MudTextField T="string" AutoGrow=true MaxLines="2"
                                               Value="context.Item.ProjectName" Class="outlined-dialog-xl-content"
@@ -26,24 +26,28 @@
                     </CellTemplate>
                 </PropertyColumn>
 
-                 <PropertyColumn Property="x => x.Client.UserName" Title="Client" CellClass="outlined-dialog-name-content">
+                 <PropertyColumn Property="x => x.Client.UserName" Title="Client" CellClass="outlined-dialog-name-content" Groupable="true">
                         <CellTemplate>
                             <MudTextField T="string" Value="context.Item.Client.UserName"  ReadOnly="true"  Immediate="true" Adornment="Adornment.End"
                             Variant="Variant.Outlined" MaxLines="2" class="outlined-dialog-name-content grey-border">
                             </MudTextField>
                         </CellTemplate>
+                    <GroupTemplate>
+                        <GroupTemplateComponent TItem="Project" Context="@context" Label="Client Name" />
+                    </GroupTemplate>
                  </PropertyColumn>
 
                 <PropertyColumn Property="x => x.FormattedShootDate" Title="Shoot Date" Hideable="true" HeaderStyle="width:115px;" 
-                                Groupable="true" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.ShootDate)">
+                                Groupable="false" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.ShootDate)">
                     <CellTemplate>
                         <MudTextField T="string" Value="@context.Item.FormattedShootDate"
                                       Class="outlined-dialog-lg-content grey-border"
                                       ReadOnly="true" Variant="Variant.Outlined" Immediate="true" Adornment="Adornment.End"/>
                     </CellTemplate>
+
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.FormattedDueDate" Title="Due Date" Hideable="true" HeaderStyle="width:115px;"
-                                Groupable="true" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.DueDate)">
+                                Groupable="false" Editable=false CellStyle="text-align:center;" SortBy="@(x => x.DueDate)">
                     <CellTemplate>
                         <MudTextField T="string" Value="@context.Item.FormattedDueDate"
                                       Class="outlined-dialog-lg-content grey-border"
