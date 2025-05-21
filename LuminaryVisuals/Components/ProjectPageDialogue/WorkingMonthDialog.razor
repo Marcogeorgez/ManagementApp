@@ -2,15 +2,15 @@
     <DialogContent>
             <MudDatePicker Label="Working Month"
                            Variant="Variant.Outlined"
-                           Date="@Project.WorkingMonth"
-                           DateChanged="@(date => Project.WorkingMonth = date.Value)"
+                           Date="@editableProject.WorkingMonth"
+                           DateChanged="@(date => editableProject.WorkingMonth = date.Value)"
                            Class="mt-3" Margin="Margin.Dense"
                            Required="false"
                            FixDay="1"
                            DateFormat="MM/yyyy" />
         <MudCheckBox Label="Mark as Urgent"
-                     @bind-Value="@Project.IsUrgent" Class="" />
-        <MudDateRangePicker @bind-DateRange="@Project.Range" Margin="Margin.Dense" Clearable="true" Class=""
+                     @bind-Value="@editableProject.IsUrgent" Class="" />
+        <MudDateRangePicker @bind-DateRange="@editableProject.Range" Margin="Margin.Dense" Clearable="true" Class=""
             PlaceholderStart="Start Date" PlaceholderEnd="End Date" Label="Date Range For Calendar"Variant="Variant.Outlined" />
     </DialogContent>
     <DialogActions>
@@ -22,9 +22,21 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     [Parameter] public Project Project { get; set; } = default!;
-
+    private Project editableProject = new();
+    protected override void OnParametersSet()
+    {
+        editableProject = new Project
+            {
+                WorkingMonth = Project.WorkingMonth,
+                IsUrgent = Project.IsUrgent,
+                Range = Project.Range
+            };
+    }
     private void Submit()
     {
+        Project.IsUrgent = editableProject.IsUrgent;
+        Project.WorkingMonth = editableProject.WorkingMonth;
+        Project.Range = editableProject.Range;
         MudDialog.Close(DialogResult.Ok(Project));
     }
 
