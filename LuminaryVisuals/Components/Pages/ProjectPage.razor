@@ -37,115 +37,127 @@
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                 <MudText Typo="Typo.h4" Class="mr-3">Your Projects</MudText>
                 </MudHidden>
-
-                <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" Label="Actions" AriaLabel="Projects Options" Class="mt-1"
-                LockScroll=true DropShadow=true  @ref=_menuRef AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
-                    <MudMenuItem  OnClick="ResetState">
-                        <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.LayersClear" Class="mr-2" />
-                        Reset State
-                    </MudMenuItem>
-                    <MudMenuItem OnClick="@(() => _dataGrid.ShowColumnsPanel())">
-                       <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.ViewColumn" Class="mr-2" />
-                        Show Columns Panel
-                    </MudMenuItem>
-                    <MudMenuItem OnClick="NotificationPreferences">
-                        <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
-                        Notification Preferences
-                    </MudMenuItem>
-
-                    @if (_isAdminView || _isEditorView)
-                    {
-                        <MudMenuItem OnClick="OpenGeneratePaymentDialog">
-                           <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.TwoTone.Payments" Class="mr-2" />
-                            Create Payment Documents
+            <div class="d-flex align-center mr-md-4">
+                    <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Size="Size.Large" Label="Actions" AriaLabel="Projects Options" Class="mt-1"
+                    LockScroll=true DropShadow=true  @ref=_menuRef AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopRight">
+                        <MudMenuItem  OnClick="ResetState">
+                            <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.LayersClear" Class="mr-2" />
+                            Reset State
                         </MudMenuItem>
-                    }
-                    @if(!isAdminView)
-                    {
-                       <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Hide Finished Projects</MudSwitch>
-                    }
+                        <MudMenuItem OnClick="NotificationPreferences">
+                            <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
+                            Notification Preferences
+                        </MudMenuItem>
+
+                        @if (_isAdminView || _isEditorView)
+                        {
+                            <MudMenuItem OnClick="OpenGeneratePaymentDialog">
+                               <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.TwoTone.Payments" Class="mr-2" />
+                                Create Payment Documents
+                            </MudMenuItem>
+                        }
+                        @if(!isAdminView)
+                        {
+                            <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Hide Finished Projects</MudSwitch>
+                            <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showUpcomingProjects" ValueChanged="@((value) => ToggleUpcomingProjects(value))" Color="Color.Info">Hide Upcoming Projects</MudSwitch>
+                        }
                     @if (isAdminView)
                     {
-                        <MudMenuItem OnClick="DownloadAllProjects">
-                            <div style="display:flex;">
-                            <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.TwoTone.Download" Class="mr-2 " />
-                                Backup Projects
-                            </div>
-                        </MudMenuItem>
-
-                        <MudStack Spacing="0" Class="mb-3">
-                        <MudSelect T="string" Class="mx-4 my-2 " Label="Select Preset"
-                                   AnchorOrigin="Origin.BottomCenter" Dense=true
-                                   TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined"
-                                   @bind-Value="_selectedPresetName"
-                                   SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)"
-                                   Clearable=true>
-
-                            <MudSelectItem Value='"createNewPreset"'>
-                                <div class="d-flex align-center" style="color: #0baa7a;">
-                                    <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Add"
-                                             Color="Color.Success" Variant=Variant.Outlined Class="mr-2" />
-                                    <strong>Create New Preset</strong>
+                            <MudMenuItem OnClick="DownloadAllProjects">
+                                <div style="display:flex;">
+                                <MudIcon Style="vertical-align: middle;" Icon="@Icons.Material.TwoTone.Download" Class="mr-2 " />
+                                    Backup Projects
                                 </div>
-                            </MudSelectItem>
+                            </MudMenuItem>
 
-                            @foreach (var preset in _columnPresets)
-                            {
-                                <MudSelectItem Value="@preset.Name">
-                                    <div class="d-flex align-center" style="width: 100%;">
-                                        <span>@preset.Name</span>
-                                        <MudSpacer/>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"  Size="Size.Small"
-                                        OnClick="async () => await EditPreset(preset)"  Class="mud-select-option-delete"/>
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                                        OnClick="async () => await DeletePreset(preset)" Class="mud-select-option-delete"/>
-                                        
+                            <MudStack Spacing="0" Class="mb-3">
+                            <MudSelect T="string" Class="mx-4 my-2 " Label="Select Preset"
+                                       AnchorOrigin="Origin.BottomCenter" Dense=true
+                                       TransformOrigin="Origin.TopCenter" Variant="Variant.Outlined"
+                                       @bind-Value="_selectedPresetName"
+                                       SelectedValuesChanged="() => LoadSelectedPreset(_selectedPresetName)"
+                                       Clearable=true>
 
+                                <MudSelectItem Value='"createNewPreset"'>
+                                    <div class="d-flex align-center" style="color: #0baa7a;">
+                                        <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Add"
+                                                 Color="Color.Success" Variant=Variant.Outlined Class="mr-2" />
+                                        <strong>Create New Preset</strong>
                                     </div>
                                 </MudSelectItem>
-                            }
-                        </MudSelect>
-                        <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
 
-                        <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Hide Finished Projects</MudSwitch>
-                        <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showUpcomingProjects" ValueChanged="@((value) => ToggleUpcomingProjects(value))" Color="Color.Info">Hide Upcoming Projects</MudSwitch>
+                                @foreach (var preset in _columnPresets)
+                                {
+                                    <MudSelectItem Value="@preset.Name">
+                                        <div class="d-flex align-center" style="width: 100%;">
+                                            <span>@preset.Name</span>
+                                            <MudSpacer/>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"  Size="Size.Small"
+                                            OnClick="async () => await EditPreset(preset)"  Class="mud-select-option-delete"/>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                            OnClick="async () => await DeletePreset(preset)" Class="mud-select-option-delete"/>
+                                        
 
-                            <MudText Class="ml-5">View as</MudText>
-                            <MudStack Row=true Style="background:#151726;" Class="mx-2" Spacing="1">
-                                <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
-                                <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
-                                <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
+                                        </div>
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_isArchived" ValueChanged="ArchivedToggle" Color="Color.Info">Show Archived Projects</MudSwitch>
+
+                            <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showFinishedProjects" ValueChanged="@((value) => ToggleFinishedProjects(value))" Color="Color.Info">Hide Finished Projects</MudSwitch>
+                            <MudSwitch T="bool" Class="mb-1 mx-2" Value="@_showUpcomingProjects" ValueChanged="@((value) => ToggleUpcomingProjects(value))" Color="Color.Info">Hide Upcoming Projects</MudSwitch>
+
+                                <MudText Class="ml-5">View as</MudText>
+                                <MudStack Row=true Style="background:#151726;" Class="mx-2" Spacing="1">
+                                    <MudSwitch T="bool" Class="" Value="@_isAdminView" ValueChanged="AdminToggle" Color="Color.Info">Admin</MudSwitch>
+                                    <MudSwitch T="bool" Value="@_isEditorView" ValueChanged="EditorToggle" Color="Color.Info">Editor</MudSwitch>
+                                    <MudSwitch T="bool" Value="@_isClientView" ValueChanged="ClientToggle" Color="Color.Info">Client</MudSwitch>
+                                </MudStack>
                             </MudStack>
-                        </MudStack>
-                    }
-                </MudMenu>
+                        }
+                    </MudMenu>
+                    @if (isAdminView)
+                    {
+                        <MudTooltip ShowOnClick=false Text="Column Panel" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                        <MudIconButton Color="Color.Tertiary" OnClick="@(() => _dataGrid.ShowColumnsPanel())" Size="Size.Large"
+                                       Style="vertical-align: middle;" Icon="@Icons.Material.Filled.ViewColumn" Class="pa-1 mt-1" />
+                        </MudTooltip>
+                        <MudTooltip ShowOnClick=false Text="Batch Editing" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                            <MudIconButton Color="Color.Tertiary" OnClick="@(() => SelectedItems(SelectedProjects,true))"
+                            Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1" >
 
-                @if (isAdminView)
+                            </MudIconButton>
+                        </MudTooltip>
+                        @if(!_isArchived)
+                        {
+                            <MudTooltip ShowOnClick=false Text="Batch Archiving" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                            <MudIconButton Color="Color.Tertiary" OnClick="@(() => SelectedItems(SelectedProjects, false))"
+                            Icon="@Icons.Material.Filled.Archive" Size="Size.Large" Class="pa-1 mt-1" >
+
+                            </MudIconButton>
+                            </MudTooltip>
+                        }
+
+                        @if(_isArchived)
+                        {
+                            <MudTooltip ShowOnClick=false Text="Batch Delete" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                            <MudIconButton Color="Color.Tertiary" OnClick="@(() => DeleteProjects(SelectedProjects))"
+                            Icon="@Icons.Material.Filled.Delete" Size="Size.Large" Class="pa-1 mt-1" >
+                            </MudIconButton>
+                            </MudTooltip>
+                        }
+                    }
+                    @if(_isClientView || _isEditorView)
+                    {
+                        <MudTooltip ShowOnClick=false Text="Column Panel" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
+                            <MudIconButton Color="Color.Tertiary" OnClick="@(() => _dataGrid.ShowColumnsPanel())" Size="Size.Large"
+                                           Style="vertical-align: middle;" Icon="@Icons.Material.Filled.ViewColumn" Class="pa-1 mt-1" />
+                        </MudTooltip>
+                    }
+
+                </div>
+            @if (isAdminView)
                 {
-                    <MudTooltip ShowOnClick=false Text="Batch Editing" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
-                        <MudIconButton OnClick="@(() => SelectedItems(SelectedProjects,true))"
-                        Icon="@Icons.Material.Filled.Edit" Size="Size.Large" Class="pa-1 mt-1" >
-
-                        </MudIconButton>
-                    </MudTooltip>
-                    @if(!_isArchived)
-                    {
-                        <MudTooltip ShowOnClick=false Text="Batch Archiving" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
-                        <MudIconButton OnClick="@(() => SelectedItems(SelectedProjects, false))"
-                        Icon="@Icons.Material.Filled.Archive" Size="Size.Large" Class="pa-1 mt-1" >
-
-                        </MudIconButton>
-                        </MudTooltip>
-                    }
-                    @if(_isArchived)
-                    {
-                        <MudTooltip ShowOnClick=false Text="Batch Delete" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom">
-                        <MudIconButton OnClick="@(() => DeleteProjects(SelectedProjects))"
-                        Icon="@Icons.Material.Filled.Delete" Size="Size.Large" Class="pa-1 mt-1" >
-
-                        </MudIconButton>
-                        </MudTooltip>
-                    }
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
                         Variant="Variant.Outlined" Size="Size.Medium"
@@ -162,10 +174,11 @@
                         Class="mt-1"
                         OnClick="@(() => AddProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
-
                 }
-                else if (_isClientView)
+                @if (_isClientView)
                 {
+
+
                     <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >
                         <MudButton Color="Color.Info"
                         Variant="Variant.Outlined" Size="Size.Medium"
@@ -177,26 +190,25 @@
                     <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
 
                         <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
-                        Color="Color.Info"
-                                       Size="Size.Large"
-                        Class="mt-1 mx-2"
+                        Color="Color.Info" Size="Size.Large"Class="mt-1 mx-2"
                         OnClick="@(() => CreateProjectDialogAsync(DialogOptions))" />
                     </MudHidden>
                 }
+                
                 @if(_isAdminView || _isEditorView)
                 {
-                    <MudTooltip ShowOnClick=false Text="@undoSwapText" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom"
-                    Color=Color.Info @onmouseover="UpdateUndoRedoTexts">
-                        <MudIconButton Disabled="string.IsNullOrEmpty(undoSwapText)" Icon=@Icons.Material.Filled.Undo Color="Color.Info" Size="Size.Large" Class="mt-1 ma-1" OnClick="Undo" />
-                    </MudTooltip>
-                    <MudTooltip ShowOnClick=false Text="@redoSwapText" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom"
-                    Color=Color.Info @onmouseover="UpdateUndoRedoTexts">
-                        <MudIconButton Disabled="string.IsNullOrEmpty(redoSwapText)" Icon=@Icons.Material.Filled.Redo Color="Color.Info" Size="Size.Large" Class="mt-1 ma-1" OnClick="Redo"/>
+                    <div class="d-flex align-center">
+                        <MudTooltip ShowOnClick=false Text="@undoSwapText" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom"
+                            Color=Color.Info @onmouseover="UpdateUndoRedoTexts">
+                            <MudIconButton Disabled="string.IsNullOrEmpty(undoSwapText)" Icon=@Icons.Material.Filled.Undo Color="Color.Info" Size="Size.Large" Class="mt-1 ma-1" OnClick="Undo" />
                         </MudTooltip>
-
+                        <MudTooltip ShowOnClick=false Text="@redoSwapText" ShowOnHover=true ShowOnFocus=true Arrow=true Placement="Placement.Bottom"
+                            Color=Color.Info @onmouseover="UpdateUndoRedoTexts">
+                            <MudIconButton Disabled="string.IsNullOrEmpty(redoSwapText)" Icon=@Icons.Material.Filled.Redo Color="Color.Info" Size="Size.Large" Class="mt-1 ma-1" OnClick="Redo"/>
+                            </MudTooltip>
+                    </div>
                 }
                 <MudSpacer />
-
             <MudTextField T="string" Placeholder="Search..." @bind-Value="_searchString" Adornment="Adornment.Start" DebounceInterval="300" 
                 AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
 
@@ -1181,3 +1193,11 @@
     };
 
 </script>
+<style>
+@@media (min-width: 960px) {
+    .mud-toolbar.mud-toolbar-gutters.mud-table-toolbar
+    {
+        gap:1rem;
+    }
+}
+</style>
