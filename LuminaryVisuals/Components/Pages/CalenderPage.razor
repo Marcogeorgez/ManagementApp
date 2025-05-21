@@ -34,7 +34,7 @@
 
 
 
-                    <MudSelect T="string" Label="Status Filter" Value="@_statusFilterString" ValueChanged="OnStatusFilterChanged" Class="mb-3" style="min-width:150px;">
+                    <MudSelect T="string" Label="Status Filter" MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" SelectedValues="@_statusFilterStrings" SelectedValuesChanged="OnStatusFilterChanged" MultiSelection="true" Class="mb-3" style="min-width:150px;">
                         @foreach (var status in GetUniqueStatuses())
                         {
                             <MudSelectItem Value="@status.ToString()">@status.ToString().Replace('_',' ')</MudSelectItem>
@@ -43,8 +43,8 @@
 
                     @if(isAdmin)
                     {
-                        <MudSelect T="string" Label="Editor Filter" Value="@editorFilter" style="min-width:150px;"  Class="mb-3" 
-                        ValueChanged="OnEditorFilterChanged">
+                        <MudSelect T="string" Label="Editor Filter"  SelectedValues="@_editorsFilterStrings" style="min-width:150px;" MultiSelection="true" Class="mb-3"
+                        SelectedValuesChanged="OnEditorFilterChanged">
                             @foreach (var editor in GetUniqueEditors())
                             {
                                 <MudSelectItem Value="@editor">@editor</MudSelectItem>
@@ -105,8 +105,10 @@
     bool showCameraRoll = true;
     bool showFlag = true;
     private List<Project> filteredProjects = new();
-    private ProjectStatus? statusFilter;
-    private string? editorFilter;
+    private HashSet<ProjectStatus>? statusFilters;
+    private HashSet<string>? _editorsFilterStrings;
+    private HashSet<string> _statusFilterStrings = new();
+    private HashSet<string> _editorFilters = new();
     private Project? selectedProject = new() ;
     private bool _subscribed = false;
     private bool canDrag => BreakpointService.CurrentBreakpoint >= Breakpoint.Md;
@@ -132,7 +134,6 @@
     string? _userName;
     bool isAdmin;
     DateRange? date;
-    string? _statusFilterString;
     void ResetSelected()
     {
         selectedProject = null;
@@ -201,31 +202,41 @@
         {
             if (allProjectsInDateRange == null)
                 return;
-            filteredProjects = allProjectsInDateRange.ToList();
-            if (statusFilter != null)
-            {
-                filteredProjects = filteredProjects.Where(p => p.Status == statusFilter).ToList();
-            }
-            if (!string.IsNullOrEmpty(editorFilter))
-            {
-                filteredProjects = filteredProjects.Where(p =>
-                    (p.PrimaryEditor != null && p.PrimaryEditor.UserName == editorFilter)
-                    || (p.SecondaryEditor != null && p.SecondaryEditor.UserName == editorFilter)
-                ).ToList();
 
+            filteredProjects = allProjectsInDateRange.ToList();
+
+            // Filter by multiple statuses
+            if (statusFilters != null && statusFilters.Count > 0)
+            {
+                filteredProjects = filteredProjects
+                    .Where(p => statusFilters.Contains(p.Status))
+                    .ToList();
             }
+
+            // Filter by multiple editors (Primary or Secondary)
+            if (_editorFilters != null && _editorFilters.Count > 0)
+            {
+                filteredProjects = filteredProjects
+                    .Where(p =>
+                        (p.PrimaryEditor != null && _editorFilters.Contains(p.PrimaryEditor.UserName)) ||
+                        (p.SecondaryEditor != null && _editorFilters.Contains(p.SecondaryEditor.UserName))
+                    )
+                    .ToList();
+            }
+
             UpdateEvents();
 
-            if (_subscribed) { 
-                await JS.InvokeVoidAsync("updateDraggable"); 
+            if (_subscribed)
+            {
+                await JS.InvokeVoidAsync("updateDraggable");
             }
         }
         catch (Exception ex)
         {
-            throw ex;
+            throw; // Optional: or log the exception
         }
-
     }
+
     private void UpdateEvents()
     {
         _events.Clear();
@@ -280,17 +291,21 @@
         }
 
     }
-    private async Task OnStatusFilterChanged(string status)
+    private async Task OnStatusFilterChanged(IEnumerable<string> newValues)
     {
-        _statusFilterString = status;
-        statusFilter = (ProjectStatus)Enum.Parse(typeof(ProjectStatus), _statusFilterString);
+        _statusFilterStrings = newValues.ToHashSet();
+
+        statusFilters = _statusFilterStrings
+            .Select(s => (ProjectStatus)Enum.Parse(typeof(ProjectStatus), s))
+            .ToHashSet();
         await ApplyFilters();
         StateHasChanged();
     }
 
-    private async Task OnEditorFilterChanged(string editor)
+    private async Task OnEditorFilterChanged(IEnumerable<string> newValues)
     {
-        editorFilter = editor;
+        _editorsFilterStrings = newValues.ToHashSet();
+        _editorFilters = _editorsFilterStrings;
         await ApplyFilters();
         StateHasChanged();
     }
@@ -298,9 +313,9 @@
     // Clear filters
     private async Task ClearFilters()
     {
-        _statusFilterString = "";
-        statusFilter = null;
-        editorFilter = null;
+        _statusFilterStrings = new();
+        statusFilters = new();
+        _editorFilters = new();
         showCameraRoll = true;
         showFlag = true;
         await ApplyFilters();
@@ -455,15 +470,19 @@
             }
         }
     }
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+            return string.Join(", ", selectedValues.Select(s => s.Replace('_', ' ')));
+    }
     private Task<IEnumerable<Project>> Search1(string value, CancellationToken token)
     {
-        if (allProjects == null)
+        if (filteredProjects == null)
             return Task.FromResult(Enumerable.Empty<Project>());
 
         if (string.IsNullOrWhiteSpace(value))
-            return Task.FromResult(allProjects.ToList().AsEnumerable());  // Return all projects when search is empty
+            return Task.FromResult(filteredProjects.ToList().AsEnumerable());  // Return all projects when search is empty
 
-        return Task.FromResult(allProjects.Where(x =>
+        return Task.FromResult(filteredProjects.Where(x =>
             x.ProjectName?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false
         ));
     }
