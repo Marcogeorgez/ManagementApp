@@ -1,12 +1,12 @@
 ﻿<MudDialog>
     <DialogContent>
         <MudGrid Class="mt-5" Style="flex-direction:column;" >
-            <MudTextField Label="Project Name" Variant="Variant.Outlined" T="string" Value="@project.ProjectName" ReadOnly="true" />
-            <MudTextField Label="Client Name" Variant="Variant.Outlined" T="string" Value="@project.Client.UserName" ReadOnly="true" />
+            <MudTextField Label="Project Name" Variant="Variant.Outlined" T="string" Value="@project.ProjectName" Disabled="true" />
+            <MudTextField Label="Client Name" Variant="Variant.Outlined" T="string" Value="@project.Client.UserName" Disabled="true" />
 
-            <MudTextField Label="Shoot Date" Variant="Variant.Outlined" T="DateTime?" Value="@project.ShootDate" ReadOnly="true" />
+            <MudTextField Label="Shoot Date" Variant="Variant.Outlined" T="DateTime?" Value="@project.ShootDate" Disabled="true" />
             <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-            Class="d-flex justify-center mud-width-full" Variant="Variant.Outlined" Label="Primary Editor" ReadOnly="!isAdmin"
+            Class="d-flex justify-center mud-width-full" Variant="Variant.Outlined" Label="Primary Editor" Disabled="!isAdmin"
             ValueChanged="@(async value => {
                            if (value == null) {
                                var result = await dialogService.ShowMessageBox(
@@ -34,7 +34,7 @@
                 }
             </MudSelect>
             <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-            Class="d-flex justify-center mud-width-full" Variant="Variant.Outlined" Label="Secondary Editor" ReadOnly="!isAdmin"
+            Class="d-flex justify-center mud-width-full" Variant="Variant.Outlined" Label="Secondary Editor" Disabled="!isAdmin"
             ValueChanged="@(async value => {
                            if (value == null) {
                                var result = await dialogService.ShowMessageBox(
@@ -66,9 +66,9 @@
             Variant="Variant.Outlined"
             Date="@project.DueDate"
             DateChanged="@(date => project.DueDate = date.Value)"
-            Class="" ReadOnly="!isAdmin"
+            Class="" Disabled="!isAdmin"
             Required="false" />
-            <MudCheckBox Label="Mark as Urgent" @bind-Value="@project.IsUrgent" Class="mb-1" Style="@(!isAdmin ? "display:none;" : "" )" ReadOnly="!isAdmin"/>
+            <MudCheckBox Label="Mark as Urgent" @bind-Value="@project.IsUrgent" Class="mb-1" Style="@(!isAdmin ? "display:none;" : "" )" Disabled="!isAdmin"/>
             <MudDateRangePicker @bind-DateRange="@project.Range" Margin="Margin.Dense" Clearable="true" 
             PlaceholderStart="Start Date" PlaceholderEnd="End Date" Label="Date Range"Variant="Variant.Outlined" />
         </MudGrid>
