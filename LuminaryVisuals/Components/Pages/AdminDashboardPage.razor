@@ -694,15 +694,14 @@
             _isUpdating = true;
             _updatingUserId = user.UserId;
             await UserManagementService.ChangeUserRoleAsync(user.UserId, newRole);
+
             var updatedUser = _users.First(u => u.UserId == user.UserId);
             updatedUser.Roles = new List<string> { newRole };
             _updateMessage = $"Successfully updated role for {user.UserName} to {newRole}";
             _updateMessageClass = "alert-success";
-
             var elementUser = AllUsers.First(u => u.UserId == user.UserId);
             elementUser.Roles = new List<string> { newRole };
             NavigationManager.Refresh();
-
         }
         catch (Exception ex)
         {

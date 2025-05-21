@@ -12,7 +12,10 @@
             <MudText Typo="Typo.h5" Class="projects-title mt-1">
                 Your Messages
             </MudText>
-
+            @if(isAdminView)
+            {
+                <MudIconButton OnClick="MarkAllMessagesAsRead" Icon="@Icons.Material.Filled.MarkChatRead" Color="Color.Tertiary" />
+            }
             <MudAutocomplete T="string" Label="Search projects" @bind-Value="searchText"
             SearchFunc="@SearchProjects" ResetValueOnEmptyText="true" AdornmentIcon="@Icons.Material.Filled.Search"
             AdornmentColor="Color.Tertiary" Class="mx-4 mb-3"  CoerceText="false" CoerceValue="true" Clearable=true />
@@ -27,7 +30,7 @@
 
             @if(!isAdminView)
             {
-            <MudList T="Project" Class="projects-list pt-8 pl-md-3  pt-md-3" Padding=true Gutters=true>
+                <MudList T="Project" Class="projects-list pt-8 pl-md-3  pt-md-3" Padding=true Gutters=true>
                     @foreach (var project in GetPaginatedProjects())
                     {
                         var classText = "project-item" + ( project.MessageRequireApprovalCount > 0 && isEditorView  ? " unapproved-message" : "" )
@@ -156,34 +159,7 @@
             TimeSpan timeSpan = TimeSpan.FromMinutes(timezoneOffsetMinutes);
 
             ProjectState.OnChange += StateHasChanged;
-            projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView, isEditorView, isClientView);
-            List<int> projectIds = projects.Select(p => p.ProjectId).ToList();
-            if (projects.Count > 0)
-            {
-                var messageDataByProject = await ChatService.GetUnreadMessageDataForProjectsAsync(projectIds, userId);
-                foreach (var project in projects)
-                {
-                    if (messageDataByProject.TryGetValue(project.ProjectId, out var data))
-                    {
-                        // 'data' is the Tuple<int, DateTime?, int> for this project
-                        project.countUnreadMessages = data.Item1;
-                        project.LastSentMessage = data.Item2.HasValue ? data.Item2.Value : null;
-                        project.MessageRequireApprovalCount = data.Item3;
-                    }
-                    else
-                    {
-                        // Handle case where no data was found for this project
-                        project.countUnreadMessages = 0;
-                        project.LastSentMessage = null;
-                        project.MessageRequireApprovalCount = 0;
-                    }
-                }
-                projects = projects
-                    .OrderByDescending(p => p.IsPinned)
-                    .ThenByDescending(p => p.countUnreadMessages) // sort by unread messages
-                    .ThenByDescending(p => p.LastSentMessage) // then by last message sent
-                    .ToList();
-            }
+            await GetChatList();
         }
         catch (Exception ex)
         {
@@ -195,7 +171,37 @@
             StateHasChanged();
         }
     }
-
+    private async Task GetChatList()
+    {
+        projects = await ProjectService.GetProjectsForChat(false, userId, isAdminView, isEditorView, isClientView);
+        List<int> projectIds = projects.Select(p => p.ProjectId).ToList();
+        if (projects.Count > 0)
+        {
+            var messageDataByProject = await ChatService.GetUnreadMessageDataForProjectsAsync(projectIds, userId);
+            foreach (var project in projects)
+            {
+                if (messageDataByProject.TryGetValue(project.ProjectId, out var data))
+                {
+                    // 'data' is the Tuple<int, DateTime?, int> for this project
+                    project.countUnreadMessages = data.Item1;
+                    project.LastSentMessage = data.Item2.HasValue ? data.Item2.Value : null;
+                    project.MessageRequireApprovalCount = data.Item3;
+                }
+                else
+                {
+                    // Handle case where no data was found for this project
+                    project.countUnreadMessages = 0;
+                    project.LastSentMessage = null;
+                    project.MessageRequireApprovalCount = 0;
+                }
+            }
+            projects = projects
+                .OrderByDescending(p => p.IsPinned)
+                .ThenByDescending(p => p.countUnreadMessages) // sort by unread messages
+                .ThenByDescending(p => p.LastSentMessage) // then by last message sent
+                .ToList();
+        }
+    }
     private string searchText = "";
     private async Task<IEnumerable<string>> SearchProjects(string value, CancellationToken token)
     {
@@ -294,11 +300,16 @@
         StateHasChanged();
 
     }
-     private async Task CloseChat()
+    private async Task CloseChat()
     {
         MudDialog.Close();
     }
+    private async Task MarkAllMessagesAsRead()
+    {
+        await ChatService.MarkAllMessagesForNewAdminAsRead(userId);
+        await GetChatList();
 
+    }
 
 
 }

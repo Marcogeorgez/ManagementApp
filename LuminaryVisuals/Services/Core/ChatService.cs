@@ -311,6 +311,54 @@ public class ChatService
             throw;
         }
     }
+    // Get All ChatReadStatus of Admin User and Set it be similar to new admin
+    public async Task MarkAllMessagesForNewAdminAsRead(string userId)
+    {
+        using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+        var allMessageIds = await dbContext.Messages
+            .Select(m => m.MessageId)
+            .ToListAsync();
+
+        var existingReadStatuses = await dbContext.ChatReadStatus
+            .Where(crs => crs.UserId == userId)
+            .ToListAsync();
+
+        var now = DateTime.UtcNow;
+        var existingMessageIds = existingReadStatuses.Select(crs => crs.MessageId).ToHashSet();
+
+        var newStatuses = new List<ChatReadStatus>();
+
+        foreach (var messageId in allMessageIds)
+        {
+            if (existingMessageIds.Contains(messageId))
+            {
+                var existingStatus = existingReadStatuses.First(crs => crs.MessageId == messageId);
+                if (!existingStatus.IsRead)
+                {
+                    existingStatus.IsRead = true;
+                    existingStatus.ReadTimestamp = now;
+                }
+            }
+            else
+            {
+                newStatuses.Add(new ChatReadStatus
+                {
+                    UserId = userId,
+                    MessageId = messageId,
+                    IsRead = true,
+                    ReadTimestamp = now
+                });
+            }
+        }
+
+        if (newStatuses.Any())
+        {
+            await dbContext.ChatReadStatus.AddRangeAsync(newStatuses);
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
 
     public async Task<int> GetUnreadMessageCount(string userId)
     {
