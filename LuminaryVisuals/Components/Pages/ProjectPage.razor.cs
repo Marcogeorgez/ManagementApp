@@ -1438,7 +1438,7 @@ public partial class ProjectPage : ComponentBase
 
             var parameters = new DialogParameters
             {
-                { "WorkingMonth", project.WorkingMonth }
+                { "Project", project}
             };
 
             var dialog = await DialogService.ShowAsync<WorkingMonthDialog>("", parameters);
@@ -1446,12 +1446,10 @@ public partial class ProjectPage : ComponentBase
 
             if (!result!.Canceled)
             {
-                project.WorkingMonth = (DateTime) result.Data!;
-                await UpdateProjectAsync(project);
+                var _project = result.Data as Project ?? throw new Exception("Error, _Project is null in Working Month Dialog in ProjectPage.razor");
+                await UpdateProjectAsync(_project);
                 Snackbar.Add("Saved Successfully", Severity.Success);
-
             }
-
         }
         catch (Exception ex)
         {
