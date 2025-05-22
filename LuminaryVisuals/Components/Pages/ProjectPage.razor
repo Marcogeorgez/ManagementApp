@@ -21,14 +21,14 @@
 
         <LoadingIndicator IsVisible="@_loadingIndicator" />
 
-        <MudDataGrid @ref=_dataGrid T="Project" SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid"
+        <MudDataGrid @ref=_dataGrid T="Project" SortMode="SortMode.Single" @key=_gridKey Class="project-data-grid" RowsPerPageChanged="SetRowPerPage"
         Style="zoom: 0.7;" Dense=true Hover="true" Bordered=false Breakpoint="Breakpoint.None" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" 
         Filterable=true ColumnsPanelReordering=false MultiSelection="true" ShowColumnOptions=false  
         @bind-SelectedItems="@SelectedProjects" SelectOnRowClick="false" Groupable
         ShowMenuIcon=false EditMode="DataGridEditMode.Form"  ReadOnly=false RowStyle="text-align:center;"  
         StartedEditingItem="@StartedEditingItem"
         CommittedItemChanges="@CommittedItemChanges" 
-        RowsPerPage="25"  FixedHeader FixedFooter QuickFilter="@QuickFilter" 
+        RowsPerPage="rowsPerPage"  FixedHeader FixedFooter QuickFilter="@QuickFilter" 
         Loading="@_loading" Items="@projects" RowClassFunc="@GetRowClass" >
             <ToolBarContent>
                 <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true >

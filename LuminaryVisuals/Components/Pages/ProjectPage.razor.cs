@@ -35,6 +35,8 @@ public partial class ProjectPage : ComponentBase
     private string _searchString = "";
     private string _currentUserId = "";
     private string _currentRole = "";
+    private int rowsPerPage = 25;
+    private bool isInitializingForCookies = true;
     private string EditTemplateCss => _currentRole == "Client" ? "d-none" : "d-block";
     private string? CircuitId;
     private List<UserRoleViewModel.UserProjectViewModel> Editors = [];
@@ -127,7 +129,6 @@ public partial class ProjectPage : ComponentBase
 
         if (CurrentUser == null)
         {
-            Console.WriteLine("currentUser is null");
             return;
         }
         _currentUserId = CurrentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
@@ -160,19 +161,25 @@ public partial class ProjectPage : ComponentBase
         await GetColumnsPresetPreferences();
         CircuitId = Guid.NewGuid().ToString();
         Broadcaster.Subscribe(CircuitId, HandleProjectsUpdated);
-
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _loading = false;
+            var temp = rowsPerPage;
+            rowsPerPage = await LocalStorage.GetItemAsync<int?>("rowsPerPagePP") ?? 25;
+            if(temp != rowsPerPage)
+            {
+                await _dataGrid.SetRowsPerPageAsync(rowsPerPage);
+            }
             await GetUserNotifications();
             await LoadProjects();
             _showFinishedProjects = await LocalStorage.GetItemAsync<bool>("showFinishedProjects");
             _showUpcomingProjects = await LocalStorage.GetItemAsync<bool>("showUpcomingProjects");
             ToggleFinishedProjects(_showFinishedProjects);
             ToggleUpcomingProjects(_showUpcomingProjects);
+            isInitializingForCookies = false;
             StateHasChanged();
         }
     }
@@ -1796,6 +1803,11 @@ public partial class ProjectPage : ComponentBase
 
         StateHasChanged();
     }
-
-
+    async Task SetRowPerPage(int rowsPerPage)
+    {
+        if(!isInitializingForCookies) // Only saves if user actually changed it not when loading page 
+        {
+            await LocalStorage.SetItemAsync("rowsPerPagePP", rowsPerPage);
+        }
+    }
 }
