@@ -462,6 +462,7 @@
         using var context = _contextFactory.CreateDbContext();
 
         var query = context.Projects
+        .Include(p => p.Client)
         .Include(p => p.PrimaryEditor)
         .Include(p => p.SecondaryEditor)
         .Include(p => p.PrimaryEditorDetails)
@@ -718,7 +719,7 @@
 
         foreach (var client in groupedByClient)
         {
-            var clientName = client.First().ClientName;
+            var clientName = client.First().Client.UserName;
             if (!clientSettings.TryGetValue(client.Key, out var settings))
             {
                 // Skip if no settings found for this client
