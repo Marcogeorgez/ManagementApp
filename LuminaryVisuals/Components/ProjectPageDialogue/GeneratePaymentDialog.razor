@@ -1,19 +1,22 @@
 ﻿@inject IDbContextFactory<ApplicationDbContext> _contextFactory;
 @inject IDialogService DialogService
+@if (Loading)
+{
+
+    <div class="" style="position: absolute;top: 50%; left: 50%; transform: translate(-50%); text-align: center; display:block; z-index: 5000;">
+        <MudCard Elevation="4">
+            <MudCardContent>
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+                <MudText Typo="Typo.h5" Color="Color.Default" Class="ma-5">Downloading, Please wait for few seconds.</MudText>
+            </MudCardContent>
+        </MudCard>
+    </div>
+}
+
+<MudOverlay Visible="Loading" Absolute DarkBackground="true" Style="z-index:1401;" />
 
 <MudDialog>
     <DialogContent>
-        @if(Loading)
-        {
-            <div class="" style="position: absolute;top: 50%; left: 50%; transform: translate(-50%); text-align: center; display:block; z-index: 5000;">
-                <MudCard>
-                    <MudCardContent>
-                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
-                        <MudText Typo="Typo.h5" Color="Color.Default" Class="ma-5">Downloading, Please wait for few seconds.</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </div>
-        }
 
         @if (isAdmin)
         {
@@ -178,6 +181,15 @@
                     <MudButton OnClick="ShowConfirmation" Color="Color.Warning" Variant="Variant.Outlined" Style="padding: 5px 36px;">Apply!</MudButton>
                 </MudItem>
             </MudStack>
+            <MudDivider Class="mb-2" />
+            <MudStack Row Class="my-3" Style="align-items: center;">
+                <MudItem xs="6">
+                    <MudText>Send Invoice to Management-Chat</MudText>
+                </MudItem>
+                <MudItem xs="6" Class="ml-auto d-flex justify-end">
+                    <MudButton OnClick="SentInvoiceToChat" Color="Color.Warning" Variant="Variant.Outlined" Style="padding: 5px 36px;">Send!</MudButton>
+                </MudItem>
+            </MudStack>
         }
         @if (isAdmin && ViewClient == "editors")
         {
@@ -288,8 +300,8 @@
         }
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel" Style="padding: 5px 36px;">Close</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit" >Download</MudButton>
+        <MudButton Variant="Variant.Outlined" Color=Color.Error OnClick="Cancel" Style="padding: 5px 36px;" Disabled="Loading">Close</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="Submit" Disabled="Loading">Download</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -692,7 +704,40 @@
     }
 
     [Inject] private InvoiceService InvoiceService { get; set; } = default!;
+    [Inject] private ChatService chatService { get; set; } = default!;
     [Inject] private PayoneerSettingsService PayoneerSettingsService { get; set; } = default!;
+    private async Task SentInvoiceToChat()
+    {
+        Loading = true;
+
+        var projects = selectedProjects.ToList();
+        var updatedByUserId = currentUserId;
+        // Get unique client IDs from projects
+        List<string> clientIds = projects.Select(p => p.ClientId).Distinct().ToList();
+
+        // Get Payoneer settings for all clients
+        Dictionary<string, PayoneerSettings> clientSettings = await PayoneerSettingsService.GetSettingsForClientsAsync(clientIds);
+
+        IEnumerable<IGrouping<string, Project>> groupedByClient = projects.GroupBy(p => p.ClientId);
+
+        foreach (var client in groupedByClient)
+        {
+            var clientName = client.First().Client.UserName;
+            Console.WriteLine($"CLIENT NAME IS: {clientName}");
+            var clientId = client.First().ClientId;
+            if (!clientSettings.TryGetValue(client.Key, out var settings))
+            {
+                // Skip if no settings found for this client
+                Snackbar.Add($"User {clientName} does not have Payoneer settings. We won't be able to generate the invoice file for him.", Severity.Warning);
+                continue;
+            }
+            var messageToSend = await GenerateInvoicePDF(client.ToList(), settings);
+            await chatService.AddMessageAsync(clientId, updatedByUserId, messageToSend);
+            Snackbar.Add($"Successfully sent invoice to {clientName}.", Severity.Success);
+        }
+        Loading = false;
+
+    }
     private async Task<string> GenerateCsvContentFilteredPayoneer(List<Project> projects)
     {
         // Get unique client IDs from projects
@@ -728,7 +773,8 @@
             }
 
             decimal clientTotal = client.Sum(p => p.ClientBillableAmount ?? 0);
-            var projectDescription = GenerateProjectDescription(client.ToList(), settings);
+            var projectDescription = GenerateProjectDescription(client.ToList(),settings.Currency);
+            projectDescription += $"   Total: ${Math.Round(clientTotal, MidpointRounding.AwayFromZero)}";
             csv.AppendLine(string.Join(",",
                 EscapeCsvValue(settings.CompanyName!),
                 EscapeCsvValue(settings.CompanyUrl ?? ""),
@@ -737,19 +783,25 @@
                 EscapeCsvValue(settings.Email!),
                 $"{Math.Round(clientTotal, MidpointRounding.AwayFromZero)}",
                 settings.Currency,
-                (await projectDescription),
+               EscapeCsvValue(projectDescription),
                 DateTime.Now.AddDays(7).ToString("dd/MM/yyyy")
             ));
         }
         return csv.ToString();
     }
+    private string GenerateProjectDescription(List<Project> projects, string currency)
+    {
+        var projectDescriptions = projects.Select(p => $"{p.ProjectName}: {Math.Round(p.ClientBillableAmount ?? 0, MidpointRounding.AwayFromZero)}").ToList();
+        return string.Join(" ", projectDescriptions);
+    }
     // This generates the description for the Payoneer CSV by combining the projects and returning the total amount.
-    private async Task<string> GenerateProjectDescription(List<Project> projects, PayoneerSettings? setting)
+    private async Task<string> GenerateInvoicePDF(List<Project> projects, PayoneerSettings? setting)
     {
         if (projects == null || projects.Count == 0)
             return string.Empty;
-        var url = await InvoiceService.GenerateInvoicePdfAsync(projects, setting);
-        url += " Please download within 120 days as the files will get deleted.";
+        var url = "Hello, I hope you are doing great, this is the invoice for the payment request sent on Payoneer \n"; 
+        url += await InvoiceService.GenerateInvoicePdfAsync(projects, setting);
+        url += "\nPlease download within 120 days as the file will get deleted.";
         return url;
     }
     private static string EscapeCsvValue(string value)
