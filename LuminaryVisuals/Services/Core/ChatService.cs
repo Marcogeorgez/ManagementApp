@@ -475,11 +475,6 @@ public class ChatService
         return blockedWords;
     }
 
-
-
-
-
-
     /// <summary>
     /// Ensures that the admin chat exists for the user and only 1 such chat exists.
     /// </summary>
