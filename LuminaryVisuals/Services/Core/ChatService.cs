@@ -280,8 +280,7 @@ public class ChatService
             var messagesData = await context.Messages
                 .Where(m =>
                     ( m.Chat.ProjectId.HasValue && positiveProjectIds.Contains(m.Chat.ProjectId.Value) ) ||
-                    ( negativeChatIds.Contains(m.ChatId) ) &&
-                    ( m.UserId != userId )
+                    ( negativeChatIds.Contains(m.ChatId))
                 )
                 .GroupBy(m => m.Chat.ProjectId.HasValue ? m.Chat.ProjectId.Value : -m.ChatId)
                 .Select(g => new
