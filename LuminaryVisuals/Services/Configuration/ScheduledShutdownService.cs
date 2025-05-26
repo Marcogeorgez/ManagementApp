@@ -28,14 +28,14 @@ public class ScheduledShutdownService : BackgroundService
             _shutdownTime = new TimeSpan(23, 59, 0);
         }
 
-        if (!int.TryParse(intervalEnv, out _shutdownIntervalDays) || _shutdownIntervalDays <= 0)
+        if (!int.TryParse(intervalEnv, out _shutdownIntervalDays))
         {
             _logger.LogWarning($"Invalid or missing {ShutdownIntervalDaysEnv}, defaulting to once every 7 days.");
             _shutdownIntervalDays = 7;
         }
 
         // Initialize last shutdown date to something in the past
-        _lastShutdownDate = DateTime.UtcNow;
+        _lastShutdownDate = DateTime.MinValue;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
