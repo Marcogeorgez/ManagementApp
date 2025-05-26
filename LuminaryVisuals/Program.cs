@@ -259,7 +259,7 @@ builder.Services.AddServerSideBlazor()
     .AddCircuitOptions(options =>
     {
         options.DisconnectedCircuitMaxRetained = 100; // Optional: Limit the number of disconnected circuits retained.
-        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(120);
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(30);
     });
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();

@@ -8,7 +8,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DisableBrowserLinkCss>true</DisableBrowserLinkCss>
-
+    <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Documentation\**" />

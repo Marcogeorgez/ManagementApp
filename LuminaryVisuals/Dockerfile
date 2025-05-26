@@ -26,6 +26,14 @@ EXPOSE 8080
 # Copy published files from build stage
 COPY --from=publish /app/publish .
 
+# Set environment variables for GC tuning
+# Using workstation GC (more aggressive about releasing memory)
+ENV DOTNET_gcServer=0
+# Force immediate memory return to OS
+ENV DOTNET_GCRetainVM=0
+# Enable conservative memory mode (releases memory more aggressively)
+ENV DOTNET_GCConserveMemory=7
+
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 ENV DOTNET_RUNNING_IN_CONTAINER=true

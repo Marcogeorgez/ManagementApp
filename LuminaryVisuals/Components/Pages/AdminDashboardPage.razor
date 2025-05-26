@@ -767,8 +767,9 @@
     }
     private async Task SaveCurrencyValue()
     {
-        try{
-            if (_timer.Enabled)
+        try
+        {
+            if (_timer?.Enabled == true )
             {
                 _timer.Stop();
             }
