@@ -264,6 +264,8 @@ builder.Services.AddServerSideBlazor()
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
 builder.Services.AddScoped<AntiforgeryStateProvider, WorkaroundEndpointAntiforgeryStateProvider>();
+// Shutdown service to gracefully shutdown the app at a specific time
+builder.Services.AddHostedService<ScheduledShutdownService>();
 var environment = builder.Environment;
 // Gets the Sentry DSN from environment variables or configuration
 var sentryDSN = Environment.GetEnvironmentVariable("SentryDSN") ?? builder.Configuration.GetConnectionString("SentryDSN");
