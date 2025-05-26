@@ -34,7 +34,7 @@ public class ScheduledShutdownService : BackgroundService
             _shutdownIntervalDays = 7;
         }
 
-        // Initialize last shutdown date to something in the past
+        // Initialize last shutdown date to date of today to prevent immediate shutdown on first run
         _lastShutdownDate = DateTime.UtcNow.Date;
     }
 
