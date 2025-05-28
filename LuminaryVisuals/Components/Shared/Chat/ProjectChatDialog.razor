@@ -346,6 +346,27 @@
     }
     private async void HandleProjectChange()
     {
+        // Dispose current subscription to re-subscribe with the new project
+        
+        _subscription.Dispose();
+        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
+        {
+            if (projectId == Project.ProjectId) 
+            {
+                await InvokeAsync(async () =>
+                {
+                    // Reset pagination state
+                    currentPage = 1;
+                    hasMoreMessages = true;
+
+                    // Clear existing messages
+                    messages.Clear();
+                    await LoadMessages(true);
+                    await MarkMessagesAsRead();
+                });
+            }
+        });
+
         // Immediately reload messages whenever the project changes
         await LoadMessages(true);  
         await MarkMessagesAsRead();
@@ -363,8 +384,7 @@
         await MarkMessagesAsRead();
         _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
         {
-            // ProjectId is passed to the handler, not a message object
-            if (projectId == Project.ProjectId) // This is the correct comparison
+            if (projectId == Project.ProjectId) 
             {
                 await InvokeAsync(async () =>
                 {
