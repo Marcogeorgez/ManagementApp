@@ -30,4 +30,8 @@ public class LoadingService
     {
         OnLoadingChanged += action;
     }
+    public void Unsubscribe(Action<bool> action)
+    {
+        OnLoadingChanged -= action;
+    }
 }

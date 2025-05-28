@@ -47,7 +47,6 @@ public class ProjectService
                 .Include(p => p.Client)
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
-                .Include(p => p.Revisions)
                 .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
 
@@ -74,11 +73,14 @@ public class ProjectService
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.TryGetValue(project.SecondaryEditorId, out string? SecondaryEditorName)
                     ? SecondaryEditorName!
                     : "N/A";
+                project.Description = null;
+                project.MusicPreference = null;
+                project.Deliverables = null;
             }
-
             return projects;
         }
     }
+
     public async Task<List<Project>> GetProjectsDateRangeCalenderAsync(bool isArchived, DateRange dateRange, bool isAdmin, string userId)
     {
         using (var context = _contextFactory.CreateDbContext())
@@ -113,7 +115,6 @@ public class ProjectService
         using (var context = _contextFactory.CreateDbContext())
         {
             var project = await context.Projects
-                .AsTracking()
                 .Where(p => p.ProjectId == projectId)
                 .Include(p => p.Archive)
                 .Include(p => p.Client)
@@ -171,7 +172,6 @@ public class ProjectService
                 .Include(p => p.Client)
                 .Include(p => p.PrimaryEditor)
                 .Include(p => p.SecondaryEditor)
-                .Include(p => p.Revisions)
                 .OrderBy(p => p.InternalOrder)
                 .ToListAsync();
 
@@ -193,6 +193,9 @@ public class ProjectService
                 {
                     project.SecondaryEditorDetails = null;
                 }
+                project.Description = null;
+                project.MusicPreference = null;
+                project.Deliverables = null;
             }
             return projects;
         }
@@ -205,10 +208,14 @@ public class ProjectService
             var projects = await context.Projects
             .Where(p => p.IsArchived == isArchived && p.ClientId == UserId)
             .Include(p => p.Archive)
-            .Include(p => p.Revisions)
             .OrderBy(p => p.ExternalOrder)
             .ToListAsync();
-
+            projects.ForEach(p =>
+            {
+                p.Description = null;
+                p.MusicPreference = null;
+                p.Deliverables = null;
+            });
             return projects;
         }
     }
