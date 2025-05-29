@@ -315,8 +315,8 @@ The Bride was married like I said before, so this wedding was quite special beca
                 @(isViewMode ? "View Mode" : "Edit Mode")
             </MudSwitch>
         </MudItem>
-        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Close</MudButton>
-        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large">Save</MudButton>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large" Disabled="Loading">Close</MudButton>
+        <MudButton OnClick="@Save" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large" Disabled="Loading">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -331,6 +331,7 @@ The Bride was married like I said before, so this wedding was quite special beca
     bool isClient = false;
     bool isViewMode = true;
     bool _isToggle = false;
+    bool Loading;
     private async Task ViewMode()
     {
         _isToggle = true;
@@ -413,8 +414,9 @@ The Bride was married like I said before, so this wedding was quite special beca
     [Inject] private ProjectService projectServices { get; set; }
     private async Task UpdateProjectAsync(Project project)
     {
+        Loading = true;
         await projectServices.UpdateProjectAsync(project, currentUserId);
-
+        Loading = false;
     }
     private void Cancel()
     {

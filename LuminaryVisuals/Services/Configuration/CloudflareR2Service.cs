@@ -29,18 +29,13 @@ public class CloudflareR2Service
             // Generate a unique filename
             var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{cleanedFileName}" ?? $"{Guid.NewGuid()}{Path.GetExtension(cleanedFileName)}";
 
-            // URL encode the file name
-            string encodedFileName = WebUtility.UrlEncode(fileName);
-
-            // After encoding, replace the encoded em dash (%E2%80%94) with the actual em dash character
-            encodedFileName = encodedFileName.Replace("%E2%80%94", "—");
             // Open file stream
             await using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB limit
 
             var request = new PutObjectRequest
             {
                 BucketName = _settings.BucketName,
-                Key = encodedFileName,
+                Key = fileName,
                 InputStream = fileStream,
                 ContentType = file.ContentType,
                 DisablePayloadSigning = true
@@ -53,11 +48,11 @@ public class CloudflareR2Service
             // Construct public URL
             if (_settings.Env != "development")
             {
-                publicUrl = $"https://{_settings.publicURL}/{encodedFileName}";
+                publicUrl = $"https://{_settings.publicURL}/{fileName}";
             }
             else
             {
-                publicUrl = $"https://pub-{_settings.publicURL}.r2.dev/{encodedFileName}";
+                publicUrl = $"https://pub-{_settings.publicURL}.r2.dev/{fileName}";
             }
             return publicUrl;
         }

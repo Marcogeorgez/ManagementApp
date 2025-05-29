@@ -363,7 +363,9 @@
                             @if (context.Item.Status != ProjectStatus.Upcoming && (string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Resolution) ||
                     string.IsNullOrEmpty(context.Item.ProjectSpecifications?.Size) ||
                     string.IsNullOrEmpty(context.Item.ProjectSpecifications?.CameraNumber) ||
-                    string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile)))
+                    string.IsNullOrEmpty(context.Item.ProjectSpecifications?.ColorProfile) ||
+                    string.IsNullOrEmpty(context.Item.ProjectSpecifications?.AudioDetails) ||
+                    string.IsNullOrEmpty(context.Item.Deliverables)))
                             {
                                 <div class="d-flex gap-2 flex-row  justify-center align-center">
 
