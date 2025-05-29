@@ -3,7 +3,9 @@
 using LuminaryVisuals.Data;
 using LuminaryVisuals.Data.Entities;
 using LuminaryVisuals.Models;
+using LuminaryVisuals.Services.Configuration;
 using LuminaryVisuals.Services.Events;
+using LuminaryVisuals.Services.Helpers;
 using LuminaryVisuals.Services.Mail;
 using LuminaryVisuals.Services.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +23,14 @@ public class ProjectService
     private readonly CircuitUpdateBroadcaster _broadcaster;
     private readonly INotificationService _notificationService;
     private readonly LoggingHours loggingHours;
+    private readonly CloudflareR2Service cloudflareR2Service;
     private readonly ChatService chatService;
     private static bool IsConcurrencyConflict(DbUpdateException ex) => ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505";
 
     // Check if the exception is due to a concurrency conflict (e.g., duplicate key)
 
     public ProjectService(IDbContextFactory<ApplicationDbContext> context, ILogger<ProjectService> logger, ChatService chatService,
-        CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService, LoggingHours loggingHours)
+        CircuitUpdateBroadcaster projectUpdateService, INotificationService notificationService, LoggingHours loggingHours, CloudflareR2Service cloudflareR2Service)
     {
         _contextFactory = context;
         _logger = logger;
@@ -35,6 +38,7 @@ public class ProjectService
         _notificationService = notificationService;
         this.chatService = chatService;
         this.loggingHours = loggingHours;
+        this.cloudflareR2Service = cloudflareR2Service;
     }
 
     public async Task<List<Project>> GetProjectsAsync(bool isArchived)
@@ -73,9 +77,7 @@ public class ProjectService
                 project.SecondaryEditorName = project.SecondaryEditorId != null && userNames.TryGetValue(project.SecondaryEditorId, out string? SecondaryEditorName)
                     ? SecondaryEditorName!
                     : "N/A";
-                project.Description = null;
-                project.MusicPreference = null;
-                project.Deliverables = null;
+
             }
             return projects;
         }
@@ -193,9 +195,7 @@ public class ProjectService
                 {
                     project.SecondaryEditorDetails = null;
                 }
-                project.Description = null;
-                project.MusicPreference = null;
-                project.Deliverables = null;
+               
             }
             return projects;
         }
@@ -210,12 +210,6 @@ public class ProjectService
             .Include(p => p.Archive)
             .OrderBy(p => p.ExternalOrder)
             .ToListAsync();
-            projects.ForEach(p =>
-            {
-                p.Description = null;
-                p.MusicPreference = null;
-                p.Deliverables = null;
-            });
             return projects;
         }
     }
@@ -572,9 +566,15 @@ public class ProjectService
                                 _project.ProgressBar = 0;
                             }
                         }
+                        revision.Content = await Base64ImageProcessor.ReplaceBase64ImagesWithLinks(revision.Content, cloudflareR2Service);
+
                     }
 
                 }
+
+                _project.Deliverables = await Base64ImageProcessor.ReplaceBase64ImagesWithLinks(_project.Deliverables,cloudflareR2Service);
+                _project.Description = await Base64ImageProcessor.ReplaceBase64ImagesWithLinks(_project.Description, cloudflareR2Service);
+                _project.MusicPreference = await Base64ImageProcessor.ReplaceBase64ImagesWithLinks(_project.MusicPreference, cloudflareR2Service);
 
 
                 await context.SaveChangesAsync();
