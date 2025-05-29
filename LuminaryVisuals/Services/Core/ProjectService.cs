@@ -538,6 +538,7 @@ public class ProjectService
                             // Trim to remove any leading/trailing spaces and check if the content is just the empty paragraph or contains only whitespace
                             return string.IsNullOrWhiteSpace(content) || content.Trim() == "<p><br></p>";
                         }
+                        revision!.Content = await Base64ImageProcessor.ReplaceBase64ImagesWithLinks(revision.Content, cloudflareR2Service);
 
                         if (existingRevision != null)
                         {
@@ -566,7 +567,6 @@ public class ProjectService
                                 _project.ProgressBar = 0;
                             }
                         }
-                        revision.Content = await Base64ImageProcessor.ReplaceBase64ImagesWithLinks(revision.Content, cloudflareR2Service);
 
                     }
 
