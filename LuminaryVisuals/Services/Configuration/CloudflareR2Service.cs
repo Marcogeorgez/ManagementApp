@@ -25,9 +25,9 @@ public class CloudflareR2Service
         {
             _logger.LogInformation($"Started Uploading file {file.Name}");
 
-            var cleanedFileName = file.Name.Trim().Replace('—', '-'); // Replace em dash with hyphen
+            var name = file.Name;
             // Generate a unique filename
-            var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{cleanedFileName}" ?? $"{Guid.NewGuid()}{Path.GetExtension(cleanedFileName)}";
+            var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{name}" ?? $"{Guid.NewGuid()}{Path.GetExtension(name)}";
 
             // Open file stream
             await using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB limit
