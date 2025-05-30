@@ -2,7 +2,6 @@
 using Amazon.S3.Model;
 using LuminaryVisuals.Models;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Net;
 
 namespace LuminaryVisuals.Services.Configuration;
 public class CloudflareR2Service
@@ -28,7 +27,7 @@ public class CloudflareR2Service
             var name = file.Name;
             // Generate a unique filename
             var fileName = $"{DateTime.UtcNow.ToString("dd-HHmmss")}—{name}" ?? $"{Guid.NewGuid()}{Path.GetExtension(name)}";
-
+            string encodedUrl = Uri.EscapeDataString(fileName);
             // Open file stream
             await using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB limit
 
@@ -48,11 +47,11 @@ public class CloudflareR2Service
             // Construct public URL
             if (_settings.Env != "development")
             {
-                publicUrl = $"https://{_settings.publicURL}/{fileName}";
+                publicUrl = $"https://{_settings.publicURL}/{encodedUrl}";
             }
             else
             {
-                publicUrl = $"https://pub-{_settings.publicURL}.r2.dev/{fileName}";
+                publicUrl = $"https://pub-{_settings.publicURL}.r2.dev/{encodedUrl}";
             }
             return publicUrl;
         }

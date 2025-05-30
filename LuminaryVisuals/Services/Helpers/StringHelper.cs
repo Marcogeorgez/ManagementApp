@@ -41,23 +41,10 @@ public static class StringHelper
                text.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
                Regex.IsMatch(text, @"\.[a-z]{2,}$", RegexOptions.IgnoreCase);
     }
-    private static readonly HashSet<string> AllowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
-        ".svg", ".webp", ".ico", ".heic", ".heif", ".raw", ".psd",
-        ".dds", ".jp2", ".j2k", ".jpf", ".eps", ".ai",
-        ".pdf"
-    };
     private static readonly Regex UrlRegex = new Regex(
-    $@"(https?:\/\/[^\s""']+?({BuildExtensionGroup()})(\?[^\s""']*)?)",
+    @"https?:\/\/[^\s""']+",
     RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private static string BuildExtensionGroup()
-    {
-        // Join extensions like: .jpg|.jpeg|.png --> (?:\.jpg|\.jpeg|\.png)
-        var escaped = AllowedExtensions.Select(Regex.Escape);
-        return @"(?: " + string.Join("|", escaped) + ")";
-    }
     /// <summary>
     /// Splits input into text and links while retaining their order.
     /// </summary>
