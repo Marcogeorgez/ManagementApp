@@ -41,35 +41,43 @@ public static class StringHelper
                text.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
                Regex.IsMatch(text, @"\.[a-z]{2,}$", RegexOptions.IgnoreCase);
     }
+    private static readonly HashSet<string> AllowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
+        ".svg", ".webp", ".ico", ".heic", ".heif", ".raw", ".psd",
+        ".dds", ".jp2", ".j2k", ".jpf", ".eps", ".ai",
+        ".pdf"
+    };
+    private static readonly Regex UrlRegex = new Regex(
+    $@"(https?:\/\/[^\s""']+?({BuildExtensionGroup()})(\?[^\s""']*)?)",
+    RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static string BuildExtensionGroup()
+    {
+        // Join extensions like: .jpg|.jpeg|.png --> (?:\.jpg|\.jpeg|\.png)
+        var escaped = AllowedExtensions.Select(Regex.Escape);
+        return @"(?: " + string.Join("|", escaped) + ")";
+    }
     /// <summary>
     /// Splits input into text and links while retaining their order.
     /// </summary>
     public static IEnumerable<string> GetTextAndLinks(string input)
     {
-        string urlPattern = @"(https?://[^\s]+|www\.[^\s]+|[^\s]+\.com|[^\s]+\.org|[^\s]+\.net)";
-        Regex regex = new Regex(urlPattern, RegexOptions.IgnoreCase);
-        MatchCollection matches = regex.Matches(input);
+        MatchCollection matches = UrlRegex.Matches(input);
 
         int currentIndex = 0;
         foreach (Match match in matches)
         {
-            // Yield preceding text as plain text
             if (match.Index > currentIndex)
             {
-                // from current Index till match.Index
                 yield return input[currentIndex..match.Index];
             }
 
-            // Yield the matched URL with scheme ensured
-            if (IsLink(match.Value))
-            {
-                yield return EnsureHttps(match.Value);
-            }
+            yield return match.Value;
 
             currentIndex = match.Index + match.Length;
         }
 
-        // Yield any remaining text after the last match
         if (currentIndex < input.Length)
         {
             yield return input[currentIndex..];
