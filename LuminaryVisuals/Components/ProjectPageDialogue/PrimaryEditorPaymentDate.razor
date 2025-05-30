@@ -4,7 +4,7 @@
                            Variant="Variant.Outlined"
                            Date="@(_PrimaryEditorPaymentDate )"
                            DateChanged="@(date => _PrimaryEditorPaymentDate = date ?? null)"
-                           Class="mt-3" Clearable="true"
+                           Class="" Clearable="true"
                            Required="false" />
     </DialogContent>
     <DialogActions>
@@ -26,5 +26,9 @@
     }
 
     private void Cancel() => MudDialog.Cancel();
-
 }
+<style>
+    .mud-dialog-content{
+        min-height: 90px;
+    }
+</style>

@@ -4,7 +4,7 @@
                        Variant="Variant.Outlined"
                        Date="@(_SecondaryEditorPaymentDate)"
                        DateChanged="@(date => _SecondaryEditorPaymentDate = date ?? null )"
-                       Class="mt-3" Clearable="true"
+                       Class="" Clearable="true"
                        Required="false" />
     </DialogContent>
     <DialogActions>
@@ -16,13 +16,15 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
     [Parameter] public DateTime? _SecondaryEditorPaymentDate { get; set; }
-
     private void Submit()
     {
         MudDialog.Close(DialogResult.Ok(_SecondaryEditorPaymentDate.HasValue
                     ? DateTime.SpecifyKind(_SecondaryEditorPaymentDate.Value, DateTimeKind.Utc) : (DateTime?)null));
     }
-
     private void Cancel() => MudDialog.Cancel();
-
 }
+<style>
+    .mud-dialog-content {
+        min-height: 90px;
+    }
+</style>
