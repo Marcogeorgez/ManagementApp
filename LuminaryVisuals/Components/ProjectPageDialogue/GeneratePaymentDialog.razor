@@ -525,13 +525,34 @@
         {
             query = query.Where(p => p.WorkingMonth < EndDate.Value);
         }
+
         if (ViewClient == "editors")
         {
-            query = query.Where(p =>
-                (editorPaid == false ? p.PrimaryEditorDetails.DatePaidEditor == null : p.PrimaryEditorDetails.DatePaidEditor != null) ||
-                (editorPaid == false ? p.SecondaryEditorDetails.DatePaidEditor == null : p.SecondaryEditorDetails.DatePaidEditor != null)
-            );
+            // Filter for editors based on payment status (editorPaid)
+            // If any users are selected we filter by those users 
+            // else we filter by either PrimaryEditorDetails or SecondaryEditorDetails based on project payment status
+            if (selectedUsers != null && selectedUsers.Any())
+            {
+                var selectedUserIds = selectedUsers.Select(u => u.Id).ToList();
+
+                query = query.Where(p =>
+                    (p.PrimaryEditorId != null && selectedUserIds.Contains(p.PrimaryEditorId) &&
+                     (editorPaid == false ? p.PrimaryEditorDetails.DatePaidEditor == null : p.PrimaryEditorDetails.DatePaidEditor != null))
+                    ||
+                    (p.SecondaryEditorId != null && selectedUserIds.Contains(p.SecondaryEditorId) &&
+                     (editorPaid == false ? p.SecondaryEditorDetails.DatePaidEditor == null : p.SecondaryEditorDetails.DatePaidEditor != null))
+                );
+            }
+            else
+            {
+                query = query.Where(p =>
+                    (editorPaid == false ? p.PrimaryEditorDetails.DatePaidEditor == null : p.PrimaryEditorDetails.DatePaidEditor != null)
+                    ||
+                    (editorPaid == false ? p.SecondaryEditorDetails.DatePaidEditor == null : p.SecondaryEditorDetails.DatePaidEditor != null)
+                );
+            }
         }
+
         query = query.Where(p => p.IsArchived == false);
         // Execute the query
         projects = await query.ToListAsync();
