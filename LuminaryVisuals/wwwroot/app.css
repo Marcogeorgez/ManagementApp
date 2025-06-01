@@ -1574,7 +1574,7 @@ tr.mud-table-row.drop-target > td, .drop-target {
     display: block;
     margin: 20px;
     position: fixed;
-    top: 60px;
+    top: 100px;
     align-self: center;
     z-index: 10;
     background: #391801;
