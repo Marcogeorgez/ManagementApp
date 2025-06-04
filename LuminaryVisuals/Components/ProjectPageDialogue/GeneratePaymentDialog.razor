@@ -459,7 +459,12 @@
         {
             // Set EndDate to the last day of the selected month
             EndDate = new DateTime(date.Value.Year, date.Value.Month, 1)
-                .AddMonths(1).AddDays(-1);
+                .AddMonths(1)
+                .AddDays(-1)
+                .AddHours(23)
+                .AddMinutes(59)
+                .AddSeconds(59);
+
 
             // Ensure StartDate is not after EndDate
             if (StartDate.HasValue && StartDate > EndDate)
