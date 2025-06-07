@@ -17,14 +17,20 @@
     <MudContainer Class="chat-container" Gutters=false >
         <MudPaper Elevation="4" Class="@GetChatPanel()">
             <MudPaper Elevation="3" Class="@GetChatHeader()" Outlined="true">
-                <MudIconButton  Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
-                <button @onclick="() => OpenDialogFromChat(Project)">
-                    <MudText Typo="Typo.h6" Class="chat-title">
-                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
-                        @( isAdminView && Project.ProjectId < 0 ? Project.Client.UserName : Project.ProjectName)
-                    </MudText>
-                </button>
+                <MudTooltip Arrow Text="Go Back">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
+                </MudTooltip>
+                <MudTooltip Arrow Text="Open Project Brief">
+                    <button @onclick="() => OpenDialogFromChat(Project)">
+                        <MudText Typo="Typo.h6" Class="chat-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
+                            @( isAdminView && Project.ProjectId < 0 ? Project.Client.UserName : Project.ProjectName)
+                        </MudText>
+                    </button>
+                </MudTooltip>
+                <MudTooltip Arrow Text="Close">
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
+                </MudTooltip>
             </MudPaper>
 
             <MudContainer Class="chat-content" Gutters="false" 
@@ -187,7 +193,6 @@
                         Please discuss here all details related to this project except payment issues. <br/> 
                         <span style="text-align: center;   display: block;">For payment related issues please use the direct chat with the administrator.</span>
                     </div>
-
                     @if (hasMoreMessages && !initialLoading)
                     {
                         <MudButton class="load-more-button" Style="flex: 1 0 auto; width: 50%; transform: translate(50%);" Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMoreButtonClick" disabled="@_isLoadingMore">

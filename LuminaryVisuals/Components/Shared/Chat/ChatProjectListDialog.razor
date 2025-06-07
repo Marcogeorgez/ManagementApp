@@ -14,7 +14,9 @@
             </MudText>
             @if(isAdminView)
             {
-                <MudIconButton OnClick="MarkAllMessagesAsRead" Icon="@Icons.Material.Filled.MarkChatRead" Color="Color.Tertiary" />
+                <MudTooltip Arrow Text="Mark all messages as read">                    
+                    <MudIconButton OnClick="MarkAllMessagesAsRead" Icon="@Icons.Material.Filled.MarkChatRead" Color="Color.Tertiary" />
+                </MudTooltip>
             }
             <MudAutocomplete T="string" Label="Search projects" @bind-Value="searchText"
             SearchFunc="@SearchProjects" ResetValueOnEmptyText="true" AdornmentIcon="@Icons.Material.Filled.Search"
