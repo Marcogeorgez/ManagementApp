@@ -2,6 +2,12 @@
     font-family: 'Inter', sans-serif;
     font-size: 100%;
 }
+
+#components-reconnect-modal {
+    animation-name: fadeIn;
+    animation-duration: 2s;
+    color: red !important; 
+}
 :root {
     --info-color: #002c55 !important;
     --error-color: #7d0100 !important;
@@ -384,9 +390,7 @@ th.mud-table-cell.sticky-left:hover {
     flex-wrap: wrap;
     flex: auto;
 }
-#components-reconnect-modal {
-    color: red !important; /* Changes the text color */
-}
+
 :root .mud-dialog.mud-dialog-width-sm {
     border-radius: 20px !important;
 }
@@ -1652,3 +1656,16 @@ tr.mud-table-row.drop-target > td, .drop-target {
     flex-direction: column-reverse;
     overflow-anchor: auto !important;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
