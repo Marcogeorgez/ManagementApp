@@ -21,8 +21,6 @@ window.getTimezoneOffset = function () {
     return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
 };
 
-
-
 function showLoadingIndicator() {
     const overlay = document.getElementById("loading-overlay");
     if (overlay) {
@@ -37,11 +35,8 @@ function hideLoadingIndicator() {
     }
 }
 
-
-
 let audioContext;
 let audioBuffer;
-
 async function loadAudio() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -51,14 +46,22 @@ async function loadAudio() {
 }
 
 function playNotificationSound() {
-    if (!audioContext) return;
+    if (!audioContext || !audioBuffer) return;
 
-    let source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    source.start();
+    try {
+        let source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start();
+    }
+    catch (err) {
+        if (err.name === "NotAllowedError") {
+            console.debug("Audio playback not allowed until user interaction.");
+        } else {
+            console.error("Audio playback failed:", err);
+        }
+    }
 }
-
 // Ensure audio context starts after user interaction
 document.addEventListener("click", function () {
     if (!audioContext) {
@@ -152,7 +155,6 @@ function urlB64ToUint8Array(base64String) {
     }
     return outputArray;
 }
-
 
 window.triggerInstallPrompt = function () {
     if (window.deferredPrompt) {
