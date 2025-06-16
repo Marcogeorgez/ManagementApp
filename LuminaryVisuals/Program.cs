@@ -394,7 +394,11 @@ using (var scope = app.Services.CreateScope())
 
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
-
+app.Use((context, next) =>
+{
+    context.Request.Scheme = "https";
+    return next();
+});
 app.UseStaticFiles(); // For now till Microsoft fix the issue with serving videos with MapStaticAssests
 app.MapStaticAssets();
 app.UseRouting();
