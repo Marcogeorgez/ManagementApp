@@ -166,6 +166,7 @@ OpenMiniOnHover="true"  Elevation="0" >
         if (firstRender)
         {
             await JS.InvokeVoidAsync("loadAudio");
+
             await InvokeAsync(StateHasChanged);
             await UpdateLayoutForScreenSize();
             await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
