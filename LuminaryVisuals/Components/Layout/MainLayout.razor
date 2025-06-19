@@ -26,64 +26,64 @@
 <MudSnackbarProvider />
 <AppUserProvider>
     <CascadingValue Value="@SetShowBanner" Name="SetBannerVisibility">
-    <CascadingValue Value="_drawerOpen">
-        <MudLayout Style="position:absolute;">
-            @if (_showSplashScreen && !IsStaticSSR)
-            {
-                <SplashScreen />
-            }
-            @if (!IsGuestPage())
-            {
-                <NavMenu @rendermode="InteractiveServer" />
-            }
-            @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
-            @if (IsStaticSSR)
-            {
-                @Body
-            }
-            else
-            {
-                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
-                    @Body
-                </MudHidden>
-                <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
-                    @Body
-                </MudHidden>
-            }
-            @if (_showBanner)
-            {
-                <MudPaper Elevation="3" Class="pa-4 mb-4 popup-banner">
-                    <MudGrid>
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.body1">Would you like to receive notifications on this device?</MudText>
-                        </MudItem>
-                        <MudItem xs="12" Class="d-flex gap-2 mt-2">
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SubscribeToPush">
-                                Yes, enable notifications
-                            </MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeclineNotifications">
-                                No, thanks
-                            </MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AskLater">
-                                Ask me later
-                            </MudButton>
-                        </MudItem>
-                    </MudGrid>
-                </MudPaper>
-            }
-
-            <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
-                <AntiforgeryToken />
-                <input type="hidden" name="ReturnUrl" value="" />
-            </form>
-            <script>
-                function submitForm(formId) {
-                document.getElementById(formId).submit();
+        <CascadingValue Value="_drawerOpen">
+            <MudLayout Style="position:absolute;">
+                @if (_showSplashScreen && !IsStaticSSR)
+                {
+                    <SplashScreen />
                 }
-            </script>
+                @if (!IsGuestPage())
+                {
+                    <NavMenu @rendermode="InteractiveServer" />
+                }
+                @* Conditionally render @Body based on IsStaticSSR to ensure login flow *@
+                @if (IsStaticSSR)
+                {
+                    @Body
+                }
+                else
+                {
+                    <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+                        @Body
+                    </MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+                        @Body
+                    </MudHidden>
+                }
+                @if (_showBanner)
+                {
+                    <MudPaper Elevation="3" Class="pa-4 mb-4 popup-banner">
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.body1">Would you like to receive notifications on this device?</MudText>
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex gap-2 mt-2">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SubscribeToPush">
+                                    Yes, enable notifications
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeclineNotifications">
+                                    No, thanks
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AskLater">
+                                    Ask me later
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                }
 
-        </MudLayout>
-    </CascadingValue>
+                <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="" />
+                </form>
+                <script>
+                    function submitForm(formId) {
+                    document.getElementById(formId).submit();
+                    }
+                </script>
+
+            </MudLayout>
+        </CascadingValue>
     </CascadingValue>
 </AppUserProvider>
 
@@ -98,20 +98,28 @@
     }
     private async Task SubscribeToPush()
     {
-        bool subscriptionSucceeded = await JS.InvokeAsync<bool>("subscribeToPush");
-
-        // Only save to localStorage if subscription was successful
-        if (subscriptionSucceeded)
+        try
         {
-            await JS.InvokeVoidAsync("localStorage.setItem", "notificationPreference", "enabled");
+            bool subscriptionSucceeded = await JS.InvokeAsync<bool>("subscribeToPush");
+            // Only save to localStorage if subscription was successful
+            if (subscriptionSucceeded)
+            {
+                await JS.InvokeVoidAsync("localStorage.setItem", "notificationPreference", "enabled");
+            }
+            else
+            {
+                Snackbar.Add($"Couldn't register your device to subscribe to notifications. please contact support!", Severity.Error);
+                Console.WriteLine("fail: Error: Subscription failed. Error on client-side.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error subscribing to push notifications: {ex.Message}");
+        }
+        finally
+        {
             _showBanner = false;
         }
-        else
-        {
-            Snackbar.Add($"An Error has occurred. please contact support!", Severity.Error);
-            Console.WriteLine("fail: Error: Subscription failed.");
-        }
-        _showBanner = false;
     }
 
     private async Task DeclineNotifications()
