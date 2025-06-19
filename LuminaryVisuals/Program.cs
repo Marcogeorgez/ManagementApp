@@ -200,7 +200,6 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();
-
     }
 });
 
@@ -258,8 +257,8 @@ builder.Services.AddServerSideBlazor()
     )
     .AddCircuitOptions(options =>
     {
-        options.DisconnectedCircuitMaxRetained = 20; // Optional: Limit the number of disconnected circuits retained.
-        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(30);
+        options.DisconnectedCircuitMaxRetained = 40; // Optional: Limit the number of disconnected circuits retained.
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(40);
     });
 // Adds render state to control splash page
 builder.AddBlazrRenderStateServerServices();
