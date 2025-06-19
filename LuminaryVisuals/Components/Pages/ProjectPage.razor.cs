@@ -765,7 +765,7 @@ public partial class ProjectPage : ComponentBase
         LoadingService.ShowLoading();
         var parameters = new DialogParameters
         {
-                { "context", context },
+                { "project", context },
                 { "currentRole", _currentRole},
                 {"currentUserId", _currentUserId }
         };

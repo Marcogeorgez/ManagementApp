@@ -13,14 +13,14 @@
                         <MudGrid Spacing="4">
                             <MudItem xs="12" sm="12" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Project Name</MudText>
-                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectName) ? "-" : context.ProjectName)</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(project.ProjectName) ? "-" : project.ProjectName)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="12" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Footage Links</MudText>
-                                @if (!string.IsNullOrEmpty(context.FootageLink))
+                                @if (!string.IsNullOrEmpty(project.FootageLink))
                                 {
-                                    @foreach (var word in context.FootageLink.Split(' '))
+                                    @foreach (var word in project.FootageLink.Split(' '))
                                     {
                                         if (StringHelper.IsLink(word))
                                         {
@@ -41,35 +41,35 @@
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Resolution</MudText>
-                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.Resolution) ? "-" : context.ProjectSpecifications.Resolution)</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(project.ProjectSpecifications?.Resolution) ? "-" : project.ProjectSpecifications.Resolution)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Footage Size</MudText>
-                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.Size) ? "-" : context.ProjectSpecifications.Size)</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(project.ProjectSpecifications?.Size) ? "-" : project.ProjectSpecifications.Size)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Number of Cameras</MudText>
-                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.CameraNumber) ? "-" : context.ProjectSpecifications.CameraNumber)</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(project.ProjectSpecifications?.CameraNumber) ? "-" : project.ProjectSpecifications.CameraNumber)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Color Profile</MudText>
-                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.ColorProfile) ? "-" : context.ProjectSpecifications.ColorProfile)</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(project.ProjectSpecifications?.ColorProfile) ? "-" : project.ProjectSpecifications.ColorProfile)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" sm="6" Style="min-height: 60px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default">Audio Details</MudText>
-                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(context.ProjectSpecifications?.AudioDetails) ? "-" : context.ProjectSpecifications.AudioDetails)</MudText>
+                                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(project.ProjectSpecifications?.AudioDetails) ? "-" : project.ProjectSpecifications.AudioDetails)</MudText>
                             </MudItem>
 
                             <MudItem xs="12" Style="min-height: 100px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Deliverables</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                                    @if (!string.IsNullOrEmpty(context.Deliverables))
+                                    @if (!string.IsNullOrEmpty(project.Deliverables))
                                     {
-                                        var processedDeliverablesHtml = StringHelper.ProcessDeliverables(context.Deliverables);
+                                        var processedDeliverablesHtml = StringHelper.ProcessDeliverables(project.Deliverables);
                                         <MudHtmlViewer Html="@processedDeliverablesHtml" />
                                     }
                                     else
@@ -82,9 +82,9 @@
                             <MudItem xs="12" Style="min-height: 100px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Brief Of The Day and Technical Issues Notes</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                                    @if (!string.IsNullOrEmpty(context.Description))
+                                    @if (!string.IsNullOrEmpty(project.Description))
                                     {
-                                        var processedBriefDayHtml = StringHelper.ProcessDeliverables(context.Description);
+                                        var processedBriefDayHtml = StringHelper.ProcessDeliverables(project.Description);
                                         <MudHtmlViewer Html="@processedBriefDayHtml" />
                                     }
                                     else
@@ -97,9 +97,9 @@
                             <MudItem xs="12" Style="min-height: 100px">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Music Preferences</MudText>
                                 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                                    @if (!string.IsNullOrEmpty(context.MusicPreference))
+                                    @if (!string.IsNullOrEmpty(project.MusicPreference))
                                     {
-                                        var processedMusicPreferenceHtml = StringHelper.ProcessDeliverables(context.MusicPreference);
+                                        var processedMusicPreferenceHtml = StringHelper.ProcessDeliverables(project.MusicPreference);
                                         <MudHtmlViewer Html="@processedMusicPreferenceHtml" />
                                     }
                                     else
@@ -111,12 +111,12 @@
 
                             <MudItem xs="12">
                                 <MudText Typo="Typo.subtitle2" Color="Color.Default" Class="mb-2">Revisions</MudText>
-                                @if (context.Revisions != null && context.Revisions.Any())
+                                @if (project.Revisions != null && project.Revisions.Any())
                                 {
-                                    foreach (var revision in context.Revisions.OrderBy(r => r.RevisionId))
+                                    foreach (var revision in project.Revisions.OrderBy(r => r.RevisionId))
                                     {
                                         <MudExpansionPanels MultiExpansion=false Elevation="0">
-                                            <MudExpansionPanel Class="mt-2" Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
+                                            <MudExpansionPanel Class="mt-2" Expanded=@(revision == project.Revisions.OrderBy(r => r.RevisionDate).Last())>
                                                 <TitleContent>
                                                     <div class="d-flex align-center">
                                                         @if (revision.isCompleted)
@@ -157,19 +157,19 @@
             <MudGrid Spacing="1">
                 <MudItem xs="12" sm="12">
                     <MudTextField Class="mb-5" Label="Project Name" ReadOnly="!isAdmin"
-                    Variant="Variant.Outlined" Disabled=!isAdmin @bind-Value="context.ProjectName"></MudTextField>
+                    Variant="Variant.Outlined" Disabled=!isAdmin @bind-Value="project.ProjectName"></MudTextField>
                 </MudItem>
                 <MudItem xs="12" sm="12">
 
                     <MudTextField T="string"
                     Label="Footage Link" Placeholder="Add link of your footage" AutoGrow="true"
-                    Variant="Variant.Outlined" @bind-Value="context.FootageLink" />
+                    Variant="Variant.Outlined" @bind-Value="project.FootageLink" />
                 </MudItem>
                 <MudGrid Class="equal-height">
                     <MudItem xs="12" sm="6">
                         <MudTextField T="string" AutoGrow="true"
                         Label="Add Details of Resolution" Placeholder="Add Details of Footage Resolution"
-                        Variant="Variant.Outlined" @bind-Value="context.ProjectSpecifications.Resolution"/>
+                        Variant="Variant.Outlined" @bind-Value="project.ProjectSpecifications.Resolution"/>
                     </MudItem>
 
                     <MudItem xs="12" sm="6">
@@ -177,7 +177,7 @@
                         Label="Add Details of Footage size"
                         Placeholder="Add Details of Footage size"
                         Variant="Variant.Outlined"
-                        @bind-Value="context.ProjectSpecifications.Size"
+                        @bind-Value="project.ProjectSpecifications.Size"
                         />
                     </MudItem>
                 </MudGrid>
@@ -187,7 +187,7 @@
                         Label="Add Details of Footage Number of Cameras"
                         Placeholder="Add Details of Number of cameras"
                         Variant="Variant.Outlined"
-                        @bind-Value="context.ProjectSpecifications.CameraNumber"
+                        @bind-Value="project.ProjectSpecifications.CameraNumber"
                         />
                     </MudItem>
 
@@ -196,7 +196,7 @@
                         Label="Add Details of Color profile"
                         Placeholder="Add Details of Color profile for each camera"
                         Variant="Variant.Outlined"
-                        @bind-Value="context.ProjectSpecifications.ColorProfile"
+                        @bind-Value="project.ProjectSpecifications.ColorProfile"
                         />
                     </MudItem>
                 </MudGrid>
@@ -207,19 +207,19 @@
                         Label="Add Audio Details"
                         Placeholder="Add Details about Audio recorders"
                         Variant="Variant.Outlined"
-                        @bind-Value="context.ProjectSpecifications.AudioDetails" />
+                        @bind-Value="project.ProjectSpecifications.AudioDetails" />
                     </MudItem>
                 </MudGrid>
 
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
-                    <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@context.Deliverables"  OnFileUpload="@HandleFileUpload"
+                    <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@project.Deliverables"  OnFileUpload="@HandleFileUpload"
                     HtmlChanged="OnDeliverableTextChanged" Resizable="true" style="min-height:100px;"
                     Placeholder="Please write down what the deliverables for this project will be">
                     </MudHtmlEditor>
                 </MudItem>
 
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
-                    <MudHtmlEditor Html="@context.Description" HtmlChanged="OnNoteTextChanged" style="min-height:200px;" OnFileUpload="@HandleFileUpload"
+                    <MudHtmlEditor Html="@project.Description" HtmlChanged="OnNoteTextChanged" style="min-height:200px;" OnFileUpload="@HandleFileUpload"
                     Label="Brief Of The Day and Technical Issues Notes"
                     Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
 This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
@@ -231,7 +231,7 @@ The Bride was married like I said before, so this wedding was quite special beca
                 <MudItem xs="12" sm="12" Class="mt-5  flex-column">
                     <MudHtmlEditor Outlined="true" Label="Music Preferences" OnFileUpload="@HandleFileUpload"
                     Text="Music Preferences"
-                    Html="@context.MusicPreference"
+                    Html="@project.MusicPreference"
                     HtmlChanged="OnMusicTextChanged"
                     Resizable="true"
                     style="min-height:50px;"
@@ -242,12 +242,12 @@ The Bride was married like I said before, so this wedding was quite special beca
                 <MudItem xs="12" sm="12">
                     <MudText Typo=Typo.body1  Class="mt-5 " >Revisions:
 
-                        @if (context.Revisions != null)
+                        @if (project.Revisions != null)
                         {                           
                             <MudExpansionPanels MultiExpansion=false Elevation="0">
-                                @foreach (var revision in context.Revisions.OrderBy(r => r.RevisionDate))
+                                @foreach (var revision in project.Revisions.OrderBy(r => r.RevisionDate))
                                 {
-                                    <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == context.Revisions.OrderBy(r => r.RevisionDate).Last())>
+                                    <MudExpansionPanel class="mb-2 editing"  Expanded=@(revision == project.Revisions.OrderBy(r => r.RevisionDate).Last())>
                                         <TitleContent>
                                             <div class="d-flex align-center">
                                                 @if (revision.isCompleted)
@@ -321,18 +321,18 @@ The Bride was married like I said before, so this wedding was quite special beca
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance Dialog { get; set; }
-    [Parameter] public Project context { get; set; }
-    [Parameter] public string currentRole { get; set; }
-    [Parameter] public EventCallback<Project> modifiedProject { get; set; }
-    [Parameter] public string currentUserId { get; set; }
-    private string projectTitle;
+    [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public Project project { get; set; } = default!;
+    [Parameter] public string currentRole { get; set; } = default!;
+    [Parameter] public EventCallback<Project> modifiedProject { get; set; } = default!;
+    [Parameter] public string currentUserId { get; set; } = default!;
+    private string projectTitle = default!;
     bool isAdmin = false;
     bool isClient = false;
     bool isViewMode = true;
     bool _isToggle = false;
     bool Loading;
-    private async Task ViewMode()
+    private void ViewMode()
     {
         _isToggle = true;
         isViewMode = !isViewMode;
@@ -344,28 +344,35 @@ The Bride was married like I said before, so this wedding was quite special beca
     {
         isAdmin = currentRole == "Admin";
         isClient = currentRole == "Client";
-        projectTitle = context.ProjectName;
+        projectTitle = project.ProjectName;
         // fix for opening project-details from chat where revisions aren't included.
-        if (context.Revisions == null)
+        if (project.Revisions == null)
         {
-            context = await projectServices.GetProjectByIdAsync(context.ProjectId) ?? context;
+            await ReloadProject();
         }
         await base.OnInitializedAsync();
     }
+    private async Task ReloadProject()
+    {
+        project = await projectServices.GetProjectByIdAsync(project.ProjectId) ?? project;
+
+    }
+    bool revisionAdded;
     private void AddRevision()
     {
         var newRevision = new Revision
             {
-                RevisionDate = DateTime.UtcNow, // Set current date by default
-                Content = string.Empty // Empty content initially
+                RevisionDate = DateTime.UtcNow, 
+                Content = string.Empty 
             };
-        context.Revisions.Add(newRevision);
+        project.Revisions.Add(newRevision);
+        revisionAdded = true;
     }
     private void OnNoteTextChanged(string text)
     {
-        if (context != null)
+        if (project != null)
         {
-            context.Description = text;
+            project.Description = text;
         }
     }
     private void MarkCompleted(Revision revision)
@@ -374,44 +381,45 @@ The Bride was married like I said before, so this wedding was quite special beca
     }
     private void OnNoteTextChangedForMusicPreference(string text)
     {
-        if (context != null)
+        if (project != null)
         {
-            context.MusicPreference = text;
+            project.MusicPreference = text;
         }
     }
     private void OnNoteTextChangedForRevision(Revision revision,string text)
     {
-        if (context != null)
+        if (project != null)
         {
             revision.Content = text;
-            var existingRevision = context.Revisions.FirstOrDefault(r => r.RevisionDate == revision.RevisionDate);
+            var existingRevision = project.Revisions.FirstOrDefault(r => r.RevisionDate == revision.RevisionDate && r.RevisionId == revision.RevisionId);
             if (existingRevision != null)
                 existingRevision.Content = text;
             else
             {
-                context.Revisions.Add(revision);
+                project.Revisions.Add(revision);
             }
         }
     }
     private void OnDeliverableTextChanged(string text)
     {
-        context.Deliverables = text;
+        project.Deliverables = text;
     }
     private void OnMusicTextChanged(string text)
     {
-        context.MusicPreference = text;
+        project.MusicPreference = text;
     }
     private async Task Save()
     {
-        if (!isAdmin && projectTitle != context.ProjectName)
+        if (!isAdmin && projectTitle != project.ProjectName)
         {
             Snackbar.Add("You are not authorized to save changes.", Severity.Error);
             return;
         }
-        await UpdateProjectAsync(context);
+        await UpdateProjectAsync(project);
+        if(revisionAdded) await ReloadProject(); // reload project if revision is added to avoid error when user saves new revision then modify it
         Snackbar.Add($"Successfully Saved.", Severity.Success);
     }
-    [Inject] private ProjectService projectServices { get; set; }
+    [Inject] private ProjectService projectServices { get; set; } = default!;
     private async Task UpdateProjectAsync(Project project)
     {
         Loading = true;
