@@ -554,8 +554,9 @@
                     editorPaid == false
                         ? ( (p.PrimaryEditorId != null && p.PrimaryEditorDetails.DatePaidEditor == null ) || (p.SecondaryEditorId != null && p.SecondaryEditorDetails.DatePaidEditor == null))
                         : (
-                            (p.PrimaryEditorDetails == null || p.PrimaryEditorDetails.DatePaidEditor != null) &&
-                            (p.SecondaryEditorDetails == null || p.SecondaryEditorDetails.DatePaidEditor != null)
+                            (p.PrimaryEditorId == null || p.PrimaryEditorDetails.DatePaidEditor != null) &&
+                            (p.SecondaryEditorId == null || p.SecondaryEditorDetails.DatePaidEditor != null) &&
+                            (p.PrimaryEditorId != null || p.SecondaryEditorId != null)
                         )
                 );
             }
