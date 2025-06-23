@@ -554,6 +554,8 @@
                     editorPaid == false
                         ? ( (p.PrimaryEditorId != null && p.PrimaryEditorDetails.DatePaidEditor == null ) || (p.SecondaryEditorId != null && p.SecondaryEditorDetails.DatePaidEditor == null))
                         : (
+                            // return projects where both editors has been paid if both exist
+                            // else return projects where at least one editor has been paid
                             (p.PrimaryEditorId == null || p.PrimaryEditorDetails.DatePaidEditor != null) &&
                             (p.SecondaryEditorId == null || p.SecondaryEditorDetails.DatePaidEditor != null) &&
                             (p.PrimaryEditorId != null || p.SecondaryEditorId != null)

@@ -640,8 +640,7 @@
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading messages. Please try again later, or refresh page if it persists please report this.", Severity.Error);
-            Console.WriteLine($"Error loading messages: {ex.Message}");
-            throw (ex);
+            Logger.LogError($"Error loading messages: {ex.Message}");
         }
         finally
         {
@@ -967,8 +966,10 @@
         const element = document.querySelector(selector);
         if (!element) return 0;
         // For column-reverse layout, we need to measure from the top instead
-        return element.scrollTop;
+        const top = element.scrollTop;
+        return Number.isFinite(top) ? Math.floor(top) : 0;
     };
+
 
     window.restoreScrollPositionFromBottom = function(selector, position) {
         const container = document.querySelector(selector);
