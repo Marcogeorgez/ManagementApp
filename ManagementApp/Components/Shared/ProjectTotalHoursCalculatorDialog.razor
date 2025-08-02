@@ -1,0 +1,609 @@
+﻿@using ManagementApp.Data
+@using ManagementApp.Data.Entities
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+<MudDialog>
+    <DialogContent >
+        <MudForm @ref="form" @bind-IsValid="@success" >
+            <MudGrid Spacing="2" Justify="Justify.Center">
+                <MudItem xs="12" sm="12">
+                    <MudText Typo=Typo.body1
+                    Class="d-flex justify-center mud-width-full mb-2"> @newProject.ProjectName </MudText>
+                </MudItem>
+                <MudItem xs="12" sm="12">
+                    <MudNumericField T="decimal" Required=true
+                    @bind-Value="newProject.CalculationDetails.ClientDiscount"
+                    Label="Client Discount"
+                    Variant=Variant.Outlined
+                    HelperTextOnFocus=true
+                    AdornmentText="%"   
+                    Adornment="Adornment.Start"
+                    Class="d-flex justify-center mud-width-full" />
+                </MudItem>
+                @foreach (var (group, index) in groupedOptions.Select((g, i) => (g, i)))
+                {
+                    <MudItem xs="12" sm="6">
+
+                        <MudSelect T="decimal?"
+                        AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                        Class="d-flex justify-center mud-width-full"
+                        Variant="Variant.Outlined"
+                        @bind-Value="selectedMultipliers[index]"
+                        Label="@GetParameterLabel(group.CalculationParameterId)">                
+                            @foreach (var option in group.Options)
+                            {
+                                <MudSelectItem Class="" T="decimal?" Value="@option.Multiplier">
+                                    @option.OptionName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                }
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.CameraNumber"
+                    Label="Number of Cameras"
+                    Variant=Variant.Outlined
+                    Class="d-flex justify-center mud-width-full" />
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="decimal" Required=true
+                    @bind-Value="newProject.CalculationDetails.FootageSize"
+                    Label="Raw footage size"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="GB"
+                    Class="d-flex justify-center mud-width-full"  />
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="decimal" Required=true
+                    @bind-Value="newProject.CalculationDetails.Misc"
+                    Label="Misc (managmenet, footage handeling, feedback)"
+                    Adornment="Adornment.End"
+                    AdornmentText="hour"
+                    Variant=Variant.Outlined
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.PrePartsDuration"
+                    Label="Pre parts Duration Minutes"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDurationHours"
+                    Label="Documentary Multicamera Duration"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="hour"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.DocumentaryMulticameraDuration"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    Class="d-flex flex-column  mud-width-full py-2" />
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.HighlightsDuration"
+                    Label="Highlights Duration Minutes"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudTextField T="string" Required=true
+                    @bind-Value="newProject.CalculationDetails.SocialMediaDuration"
+                    Label="Social Media Duration Minutes"
+                    Variant=Variant.Outlined
+                    Adornment="Adornment.End"
+                    AdornmentText="min"
+                    AdornmentColor="Color.Default"
+                    Class="d-flex flex-column  mud-width-full" />
+                </MudItem>
+
+                @if (_isAdminView)
+                {
+                    <MudGrid Spacing="3" Justify="Justify.SpaceAround">
+                        @if(newProject.PrimaryEditor != null)
+                        {
+                            <MudItem xs="4">
+                                <MudNumericField @bind-Value="@newProject.PrimaryEditorDetails.AdjustmentHours"
+                                Label="Primary Editor Adjustment Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                            </MudItem>
+                        }
+                        @if (newProject.SecondaryEditor != null)
+                        {
+                            <MudItem xs="4">
+                                <MudNumericField T="decimal" @bind-Value="@newProject.SecondaryEditorDetails.AdjustmentHours"
+                                Label="Secondary Editor Adjustment Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                    <MudItem xs="12">
+                        <MudNumericField T="decimal" Min="0.0M"
+                        @bind-Value="@newProject.CalculationDetails.FinalProjectBillableHours"
+                        Label="Total Hours"
+                        Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                    </MudItem>
+                    <MudGrid Spacing="3" Justify="Justify.SpaceAround">
+                        @if (newProject.PrimaryEditor != null)
+                        {
+                            <MudItem xs="4">
+                                <MudTextField @bind-Value="@newProject.PrimaryEditorDetails.FinalBillableHours" 
+                                Label="Primary Editor Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                            </MudItem>
+                        }
+                        @if (newProject.SecondaryEditor != null)
+                        {
+                            <MudItem xs="4">
+                                <MudTextField T="decimal"  @bind-Value="@newProject.SecondaryEditorDetails.FinalBillableHours"
+                                Label="Secondary Editor Hours" Variant=Variant.Outlined Class="d-flex justify-center mud-width-full mt-3 mb-3" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                    <MudButton OnClick="CalculateBillableHours" FullWidth=false Color="Color.Success"
+                    Variant=Variant.Outlined>Calculate Total </MudButton>
+
+                }
+            </MudGrid>
+
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudSpacer />
+        @if(_isAdminView && newProject.SubmissionStatus == Models.SubmissionStatus.Approved)
+        {
+            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Unapprove">Unapprove</MudButton>
+
+        }
+        @if (newProject.SubmissionStatus == Models.SubmissionStatus.Submitted){
+            <MudButton Class="d-flex flex-auto" Color="Color.Warning" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Unsubmit">Unsubmit</MudButton>
+        }
+        <MudButton Class="d-flex flex-auto" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
+        @if (_isEditorView && newProject.SubmissionStatus != Models.SubmissionStatus.Approved || _isAdminView)
+        {
+            <MudButton Class="d-flex flex-auto" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Approve">@textRoleBased</MudButton>
+        }
+
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public bool _isAdminView { get; set; } 
+    [Parameter] public bool _isEditorView { get; set; }
+    [Parameter] public Project newProject { get; set; } = new Project();
+    private bool success;
+    private bool _isOverriden;
+    private MudForm form;
+    private List<GroupedOptionsDto> groupedOptions = new List<GroupedOptionsDto>();
+    private List<decimal?> selectedMultipliers;
+    private int _cameraNum;
+    private decimal footageSize;
+    private decimal Misc;
+    private decimal clientDiscount;
+    private decimal _total;
+    private Project _originalProject;
+    private string textRoleBased;
+    protected override async Task OnInitializedAsync()
+    {
+        using (var context = DbFactory.CreateDbContext())
+        {
+            groupedOptions = await context.CalculationOption
+                .GroupBy(co => co.CalculationParameterId)
+                .Select(group => new GroupedOptionsDto
+                    {
+                        CalculationParameterId = group.Key,
+                        Options = group.Select(co => new OptionDto { OptionName = co.OptionName, Multiplier = co.Multiplier }).ToList()
+                    })
+                .ToListAsync();
+            selectedMultipliers = new List<decimal?>
+            {
+            newProject.CalculationDetails?.HighlightsDifficulty
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 1)?.Options.FirstOrDefault()?.Multiplier,
+
+            newProject.CalculationDetails?.PrePartsPrecentage
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 2)?.Options.FirstOrDefault()?.Multiplier,
+
+            newProject.CalculationDetails?.Resolution
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 3)?.Options.FirstOrDefault()?.Multiplier,
+
+            newProject.CalculationDetails?.FootageQuality
+                ?? groupedOptions.FirstOrDefault(g => g.CalculationParameterId == 4)?.Options.FirstOrDefault()?.Multiplier
+            };
+
+            _originalProject = CloneProject(newProject);
+            textRoleBased = _isAdminView == true ? "Approve" : "Submit For Review";
+            if (newProject.PrimaryEditorDetails.AdjustmentHours == 0 && newProject.PrimaryEditor != null)
+            {
+                newProject.PrimaryEditorDetails.AdjustmentHours = 0;
+            }
+            if (newProject.SecondaryEditorDetails.AdjustmentHours == 0 && newProject.SecondaryEditor != null)
+            {
+                newProject.SecondaryEditorDetails.AdjustmentHours = 0;
+            }
+        }
+    }
+
+
+    private void CalculateBillableHours()
+    {
+        try
+        {
+            InitializeCalculationDetails();
+            if (newProject.PrimaryEditor != null && newProject.SecondaryEditor != null)
+            {
+                var primaryEditorHours = CalculatePrimaryEditorHours() / 60;
+                var secondaryEditorHours = CalculateSecondaryEditorHours() / 60;
+                primaryEditorHours = primaryEditorHours + newProject.PrimaryEditorDetails.AdjustmentHours;
+                secondaryEditorHours = secondaryEditorHours + newProject.SecondaryEditorDetails.AdjustmentHours;
+
+                newProject.PrimaryEditorDetails.FinalBillableHours = Math.Round(primaryEditorHours, 2);
+                newProject.SecondaryEditorDetails.FinalBillableHours = Math.Round(secondaryEditorHours, 2);
+                // Total project hours would be the sum
+                newProject.CalculationDetails.FinalProjectBillableHours =
+                    Math.Round(( primaryEditorHours + secondaryEditorHours ), 2);
+            }
+            else
+            {
+
+                decimal cameraValue = CalculateCameraValue();
+                decimal footageSize = CalculateFootageSize();
+                decimal miscMinutes = CalculateMiscMinutes();
+                decimal prePartsDuration = CalculatePrePartsDuration();
+                decimal documentaryMulticameraDuration = CalculateDocumentaryMulticameraDuration();
+                decimal highlightsDuration = CalculateHighlightsDuration();
+                decimal socialMediaDuration = CalculateSocialMediaDuration();
+
+                var totalDuration = CalculateTotalDuration(footageSize, prePartsDuration,
+                    documentaryMulticameraDuration, highlightsDuration, socialMediaDuration);
+
+                var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
+                var adjustedValue = ApplyDiscount(totalDuration, qualityMultiplier, miscMinutes);
+
+                SetFinalBillableHours(adjustedValue);
+                if(newProject.PrimaryEditor != null && newProject.SecondaryEditor == null)
+                {
+                    newProject.PrimaryEditorDetails.FinalBillableHours = Math.Round(newProject.CalculationDetails.FinalProjectBillableHours,2);
+                    newProject.SecondaryEditorDetails.FinalBillableHours = 0;
+                    newProject.SecondaryEditorDetails.AdjustmentHours = 0;
+                    newProject.SecondaryEditorDetails.Overtime = 0;
+
+                }
+                else if (newProject.PrimaryEditor == null && newProject.SecondaryEditor != null)
+                {
+                    newProject.SecondaryEditorDetails.FinalBillableHours = Math.Round(newProject.CalculationDetails.FinalProjectBillableHours, 2);
+                    newProject.PrimaryEditorDetails.FinalBillableHours = 0;
+                    newProject.PrimaryEditorDetails.AdjustmentHours = 0;
+                    newProject.PrimaryEditorDetails.Overtime = 0;
+                }
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            HandleCalculationError(e);
+        }
+    }
+    private decimal CalculatePrimaryEditorHours()
+    {
+        decimal highlightsDuration = CalculateHighlightsDuration();
+        decimal socialMediaDuration = CalculateSocialMediaDuration();
+        var totalDuration = highlightsDuration + socialMediaDuration ;
+
+        decimal? cameraValue = CalculateCameraValue();
+        var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
+
+        return ApplyDiscount(totalDuration, qualityMultiplier,0);
+    }
+
+    private decimal CalculateSecondaryEditorHours()
+    {
+        decimal cameraValue = CalculateCameraValue();
+        decimal footageSize = CalculateFootageSize();
+        decimal miscMinutes = CalculateMiscMinutes();
+        decimal prePartsDuration = CalculatePrePartsDuration();
+        decimal documentaryMulticameraDuration = CalculateDocumentaryMulticameraDuration();
+
+        var totalDuration = CalculateTotalDuration(footageSize, prePartsDuration,
+             documentaryMulticameraDuration,0,0);
+
+        var qualityMultiplier = CalculateQualityMultiplier(cameraValue);
+
+        return ApplyDiscount(totalDuration, qualityMultiplier, miscMinutes);
+    }
+
+
+
+    private void InitializeCalculationDetails()
+    {
+        var calculationDetails = newProject.CalculationDetails;
+        calculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+        calculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+        calculationDetails.Resolution = selectedMultipliers[2];
+        calculationDetails.FootageQuality = selectedMultipliers[3];
+    }
+
+    private decimal CalculateCameraValue()
+    {
+        decimal CameraNumber = EvaluateExpression(newProject.CalculationDetails.CameraNumber!);
+        return CameraNumber <= 2 && CameraNumber >= 0 ? 1 : ( ( CameraNumber - 2 ) * 0.03m ) + 1;
+    }
+
+    private decimal CalculateFootageSize()
+    {
+        var footageSize = newProject.CalculationDetails.FootageSize;
+        return footageSize > 300 ? ( footageSize - 300m ) * 0.4m : 0;
+    }
+
+    private decimal CalculateMiscMinutes()
+    {
+
+        return newProject.CalculationDetails.Misc! * 60;
+    }
+
+    private decimal CalculatePrePartsDuration()
+    {
+        return EvaluateExpression(newProject.CalculationDetails.PrePartsDuration!) * 60;
+    }
+
+    private decimal CalculateDocumentaryMulticameraDuration()
+    {
+        var details = newProject.CalculationDetails;
+        decimal duration = ( EvaluateExpression(details.DocumentaryMulticameraDurationHours!) * 60 ) +
+                           EvaluateExpression(details.DocumentaryMulticameraDuration!);
+
+        return duration switch
+        {
+            <= 40 => duration * 8,
+            <= 90 => ( 40 * 8 ) + ( ( duration - 40 ) * 6 ),
+            _ => ( 40 * 8 ) + ( 50 * 6 ) + ( ( duration - 90 ) * 4 )
+        };
+    }
+
+    /// <summary>
+    /// method to calculate the highlights duration by evaluating the expression and multiplying the result by the pre parts percentage and highlights difficulty
+    /// </summary>
+    /// <returns></returns>
+    private decimal CalculateHighlightsDuration()
+    {
+        var details = newProject.CalculationDetails;
+        decimal duration = EvaluateExpression(details.HighlightsDuration);
+
+        duration = duration switch
+        {
+            <= 3 => duration * 160,
+            <= 7 => ( 3 * 160 ) + ( ( duration - 3 ) * 110 ),
+            _ => ( 3 * 160 ) + ( 4 * 110 ) + ( ( duration - 7 ) * 60 )
+        };
+
+        return duration * details.PrePartsPrecentage.GetValueOrDefault() * details.HighlightsDifficulty.GetValueOrDefault();
+    }
+
+    private decimal CalculateSocialMediaDuration()
+    {
+        return EvaluateExpression(newProject.CalculationDetails.SocialMediaDuration) * 30;
+    }
+
+    private decimal CalculateTotalDuration(decimal footageSize, decimal prePartsDuration,
+        decimal documentaryMulticameraDuration, decimal highlightsDuration, decimal socialMediaDuration)
+    {
+        return footageSize  + prePartsDuration + documentaryMulticameraDuration + highlightsDuration + socialMediaDuration;
+    }
+    /// <summary>
+    /// Calculate quality multiplier by multiplying the quality of footage, resolution and camera value
+    /// </summary>
+    /// <param name="cameraValue"></param>
+    /// <returns></returns>
+    private decimal CalculateQualityMultiplier(decimal? cameraValue)
+    {
+        var details = newProject.CalculationDetails;
+        return details.FootageQuality.GetValueOrDefault() *
+               details.Resolution.GetValueOrDefault() *
+               cameraValue.GetValueOrDefault();
+    }
+    /// <summary>
+    /// Apply discount to the total duration by multiplying the total duration with the quality multiplier and client discount
+    /// </summary>
+    /// <param name="totalDuration"></param>
+    /// <param name="qualityMultiplier"></param>
+    /// <returns></returns>
+    private decimal ApplyDiscount(decimal totalDuration, decimal qualityMultiplier, decimal miscMinutes)
+    {
+        var clientDiscount = 1 - ( newProject.CalculationDetails.ClientDiscount / 100 );
+        return (( totalDuration * qualityMultiplier * clientDiscount ) + miscMinutes);
+    }
+
+    private void SetFinalBillableHours(decimal? adjustedValue)
+    {
+        newProject.CalculationDetails.FinalProjectBillableHours = Math.Round(adjustedValue.GetValueOrDefault() / 60, 2);
+    }
+
+    private void HandleCalculationError(Exception e)
+    {
+        Console.WriteLine($"There is an error in calculations: {e}");
+        Snackbar.Add("You need to enter numbers only and ensure there are no missing fields!", Severity.Error);
+    }
+
+    private decimal EvaluateExpression(string expression)
+    {
+        if (string.IsNullOrEmpty(expression))
+        {
+            return 0m; // Return 0 if expression is empty or null
+        }
+
+        try
+        {
+            var cleanedExpression = expression.Replace(" ", "");
+            var expressionEvaluator = new NCalc.Expression(cleanedExpression);
+
+            var result = expressionEvaluator.Evaluate();
+
+            if (result is decimal decimalResult)
+            {
+                return decimalResult;
+            }
+            else if (result is int intResult)
+            {
+                return Convert.ToDecimal(intResult); // Convert int to decimal
+            }
+            else if (result is double doubleResult)
+            {
+                return Convert.ToDecimal(doubleResult); // Convert double to decimal
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid result type.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("You need to enter numbers only!", Severity.Error);
+            Console.WriteLine($"Error evaluating expression '{expression}': {ex.Message}");
+            return 0m; // Return 0 if the evaluation fails
+        }
+    }
+    private string GetParameterLabel(int parameterId)
+    {
+        return parameterId switch
+        {
+            1 => "Highlights Difficulty",
+            2 => "Pre-Parts Percentage",
+            3 => "Resolution",
+            4 => "Footage Quality",
+            _ => $"Group {parameterId}"
+        };
+    }
+
+    public class GroupedOptionsDto
+    {
+        public int CalculationParameterId { get; set; }
+        public List<OptionDto> Options { get; set; }
+    }
+
+    public class OptionDto
+    {
+        public string OptionName { get; set; }
+        public decimal? Multiplier { get; set; }
+    }
+
+    private void Approve()
+    {
+
+        newProject.CalculationDetails.HighlightsDifficulty = selectedMultipliers[0];
+        newProject.CalculationDetails.PrePartsPrecentage = selectedMultipliers[1];
+        newProject.CalculationDetails.Resolution = selectedMultipliers[2];
+        newProject.CalculationDetails.FootageQuality = selectedMultipliers[3];
+        newProject.ClientBillableHours = newProject.CalculationDetails.FinalProjectBillableHours;
+        if (_isAdminView)
+        {
+            newProject.SubmissionStatus = Models.SubmissionStatus.Approved;
+        }
+        if (_isEditorView && newProject.SubmissionStatus != Models.SubmissionStatus.Approved)
+        {
+            newProject.SubmissionStatus = Models.SubmissionStatus.Submitted;
+        }
+        if (_isEditorView && newProject.SubmissionStatus == Models.SubmissionStatus.Approved)
+        {
+            Snackbar.Add("You the project has been approved you can't submit it anymore. contact manager if you believe this is an error.", Severity.Error);
+            return;
+        }
+
+        MudDialog.Close(DialogResult.Ok(newProject));
+
+    }
+    private void Unapprove()
+    {
+        if (_isAdminView)
+        {
+            newProject.SubmissionStatus = Models.SubmissionStatus.Submitted;
+        }
+        MudDialog.Close(DialogResult.Ok(newProject));
+    }
+    private void Unsubmit()
+    {
+        newProject.SubmissionStatus = Models.SubmissionStatus.Pending;
+        MudDialog.Close(DialogResult.Ok(newProject));
+
+    }
+
+    private Project CloneProject(Project project)
+    {
+        return new Project
+            {
+                CalculationDetails = new Models.ProjectCalculationDetails
+                {
+                    HighlightsDifficulty = project.CalculationDetails?.HighlightsDifficulty,
+                    PrePartsPrecentage = project.CalculationDetails?.PrePartsPrecentage,
+                    Resolution = project.CalculationDetails?.Resolution,
+                    FootageQuality = project.CalculationDetails?.FootageQuality,
+                    CameraNumber = project.CalculationDetails?.CameraNumber,
+                    FootageSize = project.CalculationDetails?.FootageSize ?? 0,
+                    Misc = project.CalculationDetails?.Misc ?? 0,
+                    PrePartsDuration = project.CalculationDetails?.PrePartsDuration,
+                    DocumentaryMulticameraDuration = project.CalculationDetails?.DocumentaryMulticameraDuration,
+                    DocumentaryMulticameraDurationHours = project.CalculationDetails?.DocumentaryMulticameraDurationHours,
+                    HighlightsDuration = project.CalculationDetails?.HighlightsDuration,
+                    SocialMediaDuration = project.CalculationDetails?.SocialMediaDuration,
+                    FinalProjectBillableHours = project.CalculationDetails!.FinalProjectBillableHours
+                },
+                ClientBillableHours = project.ClientBillableHours
+            };
+    }
+    private bool HasChanges()
+    {
+        bool isDifficultyDifferent = !Equals(_originalProject.CalculationDetails.HighlightsDifficulty, newProject.CalculationDetails.HighlightsDifficulty);
+        bool isPrePartsPercentageDifferent = !Equals(_originalProject.CalculationDetails.PrePartsPrecentage, newProject.CalculationDetails.PrePartsPrecentage);
+        bool isResolutionDifferent = !Equals(_originalProject.CalculationDetails.Resolution, newProject.CalculationDetails.Resolution);
+        bool isFootageQualityDifferent = !Equals(_originalProject.CalculationDetails.FootageQuality, newProject.CalculationDetails.FootageQuality);
+        bool isCameraNumberDifferent = !Equals(_originalProject.CalculationDetails.CameraNumber, newProject.CalculationDetails.CameraNumber);
+        bool isFootageSizeDifferent = !Equals(_originalProject.CalculationDetails.FootageSize, newProject.CalculationDetails.FootageSize);
+        bool isMiscDifferent = !Equals(_originalProject.CalculationDetails.Misc, newProject.CalculationDetails.Misc);
+        bool isPrePartsDurationDifferent = !Equals(_originalProject.CalculationDetails.PrePartsDuration, newProject.CalculationDetails.PrePartsDuration);
+        bool isDocMulticameraDurationDifferent = !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDuration, newProject.CalculationDetails.DocumentaryMulticameraDuration);
+        bool isDocMulticameraDurationHoursDifferent = !Equals(_originalProject.CalculationDetails.DocumentaryMulticameraDurationHours, newProject.CalculationDetails.DocumentaryMulticameraDurationHours);
+        bool isHighlightsDurationDifferent = !Equals(_originalProject.CalculationDetails.HighlightsDuration, newProject.CalculationDetails.HighlightsDuration);
+        bool isSocialMediaDurationDifferent = !Equals(_originalProject.CalculationDetails.SocialMediaDuration, newProject.CalculationDetails.SocialMediaDuration);
+        bool isFinalBillableHoursDifferent = !Equals(_originalProject.CalculationDetails.FinalProjectBillableHours, newProject.CalculationDetails.FinalProjectBillableHours);
+        bool isClientBillableHoursDifferent = !Equals(_originalProject.ClientBillableHours, newProject.ClientBillableHours);
+
+        return isDifficultyDifferent || isPrePartsPercentageDifferent || isResolutionDifferent ||
+               isFootageQualityDifferent || isCameraNumberDifferent || isFootageSizeDifferent ||
+               isMiscDifferent || isPrePartsDurationDifferent || isDocMulticameraDurationDifferent ||
+               isDocMulticameraDurationHoursDifferent || isHighlightsDurationDifferent ||
+               isSocialMediaDurationDifferent || isFinalBillableHoursDifferent ||
+               isClientBillableHoursDifferent;
+
+    }
+    [Inject] private IDialogService DialogService { get; set; }
+    private async Task Cancel()
+    {
+        if (HasChanges() == true)
+        {
+            bool? resultte = await DialogService.ShowMessageBox("Unsaved Changes", "You have unsaved changes. Are you sure you want to close?",
+                   yesText: "Discard", cancelText: "Cancel");
+            if (resultte == true)
+            {
+                MudDialog.Cancel();
+            }
+
+        }
+
+        else
+        {
+            MudDialog.Cancel();
+        }
+    }
+}

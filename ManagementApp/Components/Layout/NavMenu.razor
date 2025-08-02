@@ -1,0 +1,402 @@
+﻿@using ManagementApp.Components.Pages
+@using ManagementApp.Components.Shared.Chat
+@using Microsoft.AspNetCore.Identity
+@using MudBlazor.Services
+@inject NavigationManager NavigationManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
+@inject IBrowserViewportService ViewportService
+@inject ProjectState ProjectState
+@inject ChatService ChatService
+@implements IAsyncDisposable
+@implements IBrowserViewportObserver
+@* Main Top Bar *@
+<MudThemeProvider IsDarkMode=true Theme="_theme" />
+
+<MudHidden Breakpoint="Breakpoint.SmAndDown" Invert=true>
+    <MudAppBar Elevation="2" Dense="true" Style="margin-left: 0px !important; position:relative; margin-bottom:10px;">
+        <div class="navmenu">
+            <MudIconButton Class="" Icon="@Icons.Material.Filled.Menu" Color="Color.Tertiary" Edge="Edge.Start" OnClick="@(async ()  => await DrawerToggle())" />
+            <MudImage Src="@logoSrc" Alt="Logo" Height="30" Class="fit-image " />
+        </div>
+
+        <MudSpacer />
+    </MudAppBar>
+</MudHidden>
+
+
+<MudDrawer Class="" @bind-Open="_drawerOpen" Anchor="@_anchor" Fixed="@isFixed" Variant="@drawer" ClipMode="@_clipMode" Height="@(isLargeScreen ? "100%":"50%")"
+OpenMiniOnHover="true"  Elevation="0" >
+
+    <MudNavMenu Style="display: flex; flex-direction: column; height:100vh; ">
+        <div class="mud-nav-item" style="justify-content:center !important;" >
+            <MudIconButton Class="navmenu" style="margin-left:5px;" Icon="@Icons.Material.Filled.Menu"  Color="Color.Tertiary" Edge="Edge.Start" OnClick="@(async ()  => await DrawerToggle())" />
+            <MudImage Src="@logoSrc" Alt="Logo"  Height="25" Class="fit-image mb-5 mt-3" />
+            <MudSpacer />
+
+            <div class="mud-nav-link-text" style="margin:13px -10px 1px 1px;padding-left:4px; display:none;"></div>
+        </div>
+
+        <MudSpacer />
+
+        <AuthorizeView Roles="Admin,Client,Editor">
+            <MudNavLink OnClick="@profileDialog" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Profile</MudNavLink>
+        </AuthorizeView>
+        @if(visiblePWA)
+        {
+            <MudNavLink Icon="@Icons.Material.Filled.InstallMobile" IconColor="Color.Tertiary" OnClick="ShowInstallPrompt" style="color:var(--mud-palette-action-default)">Install App</MudNavLink>
+        }
+
+        <AuthorizeView Roles="Admin">
+            <MudNavLink Href="admin-dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Admin Dashboard</MudNavLink>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin,Client,Editor">
+            <MudNavLink Href="project" Icon="@Icons.Material.Filled.ViewList" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Project</MudNavLink>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,Editor">
+            <MudNavLink Href="Calendar" Icon="@Icons.Material.Filled.CalendarMonth" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Calender</MudNavLink>
+        </AuthorizeView>
+
+
+        <AuthorizeView Roles="Admin,Client,Editor">
+            <MudBadge Content="@totalUnreadMessages" Color="Color.Error" Origin="Origin.TopRight" Overlap="true"
+            Bordered="true" Class="mt-1 mr-3" Visible="@(totalUnreadMessages > 0)">
+                <MudNavLink OnClick="OpenChatPopup" Icon="@Icons.Material.Filled.Email" IconColor="Color.Tertiary"
+                Style="color:var(--mud-palette-action-default)">Messages</MudNavLink>
+            </MudBadge>
+        </AuthorizeView>
+        <MudSpacer />
+        <MudNavLink Href="https://forms.gle/jiJsFEJKNdyRzWfw7" Target="_blank"  
+        Icon="@Icons.Material.Filled.BugReport" IconColor="Color.Tertiary" Style="color:var(--mud-palette-action-default)">Report bug</MudNavLink>
+
+    </MudNavMenu>
+</MudDrawer>
+
+@code {
+    [CascadingParameter]
+    public ClaimsPrincipal? currentUser { get; set; }
+    bool isLargeScreen = false;
+    bool _drawerOpen = false;
+    private Anchor _anchor = Anchor.Start;
+    private bool isFixed = true;
+    private bool _isMinihover = true;
+    private DrawerVariant drawer = DrawerVariant.Mini;
+    private DrawerClipMode _clipMode = DrawerClipMode.Never;
+    private bool _isDarkMode = true;
+    private string logoSrc =>  "/Logo.png";
+    private string ColorThemeIcon => Icons.Material.Filled.DarkMode;
+    private string? currentUrl;
+    private string GetLinkClass => _drawerOpen ? "max-w-[200px] flex items-center" : "justify-center";
+    const string googleLogo = @"<svg xmlns=""http://www.w3.org/2000/svg"" x=""0px"" y=""0px"" width=""24"" height=""24"" viewBox=""0 0 24 24"">
+    <path d=""M12.545,12.151L12.545,12.151c0,1.054,0.855,1.909,1.909,1.909h3.536c-0.607,1.972-2.101,3.467-4.26,3.866 c-3.431,0.635-6.862-1.865-7.19-5.339c-0.34-3.595,2.479-6.62,6.005-6.62c1.002,0,1.946,0.246,2.777,0.679 c0.757,0.395,1.683,0.236,2.286-0.368l0,0c0.954-0.954,0.701-2.563-0.498-3.179c-1.678-0.862-3.631-1.264-5.692-1.038 c-4.583,0.502-8.31,4.226-8.812,8.809C1.945,16.9,6.649,22,12.545,22c6.368,0,8.972-4.515,9.499-8.398 c0.242-1.78-1.182-3.352-2.978-3.354l-4.61-0.006C13.401,10.24,12.545,11.095,12.545,12.151z""></path>
+    </svg>";
+    bool visiblePWA = false;
+    private bool isAdminView;
+    private bool isEditorView;
+    private bool isClientView;
+    private int timezoneOffsetMinutes;
+    private string _currentUserId = String.Empty;
+    private string _currentRole = String.Empty;
+    private int totalUnreadMessages;
+    private System.Timers.Timer _refreshTimer;
+    [Inject] private IBrowserViewportService BrowserViewportService { get; set; }
+    private Breakpoint _start;
+    [Inject] private BreakpointService BreakpointService { get; set; }
+    Guid IBrowserViewportObserver.Id { get; } = Guid.NewGuid();
+    ResizeOptions IBrowserViewportObserver.ResizeOptions { get; } = new()
+    {
+        ReportRate = 250,
+        NotifyOnBreakpointOnly = true
+    };
+    private async Task ShowInstallPrompt()
+    {
+        // Call the JS function to trigger the PWA install prompt
+        await JSRuntime.InvokeVoidAsync("triggerInstallPrompt");
+    }
+
+    Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
+    {
+        if (browserViewportEventArgs.IsImmediate)
+        {
+            _start = browserViewportEventArgs.Breakpoint;
+            BreakpointService.CurrentBreakpoint = _start;
+        }
+        else
+        {
+            if (_start != browserViewportEventArgs.Breakpoint)
+            {
+                _start = browserViewportEventArgs.Breakpoint;
+                BreakpointService.CurrentBreakpoint = _start;
+                InvokeAsync(() => UpdateLayoutForScreenSize());
+            }
+        }
+
+        return InvokeAsync(StateHasChanged);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+        if (currentUser == null) return;
+        _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        if (currentUser.IsInRole("Admin"))
+        {
+            _currentRole = "Admin";
+            isAdminView = true;
+        }
+        else if (currentUser.IsInRole("Editor"))
+        {
+            _currentRole = "Editor";
+            isEditorView = true;
+
+        }
+        else if (currentUser.IsInRole("Client"))
+        {
+            _currentRole = "Client";
+            isClientView = true;
+        }
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("loadAudio");
+            await JS.InvokeVoidAsync("faviconBadger.init", new
+            {
+                backgroundColor = "#f00",
+                color = "#fff",
+            });
+            await InvokeAsync(StateHasChanged);
+            await UpdateLayoutForScreenSize();
+            await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+            if (currentUser != null && _currentRole == String.Empty)
+            {
+                _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+                if (currentUser.IsInRole("Admin"))
+                {
+                    _currentRole = "Admin";
+                    isAdminView = true;
+                }
+                else if (currentUser.IsInRole("Editor"))
+                {
+                    _currentRole = "Editor";
+                    isEditorView = true;
+
+                }
+                else if (currentUser.IsInRole("Client"))
+                {
+                    _currentRole = "Client";
+                    isClientView = true;
+                }
+            }
+
+            await LoadUnreadMessageCount();
+            SetupPeriodicRefresh();
+
+            StateHasChanged();
+            visiblePWA = await JS.InvokeAsync<bool>("checkPwaSupport");
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    private async Task UpdateBadge()
+    {
+        await JS.InvokeVoidAsync("faviconBadger.update", lastUnreadMessageCount);
+    }
+    private async Task UpdateLayoutForScreenSize()
+    {
+        isLargeScreen = await ViewportService.IsBreakpointWithinWindowSizeAsync(Breakpoint.MdAndUp);
+        if (!isLargeScreen)
+        {
+            _anchor = Anchor.Top;
+            isFixed = true;
+            _isMinihover = false;
+            drawer = DrawerVariant.Temporary;
+            _clipMode = DrawerClipMode.Never;
+        }
+        else
+        {
+            _anchor = Anchor.Start;
+            isFixed = true;
+            _isMinihover = true;
+            drawer = DrawerVariant.Mini;
+            _clipMode = DrawerClipMode.Never;
+        }
+    }
+
+    private async Task OpenChatPopup()
+    {
+        if (_currentUserId is null)
+        {
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            if (currentUser.IsInRole("Admin"))
+            {
+                _currentRole = "Admin";
+                isAdminView = true;
+            }
+            else if (currentUser.IsInRole("Editor"))
+            {
+                _currentRole = "Editor";
+                isEditorView = true;
+
+            }
+            else if (currentUser.IsInRole("Client"))
+            {
+                _currentRole = "Client";
+                isClientView = true;
+            }
+        }
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                Position = DialogPosition.BottomRight,
+                NoHeader = true
+            };
+        var parameters = new DialogParameters<ChatProjectListDialog>
+        {
+
+            { "userId" , _currentUserId },
+            { "isAdminView" , isAdminView },
+            { "isEditorView" , isEditorView },
+            { "isClientView" , isClientView },
+        };
+        await DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);
+        await DrawerToggle();
+    }
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+    private async Task DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+        StateHasChanged();
+
+    }
+    private async Task profileDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            {"currentUser",currentUser }
+        };
+
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+            };
+
+        var dialog = await DialogService.ShowAsync<ProfileDialog>("", parameters, options);
+    }
+    MudTheme _theme = new MudTheme()
+        {
+            PaletteDark = new PaletteDark()
+            {
+                Primary = "#3299ff",
+                Tertiary = "#efefef",
+                DrawerBackground = "#02020a",
+                AppbarBackground = "#13131b",
+                TextPrimary = "#efefef",
+                Background = "#13131b",
+                Surface = "#0d0e19",
+                TableHover = "#666569"
+            },
+
+            Typography = new Typography()
+            {
+                Default = new DefaultTypography()
+                {
+                    FontFamily = new[] { "Inter", "sans-serif" },
+                    FontWeight = "400"
+                },
+            },
+            LayoutProperties = new LayoutProperties()
+            {
+                DrawerWidthLeft = "200px",
+            }
+        };
+    private void SetupPeriodicRefresh()
+    {
+        _refreshTimer = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+        _refreshTimer.Elapsed += OnRefreshTimerElapsed;
+        _refreshTimer.AutoReset = true;
+        _refreshTimer.Start();
+    }
+    int lastUnreadMessageCount = -1;
+    [Inject] ISnackbar Snackbar { get; set; } = default!;
+    [Inject] IJSRuntime JS { get; set; } = default!;
+    private async Task LoadUnreadMessageCount()
+    {
+        try
+        {
+            totalUnreadMessages = await ChatService.GetUnreadMessageCount(_currentUserId);
+            // if total unread message is greater than last unread message count, play notification sound
+            // else it means user has read the message so reset the last unread message count but don't play notification sound
+            if (totalUnreadMessages > lastUnreadMessageCount && lastUnreadMessageCount != -1)
+            {
+                lastUnreadMessageCount = totalUnreadMessages;
+                Snackbar.Add("You've new unread message!", Severity.Info);
+                await JS.InvokeVoidAsync("playNotificationSound");
+
+            }
+            else
+            {
+                lastUnreadMessageCount = totalUnreadMessages; 
+
+            }
+        }   
+        catch (Exception ex)
+        {
+            // Optional: Log the error
+            Console.WriteLine($"Error refreshing unread message count: {ex.Message}");
+        }
+        finally
+        {
+            await InvokeAsync(() =>
+                JS.InvokeVoidAsync("faviconBadger.update", lastUnreadMessageCount)
+            );
+        }
+    }
+    private async void OnRefreshTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadUnreadMessageCount();
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error occurred in OnRefreshTimerElapsed:\n {ex}");
+        }
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (_refreshTimer != null)
+        {
+            _refreshTimer.Elapsed -= OnRefreshTimerElapsed; // Safe unsubscribe
+            _refreshTimer.Stop();
+            _refreshTimer.Dispose();
+        }
+        if (NavigationManager != null)
+        {
+            NavigationManager.LocationChanged -= OnLocationChanged; // Unsubscribe from LocationChanged event
+        }
+        await BrowserViewportService.UnsubscribeAsync(this);      
+    }
+
+}
+
+<script>
+window.playNotificationSound = () => {
+    let audio = new Audio('/audio/notification.mp3');
+    audio.play();
+};
+</script>

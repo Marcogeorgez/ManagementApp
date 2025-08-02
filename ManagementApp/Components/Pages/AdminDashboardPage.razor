@@ -1,0 +1,931 @@
+﻿@page "/admin-dashboard"
+@inject UserServices UserManagementService
+@inject HttpClient httpClient
+@inject RoleManager<IdentityRole> RoleManager
+@inject UserNoteService UserNoteService
+@inject ISnackbar Snackbar
+@inject ILogger<AdminDashboardPage> Logger
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+@inject SettingService SettingService
+@inject NavigationManager NavigationManager
+@inject ProjectState ProjectState
+@inject UserManager<ApplicationUser> _userManager;
+
+@implements IDisposable
+
+@attribute [Authorize(Policy = "RequireAdminRole")]
+
+<PageTitle>Admin Dashboard</PageTitle>
+<MudMainContent Class="main-content-sm" Style="height:auto; padding-top:25px; padding-left:25px; padding-right:25px; height:100vh;">
+
+@if (_loading)
+    {
+        <SplashScreen />
+    }
+    else if (_error)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+            An error occurred while loading users.
+        </MudAlert>
+    }
+    else
+    {
+        <MudTabs Outlined="false" Rounded="true" SliderAnimation="true" Class="pb-3" Style="width:100%; max-height:70vh" PanelClass="vh-70">
+            <MudTabPanel Text="Users Dashboard" Icon="@Icons.Material.Filled.Api" >
+
+
+                @if (!string.IsNullOrEmpty(_updateMessage))
+                {
+                    <MudAlert Severity="@(_updateMessageClass == "alert-success" ? Severity.Success : Severity.Error)"
+                    Variant="Variant.Outlined"
+                    ShowCloseIcon="true"
+                    CloseIconClicked="@(() => {_updateMessage = null;})"
+                    OnClick="@(() => { _updateMessage = null; })">
+                        @_updateMessage
+                    </MudAlert>
+                }
+
+
+                <MudDataGrid T="UserRoleViewModel" Bordered=false Hover="true" CanCancelEdit=true MultiSelection=true
+                Style="transform: scale(0.7);transform-origin: top left; width: 145%; height: calc(100% / 0.73); transform-style: preserve-3d;"
+                FixedHeader="true" Height="126vh;" Virtualize=true RowsPerPage=50
+                SelectedItems="SelectedItems" @ref=_dataGrid QuickFilter="_quickFilter"
+                Breakpoint="Breakpoint.None"
+                Items="@AllUsers" SortMode="SortMode.Multiple"
+                FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive" Filterable=true
+                DragIndicatorSize="Size.Small" Loading=@_loading Dense=true
+                EditMode="DataGridEditMode.Form"
+                EditTrigger="DataGridEditTrigger.Manual"
+                ReadOnly=false
+                StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItemAsync" 
+                CommittedItemChanges="@CommittedItemChanges">
+
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h4">Admin Dashboard</MudText>
+                        <MudMenu Label="Options" Variant="Variant.Outlined" Class="mx-3" Color="Color.Primary"
+                        PopoverClass="pa-4" ListClass="d-flex flex-column flex-auto" >
+
+                            <MudNumericField T="decimal?"
+                            @bind-value="storedValue"
+                            Label="USD to LEK"
+                            Min="0.0M"
+                            Required="true"
+                            RequiredError="Please enter a positive number"
+                            Variant="Variant.Outlined"
+                            Class="w-100"
+                            DebounceInterval="2000" />
+
+                            <MudButton Variant="Variant.Outlined"
+                            Color="Color.Error"
+                            OnClick="@(() => OpenDialog())"
+                            Class="mt-2 w-100">
+                                Migrate Selected Users
+                            </MudButton>
+                        </MudMenu>
+                        <div style="flex-grow: 5;"></div>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search by name" Adornment="Adornment.Start"
+                        Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                        Class="mt-0 mr-5" style="flex-grow:5;" />
+                    </ToolBarContent>
+
+                    <ColGroup>
+                        <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert=true>
+                            <col style="width: 1vw;" /><!-- # -->
+                            <col style="width: 1vw;" /><!-- # -->
+                            <col style="width: 10vw;" /><!--User Name-->
+                            <col style="width: 3vw;" /><!--User Email-->
+                            <col style="width: 2vw;" /><!-- Current Role -->
+                            <col style="width: 1vw;" /><!-- Rate $ -->
+                            <col style="width: 1vw;" /><!-- Rate Lek -->
+                            <col style="width: 1vw;" /><!-- Weeks Due Date Default -->
+                            <col style="width: 30vw;" /><!-- Private notes -->
+                            <col style="width: 1vw;" /><!-- Client Preferneces -->
+                            <col style="width: 1vw;" /><!-- Edit button -->
+                        </MudHidden>
+                    </ColGroup>
+                    <Columns>
+                        <SelectColumn T="UserRoleViewModel"   />
+                        <TemplateColumn T="UserRoleViewModel" Title="#" Sortable="false" Filterable="false" Style="min-width: 50px;" Editable=false>
+                            <CellTemplate Context="cell">
+                                @{
+                                    var index = AllUsers.ToList().IndexOf(cell.Item) + 1;
+                                    @index
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Style="min-width: 150px" Property="x => x.UserName" HeaderStyle="text-align:center;" Title="Name"
+                        CellClass="outlined-dialog-max-content" CellStyle="text-align: center" Editable=true>
+                            <CellTemplate>
+                                <MudTextField T="string"
+                                Class="outlined-dialog-max-content"
+                                Value="context.Item.UserName"
+                                ReadOnly="true"
+                                Immediate="true" Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInFull" Variant=Variant.Outlined 
+                                MaxLines="4"
+                                OnAdornmentClick="@(() => OpenAgencyList(context.Item.UserId))">
+                                    <MudTooltip Text="Expand">
+                                        <MudIconButton Icon="@Icons.Material.Filled.OpenInFull" />
+                                    </MudTooltip>
+                                </MudTextField>
+                            </CellTemplate>
+                        </PropertyColumn>
+
+                        <PropertyColumn Style="min-width: 150px" Property="x => x.UserEmail" HeaderStyle="text-align:center;" Title="Email" CellStyle="text-align: center" Editable=true>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.SelectedRole" Title="Role" HeaderStyle="text-align:center;"
+                        Style="min-width: 150px;" CellStyle="text-align: center" >
+                            <EditTemplate >
+                                <MudSelect @bind-Value="context.Item.SelectedRole" 
+                                Required Variant="Variant.Outlined"
+                                RequiredError="You must select a Role!!!"
+                                Margin="@Margin.Dense">
+                                    @foreach (var role in _allAvailableRoles)
+                                    {
+                                        <MudSelectItem Value="@role">@role</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </EditTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.HourlyRate" Title="Hourly Rate" HeaderStyle="text-align:center;"
+                        CellStyle="text-align: center" Format="$#,##0.00"
+                        ShowFilterIcon="false">
+                            <EditTemplate>
+                                <MudNumericField T="decimal?"
+                                @bind-Value="context.Item.HourlyRate"
+                                @bind-Value:event="oninput"
+                                ValueChanged="(newValue) => UpdateHourlyRateWrapper(context.Item, newValue)" Variant="Variant.Outlined"
+                                Label="Hourly Rate in US$"
+                                Format="N" Immediate=true
+                                Adornment="Adornment.Start"
+                                AdornmentText="$" />
+                            </EditTemplate>
+                        </PropertyColumn>
+
+                        <PropertyColumn Property="x => x.HourlyRateInLek" HeaderStyle="text-align:center;" Title="Rate Lek"
+                        CellStyle="text-align: center"
+                        ShowFilterIcon="false" ShowColumnOptions="false" Format="L#,##0.00">
+                            <EditTemplate>
+                                <MudNumericField T="decimal?"
+                                @bind-Value="context.Item.HourlyRateInLek"
+                                @bind-Value:event="oninput"
+                                ValueChanged="(newValue) => UpdateHourlyRateInLekWrapper(context.Item, newValue)"
+                                Variant="Variant.Outlined"
+                                Label="Hourly Rate in Lek"
+                                Format="N"
+                                Adornment="Adornment.Start"
+                                AdornmentText="L"/>
+                            </EditTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.WeeksToDueDateDefault" HeaderStyle="text-align:center;" Title="Weeks Due Date Default"
+                        CellStyle="text-align: center" Required=false
+                        ShowFilterIcon="false" ShowColumnOptions="false">
+
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Note" CellClass="outlined-dialog-max-content" Title="Private Notes" HeaderStyle="text-align:center;" Editable="false" Filterable="true">
+                            <CellTemplate>
+                                <MudTextField T="string" Variant="Variant.Outlined" Lines="2"
+                                Immediate="true"
+                                Value="@(UserRoleViewModel.StripHtmlTags(context.Item.Note))"
+                                Adornment="Adornment.End"
+                                AdornmentIcon="@Icons.Material.Filled.OpenInFull"
+                                OnAdornmentClick="@(() => OpenNoteDialog(context.Item.Note, context))"
+                                ReadOnly="true" />
+
+                            </CellTemplate>
+                            <EditTemplate >
+                                <MudText Style="display:none;" />
+                            </EditTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn>
+                            <CellTemplate>
+                                <MudStack Row=true Spacing="0">
+                                    <MudTooltip Text="Change Client Preference">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.TrackChanges" OnClick="@(() => OpenClientPreference(context.Item))" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Edit">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Delete user">
+                                        <MudIconButton Color="Color.Error"
+                                        Size="Size.Medium"
+                                        OnClick="@(() => OpenDeleteUserDialog(context.Item))"
+                                        Icon="@Icons.Material.Filled.Delete"
+                                        Class="" />
+                                    </MudTooltip>
+
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            </MudTabPanel>
+            <MudTabPanel Text="Settings" Icon="@Icons.Material.Filled.Build" >
+                <MudPaper Elevation="4">
+                    <MudText class="ml-8 mb-2" Typo="Typo.h5">Settings</MudText>
+                    <MudDivider />
+                    <MudExpansionPanels Outlined="false" Elevation="0" Class="ma-7">
+                        <MudExpansionPanel Text="Alerts">
+                            <MudCard Class="pa-4">
+                                <MudText Typo="Typo.h6" Class="mb-4">Add New Notification Alert:</MudText>
+
+                                <MudTextField @bind-Value="notification.Message" Required="true" Label="Notification Message" Variant="Variant.Outlined"
+                                Lines="3" Class="mb-4" />
+
+                                <MudItem xs="12">
+                                    <MudSelect T="Severity" @bind-Value="notification.SeverityColor" Required="true" Label="Type of Alert" Variant="Variant.Outlined" Class="mb-4">
+                                        <MudSelectItem Value="Severity.Warning">
+                                            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                                                Warning
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(Default)</MudText>
+                                            </MudAlert>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="Severity.Normal">
+                                            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Dense="true">Normal</MudAlert>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="Severity.Success">
+                                            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">Success</MudAlert>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="Severity.Info">
+                                            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">Info</MudAlert>
+                                        </MudSelectItem>
+
+                                        <MudSelectItem Value="Severity.Error">
+                                            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">Error</MudAlert>
+                                        </MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
+
+                                <MudStack Row="true" AlignItems="AlignItems.Center"  Justify="Justify.SpaceBetween" >
+                                    <MudItem xs="4">
+                                        <MudSelect T="string" @bind-Value="notification.TargetRole" Required="true" Label="Target Audience" Variant="Variant.Outlined" Class="mb-4">
+                                            <MudSelectItem Value="@("Everyone")">Everyone</MudSelectItem>
+                                            <MudSelectItem Value="@("Admin")">
+                                                Admins
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                            </MudSelectItem>
+                                            <MudSelectItem Value="@("Editor")">Editors 
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                            </MudSelectItem>
+                                            <MudSelectItem Value="@("Client")">Clients 
+                                                <MudText Inline="true" Typo="Typo.caption" Style="color:lightgrey;">(only)</MudText>
+                                            </MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="2">
+                                        <MudButton Variant="Variant.Outlined" Disabled="@_processing" Color="Color.Info" FullWidth="true" OnClick="CreateNotification">
+                                            @if (_processing)
+                                            {
+                                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                                <MudText Class="ms-2">Processing</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudText>Send Notification</MudText>
+                                            }
+                                        </MudButton>
+                                    </MudItem>
+                                </MudStack>
+                            </MudCard>  
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Text="Blocked Words For Chat">
+                            <ManagementApp.Components.Shared.BlockedWord.BlockedWordsList />
+                        </MudExpansionPanel>
+
+                    </MudExpansionPanels>
+                    <MudButton class="pa-3 ml-8 mb-3" Variant="Variant.Outlined" Color="Color.Info" OnClick="EnsureChatExist">Create Private Chats for All Users</MudButton>
+
+                </MudPaper>
+            </MudTabPanel>
+        </MudTabs>
+
+
+        @if (ProjectState.CurrentProject != null)
+        {
+            <div class="floating-chat-container">
+
+                <Chats.ProjectChatDialog Project="@ProjectState.CurrentProject" OnOpenProjectDialog="OpenDescriptionDialog"
+                UserId="@_currentUserId"
+                IsAdminView="@isAdminView"
+                IsClientView="@_isClientView" isEditorView="@_isEditorView"
+                />
+            </div>
+
+        }
+
+    }
+
+</MudMainContent>
+
+@code {
+    
+    private bool FilterNotes(UserRoleViewModel User, string searchText)
+    {
+        if (userNotesDict.ContainsKey(User.UserId))
+        {
+            var noteValue = userNotesDict[User.UserId]?.Note ?? string.Empty;
+            return noteValue.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
+    private bool _loading = true;
+    private bool _error;
+    private bool _isUpdating;
+    private bool _usdToLek;
+    private bool isNoteChanged; // Flag to track if the note has changed
+    private bool isCurrencyChanged; // Flag to track if the currency value has changed
+    private string _updateMessage;
+    private string _updateMessageClass;
+    private string _updatingUserId;
+    private string _searchString;
+    private string targetId;
+    private string _pendingNoteText;
+    private decimal? _storedValue;
+    private decimal? lastSavedValue;
+    private const double Delay = 250 ; // .25 Second Delay
+    private System.Timers.Timer _timer;
+    private UserNote userNotes = new();
+    private Dictionary<string, UserNote> userNotesDict = new();
+    private List<string> _allAvailableRoles = new();
+    private List<UserRoleViewModel> _users;
+    private IEnumerable<UserRoleViewModel> AllUsers = new List<UserRoleViewModel>();
+    [CascadingParameter]
+    public ClaimsPrincipal? currentUser { get; set; }
+    // For Agency Creation
+    private bool dialogVisible;
+    private string agencyName = "";
+    private string agencyEmail = "";
+    private HashSet<UserRoleViewModel> SelectedItems = new();
+    [Inject]
+    private IConfirmationService ConfirmationService { get; set; } = default!;
+    private MudDataGrid<UserRoleViewModel> _dataGrid = default!;
+    private Notification notification = new Notification();
+    private async Task OpenDialog()
+    {
+        if (!SelectedItems.Any())
+        {
+            Snackbar.Add("Please select users first.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+            {
+                ["SelectedUsers"] = SelectedItems
+            };
+
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true
+            };
+
+        var dialog = await DialogService.ShowAsync<AgencyMigrationDialog>("Create New Agency", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            AllUsers = await UserManagementService.GetAllUsersForAdminDashboardAsync(storedValue); // Refresh the grid after update
+        }
+    }
+
+    private bool isAdminView;
+    private bool _isEditorView;
+    private bool _isClientView;
+    private string _currentUserId;
+    private string _currentRole;
+    // Global filter for the grid
+    private Func<UserRoleViewModel, bool> _quickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+        {
+            return true;
+        }
+        if (x.UserName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+        if (x.UserEmail?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+
+        return false;
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ProjectState.OnChange += HandleProjectStateChange;
+            var _storedValue = await SettingService.GetSettingByNameAsync("CurrencyRate");
+            if (_storedValue.ConversionRateUSToLek != null)
+            {
+                storedValue = _storedValue.ConversionRateUSToLek;
+                lastSavedValue = storedValue;
+            }
+            AllUsers = await UserManagementService.GetAllUsersForAdminDashboardAsync(storedValue);
+            _users = AllUsers.ToList();
+            await LoadUserNotes();
+            _currentUserId = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+            if (currentUser.IsInRole("Admin"))
+            {
+                _currentRole = "Admin";
+                isAdminView = true;
+            }
+            else if (currentUser.IsInRole("Editor"))
+            {
+                _currentRole = "Editor";
+                _isEditorView = true;
+
+            }
+            else if (currentUser.IsInRole("Client"))
+            {
+                _currentRole = "Client";
+                _isClientView = true;
+            }
+
+            _loading = false;
+            _timer = new System.Timers.Timer(Delay);
+            _timer.Elapsed += OnTimedEvent;
+            _timer.AutoReset = false; // to prevent timer from restarting automatically
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading users");
+            _error = true;
+            _loading = false;
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+            await Task.Delay(250);
+            _allAvailableRoles = await GetAvailableRoles();
+        }
+    }
+
+
+
+    private void HandleProjectStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ProjectState != null)
+        {
+            ProjectState.OnChange -= HandleProjectStateChange; // Unsubscribe from the event
+        }
+        if (_timer != null)
+        {
+            _timer.Elapsed -= OnTimedEvent; // Unsubscribe from the timer event
+            _timer.Stop();
+            _timer.Dispose();
+            Console.WriteLine("Timer disposed for admindashboard"); // Add logging
+        }
+    }
+    private async Task OpenNoteDialog(string noteValue,CellContext<UserRoleViewModel> context)
+    {
+        var parameters = new DialogParameters
+        {
+            {
+                "Text", noteValue
+            }    
+        };
+        var options = new DialogOptions{ };
+        var dialog = await DialogService.ShowAsync<FullNoteDialog>("Edit Note", parameters, options);
+        var result = await dialog.Result;
+
+        if (result == null || result.Canceled || result.Data is not string updatedText)
+            return;
+
+        OnNoteTextChanged(updatedText, context);
+
+        var notes = context.Item.Notes;
+        var userId = context.Item.UserId;
+
+        if (notes.ContainsKey(userId))
+        {
+            notes[userId].Note = updatedText;
+        }
+        else
+        {
+            notes[userId] = new UserNote
+                {
+                    TargetUserId = userId,
+                    Note = updatedText
+                };
+        }
+    }
+    // Load all user notes
+    private async Task LoadUserNotes()
+    {
+        var notes = await UserNoteService.GetAllNotes();
+
+        foreach (var note in notes)
+        {
+            if (!userNotesDict.ContainsKey(note.TargetUserId))
+            {
+                userNotesDict[note.TargetUserId] = note;
+            }
+        }
+    }
+    // Save notes or (currency exchange ratio) when user stops writing
+    private void OnTimedEvent(object sender, ElapsedEventArgs e)
+    {
+        _timer.Stop();
+        InvokeAsync(async () =>
+        {
+            // Save the note if it has changed
+            if (isNoteChanged)
+            {
+                await SaveNotes();
+                isNoteChanged = false;
+            }
+
+            // Save the currency value if it has changed
+            if (isCurrencyChanged)
+            {
+                await SaveCurrencyValue();
+                isCurrencyChanged = false; 
+            }
+        });
+
+    }
+    private void OnNoteTextChanged(string text, CellContext<UserRoleViewModel> context)
+    {
+        targetId = context.Item.UserId;
+        if (!userNotesDict.ContainsKey(targetId))
+        {
+            userNotesDict[targetId] = new UserNote { TargetUserId = targetId };
+        }
+        // Update the note text
+        userNotesDict[targetId].Note = text;
+        _pendingNoteText = text;  
+        isNoteChanged = true;
+        // Reset and start the timer each time the text changes
+        _timer.Stop();
+        _timer.Start(); 
+    }
+
+    private readonly HashSet<string> _savingNotes = new();
+
+    private async Task SaveNotes()
+    {
+        if (_savingNotes.Contains(targetId))
+            return; // Prevent duplicate saves
+        _savingNotes.Add(targetId);
+
+        try
+        {
+            if (userNotesDict.ContainsKey(targetId))
+            {
+                var noteToSave = userNotesDict[targetId];
+
+                if (noteToSave.Id == 0)
+                {
+                    var result = await UserNoteService.AddNoteAsync(targetId, noteToSave.Note);
+                    if (result.Success)
+                    {
+                        var noteId = await UserNoteService.GetNoteIdByUserId(targetId);
+                        userNotesDict[targetId].Id = noteId.Id;
+                        await LoadUserNotes();
+                        Snackbar.Clear();
+                        Snackbar.Add($"Successfully saved note", Severity.Info);
+                    }
+                    else
+                    {
+                        Console.WriteLine(result.Message);
+                    }
+                }
+                else
+                {
+                    var result = await UserNoteService.UpdateNoteAsync(noteToSave.Id, noteToSave.Note);
+                    if (result.Success)
+                    {
+                        Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+                        Snackbar.Add($"Successfully updated note", Severity.Info);
+                    }
+                    else
+                    {
+                        Console.WriteLine(result.Message);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            _savingNotes.Remove(targetId);
+            StateHasChanged();
+        }
+    }
+
+    // Get all available roles to allow drop-list menu to choose new roles
+    private async Task<List<string>> GetAvailableRoles()
+    {
+        var roles = await RoleManager.Roles.Select(r => r.Name).ToListAsync();
+        return roles.Where(r => r != null).ToList();
+    }
+
+    // Delete user
+    private async Task OpenDeleteUserDialog(UserRoleViewModel User)
+    {
+        var parameters = new DialogParameters
+        {
+            { "User", User },
+        };
+        var dialog = await DialogService.ShowAsync<DeleteUserDialogComponent>("Delete User", parameters);
+        var result = await dialog.Result;
+        if(!result.Canceled && result.Data != null)
+        {
+            await DeleteUser(User, result.Data.ToString());
+            _users.Remove(User);
+            AllUsers = _users;
+            StateHasChanged();
+        }
+        else
+        {
+            Snackbar.Add("Failed to delete user", Severity.Error);
+        }
+    }
+    private async Task DeleteUser(UserRoleViewModel User,string adminId)
+    {
+        bool isDeleted = false;
+        if (await ConfirmationService.Confirm($"Are you sure you want to delete {User.UserName} with Email {User.UserEmail}? His personal private chat will be deleted and All his projects will be assigned to admin user."))
+        {
+            isDeleted = await UserManagementService.DeleteUserAsync(User.UserId, adminId);
+        }
+        if(isDeleted)
+        {
+            Snackbar.Add("User have been deleted successfully", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("User have not been deleted!", Severity.Error);
+        }
+    }
+
+
+    // Client preferences:
+    private async Task OpenClientPreference(UserRoleViewModel User)
+    {
+        var parameters = new DialogParameters
+        {
+            { "userId", User.UserId },
+            {"currentUser",currentUser }
+        };
+        var dialog = await DialogService.ShowAsync<ClientEditingGuidelinesComponent>("Change Client Preferences", parameters);
+    }
+    private async Task UpdateSelectedRole(UserRoleViewModel user, string newRole)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(newRole))
+            {
+                return;
+            }
+            if (newRole == "Admin")
+            {
+                if (!await ConfirmationService.Confirm($"Are you sure you want to change {user.UserName} role to Admin?"))
+                {
+                    return;
+                }
+            }
+            _isUpdating = true;
+            _updatingUserId = user.UserId;
+            await UserManagementService.ChangeUserRoleAsync(user.UserId, newRole);
+
+            var updatedUser = _users.First(u => u.UserId == user.UserId);
+            updatedUser.Roles = new List<string> { newRole };
+            _updateMessage = $"Successfully updated role for {user.UserName} to {newRole}";
+            _updateMessageClass = "alert-success";
+            var elementUser = AllUsers.First(u => u.UserId == user.UserId);
+            elementUser.Roles = new List<string> { newRole };
+            NavigationManager.Refresh();
+        }
+        catch (Exception ex)
+        {
+            _updateMessage = $"Failed to update the user role.";
+            _updateMessageClass = "alert-danger";
+            Snackbar.Add(ex.Message, Severity.Error);
+            Logger.LogError(ex, "Error changing user role", user.UserName,user.UserEmail);
+        }
+        finally
+        {
+            _isUpdating = false;
+            _updatingUserId = null;
+            StateHasChanged();
+        }
+    }
+    private async Task OpenAgencyList(string AgencyId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "AgencyId", AgencyId },
+        };
+        var options = new DialogOptions { FullScreen = false };
+        DialogService.Show<AgencyView>("Agency View Members", parameters, options);
+    }
+    // UpdateHourlyRate AND UpdateHourlyRateInLek to update the display only.
+    private void UpdateHourlyRateWrapper(UserRoleViewModel user, decimal? newValue)
+    {
+        user.HourlyRate = newValue;
+        UpdateHourlyRate(user);
+    }
+
+    private void UpdateHourlyRateInLekWrapper(UserRoleViewModel user, decimal? newValue)
+    {
+        user.HourlyRateInLek = newValue;
+        UpdateHourlyRateInLek(user);
+    }
+    private void UpdateHourlyRateInLek(UserRoleViewModel user)
+    {
+        user.HourlyRate = user.HourlyRateInLek / storedValue;
+    }
+    private void UpdateHourlyRate(UserRoleViewModel user)
+    {
+        user.HourlyRateInLek = user.HourlyRate * storedValue;
+    }
+
+    // Saving usd to lek exchange rate in db
+    public decimal? storedValue
+    {
+        get => _storedValue;
+        set
+        {
+            if (_storedValue != value && value >= 0.0M)
+            {
+                _storedValue = value;
+                _ = SaveCurrencyValue();
+            }
+            else
+            {
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+                Snackbar.Add($"It is not possible to save conversation rate to {storedValue}, Please enter a positive value", Severity.Error);
+            }
+        }
+    }
+    private async Task SaveCurrencyValue()
+    {
+        try
+        {
+            if (_timer?.Enabled == true )
+            {
+                _timer.Stop();
+            }
+            if (storedValue is null || lastSavedValue is null)
+                return;
+            // Save the currency value only if it has changed
+            if (storedValue != lastSavedValue)
+            {
+                await SaveToSetting();
+                lastSavedValue = storedValue; // Update the last saved value
+            }
+            // Set the flag to true as the currency has changed
+            isCurrencyChanged = true;
+            _timer.Start();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine("Disposing timer");
+        }
+    }
+    private async Task SaveToSetting()
+    {
+        var userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        await SettingService.UpdateSettingAsync("CurrencyRate", storedValue, userId);
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+        Snackbar.Add($"Successfully saved conversation rate to {storedValue}", Severity.Info);
+        AllUsers = await UserManagementService.GetAllUsersForAdminDashboardAsync(storedValue);
+        StateHasChanged();
+    }
+
+    // events
+    private List<string> _events = new();
+    private string _originalRole;
+    private decimal? _originalHourlyRate;
+    int? _originalWeeksToDueDateDefault;
+    string _originalName;
+    string _originalEmail;
+    void StartedEditingItem(UserRoleViewModel user)
+    {
+        // Store the original values before editing
+        _originalRole = user.SelectedRole;
+        _originalHourlyRate = user.HourlyRate;
+        _originalWeeksToDueDateDefault = user.WeeksToDueDateDefault;
+        _originalName = user.UserName;
+        _originalEmail = user.UserEmail;
+
+    }
+    private async Task CanceledEditingItemAsync(UserRoleViewModel user)
+    {
+    }
+
+    private async Task CommittedItemChanges(UserRoleViewModel user)
+    {
+        bool WeeksToDueDateDefault = user.WeeksToDueDateDefault != _originalWeeksToDueDateDefault;
+        bool roleChanged = user.SelectedRole != _originalRole;
+        bool hourlyRateChanged = user.HourlyRate != _originalHourlyRate;
+        bool isNameChanged = user.UserName != _originalName;
+        bool isEmailChanged = user.UserEmail != _originalEmail;
+        if (roleChanged)
+            await UpdateSelectedRole(user, user.SelectedRole);
+        if (hourlyRateChanged || WeeksToDueDateDefault || isNameChanged)
+        {
+            var result = await UserManagementService.UpdateUser(user.UserId, user, user.UserName);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomRight;
+            if (result.Contains("successfully"))
+                Snackbar.Add($"{result}", Severity.Success);
+            else
+                Snackbar.Add(result, Severity.Error);
+            StateHasChanged();
+        }
+        if(isEmailChanged)
+        {
+            var _user = await _userManager.FindByIdAsync(user.UserId);
+            if(_user != null)
+            {
+                await _userManager.SetEmailAsync(_user, user.UserEmail);
+                Snackbar.Add("Email has been changed successfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("User not found", Severity.Error);
+            }
+        }   
+
+
+    }
+    [Inject] private UserNotificationService UserNotificationService { get; set; }
+    private bool _processing = false;
+    private async Task CreateNotification()
+    {
+        try
+        {
+            _processing = true;
+            if (notification.Message == null || notification.TargetRole == null)
+            {
+                Snackbar.Add("Please fill in all the fields first!", Severity.Warning);
+                return;
+            }
+            await UserNotificationService.CreateNotification(notification.Message, notification.TargetRole, notification.SeverityColor);
+            Snackbar.Add($"The notification has been added successfully!", Severity.Success);
+            notification = new Notification();
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add($"An error has occured: {ex}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+    [Inject] ChatService chatService { get; set; }
+    private async Task EnsureChatExist()
+    {
+        foreach(var user in _users)
+        {
+            await chatService.EnsureAdminChat(user.UserId);
+        }
+    }
+
+    private void OpenDescriptionDialog(Project context)
+    {
+        var parameters = new DialogParameters
+        {
+                { "project", context },
+                { "currentRole", _currentRole},
+                {"currentUserId", _currentUserId }
+        };
+        var options = new DialogOptions { };
+        DialogService.ShowAsync<ProjectNameAndDescriptionDialog>("Project Description", parameters, options);
+
+    }
+}
+<style>
+    .mud-input-control-input-container
+    .mud-input.mud-input-outlined.mud-input-outlined-with-label.mud-shrink.mud-typography-input + .mud-input-label.mud-input-label-animated.mud-input-label-outlined.mud-input-label-inputcontrol {
+        background-color: #151726 !important;
+    }
+
+    .mud-popover.mud-popover-open.mud-popover-top-left.mud-popover-anchor-bottom-left.mud-popover-overflow-flip-onopen.mud-paper.mud-elevation-8.pa-4 {
+        background-color: #151726 !important;
+    }
+    .mud-tabs-tabbar.mud-tabs-rounded{
+        padding-bottom: 12px !important;
+    }
+    td.mud-table-cell > div.mud-input-control.mud-input-control-boolean-input{
+        align-items:center;
+    }
+
+    .mud-input.mud-input-outlined.mud-input-outlined-with-label.mud-input-adorned-end.mud-shrink.mud-typography-subtitle1.mud-select-input > .mud-input-slot.mud-input-root.mud-input-root-outlined.mud-input-root-adorned-end.mud-select-input {
+        height:30px;
+    }
+
+</style>

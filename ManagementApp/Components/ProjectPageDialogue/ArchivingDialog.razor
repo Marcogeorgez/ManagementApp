@@ -1,0 +1,118 @@
+﻿@using ManagementApp.Data.Entities
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success" Class="mt-4" Style="">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudTextField T="string"
+                                  Label="Project Name"
+                                  Value="@newProject.ProjectName"
+                                  ReadOnly="true"
+                                  Variant="Variant.Outlined"
+                                  Class="rounded-lg"
+                                   />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudTextField T="string"
+                                  Label="Client Name" Value="@newProject.ClientName" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField T="string"
+                                  Label="Primary Editor Name" Value="@newProject.PrimaryEditorName" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField T="string"
+                                  Label="Secondary Editor Name" Value="@newProject.SecondaryEditorName" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Status" Value="@newProject.FormatStatus" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"
+                                  Label="Payment Status" Value="@newProject.FormatAdminStatus" ReadOnly="true" Variant="Variant.Outlined" Class="rounded-lg" />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Shoot Date"
+                                   Date="@newProject.ShootDate"
+                                   ReadOnly="true"
+                                   Variant="Variant.Outlined"
+                                   Class="rounded-lg"
+                                    />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Due Date"
+                                   Date="@newProject.DueDate"
+                                   ReadOnly="true"
+                                   Variant="Variant.Outlined"
+                                   Class="rounded-lg"
+                                    />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Working Month"
+                                   Date="@newProject.WorkingMonth"
+                                   ReadOnly="true"
+                                   Variant="Variant.Outlined"
+                                   Class="rounded-lg"
+                                    />
+                </MudItem>
+
+                <MudItem xs="12" sm="12">
+                    <MudSelect T="ArchiveReason" Label="Reason For Archiving Project" @bind-Value="Reason" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
+                        Variant="Variant.Outlined" Class="rounded-lg" Dense>
+                        <MudSelectItem Value="ArchiveReason.Paid">Paid</MudSelectItem>
+                        <MudSelectItem Value="ArchiveReason.Cancelled">Cancelled</MudSelectItem>
+                        <MudSelectItem Value="ArchiveReason.Deleted">Deleted</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large" OnClick="@Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Outlined" Size="Size.Large"  OnClick="@Submit">Archive Project</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project newProject { get; set; } = new Project();
+    private bool success;
+    private MudForm form;
+    private DateTime _minDate = DateTime.Now.Date;
+    private string errorMessage = "";
+    private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
+    public ArchiveReason Reason { get; set; }
+
+    protected override void OnInitialized()
+    {
+        newProject.Archive = new Archive();
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            newProject.Archive.Reason = ArchiveHelper.GetDisplayName(Reason);
+            MudDialog.Close(DialogResult.Ok(newProject.Archive.Reason)); // Return the new project to the main component
+        }
+        else
+        {
+            errorMessage = "Please fill in all required fields correctly before submitting.";
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+}

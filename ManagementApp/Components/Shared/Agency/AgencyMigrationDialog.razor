@@ -1,0 +1,409 @@
+﻿@using ManagementApp.Components.ProjectPageDialogue
+@using ManagementApp.Data
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+@inject IDialogService DialogService
+
+<MudContainer Gutters=true>
+    <MudDialog>
+        <DialogContent>
+            <MudContainer Style="max-height: 500px; overflow-y: auto">
+                <MudForm @ref="form" @bind-IsValid="@isFormValid" @bind-Errors="@formErrors" ValidationDelay="0">
+                    <MudGrid Spacing="2" Justify="Justify.SpaceBetween">
+
+                        <MudItem xs="12">
+                            <MudList T=UserRoleViewModel Dense="true">
+                                <MudText Class="mb-4 mt-4">Selected Users:</MudText>
+                                @foreach (var user in SelectedUsers)
+                                {
+                                    <MudListItem>
+                                        <MudText>@user.UserName (@user.UserEmail) - ID: @user.UserId</MudText>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudItem>
+                        <MudDivider Style="border-width: 0px;" />
+                        <MudToggleGroup Class="d-flex flex-auto mx-10" T="string" SelectionMode="SelectionMode.SingleSelection" @bind-Value="_value1" Color="Color.Info" CheckMark FixedContent>
+                            <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("New")" Text="Create New Agency" />
+                            <MudToggleItem Class="d-flex flex-auto" Style="border-radius:0!important" Value="@("Existing")" Text="Add to Existing Agency" />
+                        </MudToggleGroup>
+                        <MudDivider Style="border-width: 0px;" />
+                        @if (_value1 == "New")
+                        {
+                            <MudGrid Spacing="3" Class="mx-20 mt-5">
+                                <MudTextField T="string"
+                                @bind-Value="agencyName"
+                                Label="Agency Name"
+                                Required="true" Variant="Variant.Outlined"
+                                RequiredError="Agency name is required!"
+                                Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyName))" />
+                                <MudTextField T="string"
+                                @bind-Value="agencyEmail"
+                                Label="Agency Email"
+                                Required="true" Variant="Variant.Outlined"
+                                RequiredError="Agency email is required!"
+                                Validation="@(new Func<string, IEnumerable<string>>(ValidateAgencyEmail))"/>
+                            </MudGrid>
+
+                        }
+                        else if(_value1 == "Existing")
+                        {
+                            <MudSelect T="string" 
+                            AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                            Class="d-flex justify-center mud-width-full mx-20 mt-5"
+                            Variant="Variant.Outlined"
+                            Label="Select The Agency"
+                            @bind-Value="selectedAgency">
+                                @foreach (var user in SelectedUsers)
+                                {
+                                    <MudSelectItem Class="" T="string" Value="@user.UserId" >
+                                        @user.UserName
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                    </MudGrid>
+
+
+                </MudForm>
+            </MudContainer>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary"
+            OnClick="ProcessMigration"
+            Disabled="@(!CanSubmit())">
+                Create Agency
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudContainer>
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public IEnumerable<UserRoleViewModel> SelectedUsers { get; set; }
+
+    private MudForm form;
+    private string[] formErrors = Array.Empty<string>();
+    private bool isFormValid;
+    private bool isProcessing = false;
+    private string agencyName = string.Empty;
+    private string agencyEmail = string.Empty;
+    private string _value1 = String.Empty;
+    private string selectedAgency = string.Empty;
+    private void Cancel() => MudDialog.Cancel();
+
+    private bool CanSubmit() =>
+        isFormValid;
+
+    private IEnumerable<string> ValidateAgencyName(string name)
+    {
+        var isNameTaken = UserManager.Users.Any(u => u.UserName == name);
+        if (string.IsNullOrWhiteSpace(name))
+            yield return "Agency name is required";
+        else if (name.Length < 3)
+            yield return "Agency name must be at least 3 characters long";
+        else if (name.Length > 100)
+            yield return "Agency name cannot exceed 100 characters";
+        else if (isNameTaken)
+            yield return "Agency name is already taken! Please choose different name.";
+    }
+
+    private  IEnumerable<string> ValidateAgencyEmail(string email)
+    {
+        var isEmailTaken = UserManager.Users.Any(u => u.Email == email);
+        if (string.IsNullOrWhiteSpace(email))
+            yield return "Agency name is required";
+        else if (email.Length < 3)
+            yield return "Agency name must be at least 3 characters long";
+        else if (email.Length > 100)
+            yield return "Agency name cannot exceed 100 characters";
+        else if (isEmailTaken && !SelectedUsers.Any(u => u.UserEmail == email))
+            yield return "Email is already taken! either as a user in agency or for a normal user";
+    }
+
+    private async Task ProcessMigration()
+    {
+        if (isProcessing)
+            return;
+        try
+        {
+            isProcessing = true;
+            if (!isFormValid)
+            {
+                Snackbar.Add("Please correct the form errors and ensure users are selected", Severity.Warning);
+                return;
+            }
+            if (_value1 == "New"){
+                bool? result = await DialogService.ShowMessageBox(
+                "Warning",
+                "Are you sure you want to combine these users into a single agency? All of their current projects will be assigned to the new agency with the chats combined!",
+                yesText: "Confirm", cancelText: "Cancel");
+                var state = result == null ? "Canceled" : "Confirm";
+                if (state == "Canceled")
+                    return;
+
+            }
+            if (_value1 == "Existing")
+            {
+                if(SelectedUsers.Count() <= 1)
+                {
+                    Snackbar.Add("You can't assign to an existing agency if you have selected less than 2 users!", Severity.Error);
+                    return;
+                }
+                bool? result = await DialogService.ShowMessageBox(
+                "Warning",
+                "Are you sure you want to add these users into this agency? All of the new users current projects will be assigned to the current agency with the chats combined !",
+                yesText: "Confirm", cancelText: "Cancel");
+                var state = result == null ? "Canceled" : "Confirm";
+                if (state == "Canceled")
+                    return;
+
+            }
+
+            await MigrateUsersToNewAgency();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating agency: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task<bool> ShowConfirmationDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Message", "Are you sure you want to combine these users into a single agency? All of their projects will be assigned to the new agency." }
+        };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+
+        return !result.Canceled && (bool) result.Data;
+    }
+    bool isMigratingUsers;
+    private async Task MigrateUsersToNewAgency()
+    {
+        if(isMigratingUsers)
+            return; 
+        isMigratingUsers = true;
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            var userIds = SelectedUsers.Select(u => u.UserId).ToList();
+
+            if(_value1 == "Existing")
+            {
+                userIds.Remove(selectedAgency);
+                var googleLogins = await FetchAndRemoveGoogleLogins(context, userIds);
+                var users = await context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+                await SaveMigratedUsers(context, googleLogins, users);
+                var newLogins = CreateNewLogins(googleLogins,selectedAgency);
+
+                await context.UserLogins.AddRangeAsync(newLogins);
+                await context.SaveChangesAsync();
+
+                await UpdateProjectOwnership(context, userIds, selectedAgency);
+                await MigrateMessagesToNewUserAsync(context, userIds, selectedAgency);
+
+                await DeleteOldUsers(context, userIds);
+
+                await transaction.CommitAsync();
+                Snackbar.Add($"Added users to Agency successfully!", Severity.Success);
+                var selectedAgencyUser = await context.Users.FirstOrDefaultAsync(u => u.Id == selectedAgency);
+                await UserManager.UpdateSecurityStampAsync(selectedAgencyUser);
+
+
+            }
+            else if(_value1 == "New")
+            {
+                var googleLogins = await FetchAndRemoveGoogleLogins(context, userIds);
+
+                var users = await context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+                await SaveMigratedUsers(context, googleLogins, users);
+
+                var newAgencyId = Guid.NewGuid();
+                var newAgency = CreateNewAgency(newAgencyId);
+                var newLogins = CreateNewLogins(googleLogins, newAgencyId.ToString());
+
+                await SaveNewAgencyAndLogins(context, newAgency, newLogins);
+                await UpdateProjectOwnership(context, userIds, newAgencyId.ToString());
+                await MigrateMessagesToNewUserAsync(context, userIds, newAgencyId.ToString());
+
+                await DeleteOldUsers(context, userIds);
+                await transaction.CommitAsync();
+                await AssignRoleToUser(newAgency, "Client");
+
+                Snackbar.Add("Agency created successfully!", Severity.Success);
+
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        finally
+        {
+            isMigratingUsers = false;
+        }
+    }
+
+    private ApplicationUser CreateNewAgency(Guid newAgencyId) => new()
+        {
+            Id = newAgencyId.ToString(),
+            UserName = agencyName,
+            Email = agencyEmail,
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            EmailConfirmed = true
+        };
+
+    private async Task<List<IdentityUserLogin<string>>> FetchAndRemoveGoogleLogins(ApplicationDbContext context, List<string> userIds)
+    {
+        var googleLogins = await context.UserLogins
+            .Where(ul => userIds.Contains(ul.UserId) && ul.LoginProvider == "Google")
+            .ToListAsync();
+
+        context.UserLogins.RemoveRange(googleLogins);
+        await context.SaveChangesAsync();
+
+        return googleLogins;
+    }
+    private async Task AssignRoleToUser(ApplicationUser user, string roleName)
+    {
+        // Ensure the user exists in the database
+        if (user == null)
+            throw new InvalidOperationException("User must exist in the database before assigning roles.");
+
+        // Ensure the role exists
+        var roleExist = await RoleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            var role = new IdentityRole(roleName);
+            await RoleManager.CreateAsync(role);
+        }
+
+        // Assign the role if not already assigned
+        if (!await UserManager.IsInRoleAsync(user, roleName))
+        {
+            await UserManager.AddToRoleAsync(user, roleName);
+            
+        }
+        await UserManager.UpdateSecurityStampAsync(user);
+
+    }
+
+
+    private List<IdentityUserLogin<string>> CreateNewLogins(List<IdentityUserLogin<string>> googleLogins, string AgencyId) =>
+        googleLogins.Select(login => new IdentityUserLogin<string>
+            {
+                LoginProvider = login.LoginProvider,
+                ProviderKey = login.ProviderKey,
+                ProviderDisplayName = login.ProviderDisplayName,
+                UserId = AgencyId
+            }).ToList();
+
+    private async Task SaveNewAgencyAndLogins(ApplicationDbContext context, ApplicationUser newAgency, List<IdentityUserLogin<string>> newLogins)
+    {
+        await context.Users.AddAsync(newAgency);
+        await context.SaveChangesAsync();
+
+        await context.UserLogins.AddRangeAsync(newLogins);
+        await context.SaveChangesAsync();
+    }
+
+    private async Task SaveMigratedUsers(ApplicationDbContext context, List<IdentityUserLogin<string>> googleLogins, List<ApplicationUser> users)
+    {
+        var googleProviderKeys = googleLogins.Select(login => login.ProviderKey).ToList();
+
+        // Fetch existing migrated users based on the provider keys
+        var existingMigratedUsers = await context.MigratedUsers
+            .Where(mu => googleProviderKeys.Contains(mu.GoogleProviderKey))
+            .ToListAsync();
+
+        // Create new entries for logins that do not exist in the database
+        var newMigratedUsers = googleLogins
+            .Where(login => !existingMigratedUsers.Any(mu => mu.GoogleProviderKey == login.ProviderKey))
+            .Select(login =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == login.UserId);
+                return new MigratedUser
+                    {
+                        GoogleProviderKey = login.ProviderKey,
+                        Name = user?.UserName,
+                        Email = user?.Email,
+                        MigrationDate = DateTime.UtcNow
+                    };
+            }).ToList();
+
+        // Add only new entries to the context
+        context.MigratedUsers.AddRange(newMigratedUsers);
+
+        // Save changes if there are new entries
+        if (newMigratedUsers.Any())
+            await context.SaveChangesAsync();
+    }
+
+    private async Task UpdateProjectOwnership(ApplicationDbContext context, List<string> userIds, string newAgencyId)
+    {
+        var projectsToUpdate = await context.Projects
+            .AsTracking()
+            .Where(p => userIds.Contains(p.ClientId) ||
+                        userIds.Contains(p.PrimaryEditorId) ||
+                        userIds.Contains(p.SecondaryEditorId))
+            .ToListAsync();
+
+        foreach (var project in projectsToUpdate)
+        {
+            project.ClientId = userIds.Contains(project.ClientId) ? newAgencyId.ToString() : project.ClientId;
+            project.PrimaryEditorId = userIds.Contains(project.PrimaryEditorId) ? newAgencyId.ToString() : project.PrimaryEditorId;
+            project.SecondaryEditorId = userIds.Contains(project.SecondaryEditorId) ? newAgencyId.ToString() : project.SecondaryEditorId;
+        }
+
+        await context.SaveChangesAsync();
+    }
+    public async Task MigrateMessagesToNewUserAsync(ApplicationDbContext context,List<string> userIds, string newUserId)
+    {
+        if (userIds == null || !userIds.Any())
+            throw new ArgumentException("User IDs list cannot be empty.");
+
+        // Validate new user exists in a single database query
+        var newUserExists = await context.Users
+            .AnyAsync(u => u.Id == newUserId);
+
+        if (!newUserExists)
+            throw new ArgumentException("The specified user does not exist.");
+
+        // Performs bulk update in a single database operation
+        await context.Messages
+            .Where(m => userIds.Contains(m.UserId))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(m => m.UserId, newUserId)
+            );
+    }
+    private async Task DeleteOldUsers(ApplicationDbContext context, List<string> userIds)
+    {
+        var usersToDelete = await context.Users
+            .Where(u => userIds.Contains(u.Id))
+            .ToListAsync();
+
+        context.Users.RemoveRange(usersToDelete);
+        await context.SaveChangesAsync();
+    }
+}

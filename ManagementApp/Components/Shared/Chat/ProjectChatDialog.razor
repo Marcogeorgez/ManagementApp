@@ -1,0 +1,1012 @@
+﻿@namespace Chats
+@using ManagementApp.Components.ProjectPageDialogue
+@using ManagementApp.Components.Shared.Chat
+@inject ChatService ChatService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IScrollManager ScrollManager
+@inject IJSRuntime JSRuntime
+@inject ILogger<ProjectChatDialog> Logger
+@implements IDisposable
+@inject IMessageNotificationService MessageNotificationService
+@inject CloudflareR2Service CloudflareR2Service
+@inject ProjectState ProjectState
+@inject QuickMessageService QuickMessageService 
+
+<div @ref="chatContainerRef">
+    <MudContainer Class="chat-container" Gutters=false >
+        <MudPaper Elevation="4" Class="@GetChatPanel()">
+            <MudPaper Elevation="3" Class="@GetChatHeader()" Outlined="true">
+                <MudTooltip Arrow Text="Go Back">
+                    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="NavigateBack" Class="back-button" />
+                </MudTooltip>
+                <MudTooltip Arrow Text="Open Project Brief">
+                    <button @onclick="() => OpenDialogFromChat(Project)">
+                        <MudText Typo="Typo.h6" Class="chat-title">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Class="mr-3" />
+                            @( isAdminView && Project.ProjectId < 0 ? Project.Client.UserName : Project.ProjectName)
+                        </MudText>
+                    </button>
+                </MudTooltip>
+                <MudTooltip Arrow Text="Close">
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Info" OnClick="Close" />
+                </MudTooltip>
+            </MudPaper>
+
+            <MudContainer Class="chat-content" Gutters="false" 
+            @ondragenter="HandleDragEnter" @ondragleave="OnContainerDragLeave">
+                <MudStack Style="@($"z-index:10; {(IsDragging == true || _currentFile != null ? "" : "display:none;")}")">
+                    <MudFileUpload T="IBrowserFile" 
+                    Style="@($"text-align:center;position:sticky;z-index:2; height:100%; width:100%; top:0px; {(IsDragging ? "" : "display:none;")}")"
+                    @ref="@_fileUploadReference"
+                    OnFilesChanged="HandleFileChanged"
+                    MaximumFileCount="1"
+                    Hidden="@false"
+                    InputClass="absolute mud-width-full mud-height-full overflow-hidden z-10"
+                    InputStyle="opacity:0; transform: translate(-50%,0%)"
+                    tabindex="-1"
+                    @ondrop="@ClearDragClass"
+                    @ondragenter="@SetDragClass"
+                    @ondragleave="@ClearDragClass"
+                    @ondragend="@ClearDragClass">
+                        <ActivatorContent>
+                            @if (_currentFile != null)
+                            {
+                                if (_filePreviewUrl != null && _filePreviewUrl.Contains("image"))
+                                {
+                                    <MudPaper Style="width: 84%;display: flex; height: 70vh;margin-inline: 9%;" Outlined="true" Class="@_dragClass">
+                                        <MudImage src="@_filePreviewUrl" Alt="File Preview" Fluid="true" Class="mb-4" />
+                                    </MudPaper>
+                                }
+                                else if (_filePreviewUrl != null && _filePreviewUrl.Contains("pdf"))
+                                {
+                                    <iframe src="@_filePreviewUrl"
+                                    width="100%"
+                                    style="border: none; height: 70vh;">
+                                    </iframe>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Small" Color="Color.Error" />
+                                    <MudText Typo="Typo.body1">Unsupported File Preview Format</MudText>
+                                }
+                            }
+                            else
+                            {
+                                <MudPaper Style="height:95%; width:100%;"
+                                Outlined="true"
+                                Class="@_dragClass">
+                                    <MudText Typo="Typo.h6">
+                                        Drag file here
+                                    </MudText>
+                                </MudPaper>
+                            }
+                        </ActivatorContent>
+                    </MudFileUpload>
+                    @if(_currentFile != null)
+                    {
+                        <MudToolBar Gutters="@false" Class="justify-end gap-4 mx-5 upload-action" >
+                            <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Send"
+                            OnClick="Upload" Variant="Variant.Outlined" Disabled="@_isLoading">Send</MudButton>
+                            <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Cancel" 
+                            OnClick="ResetUpload" Variant="Variant.Outlined" Disabled="@_isLoading">Cancel</MudButton>
+                        </MudToolBar>
+                    }
+                </MudStack>
+                <div class="chat-messages" style="@($"{(IsDragging == true || _currentFile != null ? "display:none;" : "" )}")">
+                    <div class="scroller-content" id="scrollerContent">
+                        @foreach (var group in messages.GroupBy(m =>
+                        GetDisplayDate(m.Timestamp, timezoneOffsetMinutes)))
+
+                        {
+                            <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="date-separator">
+                                @group.Key
+                            </MudText>
+                            DateTime? lastTimestamp = null;
+                            string lastUserId = null;
+                            @foreach (var (message, index) in group.Select((m, i) => (m, i)))
+                            {
+                                if (lastUserId != message.UserId ||
+                                (lastTimestamp.HasValue &&
+                                GetDisplayDate(lastTimestamp.Value, timezoneOffsetMinutes) != GetDisplayDate(message.Timestamp, timezoneOffsetMinutes)) ||
+                                lastUserId == null)
+
+                                {
+                                    <MudText Typo="Typo.body2" Class="message-username">
+                                        @(message.UserId != UserId && !isClientView
+                                            ? message.User.UserName
+                                            : message.UserId != UserId && isClientView ? "Management-Company" : "")
+                                    </MudText>
+                                    lastUserId = message.UserId;
+                                }
+                                <div class="message-container @(message.UserId == UserId ? "message-right" : "message-left")" style="--total-messages:@messages.Count; --message-index:@index;">
+                                    <div class="chat-message @(message.IsApproved == false ? "not-approved-message" : "" )" @onclick="() => ToggleClick(message.MessageId)">
+                                        @foreach (var part in GetMessageWithLinks(message.Content))
+                                        {
+                                            if (StringHelper.IsLink(part))
+                                            {
+                                                var fileName = Path.GetFileName(part);
+                                                var cutIndex = fileName.IndexOf("—", StringComparison.OrdinalIgnoreCase) + 1;
+                                                var nameBeforeExtension = cutIndex >= 0 ? fileName.Substring(cutIndex) : fileName;
+                                                if (ImageExtensions.Contains(Path.GetExtension(nameBeforeExtension)))
+                                                {
+                                                    // Display the image
+                                                    <div class="spotlight" data-src="@part" data-download="true" @onclick:stopPropagation="true">
+                                                        <img src="@part" style="max-width:100%; height:auto; max-height:50vw;" />
+                                                    </div>
+                                                }
+                                                else if (Path.GetExtension(nameBeforeExtension).Contains("pdf"))
+                                                {
+                                                    <div class="file-bubble">
+                                                        <div class="file-icon-label">
+                                                            <a style="display: flex;" href="@part" target="_blank" rel="noopener noreferrer" class="file-name-link">
+                                                                <span class="file-icon"></span>
+                                                                @nameBeforeExtension
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <strong>
+                                                        <MudLink Typo="Typo.body1" Class="special-link" Target="_blank" Href="@part"
+                                                                 Underline="Underline.Always">@part </MudLink>
+                                                    </strong>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.body1">@part</MudText>
+                                            }
+                                        }
+                                        <MudText Typo="Typo.caption" Class="message-timestamp">
+                                            @ConvertLocal.ConvertToLocalTime(message.Timestamp, timezoneOffsetMinutes)
+                                            <MudIcon Class="received-icon" Icon="@Icons.Material.Filled.Check" Color="Color.Success"></MudIcon>
+                                        </MudText>
+                                    </div>
+                                    @if (message.UserId == UserId || isAdminView == true)
+                                    {
+                                        <div class="message-hover-options @(messageClicks.ContainsKey(message.MessageId) && messageClicks[message.MessageId] ? "active" : "")">
+                                            @if (isAdminView)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                                               OnClick="() => DeleteMessage(message)" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info" Size="Size.Small"
+                                                               OnClick="() => MessageInformation(message)" />
+                                                if (message.IsApproved == false)
+                                                {
+                                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
+                                                                   Size="Size.Small" OnClick="() => ApproveMessage(message)" />
+                                                }
+                                            }
+
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small"
+                                                           OnClick="() => EditMessage(message)" />
+                                        </div>
+                                    }
+
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="chat-pinned-text" style="@(isPrivateChat == true ? "display:none;" : isClientView ? "" : "display:none;")">
+                        Please discuss here all details related to this project except payment issues. <br/> 
+                        <span style="text-align: center;   display: block;">For payment related issues please use the direct chat with the administrator.</span>
+                    </div>
+                    @if (hasMoreMessages && !initialLoading)
+                    {
+                        <MudButton class="load-more-button" Style="flex: 1 0 auto; width: 50%; transform: translate(50%);" Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMoreButtonClick" disabled="@_isLoadingMore">
+                            @if (_isLoadingMore)
+                            {
+                                <span>Loading...</span>
+                            }
+                            else
+                            {
+                                <span>Load More</span>
+                            }
+                        </MudButton>
+                    }
+                    <LoadingIndicatorChat IsVisible="@initialLoading" Style="bottom: 50%; left:50%; position: absolute" /> 
+                </div>
+            </MudContainer>
+
+
+            <MudPaper Class="@GetClassNames()" Elevation="0" style="align-items:center;" >
+                <MudPopover Open="@_openQuickMessage" Fixed="true" Class="pb-4" Delay="100" Duration="150" >
+                    <div class="d-flex flex-column">
+                        <MudTabs Outlined="true" Centered="true" Border="true" Rounded="true">
+                            <MudTabPanel Text="Preapproved Messages" Icon="@Icons.Material.Filled.PlaylistAddCheck" IconColor="Color.Info">
+                                @foreach (var item in quickMessages)
+                                {
+                                    @if (item.Preapproved)
+                                    {
+                                        <MudText Class="d-flex mx-4 my-2">
+                                            <ChildContent>
+                                                <span class="quick-message" style="cursor:pointer;"  @onclick="() => SendMessage(item!)">@item.Content</span>
+                                                @if (isAdminView)
+                                                {
+                                                    <MudSpacer />
+                                                    <MudIconButton OnClick="() => DeleteQuickMessage(item)"
+                                                    Icon="@Icons.Material.Filled.Delete"
+                                                    Color="Color.Error"
+                                                    Size="Size.Small" />
+                                                }
+                                            </ChildContent>
+                                        </MudText>
+                                    }
+
+                                }
+                            </MudTabPanel>
+                            <MudTabPanel Text="Quick Custom Messages" Icon="@Icons.Material.Filled.EditNote" IconColor="Color.Info" >
+                                @foreach (var item in quickMessages)
+                                {
+                                    @if (!item.Preapproved)
+                                    {
+                                        <MudText Class="d-flex mx-4 my-2" >
+                                            <ChildContent>
+                                                <span class="quick-message"  style="cursor:pointer;" @onclick="() => newMessage = item.Content!">@item.Content</span>
+                                                @if (isAdminView)
+                                                {
+                                                    <MudSpacer />
+                                                    <MudIconButton OnClick="() => DeleteQuickMessage(item)"
+                                                    Icon="@Icons.Material.Filled.Delete"
+                                                    Color="Color.Error"
+                                                    Size="Size.Small" />
+                                                }
+                                            </ChildContent>
+                                        </MudText>
+                                    }
+                                }
+
+                            </MudTabPanel>
+
+                        </MudTabs>
+                        <div class="d-flex mt-6">
+                            @if (isAdminView)
+                            {
+                                <MudButton Color="Color.Success" OnClick="AddNewQuickMessage"
+                                StartIcon="@Icons.Material.Outlined.Add" Variant="Variant.Outlined" Class="mr-auto mb-1 ml-4">Add New Message</MudButton>
+                            }
+                            <MudButton OnClick="OpenQuickMessages" Class="ml-auto mb-1 mr-5" Color="Color.Error" Variant="Variant.Outlined">Close</MudButton>
+                        </div>
+                    </div>
+                </MudPopover>
+                @*Overlay used to close the menu when user clicks anywhere*@
+                <MudOverlay @bind-Visible="isMenuOpen" AutoClose="true" Style="width:100%; height:100%; position:absolute; z-index:1399;" />
+
+                <MudMenu Icon="@Icons.Material.Filled.MoreVert" AriaLabel="Open user menu" OpenChanged="() => isMenuOpen = !isMenuOpen"
+                Open="@isMenuOpen"
+                AnchorOrigin="Origin.TopCenter" TransformOrigin="Origin.BottomCenter"  >
+                    <MudMenuItem OnClick="@(() => _fileUploadReference.OpenFilePickerAsync())" >
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" />
+                            <MudText Class="ml-2">Upload</MudText>
+                        </div>
+                    </MudMenuItem>
+                    @if (!isClientView)
+                    {
+                        <MudMenuItem Label="Quick Messages" OnClick="OpenQuickMessages" />
+                    }
+                </MudMenu>
+
+                <MudTextField @bind-Value="newMessage" Class="flex-grow-1" Placeholder="Type a message..."
+                Variant="Variant.Outlined" Clearable="true" @ref="messageField" Adornment="Adornment.End"
+                AdornmentIcon="@Icons.Material.Filled.Send" OnAdornmentClick="( () => SendMessage(newMessage) )"
+                AutoFocus="true" 
+                KeyDownPreventDefault=_preventDefault OnKeyDown="HandleKeyPress" AutoGrow=true MaxLines="6">
+                </MudTextField>
+
+            </MudPaper>
+        </MudPaper>
+    </MudContainer>
+</div>
+@code {
+    private string GetClassNames() =>
+        $"chat-input-area d-flex justify-center {(isPrivateChat ? "private-chat" : "")}";
+    private string GetChatHeader() => 
+        $"chat-header {(isPrivateChat ? "private-chat" : "")}";
+    private string GetChatPanel() =>
+     $"chat-panel {(isPrivateChat ? "private-chat" : "")}";
+    private bool isMenuOpen;
+    private bool IsDragging;
+    [Inject] private IConfirmationService ConfirmationService { get; set; } = default!;
+    [Inject] private WordFilter WordFilter { get; set; }
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public Project Project{ get; set; }
+    [Parameter] public string UserId { get; set; }
+    [Parameter] public bool isAdminView { get; set; }
+    [Parameter] public bool isEditorView { get; set; }
+    [Parameter] public bool isClientView { get; set; }
+
+    private int timezoneOffsetMinutes { get; set; }
+    private string? UploadedFileUrl;
+    private string newMessage;
+    private string _filePreviewUrl;
+    private List<Message> messages = new List<Message>();
+    private Dictionary<int, bool> messageClicks = new Dictionary<int, bool>();
+    private MudTextField<string> messageField = default!;
+    private IDisposable _subscription;
+    private const int PAGE_SIZE = 50; 
+    private int currentPage = 1;
+    private bool hasMoreMessages = true;
+    private bool finishedLoading = false;
+    private bool initialLoading = true;
+
+    private bool _isLoading = true;
+    private List<QuickMessage> quickMessages = new List<QuickMessage>();
+    private MudFileUpload<IBrowserFile> _fileUploadReference;
+    private bool isPrivateChat;
+    private List<string> blockedWords = new(); // populate it on after render and if it's not private chat.
+
+    private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+    ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
+    ".svg", ".webp", ".ico", ".heic", ".heif", ".raw", ".psd",
+    ".dds", ".jp2", ".j2k", ".jpf", ".eps", ".ai"
+    };
+    public void Dispose()
+    {
+        ProjectState.OnChange -= HandleProjectChange;
+        _subscription?.Dispose();
+    }
+    private async void HandleProjectChange()
+    {
+        // Dispose current subscription to re-subscribe with the new project
+        
+        _subscription.Dispose();
+        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
+        {
+            if (projectId == Project.ProjectId) 
+            {
+                await InvokeAsync(async () =>
+                {
+                    // Reset pagination state
+                    currentPage = 1;
+                    hasMoreMessages = true;
+
+                    // Clear existing messages
+                    messages.Clear();
+                    await LoadMessages(true);
+                    await MarkMessagesAsRead();
+                });
+            }
+        });
+
+        // Immediately reload messages whenever the project changes
+        await LoadMessages(true);  
+        await MarkMessagesAsRead();
+        StateHasChanged();  // Trigger a re-render after messages are loaded
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        timezoneOffsetMinutes = await JSRuntime.InvokeAsync<int>("getTimezoneOffset");
+        if (!isClientView)
+            quickMessages = await QuickMessageService.GetAllMessagesAsync();
+        isPrivateChat = Project.ProjectId < 0 ? true : false ;
+        ProjectState.OnChange += HandleProjectChange;
+        await LoadMessages(true);
+        _isLoading = false;
+        await MarkMessagesAsRead();
+        _subscription = MessageNotificationService.Subscribe(Project.ProjectId, async (projectId) =>
+        {
+            if (projectId == Project.ProjectId) 
+            {
+                await InvokeAsync(async () =>
+                {
+                    // Reset pagination state
+                    currentPage = 1;
+                    hasMoreMessages = true;
+
+                    // Clear existing messages
+                    messages.Clear();
+                    await LoadMessages(true);
+                    await MarkMessagesAsRead();
+                });
+            }
+        });
+
+        await JSRuntime.InvokeVoidAsync("document.body.classList.add", "chat-open");
+
+    }
+    private async Task<string?> GeneratePreviewUrl(IBrowserFile file)
+    {
+        try
+        {   
+            var format = file.ContentType.Split('/')[0];
+            if (format == "image")
+            {
+                // Open the stream and read it fully
+                using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 10 ); // 10 MB
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
+                var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
+                return $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            }
+            else if(file.ContentType == "application/pdf")
+            {
+                // Open the stream and read it fully
+                using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1000 * 10); // 5 MB
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream); // Copy the entire stream to a MemoryStream
+                var bytes = memoryStream.ToArray(); // Convert the MemoryStream to a byte array
+                return $"data:{file.ContentType};base64,{Convert.ToBase64String(bytes)}";
+            }
+            else
+            {
+                Snackbar.Add("Unsupported Format. Currently support Image/PDF only.", Severity.Warning);
+                await ResetUpload();
+                return null;
+            }
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("exceeds"))
+        {
+            Snackbar.Add("File size exceeds the maximum allowed size (10MB). Please upload it externally and attach link.");
+            await ResetUpload();
+            return null;
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add("An Error occurred while uploading the file. Please try again later", Severity.Error);
+            await ResetUpload();
+            return null;
+        }
+    }
+    private async void Upload()
+    {
+        await UploadFiles(_currentFile);
+        await ResetUpload();
+    }
+    private IBrowserFile _currentFile;
+    private async Task ResetUpload()
+    {
+        IsDragging = false;
+        _currentFile = null;
+        _filePreviewUrl = null;
+        StateHasChanged();
+
+    }
+    private async Task HandleFileChanged(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            _currentFile = e.File;
+            IsDragging = true;
+            _filePreviewUrl = await GeneratePreviewUrl(_currentFile);
+
+        }
+    }
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        try
+        {
+            _isLoading = true;
+            IsDragging = false;
+            StateHasChanged();
+            UploadedFileUrl = await CloudflareR2Service.UploadFileAsync(file);
+            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, UploadedFileUrl, isEditorView, false);
+            await MarkMessagesAsRead();
+
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Unsupported Format or file is larger than 10MB. Please attach the file using a link hosted on another cloud storage", Severity.Warning);
+            Console.WriteLine($"Error uploading file: {ex}");
+        }
+        finally{
+            _isLoading = false;
+            ClearDragClass();
+        }
+
+    }
+    private async Task<bool> SendMessage(QuickMessage message)
+    {
+        _isLoading = true;
+        try
+        {
+            if (message.Preapproved)
+            {
+                OpenQuickMessages();
+                await ChatService.AddMessageAsync(Project.ProjectId, UserId, message.Content!, false, false);
+                await MarkMessagesAsRead();
+                _isLoading = false;
+                return true;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to send message", Severity.Error);
+            Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
+            _isLoading = false;
+            return false;
+        }
+        finally{
+            _isLoading = false;
+            StateHasChanged();
+        }
+
+    }
+    private async Task<bool> SendMessage(string messageToSend)
+    {
+        _isLoading = true;
+        await messageField.BlurAsync();
+        messageToSend = newMessage;
+        bool requireApproval = false;
+        if (!isPrivateChat && !WordFilter.IsMessageAllowed(messageToSend))
+        {
+            Snackbar.Add("This message might include payment related info that MUST be disscussed only on Managememnt chat.", Severity.Error);
+            requireApproval = true;
+        }
+        await messageField.Clear();
+        await messageField.FocusAsync();
+
+
+        if (string.IsNullOrWhiteSpace(messageToSend))
+        {
+
+            Snackbar.Add("Message cannot be empty", Severity.Warning);
+            _isLoading = false;
+            return false;
+        }
+        try
+        {
+            var message = await ChatService.AddMessageAsync(Project.ProjectId, UserId, messageToSend, isEditorView, requireApproval);
+            await MarkMessagesAsRead();
+
+            await InvokeAsync(StateHasChanged);
+            _isLoading = false;
+            _preventDefault = false;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to send message", Severity.Error);
+            Logger.LogError($"Failed to send message to server by SendMessage Method {ex} ");
+            _isLoading = false;
+            return false;
+        }
+        finally{
+            newMessage = string.Empty;
+            messageToSend = string.Empty;
+        }
+    }
+    bool _preventDefault;
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+
+        if ( _preventDefault = e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage(newMessage);
+        }
+        if (e.Key == "Escape" && !string.IsNullOrWhiteSpace(newMessage))
+        {
+            await NavigateBack();
+        }
+
+    }
+    private async Task MarkMessagesAsRead()
+    {
+        await ChatService.MarkMessagesAsReadAsync(Project.ProjectId, UserId);
+    }
+    private void ToggleClick(int messageId)
+    {
+        if (messageClicks.ContainsKey(messageId))
+        {
+            messageClicks[messageId] = !messageClicks[messageId]; // Toggle state
+        }
+        else
+        {
+            messageClicks[messageId] = true; // Show for new messages
+        }
+    }
+    bool _openQuickMessage;
+    private void OpenQuickMessages()
+    {
+        _openQuickMessage = !_openQuickMessage;
+    }
+    private async Task LoadMessages(bool initial = true)
+    {
+        try
+        {
+            finishedLoading = false;
+            var loadedMessages = await ChatService.GetMessagesAsync(Project.ProjectId, isAdminView, UserId, pageNumber: currentPage, pageSize: PAGE_SIZE);
+            
+            if (initial)
+            {
+                // First load - clear existing messages and add new ones
+                messages.Clear();
+                messages.AddRange(loadedMessages);
+                initialLoading = false;
+            }
+            else
+            {
+                var currentScrollPosition = await JSRuntime.InvokeAsync<int>("getCurrentScrollPositionFromBottom", ".chat-messages");
+
+                // Prepend new messages to the beginning of the list (only once)
+                messages.InsertRange(0, loadedMessages);
+
+                // Allow UI to update before restoring scroll
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(50);
+
+                // Restore scroll position
+                await JSRuntime.InvokeVoidAsync("restoreScrollPositionFromBottom", ".chat-messages", currentScrollPosition);
+            }
+
+            // Determine if there are more messages to load
+            hasMoreMessages = loadedMessages.Count == PAGE_SIZE;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading messages. Please try again later, or refresh page if it persists please report this.", Severity.Error);
+            Logger.LogError($"Error loading messages: {ex.Message}");
+        }
+        finally
+        {
+            finishedLoading = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // Quick Messages adding and deleting methods
+    private async Task DeleteQuickMessage(QuickMessage message)
+    {
+        if (!await ConfirmationService.Confirm($"Are you sure you'd like to delete this quick message? It will be deleted for all users."))
+        {
+            return;
+        }
+
+        try
+        {
+            await QuickMessageService.DeleteMessageAsync(message.Id);
+            quickMessages.Remove(message);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to delete message", Severity.Error);
+            Logger.LogError($"Failed to delete message {ex}");
+        }
+    }
+    private async Task AddNewQuickMessage()
+    {
+        try
+        {
+            var dialog = await DialogService.ShowAsync<AddQuickMessage>("");
+            var result = await dialog.Result;
+            if (result.Canceled)
+            {
+                return;
+            }
+            else
+            {
+                var message = result.Data as QuickMessage;
+                message = await QuickMessageService.CreateMessageAsync(message);
+                quickMessages.Add(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to delete message", Severity.Error);
+            Logger.LogError($"Failed to delete message {ex}");
+        }
+    }
+
+
+    private bool _isLoadingMore = false;
+    private DateTime _lastLoadTime = DateTime.MinValue;
+    private readonly TimeSpan _loadThrottleTime = TimeSpan.FromMilliseconds(500);
+
+    private async Task LoadMoreButtonClick()
+    {
+        // Skip if loading is in progress or no more messages
+        if (!finishedLoading || !hasMoreMessages || _isLoadingMore)
+        {
+            return;
+        }
+
+        // Throttle to prevent rapid clicking
+        if (DateTime.Now - _lastLoadTime < _loadThrottleTime)
+        {
+            return;
+        }
+        _lastLoadTime = DateTime.Now;
+        try
+        {
+            _isLoadingMore = true;
+            await InvokeAsync(StateHasChanged);
+            currentPage++;
+            await LoadMessages(initial: false);
+        }
+        finally
+        {
+            _isLoadingMore = false;
+        }
+    }
+    // Display date of each chat messages grouped by their date.
+    string GetDisplayDate(DateTime timestamp, int timezoneOffsetMinutes)
+    {
+        // Convert both to local time
+        var localTimestamp = timestamp.AddMinutes(-timezoneOffsetMinutes);
+        var localToday = DateTime.UtcNow.AddMinutes(-timezoneOffsetMinutes).Date;
+
+        var daysDifference = (localToday - localTimestamp.Date).Days;
+
+        if (localTimestamp.Date == localToday)
+        {
+            return "Today";
+        }
+        else if (localTimestamp.Date == localToday.AddDays(-1))
+        {
+            return "Yesterday";
+        }
+        else if (daysDifference <= 7)
+        {
+            return localTimestamp.DayOfWeek.ToString(); // Within past week
+        }
+        else if (localTimestamp.Year == localToday.Year)
+        {
+            return localTimestamp.ToString("MMMM dd");
+        }
+        else
+        {
+            return localTimestamp.ToString("MMMM dd, yyyy");
+        }
+    }
+
+
+    private IEnumerable<string> GetMessageWithLinks(string messageContent)
+    {
+        return StringHelper.GetTextAndLinks(messageContent);
+    }
+    private async Task DeleteMessage(Message message)
+    {
+
+        var parameters = new DialogParameters
+            {
+                { "Message", "Are you sure you want to delete this message?" }
+            };
+
+        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            StateHasChanged();
+            await ChatService.UnsendMessageAsync(Project.ProjectId, message.MessageId); // uses projectId to notify users of the change
+            await LoadMessages(initial: true);
+        }
+
+    }
+    private async Task ApproveMessage(Message message)
+    {
+        await ChatService.ApproveMessageAsync(Project.ProjectId, message.MessageId);
+        await LoadMessages(initial: true);
+    }
+
+    private async Task MessageInformation(Message message)
+    {
+        await DialogService.ShowMessageBox("Info",$"message sent at {message.Timestamp} UTC", yesText: "Close");
+        StateHasChanged();
+
+    }
+    private async Task EditMessage(Message message)
+    {
+        try
+        {
+            if(UserId != message.UserId && isAdminView != true)
+            {
+                throw new Exception("The user is trying to modify a message that he he shouldn't be able to edit !!!");
+            }
+            var parameters = new DialogParameters<EditMessageDialog>
+            {
+                { x => x.Message, message },
+                {"isAdminView", isAdminView},
+                {"UserId", UserId}
+            };  
+            var dialog = await DialogService.ShowAsync<EditMessageDialog>("", parameters);
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+                var editedContent = (string) result.Data!;
+                await ChatService.EditMessageAsync(message, Project.ProjectId, editedContent, isEditorView);
+                await LoadMessages(initial: true);
+            }        
+
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError($"The user is trying to modify a message that he he shouldn't be able to edit !!! This is the exception{ex}");
+        }
+    }
+
+
+    private async Task NavigateBack()
+    {
+        var result = await ShowConfirmationDialog();
+        if (!result.Canceled)
+        {
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                Position = DialogPosition.BottomRight,
+                NoHeader = true,
+            };
+
+            var parameters = new DialogParameters
+            {
+                { "userId", UserId },
+                { "isAdminView", isAdminView },
+                { "isEditorView", isEditorView },
+                { "isClientView", isClientView },
+            };
+            ProjectState.SetProject(null);
+            await DialogService.ShowAsync<ChatProjectListDialog>("", parameters, options);
+
+        }
+    }
+    private async Task Close()
+    {
+        var result = await ShowConfirmationDialog();
+        if (!result.Canceled)
+        {
+            ProjectState.SetProject(null);
+        }
+        await JSRuntime.InvokeVoidAsync("document.body.classList.remove", "chat-open");
+    }
+
+    private async Task<DialogResult> ShowConfirmationDialog()
+    {
+        if (!string.IsNullOrEmpty(newMessage))
+        {
+            var parameters = new DialogParameters
+            {
+                { "Message", "There is an unsent message. Are you sure you want to close?" }
+            };
+
+            var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Confirmation", parameters);
+
+            return await dialog.Result!;
+        }
+
+        return DialogResult.Ok(true); 
+    }
+    private ElementReference? chatContainerRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Get the list of blocked words only for non-private chat, as private chat doesn't have blocked words
+            if(!isPrivateChat)
+            {
+                blockedWords = await ChatService.GetBlockedWordsAsync();
+            }
+            await JSRuntime.InvokeVoidAsync("initializeFocusTrap", chatContainerRef);
+            // Focus the message input field
+            if (messageField != null)
+            {
+                await messageField.FocusAsync();
+            }
+        }
+    }
+
+
+
+    // Used to open the project brief dialog from the chat
+    [Parameter] public EventCallback<Project> OnOpenProjectDialog { get; set; }
+    private async Task OpenDialogFromChat(Project project)
+    {
+        if(project.ProjectId > 0) // i.e: chat has project, otherwise it's a management chat.
+        {
+            await OnOpenProjectDialog.InvokeAsync(project);
+        }
+        else
+        {
+            return;
+        }
+    }
+
+
+    private void HandleDragEnter()
+    {
+        IsDragging = true;
+    }
+
+
+    private async Task OnContainerDragLeave(DragEventArgs e)
+    {
+        try{
+            bool isOverPaper = await JSRuntime.InvokeAsync<bool>(
+                "isMouseOverPaper",
+                chatContainerRef,
+                e.ClientX,
+                e.ClientY
+            );
+
+            if (!isOverPaper)
+            {
+                // Handle the actual drag leave logic here
+                IsDragging = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling drag leave: {ex}");
+        }
+    }
+    private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4";
+    private string _dragClass = DefaultDragClass;
+    private void SetDragClass() => _dragClass = $"{DefaultDragClass} mud-border-primary";
+    private void ClearDragClass() => _dragClass = DefaultDragClass;
+}
+<style>
+    .mud-dialog-width-md {
+        padding: 0% !important;
+    }
+
+    .mud-input-control.mud-file-upload > .mud-input-control-input-container,    
+    .mud-input-control.mud-file-upload > .mud-input-control-input-container * {
+        width:100%;
+        padding:4px;
+        height:100%;
+        overflow:hidden;
+    }
+</style>
+<script>
+    function isMouseOverPaper(paperElement, clientX, clientY) {
+        const elementUnderMouse = document.elementFromPoint(clientX, clientY);
+        return paperElement.contains(elementUnderMouse);
+    }
+
+    window.getTimezoneOffset = function () {
+        return -new Date().getTimezoneOffset(); // Offset in minutes, negative for UTC-
+    };
+
+    window.getCurrentScrollPositionFromBottom = function (selector) {
+        const element = document.querySelector(selector);
+        if (!element) return 0;
+        // For column-reverse layout, we need to measure from the top instead
+        const top = element.scrollTop;
+        return Number.isFinite(top) ? Math.floor(top) : 0;
+    };
+
+
+    window.restoreScrollPositionFromBottom = function(selector, position) {
+        const container = document.querySelector(selector);
+        if (!container) return;
+        // For column-reverse layouts, setting scrollTop directly
+        container.scrollTop = position;
+    }
+    window.initializeFocusTrap = (element) => {
+        const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+        element.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const focusable = Array.from(element.querySelectorAll(focusableElements))
+                    .filter(el => !el.disabled && el.offsetParent !== null);
+
+                const firstFocusable = focusable[0];
+                const lastFocusable = focusable[focusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        lastFocusable.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        firstFocusable.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+
+            // Add escape key handling
+            if (e.key === 'Escape') {
+                // Call your close method
+                element.querySelector('.close-button')?.click();
+            }
+        });
+    };
+
+</script>

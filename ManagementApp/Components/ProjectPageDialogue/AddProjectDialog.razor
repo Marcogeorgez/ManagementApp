@@ -1,0 +1,406 @@
+﻿@using ManagementApp.Data.Entities
+@using MudBlazor
+@using System.Text
+@using MudBlazor.Interfaces
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject CloudflareR2Service CloudflareService
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success"  > 
+            <MudGrid Spacing="1">
+                <MudItem xs="12" sm="12">
+                    <MudTextField T="string" AutoGrow="true" Label="Project Name" Variant="Variant.Outlined" @bind-Value="newProject.ProjectName" Required="true" />
+                </MudItem>
+                @if (!_isClientView)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Primary Editor"
+                                   @bind-Value="newProject.PrimaryEditorId">
+                            @foreach (var editor in Editors)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@editor.UserId">
+                                    @editor.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Class="d-flex justify-center mud-width-full py-2"
+                                   Variant="Variant.Outlined"
+                                   Label="Client"
+                                   @bind-Value="newProject.ClientId">
+                            @foreach (var client in Clients)
+                            {
+                                <MudSelectItem Class="" T="string" Value="@client.UserId">
+                                    @client.UserName
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                }
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Shoot Date"
+                                   Variant="Variant.Outlined"
+                                   Date="newProject.ShootDate" Editable=false
+                                   DateChanged="@(date =>{newProject.ShootDate = date;
+                                        if (date.HasValue)
+                                        {
+                                           newProject.DueDate = date.Value.AddDays(WeeksToDueDateDefault != 0 ?
+                                               (WeeksToDueDateDefault * 7) : 28*2);
+                                         }
+                                         })"
+                Required="true" />
+                </MudItem>
+                @if (!_isClientView)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker Label="Due Date"
+                                   Variant="Variant.Outlined"
+                                   Class="d-flex flex-column mud-width-full"
+                                   Date="newProject.DueDate"
+                                   Editable="false"
+                                   DateChanged="@(date => newProject.DueDate = date)"
+                                   Required="true" />
+                </MudItem>
+                }
+      
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" AutoGrow="true"
+                                  Label="Footage Link"
+                                  Placeholder="Add link of your footage"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.FootageLink"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                   />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" AutoGrow="true"
+                                  Label="Resolution"
+                                  Placeholder="Add Details of Footage Resolution"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.Resolution"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string"AutoGrow="true"
+                                  Label="Footage Size"
+                                  Placeholder="Add Details of Footage size"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.Size"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" AutoGrow="true"
+                                  Label="Number of Cameras"
+                                  Placeholder="Add Details of Number of cameras"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.CameraNumber"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" AutoGrow="true"
+                                  Label="Add Audio Details"
+                                  Placeholder="Add Details about Audio recorders"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.AudioDetails"
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" AutoGrow="true"
+                                  Label="Color Profile"
+                                  Placeholder="Add Details of Color profile for each camera"
+                                  Variant="Variant.Outlined"
+                                  @bind-Value="newProject.ProjectSpecifications.ColorProfile"
+                                  
+                                  Required="@(newProject.Status != ProjectStatus.Upcoming)"
+                                  RequiredError="This is required when the status of project is not 'Upcoming'" />
+                </MudItem>
+                @if (!_isClientView)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker Label="Working Month"
+                                       Variant="Variant.Outlined"
+                                       Date="newProject.WorkingMonth"
+                                       DateChanged="@(date => newProject.WorkingMonth = date ?? DateTime.Today)"
+                                       Required="true"
+                                       FixDay="1"
+                                       DateFormat="MM/yyyy"
+                                       Class="" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="ProgressBarValue"
+                                   Label="Progress"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   Variant="Variant.Outlined"
+                                   @bind-Value="ProgressEnum"
+                                   Class="">
+                            <MudSelectItem Value="ProgressBarValue.Zero">0%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Twenty">20%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Forty">40%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Sixty">60%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Eighty">80%</MudSelectItem>
+                            <MudSelectItem Value="ProgressBarValue.Hundred">100%</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="ProjectStatus" Variant=Variant.Outlined
+                                   Label="Status"
+                                   @bind-Value="newProject.Status"
+                                   Required="true"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                            {
+                                <MudSelectItem Value="@status">@status.ToString().Replace("_", " ")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudCheckBox Label="Mark as Urgent" Class="mt-3" Color="Color.Info"
+                                     @bind-Value="@newProject.IsUrgent" />
+                    </MudItem>
+                }
+                @if (_isClientView)
+                {
+                    <MudItem xs="12" sm="12">
+                        <MudSelect T="ProjectStatus" Variant=Variant.Outlined
+                                   Label="Status"
+                                   @bind-Value="newProject.Status"
+                                   Required="true"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="ProjectStatus.Upcoming">Upcoming</MudSelectItem>
+                            <MudSelectItem Value="ProjectStatus.Ready_To_Edit">Ready to Edit</MudSelectItem>
+                            <MudSelectItem Value="ProjectStatus.Revision">Revision</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="12" Class="mb-3 pl-5 pr-5  flex-column">
+
+                    <div class="mt-3 @(_hasErrorDeliverable ? "description-error mud-input-error" : "")">
+                        <MudHtmlEditor Outlined="true" Label="Deliverables" Text="Deliverables" Html="@newProject.Deliverables" OnFileUpload="@HandleFileUpload"
+                            HtmlChanged="OnDeliverableTextChanged" Resizable="true" style="min-height:50px;"
+                                       Placeholder="Please write down what the deliverables for this project will be">
+                        </MudHtmlEditor>
+
+
+                    </div>
+                    @if (_hasErrorDeliverable)
+                    {
+                        <MudText Color="Color.Error" Class="mt-2 mud-input-error d-flex mud-input-helper-text mud-input-error mud-input-control-helper-container px-2 ">
+                            @_errorText
+                        </MudText>
+                    }
+                </MudItem>
+
+                <MudItem xs="12" Class="mb-3 pl-5 pr-5  flex-column">
+                    
+                    <div class=" mt-3 @(_hasErrorDescription ? "description-error mud-input-error" : "")">
+                        <MudHtmlEditor Outlined="true" Label="Description" OnFileUpload="@HandleFileUpload"
+                                   Text="Brief of The Day and Technical Issues Notes:" 
+                                   Html="@newProject.Description"
+                                   HtmlChanged="OnNoteTextChanged" 
+                                   Resizable="true"
+                                   style="min-height:240px;" 
+                                   Placeholder="Example: This wedding was shot on Oahu, at Ko'olau Ballrooms.
+This is the Bride's second marriage, and they're a little older than the usual bride and grooms we have.
+This is a Hawaiian Wedding, so segments will have prayers in Hawaiian language, but the rest is in English. The Ceremony is in English, the speeches are in English.
+The Bride was married like I said before, so this wedding was quite special because she didn't think she'd ever get married again until she met Keola.">
+                    </MudHtmlEditor>
+                    </div>
+                    @if (_hasErrorDescription)
+                    {
+                        <MudText Color="Color.Error" Class="mt-2 mud-input-error d-flex mud-input-helper-text mud-input-error mud-input-control-helper-container px-2 ">
+                            @_errorText
+                        </MudText>
+                    }
+                </MudItem>
+
+
+
+
+                <MudItem xs="12" sm="12" Class="mb-3 pl-5 pr-5 flex-column" >
+                    <div class="mt-3">
+                        <MudHtmlEditor Outlined="true" Label="Music Preferences" OnFileUpload="@HandleFileUpload"
+                                       Text="Music Preferences"
+                                       Html="@newProject.MusicPreference"
+                                       HtmlChanged="OnMusicTextChanged"
+                                       Resizable="true"
+                                       style="min-height:50px;"
+                                       Placeholder="Place link to music here and any comments">
+                        </MudHtmlEditor>
+
+
+                    </div>
+                </MudItem>
+
+
+                <MudItem xs="12" sm="12">
+                    <MudText Typo="Typo.body2" Color="Color.Error" Class="d-flex mud-input-helper-text mud-input-error" Style="@ErrorMessageDisplay">
+                        @errorMessage
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="@Cancel" Color="Color.Error" Variant="Variant.Outlined" Size="Size.Large">Cancel</MudButton>
+        <MudButton Size="Size.Large" Color="@(success ? Color.Success : Color.Warning)" Variant="Variant.Outlined" OnClick="@Submit">Add Project</MudButton>
+    </DialogActions>
+
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int WeeksToDueDateDefault { get; set; }
+    [Parameter] public bool _isClientView { get; set; }
+    [Parameter] public List<UserRoleViewModel.UserProjectViewModel> Clients { get; set; }
+    [Parameter] public List<UserRoleViewModel.UserProjectViewModel> Editors { get; set; }
+    private Project newProject = new Project();
+    private MudForm form;
+    private string errorMessage;
+    private bool success;
+    private bool _hasErrorDescription;
+    private bool _hasErrorDeliverable;
+
+    private string _errorText = string.Empty;
+    private enum ProgressBarValue
+    {
+        Zero = 0,
+        Twenty = 20,
+        Forty = 40,
+        Sixty = 60,
+        Eighty = 80,
+        Hundred = 100
+    }
+    private ProgressBarValue ProgressEnum
+    {
+        get => (ProgressBarValue) newProject.ProgressBar;
+        set => newProject.ProgressBar = (int) value;
+    }
+    protected override void OnInitialized()
+    {
+        newProject.WorkingMonth = DateTime.Today;
+    }
+
+    private string ErrorMessageDisplay => string.IsNullOrEmpty(errorMessage) ? "display: none;" : "display: block;";
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+
+    private void OnNoteTextChanged(string text)
+    {
+        newProject.Description = text;
+    }
+        private void OnDeliverableTextChanged(string text)
+    {
+        newProject.Deliverables = text;
+    }
+    private void OnMusicTextChanged(string text)
+    {
+        newProject.MusicPreference = text;
+    }
+
+    private async Task Submit()
+    {
+        await form.Validate();
+        await InvokeAsync(StateHasChanged);
+        await JSRuntime.InvokeVoidAsync("scrollToFirstInvalidFieldAfterRender");
+
+        var errors = new List<string>();
+
+        // Collect form validation errors
+        if (!form.IsValid)
+        {
+            errors.Add("Please fill in all required fields correctly before submitting.");
+        }
+
+        // Collect project-specific validation errors
+        if (newProject.Status != ProjectStatus.Upcoming)
+        {
+            _hasErrorDescription = string.IsNullOrWhiteSpace(newProject.Description);
+            _hasErrorDeliverable = string.IsNullOrWhiteSpace(newProject.Deliverables);
+
+            if (_hasErrorDescription || _hasErrorDeliverable)
+            {
+                string errorText = ( _hasErrorDescription && _hasErrorDeliverable )
+                    ? "Brief of the day and Deliverables are required"
+                    : _hasErrorDescription
+                        ? "Brief of the day is required"
+                        : "Deliverables are required";
+                errors.Add(errorText);
+            }
+        }
+
+        // If there are any errors, display them all and return
+        if (errors.Any())
+        {
+            foreach (var error in errors)
+            {
+                Snackbar.Add(error, Severity.Error);
+            }
+            errorMessage = string.Join(" ", errors);
+            StateHasChanged();
+            return;
+        }
+
+        // If no errors, proceed with submission
+        await InvokeAsync(() => MudDialog.Close(DialogResult.Ok(newProject)));
+    }
+
+
+    private async Task<string> HandleFileUpload(IBrowserFile file)
+    {
+        try
+        {
+            var url = await CloudflareService.UploadFileAsync(file);
+            Console.WriteLine($"Upload successful, URL: {url}");           
+            return url;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Upload error in mudhtmleditor in page: {ex.Message}");
+            throw;
+        }
+    }
+    private async Task ScrollToFirstError()
+    {
+        // Look for the first input with validation error
+        await JSRuntime.InvokeVoidAsync("scrollToFirstInvalidField");
+    }
+
+}
+
+<script>
+        window.scrollToFirstInvalidFieldAfterRender  = function() {
+                requestAnimationFrame(function(){
+                    const firstInvalidElement = document.querySelector('.mud-input-error');
+                    if (firstInvalidElement) {
+                        firstInvalidElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        // Optional: focus the field
+                        firstInvalidElement.focus();
+                    }
+                });
+};
+</script>

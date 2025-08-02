@@ -1,0 +1,345 @@
+﻿@using ManagementApp.Components.ProjectPageDialogue
+@using ManagementApp.Components.Shared.ProfileComponents
+@using Microsoft.AspNetCore.Authorization
+@inject UserManager<ApplicationUser> UserManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> _userManager;
+@inject IDialogService DialogService
+<MudContainer>
+    <MudDialog>
+        <DialogContent>
+
+            <MudText Typo="Typo.h3" Class="mt-2">Hello, @userName</MudText>
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudItem xs="12" Class="mt-8">
+                    <MudText Typo="Typo.h5" Class="mb-2">Profile Settings</MudText>
+                </MudItem>
+                <MudGrid Class="d-flex flex-row pr-3" Justify="Justify.Center" Spacing="6">
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string" Label="Current Username" @bind-Value="@userName"
+                        ReadOnly="true" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string" Label="New Username" @bind-Value="model.NewUsername"
+                        Required="true" RequiredError="New username is required!" 
+                        Validation="@(new Func<string, IEnumerable<string>>(ValidateUsername))"
+                        Variant="Variant.Outlined"  />
+                    </MudItem>
+                    <MudItem xs="12" sm="4" Style="align-content:center;">
+                        <MudButton Variant="Variant.Outlined" Class="ml-auto px-10 d-flex" Color="Color.Info"
+                        Style="width: 150px; "
+                        Disabled="@(!success || processing)" OnClick="ChangeUsernameAsync">
+                            @if (processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Processing</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Update</MudText>
+                            }
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+            <MudForm @ref="emailForm" @bind-IsValid="@emailSuccess">
+                <MudGrid Class="d-flex flex-row pr-3" Justify="Justify.Center" Spacing="6">
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string" Label="Current Email" @bind-Value="@userEmail"
+                        ReadOnly="true" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string" Label="New Email" @bind-Value="model.NewEmail"
+                        Required="true" Variant="Variant.Outlined"  />
+                    </MudItem>
+                    <MudItem xs="12" sm="4" Style="align-content:center;">
+                        <MudButton Variant="Variant.Outlined" Class="ml-auto px-10 d-flex" Color="Color.Info"
+                        Style="width: 150px; "
+                        Disabled="@(!emailSuccess || processing)" OnClick="ChangeUserEmailAsync">
+                            @if (processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Processing</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Update</MudText>
+                            }
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+
+            @if (userRole == "Client")
+            {
+
+                <MudGrid Class="d-flex flex-auto align-center pr-3 my-2" Justify="Justify.Center" Spacing="6">
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="ml-3 d-flex flex-auto" Typo="Typo.h5"  Style="align-items: center;">
+                            Edit your preferences
+                        </MudText>
+                        <MudText  Class="ml-3 d-flex flex-auto" Typo="Typo.body2" Style="align-items: center; color:grey;">
+                            Please fill in the following form so we know more about your personal preferences and brand identity.
+                        </MudText>
+
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudButton Class="ml-auto px-10 d-flex" Variant="Variant.Outlined" Color="Color.Info"
+                        Style="width: 150px;"
+                        OnClick="buttonCLicked">Preferences</MudButton>
+
+                    </MudItem>
+                </MudGrid>
+                if (isClicked)
+                {
+                    <ClientEditingGuidelinesComponent userId="@userId" currentUser="@currentUser" />
+                }
+            }
+            <div style="border: 1px red solid; margin-top:12px; padding:10px; border-radius:10px;">
+                <MudGrid Class="d-flex flex-auto align-center" Justify="Justify.Center" Spacing="6">
+                    <MudItem xs="12" sm="6">
+                        <MudText Class="d-flex flex-auto" Typo="Typo.h5" Style="align-items: center; color:#e40730">
+                            <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Style="color:#e40730"></MudIcon>  Revoke Access!
+                        </MudText>
+                        <MudText Class="d-flex flex-auto ml-1" Typo="Typo.body2" Style="align-items: center;color: #f66e79;">
+                            This option will log you out of all the devices you are currently using and it is irreversible.
+                            You will be asked to log in again using your Google Account.
+                        </MudText>
+
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudButton OnClick="RevokeLogin" Variant="Variant.Outlined"
+                        Style="width: 150px;"
+                        Class="ml-auto px-10 d-flex error-new">Revoke</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </div>
+
+            <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+                <AntiforgeryToken />
+                <input type="hidden" name="ReturnUrl" value="" />
+            </form>
+        </DialogContent>
+
+        <DialogActions>
+            <MudItem xs="12" sm="12" md="12" Class="px-4 px-md-11">
+                <div class="d-flex justify-center align-center my-5">
+                    <MudButton StartIcon="@Icons.Material.Filled.ExitToApp"
+                    IconColor="Color.Tertiary"
+                    Class="px-6 px-md-14"
+                    OnClick="@LogoutClick"
+                    Color="Color.Default"
+                    Variant="Variant.Outlined"
+                    Size="Size.Medium">
+                        Log out
+                    </MudButton>
+                </div>
+            </MudItem>
+        </DialogActions>
+
+    </MudDialog>
+
+</MudContainer>
+@code
+{
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public ClaimsPrincipal? currentUser { get; set; }
+    private ApplicationUser? user;
+    private string userRole;
+    private string userId;
+    private bool isChangeInfo;
+    private bool isClicked;
+    string? userName;
+    string? userEmail;
+
+    private MudForm form;
+    private MudForm emailForm;
+    private bool emailSuccess;
+    private bool success;
+    private bool processing;
+    private UsernameChangeModel model = new();
+    private void buttonCLicked()
+    {
+        isClicked = !isClicked;
+    }
+    private void isChangingInfo()
+    {
+        isChangeInfo = !isChangeInfo;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await UserManager.GetUserAsync(currentUser!);
+            userName = user?.UserName;
+            userEmail = user?.Email;
+            userRole = currentUser!.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value!;
+            userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!;
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+
+    private IEnumerable<string> ValidateUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            yield return "Username is required!";
+        if (username?.Length < 3)
+            yield return "Username must be at least 3 characters!";
+        if (username?.Length > 100)
+            yield return "Username must not exceed 100 characters!";
+        if (!System.Text.RegularExpressions.Regex.IsMatch(username ?? "", @"^[a-zA-Z _]*$"))
+            yield return "Username can only contain letters, spaces, and underscores!";
+    }
+
+    private async Task ChangeUsernameAsync()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            var parameters = new DialogParameters
+            {
+                { "Message", $"Are you sure you want to change your name? This will result in you logging-out." }
+            };
+
+            var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+            var dialogResult = await dialog.Result;
+            if (!dialogResult.Canceled)
+            {
+                processing = true;
+                var user = await UserManager.GetUserAsync(currentUser);
+
+                if (user != null)
+                {
+                    // Check if new username is already taken
+                    var userWithNewUsername = await UserManager.FindByNameAsync(model.NewUsername);
+                    if (userWithNewUsername != null && userWithNewUsername.Id != user.Id)
+                    {
+                        Snackbar.Add("Username is already taken!", Severity.Error);
+                        processing = false;
+                        return;
+                    }
+
+                    // Update username
+                    var result = await UserManager.SetUserNameAsync(user, model.NewUsername);
+                    
+                    if (result.Succeeded)
+                    {
+                        userName = model.NewUsername;
+                        // Update normalized username
+                        await UserManager.UpdateNormalizedUserNameAsync(user);
+                        Snackbar.Add("Username updated successfully!", Severity.Success);
+                    }
+
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            Snackbar.Add(error.Description, Severity.Error);
+                        }
+                    }
+                    processing = false;
+
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+        }
+    }
+    private async Task ChangeUserEmailAsync()
+    {
+            var parameters = new DialogParameters
+            {
+                { "Message", $"Are you sure you want to change your email for receiving notifications ? This won't change your logging-in account but only where we send you updates. This will result in you logging-out." }
+            };
+
+            var dialog = DialogService.Show<ConfirmationDialog>("Confirmation", parameters);
+            var dialogResult = await dialog.Result;
+            if (!dialogResult.Canceled)
+            {
+                processing = true;
+                var user = await UserManager.GetUserAsync(currentUser);
+
+                if (user != null)
+                {
+                    // Check if new username is already taken
+                    var userWithNewEmail = await UserManager.FindByEmailAsync(model.NewEmail);
+                    if (userWithNewEmail != null && userWithNewEmail.Id != user.Id)
+                    {
+                        Snackbar.Add("Email is already registered with us!", Severity.Error);
+                        processing = false;
+                        return;
+                    }
+
+                    // Update username
+                    var result = await UserManager.SetEmailAsync(user, model.NewEmail);
+
+                    if (result.Succeeded)
+                    {
+                        userEmail = model.NewEmail;
+                        // Update normalized username
+                        await UserManager.UpdateNormalizedUserNameAsync(user);
+                        Snackbar.Add("Email updated successfully!", Severity.Success);
+                    }
+
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            Snackbar.Add(error.Description, Severity.Error);
+                        }
+                    }
+                    processing = false;
+
+                }
+                else
+                {
+                    return;
+                }
+        }
+    }
+
+    public class UsernameChangeModel
+    {
+        public string NewUsername { get; set; }
+        public string NewEmail { get; set; }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel(); // Close without saving
+    }
+
+    private void RevokeLogin()
+    {
+        _userManager.UpdateSecurityStampAsync(user);
+    }
+
+    private async Task LogoutClick()
+    {
+        await JSRuntime.InvokeVoidAsync("submitForm", "logoutForm");
+    }
+}
+<style>
+    .mud-button-filled:disabled
+    {
+        border: 0px !important;
+    }
+
+    .mud-dialog-content {
+        max-height: fit-content;
+    }
+    .mud-dialog{
+        max-height: 100vh;
+    }
+</style>

@@ -1,0 +1,37 @@
+﻿@page "/failed-register"
+@using ManagementApp.Components.Layout
+@layout GuestLayout
+<PageTitle>Register Failure</PageTitle>
+
+<div class="d-flex justify-content-center align-items-center" style="width:inherit; height:inherit;justify-content:center;position: relative; overflow: hidden; color: white;">
+    <video autoplay muted loop id="Operavue" tabindex="-1" style="position: absolute; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -1;">
+        <source src="OperavueHVEC.mp4" type="video/mp4; codecs=hevc">
+        <source src="Operavue.mp4" type="video/mp4">
+        Your browser does not support video.
+    </video>
+    <div class="text-center" style="width: inherit;height: inherit;justify-content: center;display: flex;flex-direction: column;flex-basis: inherit;
+        align-content: space-between;align-items: center;">
+
+        <img src="Logo.png" alt="Logo" class="mb-15 mt-20" style="width: 150px;" />
+        <div class="flex-auto"></div>
+
+        <h2 class="mb-3" style="font-size: 40px; color:tomato">There was an error, we are sorry to inconveniencing you.</h2>
+        <div class="flex-auto"></div>
+        <h2 class="mt-5" style="font-size: 40px; color:tomato">Please contact us.</h2>
+
+        <div></div>
+
+        <div class="mb-5">
+            <a  style="" href="mailto:management@ManagementApp.net" class="special-link">Contact Management: management@ManagementApp.net</a>
+        </div>
+        <form id="logoutForm" action="Account/Logout" method="post" style="display:none;">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="" />
+        </form>
+    </div>
+</div>
+
+@code
+{
+
+}

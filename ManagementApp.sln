@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F7D3E78B-9823-4487-9602-A9EE67A6BDD5}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		railway.toml = railway.toml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tizzani.MudBlazor.HtmlEditor", "Tizzani.MudBlazor.HtmlEditor\Tizzani.MudBlazor.HtmlEditor.csproj", "{593192CC-B1FB-6448-4DAD-AF94DCEE0176}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagementApp", "ManagementApp\ManagementApp.csproj", "{B88B58C2-B632-4D97-9470-5AB27F92A367}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{593192CC-B1FB-6448-4DAD-AF94DCEE0176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{593192CC-B1FB-6448-4DAD-AF94DCEE0176}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{593192CC-B1FB-6448-4DAD-AF94DCEE0176}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{593192CC-B1FB-6448-4DAD-AF94DCEE0176}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B88B58C2-B632-4D97-9470-5AB27F92A367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B88B58C2-B632-4D97-9470-5AB27F92A367}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B88B58C2-B632-4D97-9470-5AB27F92A367}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B88B58C2-B632-4D97-9470-5AB27F92A367}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BB35D7F2-47E8-4EC7-B8A0-CB49823E1E8D}
+	EndGlobalSection
+EndGlobal

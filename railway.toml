@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "./LuminaryVisuals/Dockerfile"
+dockerfilePath = "./ManagementApp/Dockerfile"
 
 [deploy]
 restartPolicyType = "always"
