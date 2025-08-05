@@ -7,8 +7,8 @@ using WebPush;
 
 public partial class PushNotificationService
 {
-    private readonly string _publicKey = "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80";
-    private readonly string _privateKey = "eYN89bnSaq1aEBr1I5g14mI30AIHVDvJoeW3QpG-sE0";
+    private readonly string _publicKey = "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgywWyOWkF3RC6F5VtBSCquFDs6w7EmZ4J80";
+    private readonly string _privateKey = "eYN89bnSaq1aEBr1I5g36mI30AIHVDvJoeW5QpG-sE0";
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
 
     public PushNotificationService(IDbContextFactory<ApplicationDbContext> _contextFactory)
