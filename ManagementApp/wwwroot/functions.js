@@ -112,7 +112,7 @@ window.subscribeToPush = async function () {
         }
 
         const applicationServerKey = urlB64ToUint8Array(
-            "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgyjWyOWkF1RC6F5VtBSCquFDs6w7EmZ4J80"
+            "BEj-Wiu59-OGKk2V4EbpdKX3V6ODV7JSaBj_rkjfvSXpJQsAtvSmgywWyOWkF3RC6F5VtBSCquFDs6w7EmZ4J80"
         );
 
         // Subscribe to push
